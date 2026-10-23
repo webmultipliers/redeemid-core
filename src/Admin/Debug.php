@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Blocks\Registration;
+use WP2_Shopify\Commerce\CartBridge;
 use WP2_Shopify\Config;
 use WP2_Shopify\Entitlement\Rule;
 use WP2_Shopify\Integrations\OfficialPlugin;
@@ -176,14 +177,13 @@ final class Debug {
 	}
 
 	/**
-	 * Show the synced mirror for a customer and what a rule would decide, changing nothing.
-	 */
-	/**
 	 * Shopify's own plugin: whether it is here, which store it uses and which routes it owns.
 	 */
 	private static function official_plugin(): void {
-		$info = OfficialPlugin::info();
-		$ok   = [ Menu::class, 'dot' ];
+		$info     = OfficialPlugin::info();
+		$bridge   = CartBridge::last();
+		$ok       = [ Menu::class, 'dot' ];
+		$fmt_time = [ Menu::class, 'time' ];
 		?>
 		<h2 id="official-plugin"><?php esc_html_e( 'Shopify\'s WordPress plugin', 'wp2-shopify' ); ?></h2>
 		<p class="description"><?php esc_html_e( 'WP2 runs with or without it. When it is active, it owns the anonymous storefront and WP2 owns sign-in and access. WP2 never reads its access token.', 'wp2-shopify' ); ?></p>
@@ -192,6 +192,15 @@ final class Debug {
 			<?php if ( OfficialPlugin::ABSENT !== $info['state'] ) : ?>
 				<li><?php esc_html_e( 'Owns /cart:', 'wp2-shopify' ); ?> <?php echo esc_html( $info['owns_cart'] ? __( 'yes. Its rewrite rule wins over any page at /cart.', 'wp2-shopify' ) : __( 'no (rewrite rules not flushed yet, or removed).', 'wp2-shopify' ) ); ?></li>
 				<li><?php esc_html_e( 'Serves /products/{handle}:', 'wp2-shopify' ); ?> <?php echo esc_html( $info['product_routes'] ? __( 'yes. Product SEO is the official plugin\'s.', 'wp2-shopify' ) : __( 'no.', 'wp2-shopify' ) ); ?></li>
+				<li><?php echo $ok( CartBridge::enabled() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Cart sign-in bridge:', 'wp2-shopify' ); ?>
+					<?php
+					echo esc_html( CartBridge::enabled() ? __( 'active. Signed-in customers check out from its cart as themselves.', 'wp2-shopify' ) : __( 'off. It needs the same store and WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN.', 'wp2-shopify' ) );
+					echo ' ' . esc_html__( 'Last attached:', 'wp2-shopify' ) . ' ' . $fmt_time( $bridge['ok_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput
+					if ( $bridge['error'] ) {
+						echo ' · <strong>' . esc_html__( 'Last failure:', 'wp2-shopify' ) . ' ' . esc_html( $bridge['error'] ) . '</strong> ' . $fmt_time( $bridge['error_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput
+					}
+					?>
+				</li>
 			<?php endif; ?>
 		</ul>
 		<?php

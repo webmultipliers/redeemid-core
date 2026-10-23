@@ -105,6 +105,13 @@ final class Overview {
 							<p class="description"><?php esc_html_e( 'One per line: Shopify product ID, a colon, then the customer tags a paid order grants. The plugin adds these tags on payment and removes them on refund or cancellation. It never touches other tags.', 'wp2-shopify' ); ?></p>
 						</td>
 					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Shared devices', 'wp2-shopify' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'wp2-shopify' ); ?></label>
+							<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'wp2-shopify' ); ?></p>
+						</td>
+					</tr>
 				</table>
 				<?php submit_button(); ?>
 			</form>
