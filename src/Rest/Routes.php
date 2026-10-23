@@ -4,6 +4,7 @@ namespace WP2_Shopify\Rest;
 
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\TokenVault;
+use WP2_Shopify\Commerce\CartBridge;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Webhooks\Endpoint;
 
@@ -13,7 +14,7 @@ use WP2_Shopify\Webhooks\Endpoint;
  * payload. Mutations require a logged-in user plus the wp_rest nonce; the
  * JavaScript path gets that nonce from the status call, never from cached HTML.
  *
- * Endpoint paths are the contract: add new ones here and in docs/rest.md.
+ * Endpoint paths are the contract: add new ones here and in the README's REST API table.
  */
 final class Routes {
 	public const NS = 'wp2-shopify/v1';
@@ -77,6 +78,17 @@ final class Routes {
 				'methods'             => 'POST',
 				'callback'            => static fn() => self::no_cache( [ 'result' => Flow::sync_now( get_current_user_id() ) ] ),
 				'permission_callback' => static fn() => is_user_logged_in() && null !== Mirror::customer_id( get_current_user_id() ),
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			CartBridge::ROUTE,
+			[
+				'methods'             => 'POST',
+				'callback'            => [ CartBridge::class, 'attach' ],
+				'permission_callback' => [ CartBridge::class, 'can_attach' ], // Linked customers only, plus the REST nonce.
+				'args'                => [ 'cartId' => [ 'type' => 'string', 'required' => true ] ],
 			]
 		);
 

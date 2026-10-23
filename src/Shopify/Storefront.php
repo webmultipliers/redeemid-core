@@ -44,6 +44,15 @@ mutation WP2BuyNow($input: CartInput!) {
 }
 GRAPHQL;
 
+	private const CART_BUYER = <<<'GRAPHQL'
+mutation WP2CartBuyer($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+  cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+    cart { id }
+    userErrors { field message }
+  }
+}
+GRAPHQL;
+
 	public static function available(): bool {
 		return '' !== Config::store_domain() && Config::has( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' );
 	}
@@ -175,6 +184,31 @@ GRAPHQL;
 		$url = (string) ( $data['cartCreate']['cart']['checkoutUrl'] ?? '' );
 
 		return 'https' === wp_parse_url( $url, PHP_URL_SCHEME ) ? $url : new \WP_Error( 'shopify_cart', 'Shopify returned no checkout URL.' );
+	}
+
+	/**
+	 * Attach a signed-in customer to an existing cart, such as the one the
+	 * official plugin's cart component keeps, so its checkout opens signed in.
+	 * The token goes from server to Shopify only.
+	 */
+	public static function attach_buyer( string $cart_gid, string $customer_token ): true|\WP_Error {
+		if ( ! self::available() ) {
+			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
+		}
+
+		$data = Http::graphql( self::endpoint(), self::headers(), self::CART_BUYER, [ 'cartId' => $cart_gid, 'buyerIdentity' => [ 'customerAccessToken' => $customer_token ] ], 'storefront.cart_buyer' );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$errors = $data['cartBuyerIdentityUpdate']['userErrors'] ?? [];
+
+		if ( $errors ) {
+			return new \WP_Error( 'shopify_cart', (string) ( $errors[0]['message'] ?? 'Shopify refused the buyer identity.' ) );
+		}
+
+		return empty( $data['cartBuyerIdentityUpdate']['cart']['id'] ) ? new \WP_Error( 'shopify_cart_missing', 'Shopify has no such cart.' ) : true;
 	}
 
 	/**

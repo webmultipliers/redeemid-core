@@ -213,6 +213,11 @@ WP2 works with or without it:
 - **Credentials stay separate.** WP2 reads only the official plugin's store domain, to compare it. It never reads its Storefront token.
 - **Routes.** When active, the official plugin always owns `/cart` and, by default, `/products/*`. WP2 claims neither. Debug shows which ones it currently owns.
 - **Gating.** Official product and collection blocks can go inside a membership gate. The gate renders on the server, so non-members never receive the block's markup.
+- **Signed-in checkout from its cart.** When it serves the same store and `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` is set, WP2 adds a small script to front-end pages. If a linked customer is signed in and the official cart exists, the script sends the cart ID to `POST /cart/identity`, and WP2 attaches the customer on the server with `cartBuyerIdentityUpdate`. Checkout then opens signed in, so purchases unlock content. The customer token never reaches the browser. Guests with no cart make no request.
+- **Shared devices.** After sign-out, the script drops a cart it signed in, so the next person can't check out as the previous customer. Turn on **Clear the cart on sign-out** to drop every cart a signed-in visitor used.
+- **Limits.** The bridge reads `localStorage['__shopify:cartId']`, which the official cart component uses but doesn't document. If Shopify changes it, the bridge stops attaching and the cart keeps working as a guest cart. Debug shows the last attach and the last failure. A visitor who adds to the cart and reaches checkout within a second or two may get there before the attach finishes.
+
+See [docs/official-plugin.md](docs/official-plugin.md) for the decision record.
 
 ## REST API
 
@@ -226,6 +231,7 @@ The namespace is `wp2-shopify/v1`. Every write route needs the `wp_rest` nonce.
 | `POST /auth/refresh` | Refreshes the Shopify session and returns status, never tokens |
 | `POST /auth/disconnect` | Unlinks the Shopify customer from the current user |
 | `POST /account/sync` | Re-syncs the current user's mirror (rate-limited) |
+| `POST /cart/identity` | Attaches the signed-in, linked customer to the official plugin's cart, `{cartId}` → `{attached}` (rate-limited; only when that plugin serves the same store) |
 | `POST /webhooks/events` | Shopify webhooks (HMAC-verified) |
 
 Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_logout`, `_connect`, `_link_confirm`, `_sync`, `_disconnect`), which redirect back to a page.
@@ -263,4 +269,4 @@ To also delete shadow users and every linked field, add `define( 'WP2_SHOPIFY_UN
 
 ## Privacy
 
-The plugin registers a personal data exporter and an eraser for the Shopify fields it mirrors. Shopify's `customers/data_request` creates a WordPress export request. `customers/redact` deletes or unlinks the account.
+The plugin registers a personal data exporter and an eraser for the Shopify fields it mirrors. With Shopify's plugin active, the cart bridge stores two flags in the visitor's `localStorage` (`wp2-shopify:attachedCart` and `wp2-shopify:signedInCart`) and keeps no cart IDs on the server. Shopify's `customers/data_request` creates a WordPress export request. `customers/redact` deletes or unlinks the account.
