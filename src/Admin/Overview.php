@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Config;
+use WP2_Shopify\Integrations\OfficialPlugin;
 use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\Discovery;
@@ -55,6 +56,12 @@ final class Overview {
 				__( 'Linked customers', 'wp2-shopify' ),
 				is_array( $recon ) ? sprintf( /* translators: 1: count 2: time */ __( '%1$d linked. Last reconciliation %2$s ago.', 'wp2-shopify' ), $linked, human_time_diff( (int) ( $recon['finished'] ?? 0 ) ) ) : sprintf( /* translators: %d: count */ __( '%d linked.', 'wp2-shopify' ), $linked ),
 				Menu::url( Customers::PAGE ),
+			],
+			[
+				in_array( OfficialPlugin::state(), [ OfficialPlugin::ABSENT, OfficialPlugin::SAME_STORE ], true ),
+				__( 'Shopify\'s WordPress plugin', 'wp2-shopify' ),
+				OfficialPlugin::summary(),
+				Menu::url( Debug::PAGE ) . '#official-plugin',
 			],
 			[
 				0 === $failures,

@@ -192,6 +192,17 @@ Cache rules should bypass or vary on these cookies:
 - `wp2_shopify_oauth_state`
 - `wp2_shopify_cart` (later phases)
 
+## Shopify's WordPress plugin
+
+Shopify publishes its own plugin for the Sell on WordPress channel. It is an anonymous storefront: product, collection and cart-toggle blocks, `/products/{handle}`, `/collections/{handle}` and `/cart`, all built on Storefront Web Components. It has no sign-in, webhooks or gating, so it and WP2 do different jobs on the same store.
+
+WP2 works with or without it:
+
+- **Detection.** Overview and Debug show one of four states: not installed, active but not connected, connected to the same store as `WP2_SHOPIFY_STORE_DOMAIN`, or connected to another store. The last one is an error, because purchases there can't unlock content here. Other code can read the state with `WP2_Shopify\Integrations\OfficialPlugin::state()` or change it with the `wp2_shopify_official_state` filter.
+- **Credentials stay separate.** WP2 reads only the official plugin's store domain, to compare it. It never reads its Storefront token.
+- **Routes.** When active, the official plugin always owns `/cart` and, by default, `/products/*`. WP2 claims neither. Debug shows which ones it currently owns.
+- **Gating.** Official product and collection blocks can go inside a membership gate. The gate renders on the server, so non-members never receive the block's markup.
+
 ## REST API
 
 The namespace is `wp2-shopify/v1`. Every write route needs the `wp_rest` nonce.
@@ -216,6 +227,7 @@ Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_l
 - Filters:
   - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
   - `wp2_shopify_membership_map` and `wp2_shopify_setting_{key}`
+  - `wp2_shopify_official_state`, which overrides the detected state of Shopify's own plugin
   - `wp2_shopify_reassign_user`, which picks who receives content when a Shopify redaction deletes a shadow user
 
 ## Upgrading from 1.x
