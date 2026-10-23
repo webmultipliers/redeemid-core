@@ -11,6 +11,7 @@ use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\AdminToken;
 use WP2_Shopify\Shopify\Discovery;
+use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Sync\Reconciler;
@@ -146,6 +147,7 @@ final class Debug {
 					}
 					?>
 				</li>
+				<li><?php echo $ok( Storefront::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Storefront API (plan cards and buy-now):', 'wp2-shopify' ); ?> <?php echo esc_html( Storefront::available() ? __( 'public access token present.', 'wp2-shopify' ) : __( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN not set, so plan cards show as unavailable.', 'wp2-shopify' ) ); ?></li>
 				<li><?php esc_html_e( 'Shopify app settings: callback URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( Config::callback_url() ); ?></code>, <?php esc_html_e( 'JavaScript origin', 'wp2-shopify' ); ?> <code><?php echo esc_html( untrailingslashit( home_url() ) ); ?></code>, <?php esc_html_e( 'logout URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( home_url( '/' ) ); ?></code></li>
 				<li><?php esc_html_e( 'Webhooks:', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Webhooks::PAGE ) ); ?>"><?php esc_html_e( 'Shopify → Webhooks', 'wp2-shopify' ); ?></a></li>
 			</ul>

@@ -1,0 +1,100 @@
+<?php
+/**
+ * Plan card (spec 10.4): one membership plan or product with its live price
+ * and a buy-now form.
+ *
+ * The markup holds no personal data and no nonce, so pages with plan cards
+ * stay cacheable. The form posts to admin-post.php, which creates a cart,
+ * attaches the signed-in customer's identity and redirects to checkout.
+ * Prices are Shopify's, cached for a few minutes, never recomputed.
+ *
+ * @var array $a          Block attributes.
+ * @var bool  $isEditor   Rendering inside the block editor.
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+$wp2_handle      = sanitize_title( (string) ( $a['productHandle'] ?? '' ) );
+$wp2_button      = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Join now', 'wp2-shopify' );
+$wp2_classes     = 'wp2-shopify-plan' . ( ! empty( $a['highlight'] ) ? ' is-highlighted' : '' );
+$wp2_unavailable = static function ( string $message ) use ( $wp2_classes, $a ): void {
+	?>
+	<div useBlockProps class="<?php echo esc_attr( $wp2_classes ); ?> is-unavailable">
+		<?php if ( ! empty( $a['heading'] ) ) : ?>
+			<h3 class="wp2-shopify-plan__title"><?php echo esc_html( (string) $a['heading'] ); ?></h3>
+		<?php endif; ?>
+		<p class="wp2-shopify-plan__notice"><?php echo esc_html( $message ); ?></p>
+	</div>
+	<?php
+};
+
+if ( '' === $wp2_handle ) {
+	$wp2_unavailable( $isEditor ? __( 'Enter a Shopify product handle in the block settings.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' ) );
+	return;
+}
+
+if ( ! \WP2_Shopify\Shopify\Storefront::available() ) {
+	$wp2_unavailable( $isEditor ? __( 'Add WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN to wp-config.php to show live prices and checkout.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' ) );
+	return;
+}
+
+$wp2_product = \WP2_Shopify\Shopify\Storefront::product( $wp2_handle );
+
+if ( is_wp_error( $wp2_product ) ) {
+	$wp2_unavailable( __( 'Plans are temporarily unavailable. Please try again shortly.', 'wp2-shopify' ) );
+	return;
+}
+
+if ( null === $wp2_product || ! $wp2_product['variants'] ) {
+	$wp2_unavailable( $isEditor ? sprintf( /* translators: %s: product handle */ __( 'No Shopify product with the handle "%s" is published to this sales channel.', 'wp2-shopify' ), $wp2_handle ) : __( 'This plan is not available right now.', 'wp2-shopify' ) );
+	return;
+}
+
+$wp2_variant     = \WP2_Shopify\Shopify\Storefront::pick_variant( $wp2_product, (string) ( $a['variantId'] ?? '' ) );
+$wp2_title       = (string) ( $a['heading'] ?? '' ) ?: $wp2_product['title'];
+$wp2_description = (string) ( $a['description'] ?? '' ) ?: $wp2_product['description'];
+$wp2_price       = \WP2_Shopify\Shopify\Storefront::format_money( $wp2_variant['price'] );
+$wp2_compare     = ! empty( $a['showCompareAt'] ) && $wp2_variant['compareAt'] && (float) $wp2_variant['compareAt']['amount'] > (float) ( $wp2_variant['price']['amount'] ?? 0 ) ? \WP2_Shopify\Shopify\Storefront::format_money( $wp2_variant['compareAt'] ) : '';
+$wp2_image       = ! empty( $a['showImage'] ) ? $wp2_product['image'] : null;
+
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+$wp2_notice = $isEditor ? '' : \WP2_Shopify\Commerce\BuyNow::message( sanitize_key( wp_unslash( $_GET['wp2s_notice'] ?? '' ) ) );
+$wp2_return = $isEditor ? '' : remove_query_arg( 'wp2s_notice', home_url( add_query_arg( [] ) ) );
+?>
+<div useBlockProps class="<?php echo esc_attr( $wp2_classes ); ?>">
+	<?php if ( $wp2_image ) : ?>
+		<img class="wp2-shopify-plan__image" src="<?php echo esc_url( $wp2_image['url'] ); ?>" alt="<?php echo esc_attr( $wp2_image['alt'] ); ?>" <?php echo $wp2_image['width'] ? 'width="' . (int) $wp2_image['width'] . '" height="' . (int) $wp2_image['height'] . '"' : ''; ?> loading="lazy">
+	<?php endif; ?>
+
+	<h3 class="wp2-shopify-plan__title"><?php echo esc_html( $wp2_title ); ?></h3>
+
+	<?php if ( '' !== $wp2_price ) : ?>
+		<p class="wp2-shopify-plan__price">
+			<?php echo esc_html( $wp2_price ); ?>
+			<?php if ( '' !== $wp2_compare ) : ?>
+				<s class="wp2-shopify-plan__compare"><?php echo esc_html( $wp2_compare ); ?></s>
+			<?php endif; ?>
+		</p>
+	<?php endif; ?>
+
+	<?php if ( '' !== $wp2_description ) : ?>
+		<p class="wp2-shopify-plan__description"><?php echo esc_html( wp_trim_words( $wp2_description, 40 ) ); ?></p>
+	<?php endif; ?>
+
+	<?php if ( '' !== $wp2_notice ) : ?>
+		<p class="wp2-shopify-plan__notice" role="alert"><?php echo esc_html( $wp2_notice ); ?></p>
+	<?php endif; ?>
+
+	<?php if ( ! $wp2_variant['available'] ) : ?>
+		<button type="button" class="wp-element-button" disabled><?php esc_html_e( 'Sold out', 'wp2-shopify' ); ?></button>
+	<?php elseif ( $isEditor ) : ?>
+		<span class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></span>
+	<?php else : ?>
+		<form class="wp2-shopify-plan__form" method="post" action="<?php echo esc_url( \WP2_Shopify\Commerce\BuyNow::form_url() ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( \WP2_Shopify\Commerce\BuyNow::ACTION ); ?>">
+			<input type="hidden" name="variant" value="<?php echo esc_attr( $wp2_variant['id'] ); ?>">
+			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $wp2_return ); ?>">
+			<button type="submit" class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></button>
+		</form>
+	<?php endif; ?>
+</div>

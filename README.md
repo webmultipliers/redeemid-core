@@ -39,7 +39,7 @@ The plugin runs its own Blockstudio instance from `blocks/`. It does not use the
 
 ## Configure
 
-Credentials are constants in `wp-config.php`, never options. These six are the whole configuration surface; Shopify → Debug shows which are present, never their values.
+Credentials are constants in `wp-config.php`, never options. These seven are the whole configuration surface; Shopify → Debug shows which are present, never their values.
 
 | Constant | Required | Purpose |
 |---|---|---|
@@ -48,6 +48,7 @@ Credentials are constants in `wp-config.php`, never options. These six are the w
 | `WP2_SHOPIFY_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client. |
 | `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers purchase-to-tag, reconciliation, resync, tag editing and webhook registration. |
 | `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | yes | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
+| `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | for plan cards | Storefront API public token from the Headless channel. Powers plan cards and buy-now. Public by design. |
 | `WP2_SHOPIFY_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
 
 `WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, with an admin notice. Rename it to `WP2_SHOPIFY_CLIENT_SECRET`.
@@ -56,7 +57,7 @@ These constants are no longer read. If one is still defined, every admin screen 
 
 - `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
 - `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
-- `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` and `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN`: nothing reads them yet; they return with the catalog and cart blocks.
+- `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN`: nothing reads it yet; it returns with the server-side cart.
 - `WP2_SHOPIFY_API_VERSION`: the API version is pinned to `2026-10`.
 - `WP2_SHOPIFY_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
 
@@ -163,6 +164,16 @@ Gate settings:
   - a redirect.
 
 Rules fail closed. If the tag data is older than the freshness window (Shopify → Overview, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
+
+### Plan cards and buy-now
+
+Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and give it a product handle. It shows the product's live Shopify price, cached for five minutes, and a button that goes straight to Shopify checkout. Put plan cards on the join page and in a gate's fallback.
+
+- **Buy-now is a plain form.** It posts to `admin-post.php?action=wp2_shopify_buy_now`, so it works without JavaScript. The server creates a one-line cart, attaches the visitor's identity if they're signed in with Shopify, and redirects to a fresh checkout URL. If Shopify refuses the customer token, it retries as a guest checkout rather than block the purchase.
+- **Cache-safe.** The card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per IP per minute.
+- **Independent of Shopify's plugin.** It works the same whether that plugin is installed or not, and never touches its cart.
+
+It needs `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN`, and the product must be published to the Headless channel that issued the token.
 
 ### Memberships from purchases
 
