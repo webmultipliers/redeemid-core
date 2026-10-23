@@ -30,7 +30,7 @@ final class Endpoint {
 		$secret = Config::webhook_secret();
 
 		if ( ! Signature::verify( $raw, (string) $request->get_header( 'x-shopify-hmac-sha256' ), $secret ) ) {
-			Logger::log( 'webhook.rejected', [ 'reason' => 'hmac' ] );
+			Logger::log( 'webhook.rejected', [ 'reason' => 'hmac', 'topic' => (string) $request->get_header( 'x-shopify-topic' ) ] );
 			update_option( 'wp2_shopify_webhook_rejected', time(), false );
 
 			return new \WP_REST_Response( [ 'ok' => false ], 401 );
@@ -39,7 +39,7 @@ final class Endpoint {
 		$shop = strtolower( (string) $request->get_header( 'x-shopify-shop-domain' ) );
 
 		if ( '' !== $shop && '' !== Config::store_domain() && $shop !== Config::store_domain() ) {
-			Logger::log( 'webhook.rejected', [ 'reason' => 'shop_mismatch' ] );
+			Logger::log( 'webhook.rejected', [ 'reason' => 'shop_mismatch', 'topic' => (string) $request->get_header( 'x-shopify-topic' ), 'shop' => substr( $shop, 0, 100 ) ] );
 
 			return new \WP_REST_Response( [ 'ok' => false ], 401 );
 		}
@@ -56,7 +56,7 @@ final class Endpoint {
 			time()
 		);
 
-		Logger::log( 'webhook.received', [ 'topic' => $topic, 'status' => $result['status'], 'row' => $result['id'] ] );
+		Logger::log( 'webhook.received', [ 'topic' => $topic, 'status' => $result['status'], 'row' => $result['id'], 'customer' => (string) ( $result['customer'] ?? '' ) ] );
 
 		if ( InboxStore::QUEUED === $result['status'] && $result['id'] ) {
 			self::schedule( $result['id'] );

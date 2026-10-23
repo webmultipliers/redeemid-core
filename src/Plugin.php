@@ -2,7 +2,7 @@
 
 namespace WP2_Shopify;
 
-use WP2_Shopify\Admin\Diagnostics;
+use WP2_Shopify\Admin\Menu;
 use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
@@ -10,6 +10,7 @@ use WP2_Shopify\Blocks\Registration;
 use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
+use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Sync\PostCheckout;
 use WP2_Shopify\Sync\Reconciler;
 use WP2_Shopify\Webhooks\Endpoint;
@@ -27,16 +28,19 @@ final class Plugin {
 		Registration::register();
 		Privacy::register();
 		Compat::register();
+		EventLog::register();
 
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );
 		add_action( Endpoint::HOOK, [ Processor::class, 'process' ] );
 		add_action( Reconciler::HOOK, [ Reconciler::class, 'run' ] );
 		add_action( 'wp2_shopify_prune', [ WpdbInboxStore::class, 'prune' ] );
+		add_action( 'wp2_shopify_prune', [ EventLog::class, 'prune' ] );
+		add_action( 'admin_init', [ EventLog::class, 'maybe_install' ] );
 		add_action( 'admin_init', [ Migration::class, 'maybe_run' ] );
 
 		if ( is_admin() ) {
-			Diagnostics::register();
+			Menu::register();
 			UserProfile::register();
 		}
 	}

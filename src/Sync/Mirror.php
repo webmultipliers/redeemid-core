@@ -76,6 +76,15 @@ final class Mirror {
 		return null;
 	}
 
+	/**
+	 * A linked user whose customer does not exist in Shopify on purpose, such as
+	 * a test theme's seeded accounts. Reconciliation leaves its tags alone and
+	 * the admin offers no Shopify links for it.
+	 */
+	public static function is_fixture( int $user_id ): bool {
+		return (bool) apply_filters( 'wp2_shopify_customer_is_fixture', false, $user_id );
+	}
+
 	public static function customer_id( int $user_id ): ?CustomerId {
 		return CustomerId::parse( (string) get_user_meta( $user_id, self::NUMERIC, true ) )
 			?? CustomerId::parse( (string) get_user_meta( $user_id, self::GID, true ) );

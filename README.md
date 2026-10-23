@@ -39,28 +39,47 @@ The plugin runs its own Blockstudio instance from `blocks/`. It does not use the
 
 ## Configure
 
-Credentials are constants in `wp-config.php`, never options. Settings → Shopify shows which constants are present, never their values.
+Credentials are constants in `wp-config.php`, never options. These six are the whole configuration surface; Shopify → Debug shows which are present, never their values.
 
 | Constant | Required | Purpose |
 |---|---|---|
 | `WP2_SHOPIFY_STORE_DOMAIN` | yes | `your-store.myshopify.com` |
-| `WP2_SHOPIFY_CLIENT_ID` | yes | Customer Account API client ID |
+| `WP2_SHOPIFY_CLIENT_ID` | yes | Customer Account API client ID. Powers sign-in. |
 | `WP2_SHOPIFY_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client. |
-| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | for memberships | Client ID of a Dev Dashboard app installed on the store. Powers purchase-to-tag, reconciliation and webhook registration. |
-| `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | for memberships | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
-| `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` | no | A permanent Admin token from a legacy custom app (made in the Shopify admin before 2026). Used instead of the two constants above when set. |
-| `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET` | no | Only when webhooks are not signed by the app above, for example webhooks created in Settings → Notifications. |
-| `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | later phases | Storefront public token (catalog) |
-| `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | later phases | Storefront private token, for server-side cart calls |
+| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers purchase-to-tag, reconciliation, resync, tag editing and webhook registration. |
+| `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | yes | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
 | `WP2_SHOPIFY_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
-| `WP2_SHOPIFY_API_VERSION` | no | Defaults to `2026-10` for every Shopify API |
-| `WP2_SHOPIFY_COOKIE_DOMAIN` | no | Cookie domain. It is never taken from the request host. |
 
-`WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, and Diagnostics shows a deprecation notice. Rename it to `WP2_SHOPIFY_CLIENT_SECRET`.
+`WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, with an admin notice. Rename it to `WP2_SHOPIFY_CLIENT_SECRET`.
+
+These constants are no longer read. If one is still defined, every admin screen shows a notice and Debug says what replaced it:
+
+- `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
+- `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
+- `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` and `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN`: nothing reads them yet; they return with the catalog and cart blocks.
+- `WP2_SHOPIFY_API_VERSION`: the API version is pinned to `2026-10`.
+- `WP2_SHOPIFY_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
+
+## Admin screens
+
+Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
+
+- **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours, plus the settings (freshness window, stale behaviour, membership products).
+- **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
+- **Webhooks:** the endpoint, signature self-test and registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
+- **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
+- **Debug:** the constants above, platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
+
+Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
+
+- `wp2_shopify_customer_badges` (`array $badges, int $user_id`): labels shown next to a customer's name.
+- `wp2_shopify_customer_is_fixture` (`bool $is_fixture, int $user_id`): return true for seeded users whose customer does not exist in Shopify. Reconciliation and resync keep their tags and only mark them fresh, tag edits stay in WordPress, and no Shopify admin link is shown.
+
+Signed-in customers can resync themselves from the front end with `POST /wp-json/wp2-shopify/v1/account/sync` (REST nonce, once a minute).
 
 ### Shopify app settings
 
-Settings → Shopify prints the exact values for your site:
+Shopify → Debug prints the exact values for your site:
 
 - **Callback URI:** `https://your-site/auth-callback/`. Change the slug with the `wp2_shopify_auth_callback_slug` filter.
 - **JavaScript origin:** `https://your-site`
@@ -74,11 +93,11 @@ New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopif
 - **`read_all_orders`** is a protected scope. The Dev Dashboard rejects it as invalid until Shopify approves a request for it in the app's settings. Without it, Shopify shows only the last 60 days of orders. The plugin then still grants tags from any visible paid order, and removes a tag only for a refund or cancellation it can see, so older members keep their tags. Request the scope if refunds of purchases older than 60 days must revoke access automatically.
 - **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
 
-Install it on the store, then set `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`. Settings → Shopify shows the scopes Shopify granted.
+Install it on the store, then set `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`. Shopify → Debug shows the scopes Shopify granted.
 
 ### Webhooks
 
-Click **Register webhooks with Shopify** in Settings → Shopify. The plugin subscribes its endpoint, `https://your-site/wp-json/wp2-shopify/v1/webhooks/events`, to every topic below through the app, so deliveries are signed with the app's client secret. Running it again only adds what is missing. Don't also create webhooks in Settings → Notifications: those are signed with a different key and would fail verification.
+Click **Register webhooks with Shopify** on Shopify → Webhooks. The plugin subscribes its endpoint, `https://your-site/wp-json/wp2-shopify/v1/webhooks/events`, to every topic below through the app, so deliveries are signed with the app's client secret. Running it again only adds what is missing. Don't also create webhooks in Settings → Notifications: those are signed with a different key and would fail verification.
 
 The topics:
 
@@ -97,7 +116,7 @@ Each delivery is checked and stored, then processed:
 - Each delivery is deduped by its webhook ID.
 - Only the fields the plugin uses are stored.
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
-- Failures retry, then are dead-lettered. Diagnostics shows counts and the last delivery.
+- Failures retry, then are dead-lettered. Shopify → Webhooks lists every delivery and its outcome.
 
 A twice-daily reconciliation also re-reads linked customers from the Admin API, so a missed webhook heals itself.
 
@@ -143,11 +162,11 @@ Gate settings:
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed. If the tag data is older than the freshness window (Settings → Shopify, default 7 days), it is either still honored or treated as no access, as configured. Settings → Shopify has a dry run that shows the decision for any user.
+Rules fail closed. If the tag data is older than the freshness window (Shopify → Overview, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
 
 ### Memberships from purchases
 
-Under Settings → Shopify, map products to tags, one per line:
+Under Shopify → Overview, map products to tags, one per line:
 
 ```
 1234567890: gold-member

@@ -34,8 +34,8 @@ final class Admin {
 			$label
 		);
 
-		// A client-credentials token can expire or be revoked early: fetch a fresh one once.
-		if ( $retry && is_wp_error( $data ) && 'shopify_http_401' === $data->get_error_code() && AdminToken::uses_client_credentials() ) {
+		// A token can expire or be revoked early: fetch a fresh one once.
+		if ( $retry && is_wp_error( $data ) && 'shopify_http_401' === $data->get_error_code()  ) {
 			AdminToken::forget();
 
 			return self::query( $query, $variables, $label, false );

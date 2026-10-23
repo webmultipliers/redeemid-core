@@ -4,12 +4,14 @@ namespace WP2_Shopify;
 
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
+use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Sync\Reconciler;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
 final class Lifecycle {
 	public static function activate(): void {
 		WpdbInboxStore::install();
+		EventLog::install();
 		ShadowUsers::ensure_role();
 		Flow::add_rewrite();
 		flush_rewrite_rules();
