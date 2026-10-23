@@ -1,53 +1,41 @@
 {
-	"name": "webmultipliers/wp2-shopify-id",
-	"description": "Connects WordPress Users to Shopify Customer Accounts using the Customer Account API (PKCE).",
-	"type": "project",
+	"name": "webmultipliers/wp2-shopify",
+	"description": "Shopify for WordPress: Shopify Customer Accounts identity, tag-based membership gating, and Storefront commerce blocks built on Blockstudio 7.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
 	"require": {
-		"php": ">=7.4",
-		"defuse/php-encryption": "^2.3",
-		"guzzlehttp/guzzle": "^7.0",
-		"league/oauth2-client": "^2.6",
-		"fabrikat/blockstudio": "^4.0.2"
+		"php": ">=8.2",
+		"ext-json": "*",
+		"ext-sodium": "*",
+		"blockstudio/blockstudio": "^7.7"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^11.0"
 	},
 	"autoload": {
 		"psr-4": {
 			"WP2_Shopify\\": "src/"
 		}
 	},
+	"autoload-dev": {
+		"psr-4": {
+			"WP2_Shopify\\Tests\\": "tests/"
+		}
+	},
 	"scripts": {
-		"build": [
-			"composer install --no-dev --prefer-dist --optimize-autoloader --classmap-authoritative",
-			"npm ci --omit=dev",
-			"npx modclean --run --ignore node_modules/.bin",
-			"npx vite build",
-			"rm -rf node_modules"
+		"test": "phpunit",
+		"lint": "find src blocks tests wp2-shopify.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
+		"release": [
+			"composer install --no-dev --prefer-dist --optimize-autoloader --classmap-authoritative"
 		]
 	},
 	"config": {
 		"optimize-autoloader": true,
 		"sort-packages": true,
-		"allow-plugins": {
-			"composer/installers": true,
-			"ffraenz/private-composer-installer": true
+		"platform": {
+			"php": "8.2.0"
 		}
 	},
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"repositories": [
-		{
-			"type": "package",
-			"package": {
-				"name": "fabrikat/blockstudio",
-				"version": "4.0.2",
-				"type": "vendor",
-				"dist": {
-					"type": "zip",
-					"url": "https://blockstudio.dev/download?v={%VERSION}&k={%BLOCKSTUDIO_KEY}"
-				},
-				"require": {
-					"ffraenz/private-composer-installer": "^5.0.1"
-				}
-			}
-		}
-	]
+	"minimum-stability": "stable",
+	"prefer-stable": true
 }
