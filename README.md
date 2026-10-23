@@ -84,7 +84,7 @@ The topics:
 
 - `customers/create`, `customers/update`, `customers/delete`, `customers/enable`, `customers/disable` and `customers/merge`
 - `customer.tags_added` and `customer.tags_removed`
-- `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customer_purchasing_summary/create`
+- `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customers/purchasing_summary`
 - `orders/paid`, `orders/cancelled` and `refunds/create` (for memberships)
 - `app/uninstalled`
 - the compliance topics `customers/data_request`, `customers/redact` and `shop/redact`. Shopify doesn't allow these through the API; they come only to apps that declare them in their app configuration.
