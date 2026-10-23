@@ -27,7 +27,7 @@ composer build-prod         # production vendor/ for a deploy or release zip
 
 Have the host run `composer build-prod` in the plugin folder after each sync. That is the only build step; Blockstudio compiles block styles on first load, so `blocks/*/_dist/` must be writable.
 
-These WP-CLI steps run separately. The first three are needed only once per site:
+Run these WP-CLI steps separately, once per site:
 
 ```sh
 wp plugin activate <plugin-folder>
