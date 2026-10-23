@@ -55,4 +55,21 @@ final class TagPlanTest extends TestCase {
 
 		$this->assertSame( [ 'add' => [], 'remove' => [] ], $plan->diff( [ 'member', 'gold' ], [ 'member', 'gold' ] ) );
 	}
+
+	public function test_partial_history_keeps_tags_whose_order_fell_out_of_the_window(): void {
+		// Only a recent non-membership order is visible; the membership order is older than 60 days.
+		$orders = [ [ 'cancelled' => false, 'financial_status' => 'PAID', 'products' => [ '999' => 1 ] ] ];
+		$plan   = $this->plan();
+		$diff   = $plan->diff( [ 'member', 'gold' ], $plan->desired( $orders ), $plan->revoked( $orders ) );
+
+		$this->assertSame( [ 'add' => [], 'remove' => [] ], $diff );
+	}
+
+	public function test_partial_history_still_removes_tags_for_a_visible_refund(): void {
+		$orders = [ [ 'cancelled' => false, 'financial_status' => 'REFUNDED', 'products' => [ '632910392' => 0 ] ] ];
+		$plan   = $this->plan();
+		$diff   = $plan->diff( [ 'member', 'gold', 'wholesale' ], $plan->desired( $orders ), $plan->revoked( $orders ) );
+
+		$this->assertSame( [ 'member', 'gold' ], $diff['remove'] );
+	}
 }

@@ -12,21 +12,57 @@ use WP2_Shopify\Support\CustomerId;
  */
 final class Admin {
 	public static function available(): bool {
-		return Config::has( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' ) && '' !== Config::store_domain();
+		return AdminToken::configured() && '' !== Config::store_domain();
 	}
 
-	public static function query( string $query, array $variables, string $label ): array|\WP_Error {
+	public static function query( string $query, array $variables, string $label, bool $retry = true ): array|\WP_Error {
 		if ( ! self::available() ) {
-			return new \WP_Error( 'shopify_admin_unconfigured', 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN is not defined.' );
+			return new \WP_Error( 'shopify_admin_unconfigured', 'No Admin API credentials are defined.' );
 		}
 
-		return Http::graphql(
+		$token = AdminToken::get();
+
+		if ( is_wp_error( $token ) ) {
+			return $token;
+		}
+
+		$data = Http::graphql(
 			'https://' . Config::store_domain() . '/admin/api/' . Config::api_version() . '/graphql.json',
-			[ 'X-Shopify-Access-Token' => Config::get( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' ) ],
+			[ 'X-Shopify-Access-Token' => $token ],
 			$query,
 			$variables,
 			$label
 		);
+
+		// A client-credentials token can expire or be revoked early: fetch a fresh one once.
+		if ( $retry && is_wp_error( $data ) && 'shopify_http_401' === $data->get_error_code() && AdminToken::uses_client_credentials() ) {
+			AdminToken::forget();
+
+			return self::query( $query, $variables, $label, false );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Whether the token can read orders older than 60 days (read_all_orders).
+	 * Checked against the app's granted scopes once a day.
+	 */
+	public static function full_order_history(): bool {
+		$scopes = get_transient( 'wp2_shopify_admin_scopes' );
+
+		if ( ! is_string( $scopes ) ) {
+			$data = self::query( 'query WP2Scopes { currentAppInstallation { accessScopes { handle } } }', [], 'admin.scopes' );
+
+			if ( is_wp_error( $data ) ) {
+				return false;
+			}
+
+			$scopes = implode( ',', array_column( (array) ( $data['currentAppInstallation']['accessScopes'] ?? [] ), 'handle' ) );
+			set_transient( 'wp2_shopify_admin_scopes', $scopes, DAY_IN_SECONDS );
+		}
+
+		return in_array( 'read_all_orders', explode( ',', $scopes ), true );
 	}
 
 	/**

@@ -78,14 +78,42 @@ final class TagPlan {
 	}
 
 	/**
-	 * @param string[] $current Tags the customer holds now.
-	 * @param string[] $desired Output of desired().
+	 * Tags with evidence of a lost purchase in these orders: the product appears
+	 * in an order that no longer grants (cancelled, refunded, unpaid, or a line
+	 * refunded to zero). Used when the order history is partial, so a tag is
+	 * only removed for an order the plugin can actually see.
+	 *
+	 * @param array<int, array{cancelled: bool, financial_status: string, products: array<string, int>}> $orders
+	 * @return string[]
+	 */
+	public function revoked( array $orders ): array {
+		$tags = [];
+
+		foreach ( $orders as $order ) {
+			$granting = ! $order['cancelled'] && in_array( strtoupper( $order['financial_status'] ), self::GRANTING_STATUSES, true );
+
+			foreach ( $order['products'] as $product => $quantity ) {
+				$numeric = preg_replace( '#^gid://shopify/Product/#', '', (string) $product );
+
+				if ( ( ! $granting || $quantity <= 0 ) && isset( $this->map[ $numeric ] ) ) {
+					$tags = array_merge( $tags, $this->map[ $numeric ] );
+				}
+			}
+		}
+
+		return array_values( array_unique( $tags ) );
+	}
+
+	/**
+	 * @param string[]      $current   Tags the customer holds now.
+	 * @param string[]      $desired   Output of desired().
+	 * @param string[]|null $removable With partial order history, only these managed tags may be removed (output of revoked()). Null when the full history is visible.
 	 * @return array{add: string[], remove: string[]}
 	 */
-	public function diff( array $current, array $desired ): array {
+	public function diff( array $current, array $desired, ?array $removable = null ): array {
 		$have    = array_map( [ Evaluator::class, 'normalize_tag' ], $current );
 		$want    = array_map( [ Evaluator::class, 'normalize_tag' ], $desired );
-		$managed = array_map( [ Evaluator::class, 'normalize_tag' ], $this->managed() );
+		$managed = array_map( [ Evaluator::class, 'normalize_tag' ], null === $removable ? $this->managed() : array_intersect( $this->managed(), $removable ) );
 
 		$add = array_values( array_filter( $desired, static fn( $t ) => ! in_array( Evaluator::normalize_tag( $t ), $have, true ) ) );
 

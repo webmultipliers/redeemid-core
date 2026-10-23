@@ -27,7 +27,7 @@ final class Endpoint {
 
 	public static function receive( \WP_REST_Request $request ): \WP_REST_Response {
 		$raw    = $request->get_body();
-		$secret = Config::get( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' );
+		$secret = Config::webhook_secret();
 
 		if ( ! Signature::verify( $raw, (string) $request->get_header( 'x-shopify-hmac-sha256' ), $secret ) ) {
 			Logger::log( 'webhook.rejected', [ 'reason' => 'hmac' ] );
