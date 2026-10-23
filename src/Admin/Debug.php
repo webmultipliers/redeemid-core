@@ -5,11 +5,13 @@ namespace WP2_Shopify\Admin;
 use WP2_Shopify\Blocks\Registration;
 use WP2_Shopify\Config;
 use WP2_Shopify\Entitlement\Rule;
+use WP2_Shopify\Integrations\OfficialPlugin;
 use WP2_Shopify\Requirements;
 use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\AdminToken;
 use WP2_Shopify\Shopify\Discovery;
+use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Sync\Reconciler;
@@ -145,11 +147,14 @@ final class Debug {
 					}
 					?>
 				</li>
+				<li><?php echo $ok( Storefront::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Storefront API (plan cards and buy-now):', 'wp2-shopify' ); ?> <?php echo esc_html( Storefront::available() ? __( 'public access token present.', 'wp2-shopify' ) : __( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN not set, so plan cards show as unavailable.', 'wp2-shopify' ) ); ?></li>
 				<li><?php esc_html_e( 'Shopify app settings: callback URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( Config::callback_url() ); ?></code>, <?php esc_html_e( 'JavaScript origin', 'wp2-shopify' ); ?> <code><?php echo esc_html( untrailingslashit( home_url() ) ); ?></code>, <?php esc_html_e( 'logout URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( home_url( '/' ) ); ?></code></li>
 				<li><?php esc_html_e( 'Webhooks:', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Webhooks::PAGE ) ); ?>"><?php esc_html_e( 'Shopify → Webhooks', 'wp2-shopify' ); ?></a></li>
 			</ul>
 			<?php Menu::action_button( self::ACTION, 'discovery', __( 'Refresh Shopify discovery', 'wp2-shopify' ) ); ?>
 			<?php Menu::action_button( self::ACTION, 'token', __( 'Request a fresh Admin token', 'wp2-shopify' ) ); ?>
+
+			<?php self::official_plugin(); ?>
 
 			<h2><?php esc_html_e( 'Reconciliation', 'wp2-shopify' ); ?></h2>
 			<p>
@@ -173,6 +178,25 @@ final class Debug {
 	/**
 	 * Show the synced mirror for a customer and what a rule would decide, changing nothing.
 	 */
+	/**
+	 * Shopify's own plugin: whether it is here, which store it uses and which routes it owns.
+	 */
+	private static function official_plugin(): void {
+		$info = OfficialPlugin::info();
+		$ok   = [ Menu::class, 'dot' ];
+		?>
+		<h2 id="official-plugin"><?php esc_html_e( 'Shopify\'s WordPress plugin', 'wp2-shopify' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'WP2 runs with or without it. When it is active, it owns the anonymous storefront and WP2 owns sign-in and access. WP2 never reads its access token.', 'wp2-shopify' ); ?></p>
+		<ul>
+			<li><?php echo $ok( in_array( $info['state'], [ OfficialPlugin::ABSENT, OfficialPlugin::SAME_STORE ], true ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( OfficialPlugin::summary() ); ?></li>
+			<?php if ( OfficialPlugin::ABSENT !== $info['state'] ) : ?>
+				<li><?php esc_html_e( 'Owns /cart:', 'wp2-shopify' ); ?> <?php echo esc_html( $info['owns_cart'] ? __( 'yes. Its rewrite rule wins over any page at /cart.', 'wp2-shopify' ) : __( 'no (rewrite rules not flushed yet, or removed).', 'wp2-shopify' ) ); ?></li>
+				<li><?php esc_html_e( 'Serves /products/{handle}:', 'wp2-shopify' ); ?> <?php echo esc_html( $info['product_routes'] ? __( 'yes. Product SEO is the official plugin\'s.', 'wp2-shopify' ) : __( 'no.', 'wp2-shopify' ) ); ?></li>
+			<?php endif; ?>
+		</ul>
+		<?php
+	}
+
 	private static function dry_run(): void {
 		// phpcs:disable WordPress.Security.NonceVerification -- read-only display.
 		$customer = sanitize_text_field( wp_unslash( $_GET['dry_customer'] ?? '' ) );

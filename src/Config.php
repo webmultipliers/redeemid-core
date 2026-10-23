@@ -51,6 +51,12 @@ final class Config {
 				'required' => true,
 				'help'     => 'The Dev Dashboard app\'s client secret. Also verifies the webhooks the plugin registers.',
 			],
+			'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' => [
+				'label'    => 'Storefront public access token',
+				'secret'   => false,
+				'required' => false,
+				'help'     => 'From the Headless sales channel\'s Storefront API settings. Powers plan cards and buy-now: live prices and checkout. Public by design; WP2 never borrows the token Shopify\'s own plugin stores.',
+			],
 			'WP2_SHOPIFY_ENCRYPTION_KEY'      => [
 				'label'    => 'Token encryption key',
 				'secret'   => true,
@@ -70,7 +76,6 @@ final class Config {
 		return [
 			'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN'       => 'Legacy permanent Admin tokens are no longer used. Set WP2_SHOPIFY_ADMIN_CLIENT_ID and WP2_SHOPIFY_ADMIN_CLIENT_SECRET for a Dev Dashboard app.',
 			'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET'   => 'Webhooks are registered by the plugin through the app and verified with WP2_SHOPIFY_ADMIN_CLIENT_SECRET. Delete webhooks created in Settings → Notifications.',
-			'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN'      => 'Not read yet. It comes back with the Storefront catalog blocks.',
 			'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' => 'Not read yet. It comes back with the server-side cart.',
 			'WP2_SHOPIFY_API_VERSION'              => 'The API version is pinned to ' . self::API_VERSION . ' by the plugin.',
 			'WP2_SHOPIFY_COOKIE_DOMAIN'            => 'The plugin uses WordPress\' COOKIE_DOMAIN.',
