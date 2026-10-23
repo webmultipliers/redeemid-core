@@ -20,7 +20,19 @@ Release zips include `vendor/`. To build from source:
 ```sh
 composer install            # development
 composer test               # unit tests
-composer release            # production vendor/ for a release zip
+composer build-prod         # production vendor/ for a deploy or release zip
+```
+
+### Deploying from the repository (InstaWP and similar)
+
+Have the host run `composer build-prod` in the plugin folder after each sync. That is the only build step; Blockstudio compiles block styles on first load, so `blocks/*/_dist/` must be writable.
+
+These WP-CLI steps run separately. The first three are needed only once per site:
+
+```sh
+wp plugin activate <plugin-folder>
+wp rewrite structure '/%postname%/'
+wp rewrite flush
 ```
 
 The plugin runs its own Blockstudio instance from `blocks/`. It does not use the `blockstudio/path` filter, because that filter replaces a theme's Blockstudio block folder. So it coexists with Blockstudio themes and works in any other theme.

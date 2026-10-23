@@ -25,9 +25,10 @@
 	"scripts": {
 		"test": "phpunit",
 		"lint": "find src blocks tests wp2-shopify.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
-		"release": [
-			"composer install --no-dev --prefer-dist --optimize-autoloader --classmap-authoritative"
-		]
+		"build-prod": [
+			"@composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress"
+		],
+		"release": "@build-prod"
 	},
 	"config": {
 		"optimize-autoloader": true,
@@ -37,5 +38,9 @@
 		}
 	},
 	"minimum-stability": "stable",
-	"prefer-stable": true
+	"prefer-stable": true,
+	"scripts-descriptions": {
+		"build-prod": "Install production dependencies so this directory runs as the plugin (used by deploys and release zips).",
+		"release": "Alias of build-prod."
+	}
 }
