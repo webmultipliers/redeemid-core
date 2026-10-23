@@ -54,13 +54,25 @@ final class Config {
 				'label'    => 'Admin API access token',
 				'secret'   => true,
 				'required' => false,
-				'help'     => 'Scopes: read_customers, write_customers, read_orders (plus read_all_orders if memberships last longer than 60 days). Powers purchase-to-tag and reconciliation.',
+				'help'     => 'Permanent token from a legacy custom app (created in the Shopify admin before 2026). Scopes: read_customers, write_customers, read_orders (plus read_all_orders if memberships last longer than 60 days). Powers purchase-to-tag and reconciliation.',
+			],
+			'WP2_SHOPIFY_ADMIN_CLIENT_ID'          => [
+				'label'    => 'Admin app client ID',
+				'secret'   => false,
+				'required' => false,
+				'help'     => 'For a Dev Dashboard app, instead of a permanent token. The plugin requests 24-hour Admin tokens with the client credentials grant and renews them itself. Same scopes as above.',
+			],
+			'WP2_SHOPIFY_ADMIN_CLIENT_SECRET'      => [
+				'label'    => 'Admin app client secret',
+				'secret'   => true,
+				'required' => false,
+				'help'     => 'The Dev Dashboard app\'s client secret. Also verifies webhooks the plugin registers, when no webhook signing secret is set.',
 			],
 			'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET'   => [
 				'label'    => 'Webhook signing secret',
 				'secret'   => true,
-				'required' => true,
-				'help'     => 'The app\'s client secret (or the secret shown in Notifications for admin-created webhooks).',
+				'required' => false,
+				'help'     => 'Only if webhooks are not signed with WP2_SHOPIFY_ADMIN_CLIENT_SECRET: a legacy custom app\'s API secret, or the key shown in Settings → Notifications for webhooks created there.',
 			],
 			'WP2_SHOPIFY_ENCRYPTION_KEY'           => [
 				'label'    => 'Token encryption key',
@@ -93,6 +105,14 @@ final class Config {
 		}
 
 		return '';
+	}
+
+	/**
+	 * The key Shopify signs webhooks with. Webhooks registered by a Dev Dashboard
+	 * app are signed with that app's client secret.
+	 */
+	public static function webhook_secret(): string {
+		return self::has( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) ? self::get( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) : self::get( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
 	}
 
 	public static function has( string $name ): bool {

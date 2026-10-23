@@ -12,21 +12,36 @@ use WP2_Shopify\Support\CustomerId;
  */
 final class Admin {
 	public static function available(): bool {
-		return Config::has( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' ) && '' !== Config::store_domain();
+		return AdminToken::configured() && '' !== Config::store_domain();
 	}
 
-	public static function query( string $query, array $variables, string $label ): array|\WP_Error {
+	public static function query( string $query, array $variables, string $label, bool $retry = true ): array|\WP_Error {
 		if ( ! self::available() ) {
-			return new \WP_Error( 'shopify_admin_unconfigured', 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN is not defined.' );
+			return new \WP_Error( 'shopify_admin_unconfigured', 'No Admin API credentials are defined.' );
 		}
 
-		return Http::graphql(
+		$token = AdminToken::get();
+
+		if ( is_wp_error( $token ) ) {
+			return $token;
+		}
+
+		$data = Http::graphql(
 			'https://' . Config::store_domain() . '/admin/api/' . Config::api_version() . '/graphql.json',
-			[ 'X-Shopify-Access-Token' => Config::get( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' ) ],
+			[ 'X-Shopify-Access-Token' => $token ],
 			$query,
 			$variables,
 			$label
 		);
+
+		// A client-credentials token can expire or be revoked early: fetch a fresh one once.
+		if ( $retry && is_wp_error( $data ) && 'shopify_http_401' === $data->get_error_code() && AdminToken::uses_client_credentials() ) {
+			AdminToken::forget();
+
+			return self::query( $query, $variables, $label, false );
+		}
+
+		return $data;
 	}
 
 	/**

@@ -109,6 +109,13 @@ These need real Shopify responses, so they close the gate:
    - `read_all_orders` if memberships outlast 60 days of order history.
 6. The full test matrix (spec 17.2) against the dev store, with Diagnostics green.
 
+### Found while setting up the live store (2026-10-23)
+
+- **No more permanent Admin tokens for new apps.** Since 2026-01-01, new custom apps come from the Dev Dashboard. Their Admin tokens come from the client credentials grant and last 24 hours. The plugin now accepts `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`, fetches tokens itself, caches them encrypted until five minutes before expiry, and retries once on a 401. A legacy `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` still works.
+- **Webhooks are registered by the plugin.** Webhooks created in Settings → Notifications are signed with a different key than app webhooks, and that page lacks topics the plugin needs. The plugin now registers its own subscriptions through the app (`webhookSubscriptionCreate` with `uri`, which replaced `callbackUrl` in 2025-10). It verifies them with the app's client secret, so `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET` is now optional.
+- **Compliance topics** (`customers/data_request`, `customers/redact`, `shop/redact`) can't be subscribed through the API. A single-store install doesn't get them; a distributed app declares them in its app configuration.
+- **Still to confirm live:** the purchasing summary topic. `Topics` maps `customers/purchasing_summary`, but the README listed `customer_purchasing_summary/create`. The registration result in Settings → Shopify will show which one Shopify accepts.
+
 ## Left for Phase 1
 
 - **Search:** a gated post still appears in site search results. No secret text appears, but the post's existence does. Decide whether to exclude gated posts from search.

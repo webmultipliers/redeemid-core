@@ -46,8 +46,10 @@ Credentials are constants in `wp-config.php`, never options. Settings → Shopif
 | `WP2_SHOPIFY_STORE_DOMAIN` | yes | `your-store.myshopify.com` |
 | `WP2_SHOPIFY_CLIENT_ID` | yes | Customer Account API client ID |
 | `WP2_SHOPIFY_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client. |
-| `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET` | yes | Verifies webhook HMACs |
-| `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` | for memberships | Admin API token with `read_customers`, `write_customers` and `read_orders`. Add `read_all_orders` if memberships last longer than 60 days. Powers purchase-to-tag and reconciliation. |
+| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | for memberships | Client ID of a Dev Dashboard app installed on the store. Powers purchase-to-tag, reconciliation and webhook registration. |
+| `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | for memberships | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
+| `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` | no | A permanent Admin token from a legacy custom app (made in the Shopify admin before 2026). Used instead of the two constants above when set. |
+| `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET` | no | Only when webhooks are not signed by the app above, for example webhooks created in Settings → Notifications. |
 | `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | later phases | Storefront public token (catalog) |
 | `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | later phases | Storefront private token, for server-side cart calls |
 | `WP2_SHOPIFY_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
@@ -64,15 +66,27 @@ Settings → Shopify prints the exact values for your site:
 - **JavaScript origin:** `https://your-site`
 - **Logout URI:** `https://your-site/`
 
+### Admin app
+
+New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopify admin no longer creates them. Create one in the same organization as the store, with:
+
+- **Admin API scopes:** `read_customers`, `write_customers`, `read_orders`, and `read_all_orders` if memberships last longer than 60 days.
+- **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
+
+Install it on the store, then set `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`. Settings → Shopify shows the scopes Shopify granted.
+
 ### Webhooks
 
-Point these topics at `https://your-site/wp-json/wp2-shopify/v1/webhooks/events`:
+Click **Register webhooks with Shopify** in Settings → Shopify. The plugin subscribes its endpoint, `https://your-site/wp-json/wp2-shopify/v1/webhooks/events`, to every topic below through the app, so deliveries are signed with the app's client secret. Running it again only adds what is missing. Don't also create webhooks in Settings → Notifications: those are signed with a different key and would fail verification.
+
+The topics:
 
 - `customers/create`, `customers/update`, `customers/delete`, `customers/enable`, `customers/disable` and `customers/merge`
 - `customer.tags_added` and `customer.tags_removed`
 - `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customer_purchasing_summary/create`
 - `orders/paid`, `orders/cancelled` and `refunds/create` (for memberships)
-- the compliance topics: `customers/data_request`, `customers/redact`, `shop/redact`, plus `app/uninstalled`
+- `app/uninstalled`
+- the compliance topics `customers/data_request`, `customers/redact` and `shop/redact`. Shopify doesn't allow these through the API; they come only to apps that declare them in their app configuration.
 
 Since API 2025-01, `customers/update` no longer carries tags, so the two `customer.tags_*` topics are needed for tag changes to arrive quickly.
 

@@ -8,10 +8,12 @@ use WP2_Shopify\Entitlement\Rule;
 use WP2_Shopify\Requirements;
 use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Admin as AdminApi;
+use WP2_Shopify\Shopify\AdminToken;
 use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Sync\Reconciler;
+use WP2_Shopify\Webhooks\Registrar;
 use WP2_Shopify\Webhooks\Signature;
 use WP2_Shopify\Webhooks\Topics;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
@@ -78,6 +80,10 @@ final class Diagnostics {
 				$stats  = Reconciler::run();
 				$result = $stats['error'] ? 'reconcile_error' : 'reconcile_ok';
 				break;
+			case 'webhooks':
+				$sync   = Registrar::sync();
+				$result = $sync['error'] || $sync['failed'] ? 'webhooks_error' : 'webhooks_ok';
+				break;
 			case 'discovery':
 				Discovery::flush();
 				$result = Discovery::available() ? 'discovery_ok' : 'discovery_error';
@@ -108,7 +114,10 @@ final class Diagnostics {
 		$settings  = Settings::all();
 		$problems  = Requirements::problems();
 		$sample    = '{"selftest":true}';
-		$hmac_ok   = Config::has( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) && Signature::verify( $sample, Signature::compute( $sample, Config::get( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) ), Config::get( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) );
+		$secret    = Config::webhook_secret();
+		$hmac_ok   = '' !== $secret && Signature::verify( $sample, Signature::compute( $sample, $secret ), $secret );
+		$hooks     = get_option( Registrar::RESULT );
+		$token_err = get_option( 'wp2_shopify_admin_token_error' );
 		$ok        = static fn( bool $pass ) => $pass ? '<span style="color:#008a20">●</span> ' : '<span style="color:#d63638">●</span> ';
 		$fmt_time  = static fn( $t ) => $t ? esc_html( wp_date( 'Y-m-d H:i', (int) $t ) ) : '—';
 		?>
@@ -146,7 +155,22 @@ final class Diagnostics {
 			<h2><?php esc_html_e( 'Shopify connection', 'wp2-shopify' ); ?></h2>
 			<ul>
 				<li><?php echo $ok( Discovery::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Customer Account API discovery, last fetched', 'wp2-shopify' ); ?> <?php echo $fmt_time( Discovery::last_fetched() ); // phpcs:ignore WordPress.Security.EscapeOutput ?></li>
-				<li><?php echo $ok( AdminApi::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Admin API token (purchase-to-tag and reconciliation)', 'wp2-shopify' ); ?></li>
+				<li><?php echo $ok( AdminApi::available() && ! $token_err ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Admin API access (purchase-to-tag and reconciliation):', 'wp2-shopify' ); ?>
+					<?php
+					if ( AdminToken::uses_client_credentials() ) {
+						esc_html_e( 'Dev Dashboard app, 24-hour tokens renewed automatically.', 'wp2-shopify' );
+						$scopes = (string) get_option( 'wp2_shopify_admin_token_scopes', '' );
+						echo '' !== $scopes ? ' ' . esc_html__( 'Granted scopes:', 'wp2-shopify' ) . ' <code>' . esc_html( $scopes ) . '</code>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput
+					} elseif ( AdminToken::configured() ) {
+						esc_html_e( 'permanent token.', 'wp2-shopify' );
+					} else {
+						esc_html_e( 'not configured.', 'wp2-shopify' );
+					}
+					if ( is_array( $token_err ) ) {
+						echo ' <strong>' . esc_html__( 'Last token request failed:', 'wp2-shopify' ) . ' ' . esc_html( (string) $token_err['error'] ) . '</strong>'; // phpcs:ignore WordPress.Security.EscapeOutput
+					}
+					?>
+				</li>
 				<li><?php esc_html_e( 'Shopify app settings: callback URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( Config::callback_url() ); ?></code>, <?php esc_html_e( 'JavaScript origin', 'wp2-shopify' ); ?> <code><?php echo esc_html( untrailingslashit( home_url() ) ); ?></code>, <?php esc_html_e( 'logout URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( home_url( '/' ) ); ?></code></li>
 			</ul>
 
@@ -164,6 +188,19 @@ final class Diagnostics {
 					?>
 				</li>
 				<li><?php esc_html_e( 'Subscribe to:', 'wp2-shopify' ); ?> <code><?php echo esc_html( implode( ', ', Topics::subscribable() ) ); ?></code></li>
+				<li><?php esc_html_e( 'Registered through the app:', 'wp2-shopify' ); ?>
+					<?php
+					if ( is_array( $hooks ) ) {
+						echo $fmt_time( $hooks['at'] ) . ' · ' . esc_html( sprintf( /* translators: 1: already present 2: created */ __( '%1$d already present, %2$d created', 'wp2-shopify' ), $hooks['existing'], count( $hooks['created'] ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+						echo $hooks['error'] ? ' · <strong>' . esc_html( $hooks['error'] ) . '</strong>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput
+						foreach ( $hooks['failed'] as $topic => $message ) {
+							echo '<br><code>' . esc_html( $topic ) . '</code>: ' . esc_html( $message ); // phpcs:ignore WordPress.Security.EscapeOutput
+						}
+					} else {
+						esc_html_e( 'not yet.', 'wp2-shopify' );
+					}
+					?>
+				</li>
 				<?php if ( get_option( 'wp2_shopify_app_uninstalled' ) ) : ?>
 					<li><strong><?php esc_html_e( 'Shopify reported the app as uninstalled on', 'wp2-shopify' ); ?> <?php echo $fmt_time( get_option( 'wp2_shopify_app_uninstalled' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></strong></li>
 				<?php endif; ?>
@@ -181,6 +218,7 @@ final class Diagnostics {
 				<?php esc_html_e( 'Next run:', 'wp2-shopify' ); ?> <?php echo $fmt_time( wp_next_scheduled( Reconciler::HOOK ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 			</p>
 			<?php self::action_button( 'reconcile', __( 'Run reconciliation now', 'wp2-shopify' ) ); ?>
+			<?php self::action_button( 'webhooks', __( 'Register webhooks with Shopify', 'wp2-shopify' ) ); ?>
 			<?php self::action_button( 'discovery', __( 'Refresh Shopify discovery', 'wp2-shopify' ) ); ?>
 
 			<h2 id="dry-run"><?php esc_html_e( 'Dry-run entitlement check', 'wp2-shopify' ); ?></h2>
