@@ -1,0 +1,13 @@
+{
+	"$schema": "https://app.blockstudio.dev/schema",
+	"apiVersion": 3,
+	"name": "wp2-shopify/auth-action",
+	"title": "Auth Action",
+	"category": "text",
+	"icon": "star-filled",
+	"description": "A block for handling authentication actions with Shopify.",
+	"supports": {
+		"align": true
+	},
+	"blockstudio": true
+}
