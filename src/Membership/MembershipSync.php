@@ -39,7 +39,11 @@ final class MembershipSync {
 				return $state;
 			}
 
-			$diff = $plan->diff( $state['tags'], $plan->desired( $state['orders'] ) );
+			// Without read_all_orders Shopify returns only the last 60 days of orders, so an
+			// older membership purchase is invisible. Remove a tag only for a refund or
+			// cancellation the plugin can see, never because an order fell out of the window.
+			$removable = Admin::full_order_history() ? null : $plan->revoked( $state['orders'] );
+			$diff      = $plan->diff( $state['tags'], $plan->desired( $state['orders'] ), $removable );
 
 			if ( $diff['add'] ) {
 				$result = Admin::add_tags( $id, $diff['add'] );

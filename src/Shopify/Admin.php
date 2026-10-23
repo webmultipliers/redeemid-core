@@ -45,6 +45,27 @@ final class Admin {
 	}
 
 	/**
+	 * Whether the token can read orders older than 60 days (read_all_orders).
+	 * Checked against the app's granted scopes once a day.
+	 */
+	public static function full_order_history(): bool {
+		$scopes = get_transient( 'wp2_shopify_admin_scopes' );
+
+		if ( ! is_string( $scopes ) ) {
+			$data = self::query( 'query WP2Scopes { currentAppInstallation { accessScopes { handle } } }', [], 'admin.scopes' );
+
+			if ( is_wp_error( $data ) ) {
+				return false;
+			}
+
+			$scopes = implode( ',', array_column( (array) ( $data['currentAppInstallation']['accessScopes'] ?? [] ), 'handle' ) );
+			set_transient( 'wp2_shopify_admin_scopes', $scopes, DAY_IN_SECONDS );
+		}
+
+		return in_array( 'read_all_orders', explode( ',', $scopes ), true );
+	}
+
+	/**
 	 * Gating fields for up to 50 customers in one call.
 	 *
 	 * @param CustomerId[] $ids
