@@ -103,8 +103,9 @@ final class Menu {
 		$upgrade = get_option( 'wp2_shopify_upgrade_notice' );
 
 		if ( is_array( $upgrade ) ) {
+			// Dismissal is stored by Debug's dismiss_upgrade action; a script-only dismiss would come back on the next page.
 			printf(
-				'<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+				'<div class="notice notice-info"><p>%s</p>',
 				esc_html(
 					sprintf(
 						/* translators: %d: number of linked users */
@@ -113,6 +114,8 @@ final class Menu {
 					)
 				)
 			);
+			self::action_button( Debug::ACTION, 'dismiss_upgrade', __( 'Dismiss', 'wp2-shopify' ) );
+			echo '</div>';
 		}
 	}
 

@@ -66,7 +66,7 @@ Everything lives under the top-level **Shopify** menu (Settings → Shopify redi
 
 - **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours, plus the settings (freshness window, stale behaviour, membership products).
 - **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
-- **Webhooks:** the endpoint, signature self-test and registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
+- **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
 - **Debug:** the constants above, platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
 
@@ -90,7 +90,7 @@ Shopify → Debug prints the exact values for your site:
 New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopify admin no longer creates them. Create one in the same organization as the store, with:
 
 - **Admin API scopes:** `read_customers`, `write_customers` and `read_orders`.
-- **`read_all_orders`** is a protected scope. The Dev Dashboard rejects it as invalid until Shopify approves a request for it in the app's settings. Without it, Shopify shows only the last 60 days of orders. The plugin then still grants tags from any visible paid order, and removes a tag only for a refund or cancellation it can see, so older members keep their tags. Request the scope if refunds of purchases older than 60 days must revoke access automatically.
+- **`read_all_orders`** is a protected scope. The Dev Dashboard rejects it as invalid until Shopify approves a request for it in the app's settings. Without it, Shopify shows only the last 60 days of orders. The plugin then still grants tags from any visible paid order, and removes a tag only for a refund or cancellation it can see, so older members keep their tags. The same rule applies to a customer with more than 100 orders, or an order with more than 100 line items, because the plugin reads one page of each. Request the scope if refunds of purchases older than 60 days must revoke access automatically.
 - **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
 
 Install it on the store, then set `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`. Shopify → Debug shows the scopes Shopify granted.
@@ -145,7 +145,7 @@ A signed-in WordPress user can choose **Connect to Shopify**. After the Shopify 
 - the plugin checks that Shopify marks the email as verified and that it matches the WordPress account;
 - the user then confirms on the callback page.
 
-Administrators can't be linked. A mismatched or unverified email is refused with a plain message.
+Administrators can't be linked, and a linked account that later becomes an administrator can't sign in with Shopify. A mismatched or unverified email is refused with a plain message.
 
 ## Gating content
 
@@ -233,7 +233,7 @@ The upgrade runs once on activation or load:
 By default, uninstalling keeps WordPress users and their content. It removes:
 
 - plugin options and transients
-- the webhook table
+- the webhook and app event tables
 - Shopify tokens inside sessions
 
 To also delete shadow users and every linked field, add `define( 'WP2_SHOPIFY_UNINSTALL_DELETE_DATA', true );` before uninstalling. Their content is reassigned to the first administrator, not deleted.

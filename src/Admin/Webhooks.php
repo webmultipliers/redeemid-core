@@ -7,7 +7,6 @@ use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Support\Logger;
 use WP2_Shopify\Webhooks\Endpoint;
 use WP2_Shopify\Webhooks\Registrar;
-use WP2_Shopify\Webhooks\Signature;
 use WP2_Shopify\Webhooks\Topics;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
@@ -52,12 +51,10 @@ final class Webhooks {
 	}
 
 	public static function render(): void {
-		$secret   = Config::webhook_secret();
-		$sample   = '{"selftest":true}';
-		$hmac_ok  = '' !== $secret && Signature::verify( $sample, Signature::compute( $sample, $secret ), $secret );
-		$hooks    = get_option( Registrar::RESULT );
-		$rejected = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
-		$table    = new WebhooksTable();
+		$secret_set = '' !== Config::webhook_secret();
+		$hooks      = get_option( Registrar::RESULT );
+		$rejected   = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
+		$table      = new WebhooksTable();
 		$table->prepare_items();
 		?>
 		<div class="wrap">
@@ -75,7 +72,7 @@ final class Webhooks {
 
 			<div class="card" style="max-width:1100px">
 				<p><?php esc_html_e( 'Endpoint:', 'wp2-shopify' ); ?> <code><?php echo esc_html( rest_url( 'wp2-shopify/v1/webhooks/events' ) ); ?></code></p>
-				<p><?php echo Menu::dot( $hmac_ok ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo $hmac_ok ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'wp2-shopify' ) : esc_html__( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET is missing, so every delivery is rejected.', 'wp2-shopify' ); ?></p>
+				<p><?php echo Menu::dot( $secret_set ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'wp2-shopify' ) : esc_html__( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET is missing, so every delivery is rejected.', 'wp2-shopify' ); ?></p>
 				<p>
 					<?php esc_html_e( 'Subscriptions through the app:', 'wp2-shopify' ); ?>
 					<?php

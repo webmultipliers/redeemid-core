@@ -26,7 +26,7 @@ final class Linking {
 			return 'no_user';
 		}
 
-		if ( user_can( $user, 'manage_options' ) || in_array( 'administrator', (array) $user->roles, true ) ) {
+		if ( self::privileged( $user ) ) {
 			return 'admin_refused';
 		}
 
@@ -35,6 +35,13 @@ final class Linking {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Accounts that never link to, or sign in through, a Shopify customer.
+	 */
+	public static function privileged( \WP_User $user ): bool {
+		return user_can( $user, 'manage_options' ) || in_array( 'administrator', (array) $user->roles, true );
 	}
 
 	public static function issue( int $user_id ): string {

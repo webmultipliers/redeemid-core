@@ -99,13 +99,14 @@ final class Admin {
 	}
 
 	/**
-	 * Orders that can grant membership, newest first (enough for membership products).
+	 * Orders that can grant membership, newest first. `complete` is false when the
+	 * customer has more orders, or an order more line items, than one page holds.
 	 *
-	 * @return array{tags: string[], orders: array<int, array{cancelled: bool, financial_status: string, products: array<string, int>}>}|\WP_Error
+	 * @return array{tags: string[], complete: bool, orders: array<int, array{cancelled: bool, financial_status: string, products: array<string, int>}>}|\WP_Error
 	 */
 	public static function membership_orders( CustomerId $id ): array|\WP_Error {
 		$data = self::query(
-			'query WP2Orders($id: ID!) { customer(id: $id) { tags orders(first: 100, reverse: true) { nodes { cancelledAt displayFinancialStatus lineItems(first: 100) { nodes { currentQuantity product { id } } } } } } }',
+			'query WP2Orders($id: ID!) { customer(id: $id) { tags orders(first: 100, reverse: true) { pageInfo { hasNextPage } nodes { cancelledAt displayFinancialStatus lineItems(first: 100) { pageInfo { hasNextPage } nodes { currentQuantity product { id } } } } } } }',
 			[ 'id' => $id->gid() ],
 			'admin.membership_orders'
 		);
@@ -118,10 +119,15 @@ final class Admin {
 			return new \WP_Error( 'shopify_no_customer', 'Customer not found.' );
 		}
 
-		$orders = [];
+		$orders   = [];
+		$complete = empty( $data['customer']['orders']['pageInfo']['hasNextPage'] );
 
 		foreach ( (array) ( $data['customer']['orders']['nodes'] ?? [] ) as $order ) {
 			$products = [];
+
+			if ( ! empty( $order['lineItems']['pageInfo']['hasNextPage'] ) ) {
+				$complete = false;
+			}
 
 			foreach ( (array) ( $order['lineItems']['nodes'] ?? [] ) as $line ) {
 				$product = (string) ( $line['product']['id'] ?? '' );
@@ -138,7 +144,7 @@ final class Admin {
 			];
 		}
 
-		return [ 'tags' => (array) ( $data['customer']['tags'] ?? [] ), 'orders' => $orders ];
+		return [ 'tags' => (array) ( $data['customer']['tags'] ?? [] ), 'complete' => $complete, 'orders' => $orders ];
 	}
 
 	public static function order_customer( string $order_id ): ?CustomerId {
