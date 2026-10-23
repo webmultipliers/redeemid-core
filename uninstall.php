@@ -22,6 +22,7 @@ $wp2_options = [
 	'wp2_shopify_discovery_last_good', 'wp2_shopify_discovery_fetched_at', 'wp2_shopify_reconcile_stats',
 	'wp2_shopify_reconcile_cursor', 'wp2_shopify_block_registration', 'wp2_shopify_webhook_rejected',
 	'wp2_shopify_app_uninstalled', 'wp2_shopify_admin_token_error', 'wp2_shopify_admin_token_scopes', 'wp2_shopify_webhook_registration',
+	'wp2_shopify_events_db_version',
 ];
 
 foreach ( $wp2_options as $wp2_option ) {
@@ -30,6 +31,7 @@ foreach ( $wp2_options as $wp2_option ) {
 
 $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wp2\\_shopify\\_lock\\_%' OR option_name LIKE '\\_transient\\_wp2s\\_%' OR option_name LIKE '\\_transient\\_timeout\\_wp2s\\_%' OR option_name LIKE '\\_transient\\_wp2\\_shopify\\_%' OR option_name LIKE '\\_transient\\_timeout\\_wp2\\_shopify\\_%'" );
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wp2_shopify_webhooks" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
+$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wp2_shopify_events" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
 
 wp_clear_scheduled_hook( 'wp2_shopify_reconcile' );
 wp_clear_scheduled_hook( 'wp2_shopify_prune' );

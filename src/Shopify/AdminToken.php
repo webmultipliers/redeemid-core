@@ -8,13 +8,10 @@ use WP2_Shopify\Support\Lock;
 use WP2_Shopify\Support\Logger;
 
 /**
- * The Admin API access token. Two sources:
- *
- * - WP2_SHOPIFY_ADMIN_ACCESS_TOKEN: a permanent token from a legacy custom app
- *   (created in the Shopify admin before 2026-01-01).
- * - WP2_SHOPIFY_ADMIN_CLIENT_ID + WP2_SHOPIFY_ADMIN_CLIENT_SECRET: a Dev Dashboard
- *   app. Its tokens come from the client credentials grant and last about 24 hours,
- *   so they are fetched on demand and cached, encrypted, until shortly before expiry.
+ * The Admin API access token for the Dev Dashboard app named by
+ * WP2_SHOPIFY_ADMIN_CLIENT_ID + WP2_SHOPIFY_ADMIN_CLIENT_SECRET. Its tokens come
+ * from the client credentials grant and last about 24 hours, so they are
+ * fetched on demand and cached, encrypted, until shortly before expiry.
  */
 final class AdminToken {
 	private const CACHE = 'wp2_shopify_admin_token';
@@ -23,21 +20,11 @@ final class AdminToken {
 	private const MARGIN = 300;
 
 	public static function configured(): bool {
-		return Config::has( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' ) || self::uses_client_credentials();
-	}
-
-	public static function uses_client_credentials(): bool {
-		return ! Config::has( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' )
-			&& Config::has( 'WP2_SHOPIFY_ADMIN_CLIENT_ID' )
-			&& Config::has( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
+		return Config::has( 'WP2_SHOPIFY_ADMIN_CLIENT_ID' ) && Config::has( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
 	}
 
 	public static function get(): string|\WP_Error {
-		if ( Config::has( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' ) ) {
-			return Config::get( 'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN' );
-		}
-
-		if ( ! self::uses_client_credentials() ) {
+		if ( ! self::configured() ) {
 			return new \WP_Error( 'shopify_admin_unconfigured', 'No Admin API credentials are defined.' );
 		}
 
@@ -100,7 +87,7 @@ final class AdminToken {
 
 		if ( is_wp_error( $response ) ) {
 			// shop_not_permitted: the app and the store are not in the same Shopify organization.
-			Logger::log( 'admin.token_failed', [ 'error' => $response->get_error_message() ] );
+			Logger::log( 'shopify.token_failed', [ 'error' => $response->get_error_message() ] );
 			update_option( 'wp2_shopify_admin_token_error', [ 'error' => $response->get_error_message(), 'at' => time() ], false );
 
 			return $response;

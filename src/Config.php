@@ -14,84 +14,66 @@ final class Config {
 	public const SCOPES = 'openid email customer-account-api:full';
 
 	/**
-	 * Every constant the plugin reads, for the diagnostics page.
+	 * Every constant the plugin reads, for the Debug page. This is the whole
+	 * configuration surface: anything not listed here is not read.
 	 *
 	 * @return array<string, array{label: string, secret: bool, required: bool, help: string}>
 	 */
 	public static function definitions(): array {
 		return [
-			'WP2_SHOPIFY_STORE_DOMAIN'             => [
+			'WP2_SHOPIFY_STORE_DOMAIN'        => [
 				'label'    => 'Store domain',
 				'secret'   => false,
 				'required' => true,
 				'help'     => 'The store\'s *.myshopify.com domain.',
 			],
-			'WP2_SHOPIFY_CLIENT_ID'                => [
+			'WP2_SHOPIFY_CLIENT_ID'           => [
 				'label'    => 'Customer Account API client ID',
 				'secret'   => false,
 				'required' => true,
-				'help'     => 'From the Headless (or custom) sales channel\'s Customer Account API settings.',
+				'help'     => 'From the Headless (or custom) sales channel\'s Customer Account API settings. Powers sign-in.',
 			],
-			'WP2_SHOPIFY_CLIENT_SECRET'            => [
+			'WP2_SHOPIFY_CLIENT_SECRET'       => [
 				'label'    => 'Customer Account API client secret',
 				'secret'   => true,
 				'required' => false,
-				'help'     => 'Only for confidential clients. Replaces WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN, which still works as a deprecated alias.',
+				'help'     => 'Only for confidential clients; leave unset for a public client.',
 			],
-			'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN'      => [
-				'label'    => 'Storefront public access token',
-				'secret'   => false,
-				'required' => false,
-				'help'     => 'Public by design. Used for catalog reads (Phase 1).',
-			],
-			'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' => [
-				'label'    => 'Storefront private access token',
-				'secret'   => true,
-				'required' => false,
-				'help'     => 'Server-side Storefront calls that send the buyer IP header (cart proxy, Phase 2).',
-			],
-			'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN'       => [
-				'label'    => 'Admin API access token',
-				'secret'   => true,
-				'required' => false,
-				'help'     => 'Permanent token from a legacy custom app (created in the Shopify admin before 2026). Scopes: read_customers, write_customers, read_orders (plus read_all_orders if memberships last longer than 60 days). Powers purchase-to-tag and reconciliation.',
-			],
-			'WP2_SHOPIFY_ADMIN_CLIENT_ID'          => [
+			'WP2_SHOPIFY_ADMIN_CLIENT_ID'     => [
 				'label'    => 'Admin app client ID',
 				'secret'   => false,
-				'required' => false,
-				'help'     => 'For a Dev Dashboard app, instead of a permanent token. The plugin requests 24-hour Admin tokens with the client credentials grant and renews them itself. Same scopes as above.',
+				'required' => true,
+				'help'     => 'The Dev Dashboard app installed on the store. The plugin requests 24-hour Admin tokens with the client credentials grant and renews them itself. Scopes: read_customers, write_customers, read_orders. Powers purchase-to-tag, reconciliation, resync and webhook registration.',
 			],
-			'WP2_SHOPIFY_ADMIN_CLIENT_SECRET'      => [
+			'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' => [
 				'label'    => 'Admin app client secret',
 				'secret'   => true,
-				'required' => false,
-				'help'     => 'The Dev Dashboard app\'s client secret. Also verifies webhooks the plugin registers, when no webhook signing secret is set.',
+				'required' => true,
+				'help'     => 'The Dev Dashboard app\'s client secret. Also verifies the webhooks the plugin registers.',
 			],
-			'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET'   => [
-				'label'    => 'Webhook signing secret',
-				'secret'   => true,
-				'required' => false,
-				'help'     => 'Only if webhooks are not signed with WP2_SHOPIFY_ADMIN_CLIENT_SECRET: a legacy custom app\'s API secret, or the key shown in Settings → Notifications for webhooks created there.',
-			],
-			'WP2_SHOPIFY_ENCRYPTION_KEY'           => [
+			'WP2_SHOPIFY_ENCRYPTION_KEY'      => [
 				'label'    => 'Token encryption key',
 				'secret'   => true,
 				'required' => false,
-				'help'     => 'Optional 32-byte key, base64 encoded. When missing, a key is derived from the WordPress salts.',
+				'help'     => 'Optional 32-byte key, base64 encoded. When missing, a key is derived from the WordPress salts; set it if the salts get rotated.',
 			],
-			'WP2_SHOPIFY_API_VERSION'              => [
-				'label'    => 'Shopify API version override',
-				'secret'   => false,
-				'required' => false,
-				'help'     => 'Leave undefined to use the pinned version ' . self::API_VERSION . '.',
-			],
-			'WP2_SHOPIFY_COOKIE_DOMAIN'            => [
-				'label'    => 'Cookie domain override',
-				'secret'   => false,
-				'required' => false,
-				'help'     => 'Leave undefined to use WordPress\' COOKIE_DOMAIN.',
-			],
+		];
+	}
+
+	/**
+	 * Constants earlier builds read and this one ignores, with what replaced them.
+	 * The Debug page warns when one is still defined.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function retired(): array {
+		return [
+			'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN'       => 'Legacy permanent Admin tokens are no longer used. Set WP2_SHOPIFY_ADMIN_CLIENT_ID and WP2_SHOPIFY_ADMIN_CLIENT_SECRET for a Dev Dashboard app.',
+			'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET'   => 'Webhooks are registered by the plugin through the app and verified with WP2_SHOPIFY_ADMIN_CLIENT_SECRET. Delete webhooks created in Settings → Notifications.',
+			'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN'      => 'Not read yet. It comes back with the Storefront catalog blocks.',
+			'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' => 'Not read yet. It comes back with the server-side cart.',
+			'WP2_SHOPIFY_API_VERSION'              => 'The API version is pinned to ' . self::API_VERSION . ' by the plugin.',
+			'WP2_SHOPIFY_COOKIE_DOMAIN'            => 'The plugin uses WordPress\' COOKIE_DOMAIN.',
 		];
 	}
 
@@ -108,11 +90,11 @@ final class Config {
 	}
 
 	/**
-	 * The key Shopify signs webhooks with. Webhooks registered by a Dev Dashboard
+	 * The key Shopify signs webhooks with: webhooks registered by a Dev Dashboard
 	 * app are signed with that app's client secret.
 	 */
 	public static function webhook_secret(): string {
-		return self::has( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) ? self::get( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET' ) : self::get( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
+		return self::get( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
 	}
 
 	public static function has( string $name ): bool {
@@ -124,9 +106,7 @@ final class Config {
 	}
 
 	public static function api_version(): string {
-		$override = self::get( 'WP2_SHOPIFY_API_VERSION' );
-
-		return preg_match( '/^\d{4}-\d{2}$/', $override ) ? $override : self::API_VERSION;
+		return self::API_VERSION;
 	}
 
 	/**
@@ -144,11 +124,16 @@ final class Config {
 	 * request's Host header (POC defect: HTTP_HOST is client-controlled).
 	 */
 	public static function cookie_domain(): string {
-		if ( self::has( 'WP2_SHOPIFY_COOKIE_DOMAIN' ) ) {
-			return self::get( 'WP2_SHOPIFY_COOKIE_DOMAIN' );
-		}
-
 		return defined( 'COOKIE_DOMAIN' ) && COOKIE_DOMAIN ? (string) COOKIE_DOMAIN : '';
+	}
+
+	/**
+	 * A page in the store's Shopify admin, e.g. admin_url( 'customers/123' ).
+	 */
+	public static function admin_url( string $path = '' ): string {
+		$handle = preg_replace( '/\.myshopify\.com$/', '', self::store_domain() );
+
+		return '' === $handle ? '' : 'https://admin.shopify.com/store/' . rawurlencode( (string) $handle ) . '/' . ltrim( $path, '/' );
 	}
 
 	public static function callback_slug(): string {

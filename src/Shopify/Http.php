@@ -24,7 +24,7 @@ final class Http {
 
 		if ( ! empty( $response['errors'] ) ) {
 			$first = is_array( $response['errors'] ) ? ( $response['errors'][0]['message'] ?? 'GraphQL error' ) : 'GraphQL error';
-			Logger::log( 'shopify.graphql_error', [ 'label' => $label ] );
+			Logger::log( 'shopify.graphql_error', [ 'label' => $label, 'message' => substr( is_string( $first ) ? $first : '', 0, 190 ) ] );
 
 			return new \WP_Error( 'shopify_graphql', is_string( $first ) ? $first : 'GraphQL error' );
 		}
@@ -36,6 +36,7 @@ final class Http {
 	 * @return array|\WP_Error Decoded JSON body.
 	 */
 	public static function request( string $method, string $url, array $headers, ?string $body, string $label, int $timeout = 15 ): array|\WP_Error {
+		$endpoint = (string) wp_parse_url( $url, PHP_URL_HOST ) . (string) wp_parse_url( $url, PHP_URL_PATH );
 		$started  = microtime( true );
 		$response = wp_safe_remote_request(
 			$url,
@@ -51,7 +52,7 @@ final class Http {
 		$ms = (int) round( ( microtime( true ) - $started ) * 1000 );
 
 		if ( is_wp_error( $response ) ) {
-			Logger::log( 'shopify.http_failed', [ 'label' => $label, 'ms' => $ms, 'error' => $response->get_error_code() ] );
+			Logger::log( 'shopify.http_failed', [ 'label' => $label, 'method' => $method, 'endpoint' => $endpoint, 'ms' => $ms, 'error' => $response->get_error_code() ] );
 
 			return new \WP_Error( 'shopify_unreachable', 'Shopify could not be reached.' );
 		}
@@ -59,7 +60,7 @@ final class Http {
 		$status = (int) wp_remote_retrieve_response_code( $response );
 		$data   = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 
-		Logger::log( 'shopify.http', [ 'label' => $label, 'status' => $status, 'ms' => $ms ] );
+		Logger::log( 'shopify.http', [ 'label' => $label, 'method' => $method, 'endpoint' => $endpoint, 'status' => $status, 'ms' => $ms ] );
 
 		if ( $status >= 400 ) {
 			$error = is_array( $data ) && isset( $data['error'] ) && is_string( $data['error'] ) ? $data['error'] : 'http_' . $status;

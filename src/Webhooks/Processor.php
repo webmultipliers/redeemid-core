@@ -50,6 +50,8 @@ final class Processor {
 		}
 
 		$store->finish( $row_id, $outcome );
+
+		Logger::log( 'webhook.processed', [ 'row' => $row_id, 'topic' => $row['topic'], 'status' => $outcome, 'customer' => (string) $row['customer'] ] );
 	}
 
 	/**

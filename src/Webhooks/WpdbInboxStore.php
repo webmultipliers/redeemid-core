@@ -118,6 +118,56 @@ final class WpdbInboxStore implements InboxStore {
 		return $wpdb->get_row( 'SELECT topic, received_at, status FROM ' . self::table() . ' ORDER BY id DESC LIMIT 1', ARRAY_A ) ?: null; // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
+	/**
+	 * Rows for the Webhooks page, newest first.
+	 *
+	 * @param array{status?: string, topic?: string, customer?: string} $filters
+	 * @return array{rows: array<int, array<string, mixed>>, total: int}
+	 */
+	public function query( array $filters, int $per_page, int $page ): array {
+		global $wpdb;
+
+		$where = [ '1=1' ];
+		$args  = [];
+
+		foreach ( [ 'status', 'topic', 'customer' ] as $column ) {
+			if ( ! empty( $filters[ $column ] ) ) {
+				$where[] = "{$column} = %s";
+				$args[]  = (string) $filters[ $column ];
+			}
+		}
+
+		$table  = self::table();
+		$where  = implode( ' AND ', $where );
+		$offset = max( 0, ( $page - 1 ) * $per_page );
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $where is built from placeholders only.
+		$total = (int) $wpdb->get_var( $args ? $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE {$where}", ...$args ) : "SELECT COUNT(*) FROM {$table} WHERE {$where}" );
+		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT id, topic, webhook_id, customer, status, error, attempts, received_at, processed_at FROM {$table} WHERE {$where} ORDER BY id DESC LIMIT %d OFFSET %d", ...[ ...$args, $per_page, $offset ] ), ARRAY_A );
+		// phpcs:enable
+
+		return [ 'rows' => (array) $rows, 'total' => $total ];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function topics(): array {
+		global $wpdb;
+
+		return array_map( 'strval', (array) $wpdb->get_col( 'SELECT DISTINCT topic FROM ' . self::table() . ' ORDER BY topic' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
+	 * Put a dead-lettered row back in the queue. Its extracted data is kept
+	 * until a row is processed, so a retry has what it needs.
+	 */
+	public function requeue( int $id ): bool {
+		global $wpdb;
+
+		return (bool) $wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table() . ' SET status = %s, attempts = 0, error = \'\' WHERE id = %d AND status = %s', self::QUEUED, $id, self::DEAD ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
 	public static function prune(): void {
 		global $wpdb;
 

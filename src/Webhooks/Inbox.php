@@ -27,7 +27,7 @@ final class Inbox {
 	/**
 	 * Record an inbound delivery.
 	 *
-	 * @return array{status: string, id: int|null} status is 'queued', 'duplicate', 'ignored' or 'dead'.
+	 * @return array{status: string, id: int|null, customer: string} status is 'queued', 'duplicate', 'ignored' or 'dead'.
 	 */
 	public function accept( string $topic, string $webhook_id, string $event_id, string $raw_body, array $payload, int $now ): array {
 		$kind = Topics::kind( $topic );
@@ -55,9 +55,9 @@ final class Inbox {
 		);
 
 		if ( null === $id ) {
-			return [ 'status' => 'duplicate', 'id' => null ];
+			return [ 'status' => 'duplicate', 'id' => null, 'customer' => $data['customer'] ?? '' ];
 		}
 
-		return [ 'status' => $status, 'id' => $id ];
+		return [ 'status' => $status, 'id' => $id, 'customer' => $data['customer'] ?? '' ];
 	}
 }

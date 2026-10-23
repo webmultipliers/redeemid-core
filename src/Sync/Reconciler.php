@@ -70,15 +70,40 @@ final class Reconciler {
 	 * Reconcile one user now ("Sync now", post-checkout sync).
 	 */
 	public static function sync_user( int $user_id, string $source ): true|\WP_Error {
-		$result = self::reconcile_users( [ $user_id ], $source );
+		$result = self::sync_users( [ $user_id ], $source );
 
-		if ( is_wp_error( $result ) ) {
-			Mirror::mark_sync_failed( $user_id );
+		return is_wp_error( $result ) ? $result : true;
+	}
 
-			return $result;
+	/**
+	 * Reconcile a set of users now (admin bulk resync).
+	 *
+	 * @param int[] $user_ids
+	 * @return array{changed: int, missing: int}|\WP_Error
+	 */
+	public static function sync_users( array $user_ids, string $source ): array|\WP_Error {
+		$result = [ 'changed' => 0, 'missing' => 0 ];
+
+		foreach ( array_chunk( array_map( 'intval', $user_ids ), self::BATCH ) as $chunk ) {
+			$batch = self::reconcile_users( $chunk, $source );
+
+			if ( is_wp_error( $batch ) ) {
+				foreach ( $chunk as $user_id ) {
+					Mirror::mark_sync_failed( $user_id );
+				}
+
+				Logger::log( 'sync.failed', [ 'source' => $source, 'users' => count( $chunk ), 'error' => $batch->get_error_code() ] );
+
+				return $batch;
+			}
+
+			$result['changed'] += $batch['changed'];
+			$result['missing'] += $batch['missing'];
 		}
 
-		return true;
+		Logger::log( 'sync.done', [ 'source' => $source, 'users' => count( $user_ids ), 'changed' => $result['changed'], 'missing' => $result['missing'], 'status' => 'ok' ] + ( 1 === count( $user_ids ) ? [ 'user' => (int) reset( $user_ids ) ] : [] ) );
+
+		return $result;
 	}
 
 	/**
@@ -90,6 +115,12 @@ final class Reconciler {
 
 		foreach ( $user_ids as $user_id ) {
 			$id = Mirror::customer_id( $user_id );
+
+			if ( $id && Mirror::is_fixture( $user_id ) ) {
+				// Not a real customer: keep its seeded state, just mark it fresh.
+				Mirror::stamp( $user_id, $source );
+				continue;
+			}
 
 			if ( $id ) {
 				$ids[ $user_id ] = $id;
