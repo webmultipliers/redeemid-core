@@ -1,0 +1,60 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/membership-gate",
+	"title": "Membership Gate",
+	"category": "widgets",
+	"icon": "lock",
+	"description": "Releases its Members only area to entitled members. The decision is made on the server; locked content is never sent to anyone else.",
+	"keywords": [ "members", "paywall", "gate", "shopify", "tags" ],
+	"textdomain": "wp2-shopify",
+	"supports": {
+		"align": [ "wide", "full" ],
+		"html": false
+	},
+	"blockstudio": {
+		"attributes": [
+			{
+				"id": "requiredTags",
+				"type": "repeater",
+				"label": "Required Shopify customer tags",
+				"textButton": "Add tag",
+				"attributes": [
+					{ "id": "tag", "type": "text", "label": "Tag" }
+				]
+			},
+			{
+				"id": "matchMode",
+				"type": "select",
+				"label": "Members need",
+				"default": "any",
+				"options": [
+					{ "value": "any", "label": "Any of these tags" },
+					{ "value": "all", "label": "All of these tags" }
+				]
+			},
+			{
+				"id": "requireLogin",
+				"type": "toggle",
+				"label": "Require sign-in",
+				"default": true
+			},
+			{
+				"id": "fallbackMode",
+				"type": "select",
+				"label": "Non-members see",
+				"default": "message",
+				"options": [
+					{ "value": "message", "label": "A message and a call to action" },
+					{ "value": "teaser-blocks", "label": "The Public teaser area" },
+					{ "value": "redirect", "label": "A redirect to another page" }
+				]
+			},
+			{ "id": "fallbackMessage", "type": "textarea", "label": "Message", "default": "This content is for members." },
+			{ "id": "fallbackCtaLabel", "type": "text", "label": "Call to action label", "default": "Become a member" },
+			{ "id": "fallbackCtaUrl", "type": "text", "label": "Call to action URL" },
+			{ "id": "showSignIn", "type": "toggle", "label": "Offer sign-in to guests", "default": true },
+			{ "id": "redirectUrl", "type": "text", "label": "Redirect URL (on this site)", "help": "Used when Non-members see is a redirect. Only applies when the page is viewed directly." }
+		]
+	}
+}

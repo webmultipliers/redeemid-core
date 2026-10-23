@@ -1,149 +1,197 @@
-# WP2 Shopify Identity
+# WP2 Shopify
 
-**Shopify acts as the Identity Provider while WordPress consumes the customer data.**
+Sign in with Shopify customer accounts on WordPress, and gate content by Shopify customer tags. Built on [Blockstudio 7](https://blockstudio.dev).
 
-WP2 Shopify Identity treats Shopify Customer Accounts as the single source of truth for membership and community sites, letting your WordPress experience mirror the Shopify customer record in real time. The plugin relies on Shopify’s Customer Account API with OAuth2 PKCE so you can authenticate users at Shopify, then automatically log them into WordPress with synchronized customer metadata.
+> **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging and the gate block are in place. Catalog, cart and the account card come in later phases. See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
 
-## 🚀 Feature overview
+## Requirements
 
-* **OAuth + session lifecycle:** The plugin manages the full PKCE handshake, validates state and nonce cookies, normalizes authentication tokens, and persists the session via strict, HTTP-only cookies. It also handles automatic token refreshes and caches customer payloads to ensure performance.
-* **REST surface & webhook queue:** A secure REST API handles authentication status, refreshing, and logout, while a dedicated webhook endpoint validates incoming payloads using HMAC signatures. Events are queued and processed asynchronously to prevent performance bottlenecks.
-* **Customer metadata sync:** Webhook handlers automatically populate WordPress user meta, capturing tags, marketing consent, purchasing summaries, default addresses, and verification flags. This data powers the admin interface and privacy export tools.
-* **Admin & privacy helpers:** The plugin provides a settings page for configuration, encrypts sensitive secrets, and integrates directly with WordPress privacy tools. It also manages a custom user role for Shopify customers, ensuring they are properly restricted within the WordPress dashboard.
-* **Frontend & shortcode UX:** A simple shortcode renders a status card that adapts to the user's state (guest, connected, or disconnected). Optimized JavaScript and CSS assets are only loaded when necessary, handling data synchronization and linking existing WordPress users to Shopify accounts.
-* **Security & configuration:** The system enforces strict security practices by requiring authentication keys and managing configuration via environment constants. It also caches OpenID configuration and API endpoints to ensure resilience against temporary network issues.
+- PHP 8.2+ with `sodium`
+- WordPress 6.7+
+- **Pretty permalinks.** The sign-in callback is a front-end route.
+- A Shopify store with a headless or custom app that has Customer Account API access
 
-## 🔐 Authentication (Log In with Shopify)
+If a requirement is missing, activation stops with a notice. It does not fatal.
 
-1. A guest clicks the identity button and is redirected to Shopify’s OAuth2 endpoint.
-2. Shopify authenticates the user and returns them to your WordPress callback URL with an authorization code.
-3. The plugin validates the security tokens, exchanges the code for an Access Token, and establishes a secure session cookie.
-4. If the Shopify email matches an existing WP user, they are logged in; otherwise, a new **Subscriber** account is auto-created from the Shopify profile, linking the Shopify Global ID to a read-only "shadow" user in WordPress.
-5. Frontend logic keeps the session alive, automatically refreshing tokens and managing the connection state.
+## Install
 
-## 🧭 Callback Page Template
+Release zips include `vendor/`. To build from source:
 
-The OAuth callback rewrites to a configurable slug (defaulting to `/auth-callback`), so you can create a published Page that matches that slug and style it using the block editor or your theme. The plugin automatically handles the rewrite rules, allowing your custom template to render with the standard site design.
-
-If you need to host the callback under a different slug, you can override the filter in your theme and resave your permalinks:
-
-```php
-add_filter( 'wp2_shopify_auth_callback_slug', function () {
-    return 'custom-login';
-} );
-
+```sh
+composer install            # development
+composer test               # unit tests
+composer release            # production vendor/ for a release zip
 ```
 
-## 🔄 Shopify → WordPress Customer Sync
+The plugin runs its own Blockstudio instance from `blocks/`. It does not use the `blockstudio/path` filter, because that filter replaces a theme's Blockstudio block folder. So it coexists with Blockstudio themes and works in any other theme.
 
-Every login and webhook-driven update copies customer data into WordPress user meta so you can rely on Shopify data in your WP templates:
+## Configure
 
-* **Shopify Global ID:** Establishes the link between the two platforms.
-* **Tags:** Syncs VIP, wholesale, or other tags for content gating.
-* **Marketing Consent:** Tracks Email and SMS opt-in status.
-* **Purchasing Stats:** Stores lifetime spend and order counts for LTV metrics.
-* **Profile Data:** Keeps names and contact details in sync.
-* **Addresses:** Caches default and saved addresses for quick lookup.
-* **Status & verification:** Mirrors account state and email verification status.
+Credentials are constants in `wp-config.php`, never options. Settings → Shopify shows which constants are present, never their values.
 
-## 📡 Real-time Webhooks
+| Constant | Required | Purpose |
+|---|---|---|
+| `WP2_SHOPIFY_STORE_DOMAIN` | yes | `your-store.myshopify.com` |
+| `WP2_SHOPIFY_CLIENT_ID` | yes | Customer Account API client ID |
+| `WP2_SHOPIFY_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client. |
+| `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET` | yes | Verifies webhook HMACs |
+| `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` | for memberships | Admin API token with `read_customers`, `write_customers` and `read_orders`. Add `read_all_orders` if memberships last longer than 60 days. Powers purchase-to-tag and reconciliation. |
+| `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | later phases | Storefront public token (catalog) |
+| `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | later phases | Storefront private token, for server-side cart calls |
+| `WP2_SHOPIFY_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
+| `WP2_SHOPIFY_API_VERSION` | no | Defaults to `2026-10` for every Shopify API |
+| `WP2_SHOPIFY_COOKIE_DOMAIN` | no | Cookie domain. It is never taken from the request host. |
 
-The plugin exposes a secure endpoint so Shopify can notify WordPress about customer changes even when the user isn’t actively browsing your site. Signatures are validated using your shared secret, and events are queued to update specific metadata without slowing down the site.
+`WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, and Diagnostics shows a deprecation notice. Rename it to `WP2_SHOPIFY_CLIENT_SECRET`.
 
-**Supported topics:**
+### Shopify app settings
 
-* Customer creation, updates, deletion, disabling, and enabling.
-* Email and SMS marketing consent updates.
-* Tag additions and removals.
-* Customer group changes.
-* Purchasing summary and account setting updates.
+Settings → Shopify prints the exact values for your site:
 
-## 👤 Admin Interface
+- **Callback URI:** `https://your-site/auth-callback/`. Change the slug with the `wp2_shopify_auth_callback_slug` filter.
+- **JavaScript origin:** `https://your-site`
+- **Logout URI:** `https://your-site/`
 
-A **Shopify Identity** card appears on the WordPress user profile:
+### Webhooks
 
-* Connection status and the linked Shopify Customer ID.
-* A list of synchronized Shopify tags.
-* Email and SMS marketing consent indicators.
-* Lifetime value stats and sync timestamps.
-* Controls to manually sync data or disconnect the account.
+Point these topics at `https://your-site/wp-json/wp2-shopify/v1/webhooks/events`:
 
-The plugin automatically hides these "shadow" users from the main user list, disables password resets (since Shopify manages credentials), and suppresses the admin bar for them on the frontend.
+- `customers/create`, `customers/update`, `customers/delete`, `customers/enable`, `customers/disable` and `customers/merge`
+- `customer.tags_added` and `customer.tags_removed`
+- `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customer_purchasing_summary/create`
+- `orders/paid`, `orders/cancelled` and `refunds/create` (for memberships)
+- the compliance topics: `customers/data_request`, `customers/redact`, `shop/redact`, plus `app/uninstalled`
 
-## 🧰 Identity Shortcode
+Since API 2025-01, `customers/update` no longer carries tags, so the two `customer.tags_*` topics are needed for tag changes to arrive quickly.
 
-Add `[wp2_shopify_identity]` to your frontend templates to render the identity card.
+Each delivery is checked and stored, then processed:
 
-* **Guests** see a “Log In with Shopify” button.
-* **Connected users** see their tags, consent status, and sync controls.
-* **Logged-in but unlinked users** are prompted to connect their WordPress account to Shopify.
+- The HMAC is checked first.
+- Each delivery is deduped by its webhook ID.
+- Only the fields the plugin uses are stored.
+- Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
+- Failures retry, then are dead-lettered. Diagnostics shows counts and the last delivery.
 
-The markup uses clean classes, making it easy to style via your theme.
+A twice-daily reconciliation also re-reads linked customers from the Admin API, so a missed webhook heals itself.
 
-## ⚙️ Implementation opinions
+## How sign-in works
 
-* **Shopify as Source of Truth:** WordPress users are generated from Shopify data and kept read-only. Password resets are disabled, and these users are hidden from standard admin views to prevent management conflicts.
-* **Asynchronous Processing:** Webhooks are handled via a queue system (preferring Action Scheduler) to ensure reliability and performance.
-* **Configuration-as-Code:** Secrets and endpoints are best defined in `wp-config.php`. The plugin encrypts any secrets stored in the database and caches API discovery data to survive Shopify downtime.
-* **Conditional Loading:** Frontend assets are only loaded when the shortcode is present or during the authentication callback, keeping your site fast.
+1. The **Shopify sign-in** block (`wp2-shopify/auth-action`) links to the plugin's login handler.
+2. The plugin redirects to Shopify with PKCE. The verifier stays on the server.
+3. Shopify returns to the callback. The plugin exchanges the code, checks the ID token claims (`iss`, `aud`, `exp` and `nonce`; the signature is not checked, as OIDC allows for tokens received directly from the token endpoint), and signs the visitor in.
+4. A new customer gets a **shadow user** with the `shopify_customer` role:
+   - no wp-admin, admin bar, password reset or author archive;
+   - hidden from the user list;
+   - mail goes to the Shopify email.
+   Accounts are never matched by email at sign-in.
+5. Tokens are stored encrypted inside the WordPress session, and refresh on demand. No endpoint returns a token.
+6. **Sign out** goes through Shopify's end-session endpoint, so both sessions end. WordPress's own logout link ends only the WordPress session.
 
-## ⚙️ Configuration-as-Code
+If Shopify revokes the session:
 
-Sensitive Shopify credentials live in `wp-config.php`, not the database:
+- a shadow user is signed out;
+- a regular WordPress account stays signed in and loses only its Shopify features.
 
-```php
-// Required: The standard WP Auth Key (must be defined for encryption to work)
-define( 'AUTH_KEY', 'put your unique phrase here' ); 
+### Linking an existing WordPress account
 
-// Shopify Configuration
-define( 'WP2_SHOPIFY_STORE_DOMAIN', 'your-shop.myshopify.com' );
-define( 'WP2_SHOPIFY_CLIENT_ID', 'your_shopify_client_id' );
-define( 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN', 'your_client_secret' ); // Used as Client Secret for PKCE
+A signed-in WordPress user can choose **Connect to Shopify**. After the Shopify sign-in:
 
-// Webhooks
-define( 'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET', 'your_webhook_signing_secret' );
+- the plugin checks that Shopify marks the email as verified and that it matches the WordPress account;
+- the user then confirms on the callback page.
 
-// Optional Overrides
-// define( 'WP2_SHOPIFY_OAUTH_AUTHORIZE_URL', '...' );
-// define( 'WP2_SHOPIFY_OAUTH_TOKEN_URL', '...' );
+Administrators can't be linked. A mismatched or unverified email is refused with a plain message.
 
-```
+## Gating content
 
-After adding the constants, visit **Settings → Shopify Identity** in the WordPress Admin to verify connectivity.
+Add **Membership gate** (`wp2-shopify/membership-gate`). It always contains two areas:
 
-## 📡 Webhooks Setup
+- **Members only.** It is removed on the server before rendering when the visitor doesn't qualify. It never reaches page HTML, REST, feeds or search excerpts.
+- **Public teaser.** Everyone sees it.
 
-Make sure Shopify can POST to your REST endpoint:
+Gate settings:
 
-**Endpoint:** `https://your-wordpress-site.com/wp-json/wp2-shopify/v1/iwebhooks/events`
+- Required tags, matching any or all.
+- What non-members see:
+  - a message with a call to action and an optional sign-in link;
+  - the teaser blocks;
+  - a redirect.
 
-Deliver the same webhook signing secret that you set in `wp-config.php`, and include the topics listed above.
+Rules fail closed. If the tag data is older than the freshness window (Settings → Shopify, default 7 days), it is either still honored or treated as no access, as configured. Settings → Shopify has a dry run that shows the decision for any user.
 
-## 📋 Requirements
+### Memberships from purchases
 
-* WordPress 6.0+
-* PHP 7.4+
-* Composer
-* Node.js & NPM (for building assets)
-* A Shopify Store with Customer Accounts API access.
-
-## 🛠 Installation
-
-### 1. Clone & Build
-
-```bash
-git clone https://github.com/webmultipliers/wp2-shopify-id.git
-cd wp2-shopify-id
-
-# Install PHP Dependencies
-composer install --no-dev --optimize-autoloader
-
-# Install & Build JS/CSS Assets
-npm install
-npm run build
+Under Settings → Shopify, map products to tags, one per line:
 
 ```
+1234567890: gold-member
+gid://shopify/Product/987: silver-member
+```
 
-### 2. Activate
+When an order is paid, cancelled or refunded, the plugin:
 
-Upload the folder to your `wp-content/plugins` directory and activate **WP2 Shopify Identity** via the WordPress Admin.
+1. recomputes that customer's mapped tags from their orders;
+2. adds or removes those tags in Shopify.
+
+Only tags in the map are touched. After checkout, the next signed-in page views also re-sync, at most once a minute for 30 minutes, so access usually arrives before the webhook.
+
+## Caching
+
+Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content.
+
+Personal pieces, such as the sign-in control, render as a neutral shell that any page cache can store. They fill themselves after load with one same-origin request to `admin-ajax.php?action=wp2_shopify_status`, which also returns fresh nonces.
+
+Cache rules should bypass or vary on these cookies:
+
+- `wordpress_logged_in_*`
+- `wp2_shopify_oauth_state`
+- `wp2_shopify_cart` (later phases)
+
+## REST API
+
+The namespace is `wp2-shopify/v1`. Every write route needs the `wp_rest` nonce.
+
+| Route | Purpose |
+|---|---|
+| `GET /auth/status` | The caller's own display-safe state |
+| `GET /auth/login` | Redirects to Shopify |
+| `POST /auth/logout` | Returns `{redirect}`, the Shopify end-session URL |
+| `POST /auth/refresh` | Refreshes the Shopify session and returns status, never tokens |
+| `POST /auth/disconnect` | Unlinks the Shopify customer from the current user |
+| `POST /account/sync` | Re-syncs the current user's mirror (rate-limited) |
+| `POST /webhooks/events` | Shopify webhooks (HMAC-verified) |
+
+Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_logout`, `_connect`, `_link_confirm`, `_sync`, `_disconnect`), which redirect back to a page.
+
+## Hooks
+
+- Actions:
+  - `wp2_shopify_signed_in`, `wp2_shopify_linked`, `wp2_shopify_disconnected` and `wp2_shopify_before_logout`
+  - `wp2_shopify_log`, which receives redacted log events
+- Filters:
+  - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
+  - `wp2_shopify_membership_map` and `wp2_shopify_setting_{key}`
+  - `wp2_shopify_reassign_user`, which picks who receives content when a Shopify redaction deletes a shadow user
+
+## Upgrading from 1.x
+
+The upgrade runs once on activation or load:
+
+- Shadow users and their customer IDs are kept, and numeric IDs are backfilled.
+- Stored refresh tokens were plaintext in 1.x, so they are discarded. **Every linked customer signs in once more.**
+- Options that held full webhook payloads, and the old encryption key, are removed.
+- **Re-register webhooks** to `/wp-json/wp2-shopify/v1/webhooks/events`. The old path is gone.
+- The `[wp2_shopify_identity]` shortcode still works, but is deprecated. Use the block.
+
+## Uninstall
+
+By default, uninstalling keeps WordPress users and their content. It removes:
+
+- plugin options and transients
+- the webhook table
+- Shopify tokens inside sessions
+
+To also delete shadow users and every linked field, add `define( 'WP2_SHOPIFY_UNINSTALL_DELETE_DATA', true );` before uninstalling. Their content is reassigned to the first administrator, not deleted.
+
+## Privacy
+
+The plugin registers a personal data exporter and an eraser for the Shopify fields it mirrors. Shopify's `customers/data_request` creates a WordPress export request. `customers/redact` deletes or unlinks the account.

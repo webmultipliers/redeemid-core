@@ -1,13 +1,58 @@
 {
-	"$schema": "https://app.blockstudio.dev/schema",
+	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
 	"name": "wp2-shopify/auth-action",
-	"title": "Auth Action",
-	"category": "text",
-	"icon": "star-filled",
-	"description": "A block for handling authentication actions with Shopify.",
+	"title": "Shopify Sign-in",
+	"category": "widgets",
+	"icon": "admin-users",
+	"description": "Log in with Shopify, log out, or connect an existing account. Works without JavaScript; the signed-in state fills in after load so cached pages stay cacheable.",
+	"keywords": [ "login", "logout", "shopify", "account" ],
+	"textdomain": "wp2-shopify",
 	"supports": {
-		"align": true
+		"align": false,
+		"html": false
 	},
-	"blockstudio": true
+	"blockstudio": {
+		"attributes": [
+			{
+				"id": "mode",
+				"type": "select",
+				"label": "Show",
+				"default": "auto",
+				"options": [
+					{ "value": "auto", "label": "Whatever fits the visitor" },
+					{ "value": "login", "label": "Log in only (hidden when signed in)" },
+					{ "value": "logout", "label": "Log out only (hidden for guests)" },
+					{ "value": "connect", "label": "Connect only (signed-in, unlinked accounts)" }
+				]
+			},
+			{ "id": "loginLabel", "type": "text", "label": "Log in label", "default": "Log in with Shopify" },
+			{ "id": "logoutLabel", "type": "text", "label": "Log out label", "default": "Log out" },
+			{ "id": "connectLabel", "type": "text", "label": "Connect label", "default": "Connect Shopify account" },
+			{ "id": "redirectAfterLogin", "type": "text", "label": "After log in, go to (URL on this site)", "help": "Leave empty to return to the current page." },
+			{ "id": "redirectAfterLogout", "type": "text", "label": "After log out, go to (URL on this site)" },
+			{
+				"id": "controlStyle",
+				"type": "select",
+				"label": "Style",
+				"default": "button",
+				"options": [
+					{ "value": "button", "label": "Button" },
+					{ "value": "link", "label": "Link" }
+				]
+			},
+			{
+				"id": "previewState",
+				"type": "select",
+				"label": "Editor preview state",
+				"help": "Layout check only. Visitors always see their own state.",
+				"default": "guest",
+				"options": [
+					{ "value": "guest", "label": "Guest" },
+					{ "value": "member", "label": "Signed in" },
+					{ "value": "unlinked", "label": "Signed in, not connected" }
+				]
+			}
+		]
+	}
 }
