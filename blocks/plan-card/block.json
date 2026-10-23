@@ -1,0 +1,27 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/plan-card",
+	"title": "Shopify Plan Card",
+	"category": "widgets",
+	"icon": "id-alt",
+	"description": "A membership plan or product with its live Shopify price and a buy button that goes straight to Shopify checkout. Works without JavaScript and without Shopify's own plugin; signed-in customers arrive at checkout already signed in.",
+	"keywords": [ "membership", "plan", "pricing", "buy", "shopify", "checkout" ],
+	"textdomain": "wp2-shopify",
+	"supports": {
+		"align": false,
+		"html": false
+	},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "productHandle", "type": "text", "label": "Shopify product handle", "help": "The last part of the product's URL in Shopify, for example gold-membership." },
+			{ "id": "variantId", "type": "text", "label": "Variant ID (optional)", "help": "Leave empty to sell the first available variant." },
+			{ "id": "heading", "type": "text", "label": "Heading", "help": "Leave empty to use the product title from Shopify." },
+			{ "id": "description", "type": "textarea", "label": "Description", "help": "Leave empty to use the product description from Shopify." },
+			{ "id": "buttonLabel", "type": "text", "label": "Button label", "default": "Join now" },
+			{ "id": "showImage", "type": "toggle", "label": "Show product image", "default": false },
+			{ "id": "showCompareAt", "type": "toggle", "label": "Show compare-at price", "default": true },
+			{ "id": "highlight", "type": "toggle", "label": "Highlight this plan", "default": false }
+		]
+	}
+}

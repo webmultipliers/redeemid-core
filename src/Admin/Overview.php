@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Config;
+use WP2_Shopify\Integrations\OfficialPlugin;
 use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\Discovery;
@@ -57,6 +58,12 @@ final class Overview {
 				Menu::url( Customers::PAGE ),
 			],
 			[
+				in_array( OfficialPlugin::state(), [ OfficialPlugin::ABSENT, OfficialPlugin::SAME_STORE ], true ),
+				__( 'Shopify\'s WordPress plugin', 'wp2-shopify' ),
+				OfficialPlugin::summary(),
+				Menu::url( Debug::PAGE ) . '#official-plugin',
+			],
+			[
 				0 === $failures,
 				__( 'Last 24 hours', 'wp2-shopify' ),
 				sprintf( /* translators: %d: count */ __( '%d failed Shopify calls or rejected webhooks.', 'wp2-shopify' ), $failures ),
@@ -96,6 +103,13 @@ final class Overview {
 						<td>
 							<textarea id="wp2s-map" rows="5" cols="60" class="code" name="<?php echo esc_attr( Settings::OPTION ); ?>[membership_map]" placeholder="1234567890: member, gold"><?php echo esc_textarea( (string) $settings['membership_map'] ); ?></textarea>
 							<p class="description"><?php esc_html_e( 'One per line: Shopify product ID, a colon, then the customer tags a paid order grants. The plugin adds these tags on payment and removes them on refund or cancellation. It never touches other tags.', 'wp2-shopify' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Shared devices', 'wp2-shopify' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'wp2-shopify' ); ?></label>
+							<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'wp2-shopify' ); ?></p>
 						</td>
 					</tr>
 				</table>

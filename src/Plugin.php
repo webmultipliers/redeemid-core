@@ -7,6 +7,8 @@ use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Blocks\Registration;
+use WP2_Shopify\Commerce\BuyNow;
+use WP2_Shopify\Commerce\CartBridge;
 use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
@@ -26,6 +28,8 @@ final class Plugin {
 		Status::register();
 		PostCheckout::register();
 		Registration::register();
+		BuyNow::register();
+		CartBridge::register();
 		Privacy::register();
 		Compat::register();
 		EventLog::register();
