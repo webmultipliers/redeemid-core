@@ -39,6 +39,7 @@ final class Flow {
 		'link_session_mismatch'   => 'That connect request belongs to a different session. Start again from your account.',
 		'link_user_mismatch'      => 'Please sign in to the WordPress account you want to connect, then try again.',
 		'admin_refused'           => 'Administrator accounts cannot be connected to a Shopify customer.',
+		'admin_sign_in_refused'   => 'Administrator accounts cannot sign in with Shopify. Use the WordPress login instead.',
 		'already_shadow'          => 'This account already signs in with Shopify.',
 		'email_unverified'        => 'Shopify did not confirm that email address, so the accounts were not connected.',
 		'email_mismatch'          => 'Your Shopify email does not match this account\'s email, so the accounts were not connected.',
@@ -198,6 +199,12 @@ final class Flow {
 		if ( is_wp_error( $user ) ) {
 			Logger::log( 'auth.user_create_failed', [ 'customer' => $id->numeric ] );
 			return self::notice_url( 'profile_failed' );
+		}
+
+		// A linked account can gain a privileged role after linking; the link-time check alone would let it in.
+		if ( Linking::privileged( $user ) ) {
+			Logger::log( 'auth.sign_in_refused', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
+			return self::notice_url( 'admin_sign_in_refused' );
 		}
 
 		wp_clear_auth_cookie();
