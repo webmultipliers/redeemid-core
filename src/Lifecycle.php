@@ -2,6 +2,7 @@
 
 namespace WP2_Shopify;
 
+use WP2_Shopify\Access\Index;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Support\EventLog;
@@ -30,6 +31,8 @@ final class Lifecycle {
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( Reconciler::HOOK );
 		wp_clear_scheduled_hook( 'wp2_shopify_prune' );
+		wp_clear_scheduled_hook( Index::REINDEX );
+		wp_clear_scheduled_hook( Index::TIMED );
 		flush_rewrite_rules();
 	}
 }
