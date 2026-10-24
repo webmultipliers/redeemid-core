@@ -10,9 +10,10 @@ use WP2_Shopify\Blocks\Gate;
  * every item:
  *
  * - _wp2_access_search: the text anyone may read, for items whose rule is
- *   not open, may change on a date, or that hold a membership gate. Search
- *   matches this instead of post_content (Surfaces), so a locked phrase never
- *   finds its item, for anyone.
+ *   not open, may change on a date, or that hold a membership gate or a
+ *   block shown only to readers. Search matches this instead of
+ *   post_content (Surfaces), so a locked phrase never finds its item, for
+ *   anyone.
  * - _wp2_access_locked: set while the item's rule is not open. Sitemaps and
  *   comment feeds leave such items out where the post type asks.
  * - _wp2_access_next: the next time a date could change the rule (embargo
@@ -35,7 +36,7 @@ final class Index {
 	public const CURSOR  = 'wp2_shopify_access_reindex_cursor';
 
 	/** Bump to rebuild every item's index after an upgrade that changes what it holds. */
-	private const VERSION     = 1;
+	private const VERSION     = 2;
 	private const VERSION_KEY = 'wp2_shopify_access_index_version';
 
 	private const BATCH = 200;
@@ -175,7 +176,7 @@ final class Index {
 		$now    = time();
 		$locked = ! Gatekeeper::rule( $post )->open();
 		$next   = self::next_change( Gatekeeper::context( $post ), $now );
-		$search = $locked || null !== $next || has_block( Gate::PARENT, $post );
+		$search = null !== $next || Gatekeeper::protected( $post );
 
 		if ( self::set( $post->ID, self::LOCKED, $locked ? '1' : null ) ) {
 			/**
@@ -221,7 +222,7 @@ final class Index {
 			return Gatekeeper::public_text( $post );
 		}
 
-		$blocks = Teaser::strip( parse_blocks( $post->post_content ), Gate::MEMBERS );
+		$blocks = Teaser::strip( parse_blocks( $post->post_content ), static fn( array $b ) => Gate::MEMBERS === ( $b['blockName'] ?? null ) || BlockAccess::members_only( $b ) );
 
 		return trim( (string) preg_replace( '/\s+/u', ' ', wp_strip_all_tags( strip_shortcodes( serialize_blocks( $blocks ) ) ) ) );
 	}

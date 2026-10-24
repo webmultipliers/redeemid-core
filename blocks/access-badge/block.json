@@ -1,0 +1,41 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/access-badge",
+	"title": "Access Badge",
+	"category": "widgets",
+	"icon": "lock",
+	"description": "Names the level an item needs, in the level's badge colour, with a lock for visitors it locks out. Inside a query loop it describes each post. Shows nothing on open items.",
+	"keywords": [ "badge", "level", "members", "locked", "paywall" ],
+	"textdomain": "wp2-shopify",
+	"usesContext": [ "postId", "postType" ],
+	"supports": {
+		"html": false,
+		"align": false
+	},
+	"blockstudio": {
+		"attributes": [
+			{
+				"id": "showWhen",
+				"type": "select",
+				"label": "Show",
+				"default": "gated",
+				"options": [
+					{ "value": "gated", "label": "On every gated item" },
+					{ "value": "locked", "label": "Only when the visitor is locked out" }
+				]
+			},
+			{
+				"id": "text",
+				"type": "select",
+				"label": "Text",
+				"default": "level",
+				"options": [
+					{ "value": "level", "label": "The level's label (Gold)" },
+					{ "value": "state", "label": "The visitor's state (Locked, Included with your membership)" }
+				]
+			},
+			{ "id": "showIcon", "type": "toggle", "label": "Show a lock icon", "default": true }
+		]
+	}
+}
