@@ -168,9 +168,18 @@ final class Customers {
 	public static function render(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification
 		$user_id = (int) ( $_GET['user'] ?? 0 );
+		$user    = $user_id ? get_userdata( $user_id ) : null;
 
-		echo '<div class="wrap">';
+		if ( $user && Mirror::customer_id( $user->ID ) ) {
+			self::detail( $user );
+		} else {
+			self::list();
+		}
 
+		Menu::page_end();
+	}
+
+	private static function notices(): void {
 		Menu::result_notice(
 			[
 				'synced'      => [ 'success', __( 'Resynced %d customer(s) from Shopify.', 'wp2-shopify' ) ],
@@ -182,28 +191,20 @@ final class Customers {
 				'tags_failed' => [ 'error', __( 'Shopify rejected the tag change. The tags below are what Shopify holds now.', 'wp2-shopify' ) ],
 			]
 		);
-
-		$user = $user_id ? get_userdata( $user_id ) : null;
-
-		if ( $user && Mirror::customer_id( $user->ID ) ) {
-			self::detail( $user );
-		} else {
-			self::list();
-		}
-
-		echo '</div>';
 	}
 
 	private static function list(): void {
-		$table = new CustomersTable();
+		$table   = new CustomersTable();
+		$actions = sprintf( '<a class="page-title-action" href="%s">%s</a>', esc_url( self::action_url( 'sync_all', 0 ) ), esc_html__( 'Resync everyone now', 'wp2-shopify' ) );
+
+		if ( '' !== Config::admin_url() ) {
+			$actions .= sprintf( ' <a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'wp2-shopify' ) );
+		}
+
 		$table->prepare_items();
+		Menu::page_start( __( 'Customers', 'wp2-shopify' ), __( 'Shopify customers', 'wp2-shopify' ), $actions, __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'wp2-shopify' ) );
+		self::notices();
 		?>
-		<h1 class="wp-heading-inline"><?php esc_html_e( 'Shopify customers', 'wp2-shopify' ); ?></h1>
-		<a class="page-title-action" href="<?php echo esc_url( self::action_url( 'sync_all', 0 ) ); ?>"><?php esc_html_e( 'Resync everyone now', 'wp2-shopify' ); ?></a>
-		<?php if ( '' !== Config::admin_url() ) : ?>
-			<a class="page-title-action" href="<?php echo esc_url( Config::admin_url( 'customers' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Customers in Shopify', 'wp2-shopify' ); ?></a>
-		<?php endif; ?>
-		<hr class="wp-header-end">
 		<?php $table->views(); ?>
 		<form method="get">
 			<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
@@ -219,86 +220,95 @@ final class Customers {
 		$id      = Mirror::customer_id( $user->ID );
 		$fixture = Mirror::is_fixture( $user->ID );
 		$tags    = Mirror::tags( $user->ID );
-		?>
-		<h1 class="wp-heading-inline"><?php echo esc_html( $user->display_name ?: $user->user_login ); ?></h1>
-		<a class="page-title-action" href="<?php echo esc_url( Menu::url( self::PAGE ) ); ?>"><?php esc_html_e( 'All customers', 'wp2-shopify' ); ?></a>
-		<hr class="wp-header-end">
+		$events  = EventLog::query( [ 'user' => $user->ID ], 15, 1 )['rows'];
+		$hooks   = ( new WpdbInboxStore() )->query( [ 'customer' => $id->numeric ], 15, 1 )['rows'];
+		$buttons = sprintf( '<a class="button" href="%s">%s</a>', esc_url( (string) get_edit_user_link( $user->ID ) ), esc_html__( 'Edit WordPress user', 'wp2-shopify' ) );
 
-		<p>
-			<a class="button" href="<?php echo esc_url( (string) get_edit_user_link( $user->ID ) ); ?>"><?php esc_html_e( 'Edit WordPress user', 'wp2-shopify' ); ?></a>
-			<?php if ( ! $fixture && '' !== Config::admin_url() ) : ?>
-				<a class="button" href="<?php echo esc_url( Config::admin_url( 'customers/' . $id->numeric ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open in Shopify admin', 'wp2-shopify' ); ?></a>
-			<?php endif; ?>
-			<a class="button button-primary" href="<?php echo esc_url( self::action_url( 'sync', $user->ID, true ) ); ?>"><?php esc_html_e( 'Resync from Shopify', 'wp2-shopify' ); ?></a>
-			<a class="button" href="<?php echo esc_url( self::action_url( 'unlink', $user->ID ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Disconnect this user from Shopify? Their WordPress account stays.', 'wp2-shopify' ) ); ?>')"><?php esc_html_e( 'Disconnect', 'wp2-shopify' ); ?></a>
-		</p>
+		if ( ! $fixture && '' !== Config::admin_url() ) {
+			$buttons .= sprintf( '<a class="button" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers/' . $id->numeric ) ), esc_html__( 'Open in Shopify admin', 'wp2-shopify' ) );
+		}
+
+		$buttons .= sprintf( '<a class="button" href="%s" onclick="return confirm(\'%s\')">%s</a>', esc_url( self::action_url( 'unlink', $user->ID ) ), esc_js( __( 'Disconnect this user from Shopify? Their WordPress account stays.', 'wp2-shopify' ) ), esc_html__( 'Disconnect', 'wp2-shopify' ) );
+		$buttons .= sprintf( '<a class="button button-primary" href="%s">%s</a>', esc_url( self::action_url( 'sync', $user->ID, true ) ), esc_html__( 'Resync from Shopify', 'wp2-shopify' ) );
+
+		Menu::page_start(
+			__( 'Customers', 'wp2-shopify' ),
+			$user->display_name ?: $user->user_login,
+			sprintf( '<a class="page-title-action" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) ), esc_html__( 'All customers', 'wp2-shopify' ) ),
+			$user->user_email
+		);
+		self::notices();
+		?>
 
 		<?php if ( $fixture ) : ?>
 			<div class="notice notice-info inline"><p><?php esc_html_e( 'Test fixture: this customer does not exist in Shopify. Tag edits and resyncs stay in WordPress.', 'wp2-shopify' ); ?></p></div>
 		<?php endif; ?>
 
-		<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
-			<div style="flex:1 1 420px;max-width:640px">
-				<h2><?php esc_html_e( 'Synced data', 'wp2-shopify' ); ?></h2>
-				<table class="widefat striped">
-					<?php foreach ( UserProfile::rows( $user ) as $label => $value ) : ?>
-						<tr><th style="width:40%"><?php echo esc_html( $label ); ?></th><td><?php echo esc_html( (string) $value ); ?></td></tr>
-					<?php endforeach; ?>
-				</table>
-			</div>
-
-			<div style="flex:1 1 320px;max-width:480px">
-				<h2><?php esc_html_e( 'Tags', 'wp2-shopify' ); ?></h2>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
-					<input type="hidden" name="do" value="tags">
-					<input type="hidden" name="user" value="<?php echo (int) $user->ID; ?>">
-					<?php wp_nonce_field( self::ACTION ); ?>
-					<?php if ( $tags ) : ?>
-						<p class="description"><?php esc_html_e( 'Tick a tag to remove it.', 'wp2-shopify' ); ?></p>
-						<?php foreach ( $tags as $tag ) : ?>
-							<label style="display:block"><input type="checkbox" name="remove[]" value="<?php echo esc_attr( $tag ); ?>"> <code><?php echo esc_html( $tag ); ?></code></label>
+		<div class="wp2s-columns">
+			<?php Menu::panel_start( __( 'Synced data', 'wp2-shopify' ), __( 'What WordPress last read from Shopify for this customer.', 'wp2-shopify' ), $buttons ); ?>
+				<div class="wp2s-panel__body wp2s-panel__body--flush">
+					<table class="widefat striped wp2s-kv">
+						<?php foreach ( UserProfile::rows( $user ) as $label => $value ) : ?>
+							<tr><th scope="row"><?php echo esc_html( $label ); ?></th><td><?php echo esc_html( (string) $value ); ?></td></tr>
 						<?php endforeach; ?>
-					<?php else : ?>
-						<p><?php esc_html_e( 'No tags.', 'wp2-shopify' ); ?></p>
-					<?php endif; ?>
-					<p>
-						<label for="wp2s-add-tags"><?php esc_html_e( 'Add tags (comma separated)', 'wp2-shopify' ); ?></label><br>
-						<input id="wp2s-add-tags" name="add" class="regular-text" placeholder="gold-member">
-					</p>
-					<?php submit_button( $fixture ? __( 'Save tags', 'wp2-shopify' ) : __( 'Save tags to Shopify', 'wp2-shopify' ), 'secondary', 'submit', false ); ?>
-				</form>
-			</div>
+					</table>
+				</div>
+			<?php Menu::panel_end(); ?>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
+				<input type="hidden" name="do" value="tags">
+				<input type="hidden" name="user" value="<?php echo (int) $user->ID; ?>">
+				<?php wp_nonce_field( self::ACTION ); ?>
+				<?php Menu::panel_start( __( 'Tags', 'wp2-shopify' ), $fixture ? __( 'Saved in WordPress only, because this is a test fixture.', 'wp2-shopify' ) : __( 'Saved to Shopify, then read back.', 'wp2-shopify' ) ); ?>
+					<div class="wp2s-panel__body">
+						<?php if ( $tags ) : ?>
+							<p class="description"><?php esc_html_e( 'Tick a tag to remove it.', 'wp2-shopify' ); ?></p>
+							<div class="wp2s-tag-list">
+								<?php foreach ( $tags as $tag ) : ?>
+									<label><input type="checkbox" name="remove[]" value="<?php echo esc_attr( $tag ); ?>"> <code><?php echo esc_html( $tag ); ?></code></label>
+								<?php endforeach; ?>
+							</div>
+						<?php else : ?>
+							<p><?php esc_html_e( 'No tags.', 'wp2-shopify' ); ?></p>
+						<?php endif; ?>
+						<p>
+							<label for="wp2s-add-tags"><?php esc_html_e( 'Add tags (comma separated)', 'wp2-shopify' ); ?></label><br>
+							<input type="text" id="wp2s-add-tags" name="add" class="regular-text" placeholder="gold-member">
+						</p>
+					</div>
+					<div class="wp2s-panel__footer">
+						<?php submit_button( $fixture ? __( 'Save tags', 'wp2-shopify' ) : __( 'Save tags to Shopify', 'wp2-shopify' ), 'secondary', 'submit', false ); ?>
+					</div>
+				<?php Menu::panel_end(); ?>
+			</form>
 		</div>
 
-		<h2><?php esc_html_e( 'Recent activity', 'wp2-shopify' ); ?></h2>
-		<?php
-		$events = EventLog::query( [ 'user' => $user->ID ], 15, 1 )['rows'];
-		$hooks  = ( new WpdbInboxStore() )->query( [ 'customer' => $id->numeric ], 15, 1 )['rows'];
-		?>
-		<div style="display:flex;flex-wrap:wrap;gap:24px">
-			<div style="flex:1 1 420px">
-				<h3><?php esc_html_e( 'App events', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Events::PAGE, [ 'user' => $user->ID ] ) ); ?>" style="font-size:13px;font-weight:400"><?php esc_html_e( 'All', 'wp2-shopify' ); ?></a></h3>
-				<table class="widefat striped">
-					<?php foreach ( $events as $row ) : ?>
-						<tr><td><?php echo Menu::ago( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['event'] ); ?></code></td><td><?php echo esc_html( trim( $row['label'] . ' ' . $row['status'] ) ); ?></td></tr>
-					<?php endforeach; ?>
-					<?php if ( ! $events ) : ?>
-						<tr><td><?php esc_html_e( 'Nothing logged yet.', 'wp2-shopify' ); ?></td></tr>
-					<?php endif; ?>
-				</table>
-			</div>
-			<div style="flex:1 1 420px">
-				<h3><?php esc_html_e( 'Webhooks', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Webhooks::PAGE, [ 'customer' => $id->numeric ] ) ); ?>" style="font-size:13px;font-weight:400"><?php esc_html_e( 'All', 'wp2-shopify' ); ?></a></h3>
-				<table class="widefat striped">
-					<?php foreach ( $hooks as $row ) : ?>
-						<tr><td><?php echo Menu::ago( $row['received_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['topic'] ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
-					<?php endforeach; ?>
-					<?php if ( ! $hooks ) : ?>
-						<tr><td><?php esc_html_e( 'No webhooks for this customer.', 'wp2-shopify' ); ?></td></tr>
-					<?php endif; ?>
-				</table>
-			</div>
+		<div class="wp2s-columns">
+			<?php Menu::panel_start( __( 'Recent app events', 'wp2-shopify' ), '', sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Events::PAGE, [ 'user' => $user->ID ] ) ), esc_html__( 'View all', 'wp2-shopify' ) ) ); ?>
+				<div class="wp2s-panel__body wp2s-panel__body--flush">
+					<table class="widefat striped">
+						<?php foreach ( $events as $row ) : ?>
+							<tr><td><?php echo Menu::ago( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['event'] ); ?></code></td><td><?php echo esc_html( trim( $row['label'] . ' ' . $row['status'] ) ); ?></td></tr>
+						<?php endforeach; ?>
+						<?php if ( ! $events ) : ?>
+							<tr><td><?php esc_html_e( 'Nothing logged yet.', 'wp2-shopify' ); ?></td></tr>
+						<?php endif; ?>
+					</table>
+				</div>
+			<?php Menu::panel_end(); ?>
+			<?php Menu::panel_start( __( 'Recent webhooks', 'wp2-shopify' ), '', sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Webhooks::PAGE, [ 'customer' => $id->numeric ] ) ), esc_html__( 'View all', 'wp2-shopify' ) ) ); ?>
+				<div class="wp2s-panel__body wp2s-panel__body--flush">
+					<table class="widefat striped">
+						<?php foreach ( $hooks as $row ) : ?>
+							<tr><td><?php echo Menu::ago( $row['received_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['topic'] ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
+						<?php endforeach; ?>
+						<?php if ( ! $hooks ) : ?>
+							<tr><td><?php esc_html_e( 'No webhooks for this customer.', 'wp2-shopify' ); ?></td></tr>
+						<?php endif; ?>
+					</table>
+				</div>
+			<?php Menu::panel_end(); ?>
 		</div>
 		<?php
 	}

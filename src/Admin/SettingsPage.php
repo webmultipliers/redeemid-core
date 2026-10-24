@@ -77,36 +77,88 @@ final class SettingsPage {
 			[ $name, $code ] = array_pad( explode( ':', $pair, 2 ), 2, '' );
 			$invalid[ $name ] = sanitize_key( $code );
 		}
-		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Shopify settings', 'wp2-shopify' ); ?></h1>
-			<?php
-			Menu::result_notice(
-				[
-					'config_saved'   => [ 'success', __( 'Connection saved. %d values changed.', 'wp2-shopify' ) ],
-					'config_invalid' => [ 'error', __( 'Some values were not saved. They are marked below.', 'wp2-shopify' ) ],
-				]
-			);
-			?>
+		Menu::page_start( __( 'Settings', 'wp2-shopify' ), __( 'Shopify settings', 'wp2-shopify' ) );
+		Menu::result_notice(
+			[
+				'config_saved'   => [ 'success', __( 'Connection saved. %d values changed.', 'wp2-shopify' ) ],
+				'config_invalid' => [ 'error', __( 'Some values were not saved. They are marked below.', 'wp2-shopify' ) ],
+			]
+		);
 
-			<h2><?php esc_html_e( 'Shopify connection', 'wp2-shopify' ); ?></h2>
-			<p class="description" style="max-width:820px">
-				<?php esc_html_e( 'Enter the store\'s credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or WP2_SHOPIFY_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it.', 'wp2-shopify' ); ?>
-			</p>
+		$sections = self::sections();
+		?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" autocomplete="off">
 				<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
 				<?php wp_nonce_field( self::ACTION ); ?>
-				<table class="form-table" role="presentation">
-					<?php foreach ( Config::definitions() as $name => $def ) : ?>
-						<?php self::field( $name, $def, $invalid[ $name ] ?? '' ); ?>
-					<?php endforeach; ?>
-				</table>
-				<?php submit_button( __( 'Save connection', 'wp2-shopify' ) ); ?>
+				<?php Menu::panel_start( __( 'Shopify connection', 'wp2-shopify' ), __( 'Enter the store\'s credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or WP2_SHOPIFY_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it.', 'wp2-shopify' ) ); ?>
+					<div class="wp2s-panel__body wp2s-panel__body--flush">
+						<table class="form-table" role="presentation">
+							<?php foreach ( $sections as [ $heading, $names ] ) : ?>
+								<tr class="wp2s-section-row">
+									<th colspan="2" scope="colgroup"><?php echo esc_html( $heading ); ?></th>
+								</tr>
+								<?php foreach ( $names as $name ) : ?>
+									<?php self::field( $name, Config::definitions()[ $name ], $invalid[ $name ] ?? '' ); ?>
+								<?php endforeach; ?>
+							<?php endforeach; ?>
+						</table>
+					</div>
+					<div class="wp2s-panel__footer">
+						<?php submit_button( __( 'Save connection', 'wp2-shopify' ), 'primary', 'submit', false ); ?>
+					</div>
+				<?php Menu::panel_end(); ?>
 			</form>
 
 			<?php self::behaviour(); ?>
-		</div>
 		<?php
+		Menu::page_end();
+	}
+
+	/**
+	 * The config values in groups, in Config::definitions() order. Display only.
+	 *
+	 * @return array<int, array{0: string, 1: string[]}>
+	 */
+	private static function sections(): array {
+		$groups = [
+			[ __( 'Store', 'wp2-shopify' ), [ 'WP2_SHOPIFY_STORE_DOMAIN' ] ],
+			[ __( 'Customer sign-in', 'wp2-shopify' ), [ 'WP2_SHOPIFY_CLIENT_ID', 'WP2_SHOPIFY_CLIENT_SECRET' ] ],
+			[ __( 'Admin API', 'wp2-shopify' ), [ 'WP2_SHOPIFY_ADMIN_CLIENT_ID', 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' ] ],
+			[ __( 'Storefront API', 'wp2-shopify' ), [ 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN', 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' ] ],
+			[ __( 'Encryption', 'wp2-shopify' ), [ 'WP2_SHOPIFY_ENCRYPTION_KEY' ] ],
+		];
+		$all    = array_keys( Config::definitions() );
+		$placed = [];
+		$out    = [];
+
+		foreach ( $groups as [ $heading, $names ] ) {
+			$names = array_values( array_intersect( $names, $all ) );
+
+			if ( $names ) {
+				$out[]  = [ $heading, $names ];
+				$placed = array_merge( $placed, $names );
+			}
+		}
+
+		$rest = array_values( array_diff( $all, $placed ) );
+
+		if ( $rest ) {
+			$out[] = [ __( 'Other', 'wp2-shopify' ), $rest ];
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Where a value comes from, as a status label. Escaped HTML.
+	 */
+	private static function source_status( string $source, bool $required ): string {
+		return match ( $source ) {
+			ConfigValues::CONSTANT   => Menu::status( 'neutral', __( 'wp-config.php', 'wp2-shopify' ) ),
+			ConfigValues::SETTINGS   => Menu::status( 'ok', __( 'Saved', 'wp2-shopify' ) ),
+			ConfigValues::UNREADABLE => Menu::status( 'error', __( 'Unreadable', 'wp2-shopify' ) ),
+			default                  => $required ? Menu::status( 'warn', __( 'Required', 'wp2-shopify' ) ) : Menu::status( 'neutral', __( 'Optional', 'wp2-shopify' ) ),
+		};
 	}
 
 	/**
@@ -125,7 +177,7 @@ final class SettingsPage {
 			<th scope="row">
 				<label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $def['label'] ); ?></label>
 				<?php if ( $def['required'] ) : ?>
-					<span style="color:#d63638" title="<?php esc_attr_e( 'Required', 'wp2-shopify' ); ?>">*</span>
+					<span class="wp2s-required" title="<?php esc_attr_e( 'Required', 'wp2-shopify' ); ?>">*</span>
 				<?php endif; ?>
 			</th>
 			<td>
@@ -134,7 +186,7 @@ final class SettingsPage {
 						value="<?php echo esc_attr( $secret ? ( ConfigValues::CONSTANT === $source ? '••••••••••••' : '' ) : Config::get( $name ) ); ?>"
 						placeholder="<?php echo esc_attr( $locked ? __( '(empty)', 'wp2-shopify' ) : __( 'Not set', 'wp2-shopify' ) ); ?>">
 					<p class="description">
-						<span class="dashicons dashicons-lock" aria-hidden="true" style="font-size:16px;width:16px;height:16px;vertical-align:text-bottom"></span>
+						<span class="dashicons dashicons-lock wp2s-icon-inline" aria-hidden="true"></span>
 						<?php
 						if ( $locked ) {
 							/* translators: %s: constant name */
@@ -146,24 +198,28 @@ final class SettingsPage {
 						?>
 					</p>
 				<?php elseif ( $secret ) : ?>
-					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code" type="password" name="<?php echo esc_attr( $field ); ?>" value="" autocomplete="new-password" spellcheck="false"
+					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code<?php echo $invalid ? ' wp2s-invalid' : ''; ?>" type="password" name="<?php echo esc_attr( $field ); ?>" value="" autocomplete="new-password" spellcheck="false"
 						placeholder="<?php echo esc_attr( ConfigValues::SETTINGS === $source ? __( 'Saved. Leave blank to keep it.', 'wp2-shopify' ) : __( 'Not set', 'wp2-shopify' ) ); ?>"
-						<?php echo $invalid ? 'aria-invalid="true" style="border-color:#d63638"' : ''; ?>>
+						<?php echo $invalid ? 'aria-invalid="true"' : ''; ?>>
 					<?php if ( ConfigValues::NONE !== $source ) : ?>
-						<label style="margin-left:8px"><input type="checkbox" name="clear[]" value="<?php echo esc_attr( $name ); ?>"> <?php esc_html_e( 'Remove the saved value', 'wp2-shopify' ); ?></label>
+						<label class="wp2s-clear"><input type="checkbox" name="clear[]" value="<?php echo esc_attr( $name ); ?>"> <?php esc_html_e( 'Remove the saved value', 'wp2-shopify' ); ?></label>
 					<?php endif; ?>
 					<?php if ( ConfigValues::UNREADABLE === $source ) : ?>
-						<p class="description" style="color:#d63638"><?php esc_html_e( 'A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or WP2_SHOPIFY_ENCRYPTION_KEY changed since it was saved. Enter it again.', 'wp2-shopify' ); ?></p>
+						<p class="description wp2s-error-text"><?php esc_html_e( 'A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or WP2_SHOPIFY_ENCRYPTION_KEY changed since it was saved. Enter it again.', 'wp2-shopify' ); ?></p>
 					<?php endif; ?>
 				<?php else : ?>
-					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code" type="text" name="<?php echo esc_attr( $field ); ?>" value="<?php echo esc_attr( Config::get( $name ) ); ?>" spellcheck="false"
+					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code<?php echo $invalid ? ' wp2s-invalid' : ''; ?>" type="text" name="<?php echo esc_attr( $field ); ?>" value="<?php echo esc_attr( Config::get( $name ) ); ?>" spellcheck="false"
 						<?php echo 'WP2_SHOPIFY_STORE_DOMAIN' === $name ? 'placeholder="your-store.myshopify.com"' : ''; ?>
-						<?php echo $invalid ? 'aria-invalid="true" style="border-color:#d63638"' : ''; ?>>
+						<?php echo $invalid ? 'aria-invalid="true"' : ''; ?>>
 				<?php endif; ?>
 				<?php if ( $invalid ) : ?>
-					<p class="description" style="color:#d63638"><?php esc_html_e( 'Not saved:', 'wp2-shopify' ); ?> <?php echo esc_html( self::reason( $invalid ) ); ?></p>
+					<p class="description wp2s-error-text"><?php esc_html_e( 'Not saved:', 'wp2-shopify' ); ?> <?php echo esc_html( self::reason( $invalid ) ); ?></p>
 				<?php endif; ?>
-				<p class="description" style="max-width:640px"><?php echo esc_html( $def['help'] ); ?> <code style="font-size:11px"><?php echo esc_html( $name ); ?></code></p>
+				<p class="description wp2s-help"><?php echo esc_html( $def['help'] ); ?></p>
+				<div class="wp2s-field-meta">
+					<?php echo self::source_status( $source, $def['required'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					<code class="wp2s-code-small"><?php echo esc_html( $name ); ?></code>
+				</div>
 			</td>
 		</tr>
 		<?php
@@ -184,37 +240,42 @@ final class SettingsPage {
 	private static function behaviour(): void {
 		$settings = Settings::all();
 		?>
-		<h2><?php esc_html_e( 'Membership', 'wp2-shopify' ); ?></h2>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'wp2_shopify' ); ?>
-			<table class="form-table">
+			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How synced Shopify tags unlock content, which products grant tags, and what happens on sign-out.', 'wp2-shopify' ) ); ?>
+			<div class="wp2s-panel__body wp2s-panel__body--flush">
+			<table class="form-table" role="presentation">
 				<tr>
-					<th><label for="wp2s-fresh"><?php esc_html_e( 'Membership freshness window (days)', 'wp2-shopify' ); ?></label></th>
+					<th scope="row"><label for="wp2s-fresh"><?php esc_html_e( 'Membership freshness window (days)', 'wp2-shopify' ); ?></label></th>
 					<td><input id="wp2s-fresh" type="number" min="0" max="365" name="<?php echo esc_attr( Settings::OPTION ); ?>[freshness_days]" value="<?php echo esc_attr( (string) $settings['freshness_days'] ); ?>"> <p class="description"><?php esc_html_e( 'Synced tags older than this no longer unlock content. 0 disables the limit.', 'wp2-shopify' ); ?></p></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e( 'When Shopify is unreachable', 'wp2-shopify' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'When Shopify is unreachable', 'wp2-shopify' ); ?></th>
 					<td>
 						<label><input type="radio" name="<?php echo esc_attr( Settings::OPTION ); ?>[stale_behavior]" value="honor" <?php checked( 'honor', $settings['stale_behavior'] ); ?>> <?php esc_html_e( 'Honor synced tags within the window (default)', 'wp2-shopify' ); ?></label><br>
 						<label><input type="radio" name="<?php echo esc_attr( Settings::OPTION ); ?>[stale_behavior]" value="fail_closed" <?php checked( 'fail_closed', $settings['stale_behavior'] ); ?>> <?php esc_html_e( 'Lock immediately after a failed sync', 'wp2-shopify' ); ?></label>
 					</td>
 				</tr>
 				<tr>
-					<th><label for="wp2s-map"><?php esc_html_e( 'Membership products', 'wp2-shopify' ); ?></label></th>
+					<th scope="row"><label for="wp2s-map"><?php esc_html_e( 'Membership products', 'wp2-shopify' ); ?></label></th>
 					<td>
-						<textarea id="wp2s-map" rows="5" cols="60" class="code" name="<?php echo esc_attr( Settings::OPTION ); ?>[membership_map]" placeholder="1234567890: member, gold"><?php echo esc_textarea( (string) $settings['membership_map'] ); ?></textarea>
+						<textarea id="wp2s-map" rows="5" cols="60" class="large-text code" name="<?php echo esc_attr( Settings::OPTION ); ?>[membership_map]" placeholder="1234567890: member, gold"><?php echo esc_textarea( (string) $settings['membership_map'] ); ?></textarea>
 						<p class="description"><?php esc_html_e( 'One per line: Shopify product ID, a colon, then the customer tags a paid order grants. The plugin adds these tags on payment and removes them on refund or cancellation. It never touches other tags.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e( 'Shared devices', 'wp2-shopify' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Shared devices', 'wp2-shopify' ); ?></th>
 					<td>
 						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'wp2-shopify' ); ?></label>
 						<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 			</table>
-			<?php submit_button(); ?>
+			</div>
+			<div class="wp2s-panel__footer">
+				<?php submit_button( null, 'primary', 'submit', false ); ?>
+			</div>
+			<?php Menu::panel_end(); ?>
 		</form>
 		<?php
 	}

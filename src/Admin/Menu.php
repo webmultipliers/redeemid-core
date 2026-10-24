@@ -34,6 +34,7 @@ final class Menu {
 		add_action( 'admin_init', [ self::class, 'settings' ] );
 		add_action( 'admin_init', [ self::class, 'redirect_old_page' ] );
 		add_action( 'admin_notices', [ self::class, 'notices' ] );
+		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue' ] );
 		// Runs before admin_menu, so it is added here.
 		add_filter( 'set_screen_option_wp2_shopify_per_page', static fn( $keep, $option, $value ) => max( 10, min( 500, (int) $value ) ), 10, 3 );
 
@@ -67,6 +68,23 @@ final class Menu {
 			if ( $hook ) {
 				add_action( 'load-' . $hook, static fn() => add_screen_option( 'per_page', [ 'default' => 50, 'option' => 'wp2_shopify_per_page' ] ) );
 			}
+		}
+	}
+
+	/**
+	 * The plugin's own menu pages. Pages other code adds under the menu are not in it.
+	 *
+	 * @return string[]
+	 */
+	public static function pages(): array {
+		return [ self::SLUG, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Access::PAGE, Debug::PAGE ];
+	}
+
+	public static function enqueue(): void {
+		$page = sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( in_array( $page, self::pages(), true ) ) {
+			wp_enqueue_style( 'wp2-shopify-admin', WP2_SHOPIFY_URL . 'assets/admin.css', [], WP2_SHOPIFY_VERSION );
 		}
 	}
 
@@ -157,7 +175,7 @@ final class Menu {
 
 	public static function action_button( string $action, string $do, string $label, array $fields = [], string $class = 'secondary' ): void {
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin:0 8px 8px 0">
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="wp2s-action-form">
 			<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
 			<input type="hidden" name="do" value="<?php echo esc_attr( $do ); ?>">
 			<?php foreach ( $fields as $name => $value ) : ?>
@@ -170,7 +188,97 @@ final class Menu {
 	}
 
 	public static function dot( bool $pass ): string {
-		return $pass ? '<span style="color:#008a20" aria-label="ok">●</span> ' : '<span style="color:#d63638" aria-label="problem">●</span> ';
+		return $pass
+			? '<span class="wp2s-dot" role="img" aria-label="' . esc_attr__( 'OK', 'wp2-shopify' ) . '"></span>'
+			: '<span class="wp2s-dot is-error" role="img" aria-label="' . esc_attr__( 'Problem', 'wp2-shopify' ) . '"></span>';
+	}
+
+	/**
+	 * A status label: a coloured pill with a word in it. Escaped HTML.
+	 *
+	 * @param bool|string $state true / 'ok', false / 'error', 'warn' or 'neutral'.
+	 */
+	public static function status( bool|string $state, string $label ): string {
+		$state = is_bool( $state ) ? ( $state ? 'ok' : 'error' ) : $state;
+
+		return '<span class="wp2s-status is-' . esc_attr( $state ) . '">' . esc_html( $label ) . '</span>';
+	}
+
+	/**
+	 * Open a Shopify admin page: the header bar, the title, any title actions
+	 * (escaped HTML, usually page-title-action links) and an intro line.
+	 * Close it with page_end().
+	 */
+	public static function page_start( string $section, string $title, string $actions = '', string $intro = '' ): void {
+		$domain  = Config::store_domain();
+		$missing = array_filter( Config::definitions(), static fn( $def, $name ) => $def['required'] && ! Config::has( $name ), ARRAY_FILTER_USE_BOTH );
+		?>
+		<div class="wp2s-topbar">
+			<a class="wp2s-topbar__brand" href="<?php echo esc_url( self::url() ); ?>"><span class="dashicons dashicons-cart" aria-hidden="true"></span><?php esc_html_e( 'Shopify', 'wp2-shopify' ); ?></a>
+			<?php if ( self::SLUG !== ( $_GET['page'] ?? '' ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
+				<span class="wp2s-topbar__sep" aria-hidden="true">/</span>
+				<span class="wp2s-topbar__page"><?php echo esc_html( $section ); ?></span>
+			<?php endif; ?>
+			<span class="wp2s-topbar__store">
+				<?php if ( '' !== $domain && '' !== Config::admin_url() ) : ?>
+					<a href="<?php echo esc_url( Config::admin_url() ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $domain ); ?></a>
+				<?php elseif ( '' !== $domain ) : ?>
+					<?php echo esc_html( $domain ); ?>
+				<?php endif; ?>
+				<a class="wp2s-topbar__status" href="<?php echo esc_url( self::url( SettingsPage::PAGE ) ); ?>">
+					<?php echo $missing ? self::status( 'warn', __( 'Setup incomplete', 'wp2-shopify' ) ) : self::status( 'ok', __( 'Configured', 'wp2-shopify' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				</a>
+			</span>
+		</div>
+		<div class="wrap wp2s">
+			<h1 class="wp-heading-inline"><?php echo esc_html( $title ); ?></h1>
+			<?php echo $actions; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped by the caller. ?>
+			<hr class="wp-header-end">
+			<?php if ( '' !== $intro ) : ?>
+				<p class="wp2s-intro"><?php echo esc_html( $intro ); ?></p>
+			<?php endif; ?>
+		<?php
+	}
+
+	public static function page_end(): void {
+		echo '</div>';
+	}
+
+	/**
+	 * Open a panel: a titled white box. The caller adds the body
+	 * (.wp2s-panel__body) and footer, then closes it with panel_end().
+	 *
+	 * @param string $actions Escaped HTML shown at the right of the title.
+	 */
+	public static function panel_start( string $title, string $description = '', string $actions = '', string $id = '' ): void {
+		?>
+		<section class="wp2s-panel"<?php echo '' !== $id ? ' id="' . esc_attr( $id ) . '"' : ''; ?>>
+			<div class="wp2s-panel__header">
+				<div>
+					<h2><?php echo esc_html( $title ); ?></h2>
+					<?php if ( '' !== $description ) : ?>
+						<p><?php echo esc_html( $description ); ?></p>
+					<?php endif; ?>
+				</div>
+				<?php if ( '' !== $actions ) : ?>
+					<div class="wp2s-panel__actions"><?php echo $actions; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped by the caller. ?></div>
+				<?php endif; ?>
+			</div>
+		<?php
+	}
+
+	public static function panel_end(): void {
+		echo '</section>';
+	}
+
+	/**
+	 * Menu::action_button(), captured as a string for panel and title actions.
+	 */
+	public static function action_button_html( string $action, string $do, string $label, array $fields = [], string $class = 'secondary' ): string {
+		ob_start();
+		self::action_button( $action, $do, $label, $fields, $class );
+
+		return (string) ob_get_clean();
 	}
 
 	public static function time( mixed $stamp ): string {

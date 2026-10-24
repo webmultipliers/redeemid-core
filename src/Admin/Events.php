@@ -32,14 +32,14 @@ final class Events {
 		$table = new EventsTable();
 		$table->prepare_items();
 		$f = EventsTable::filters();
+		Menu::page_start(
+			__( 'App events', 'wp2-shopify' ),
+			__( 'Shopify app events', 'wp2-shopify' ),
+			sprintf( '<a class="page-title-action" href="%s" onclick="return confirm(\'%s\')">%s</a>', esc_url( wp_nonce_url( add_query_arg( [ 'action' => self::ACTION, 'do' => 'clear' ], admin_url( 'admin-post.php' ) ), self::ACTION ) ), esc_js( __( 'Delete every logged event?', 'wp2-shopify' ) ), esc_html__( 'Clear log', 'wp2-shopify' ) ),
+			sprintf( /* translators: %d: days */ __( 'Every call the plugin made to Shopify, and what it did with the answer. Kept for %d days. No request or response bodies, tokens or secrets are recorded.', 'wp2-shopify' ), EventLog::RETENTION / DAY_IN_SECONDS )
+		);
+		Menu::result_notice( [ 'cleared' => [ 'success', __( 'Event log cleared.', 'wp2-shopify' ) ] ] );
 		?>
-		<div class="wrap">
-			<h1 class="wp-heading-inline"><?php esc_html_e( 'Shopify app events', 'wp2-shopify' ); ?></h1>
-			<a class="page-title-action" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => self::ACTION, 'do' => 'clear' ], admin_url( 'admin-post.php' ) ), self::ACTION ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Delete every logged event?', 'wp2-shopify' ) ); ?>')"><?php esc_html_e( 'Clear log', 'wp2-shopify' ); ?></a>
-			<hr class="wp-header-end">
-			<?php Menu::result_notice( [ 'cleared' => [ 'success', __( 'Event log cleared.', 'wp2-shopify' ) ] ] ); ?>
-			<p class="description"><?php echo esc_html( sprintf( /* translators: %d: days */ __( 'Kept for %d days. No request or response bodies, tokens or secrets are recorded.', 'wp2-shopify' ), EventLog::RETENTION / DAY_IN_SECONDS ) ); ?></p>
-			<style>.wp-list-table.events .column-created_at{width:10em}.wp-list-table.events .column-event{width:13em}.wp-list-table.events .column-ms,.wp-list-table.events .column-origin{width:6em}.wp-list-table.events .column-context{width:28%;word-break:break-all}</style>
 			<?php $table->views(); ?>
 			<form method="get">
 				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
@@ -51,7 +51,7 @@ final class Events {
 				<?php $table->search_box( __( 'Search events', 'wp2-shopify' ), 'wp2s-events' ); ?>
 				<?php $table->display(); ?>
 			</form>
-		</div>
 		<?php
+		Menu::page_end();
 	}
 }

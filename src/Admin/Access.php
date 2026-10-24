@@ -139,9 +139,15 @@ final class Access {
 	public static function render(): void {
 		$tab = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$tab = in_array( $tab, [ 'rules', 'features', 'test' ], true ) ? $tab : 'levels';
+		$intros = [
+			'levels'   => __( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'wp2-shopify' ),
+			'rules'    => __( 'The rule an item gets, from strongest to weakest: the item\'s own setting, then its terms, then its post type, then the site default. Leave every level unticked for "no rule here". Blocks inside an item can only narrow its rule.', 'wp2-shopify' ),
+			'features' => __( 'A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost.', 'wp2-shopify' ),
+			'test'     => __( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'wp2-shopify' ),
+		];
+
+		Menu::page_start( __( 'Access', 'wp2-shopify' ), __( 'Access', 'wp2-shopify' ) );
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Access', 'wp2-shopify' ); ?></h1>
 			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'Access sections', 'wp2-shopify' ); ?>">
 				<a class="nav-tab <?php echo 'levels' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE ) ); ?>"><?php esc_html_e( 'Levels', 'wp2-shopify' ); ?></a>
 				<a class="nav-tab <?php echo 'rules' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Content rules', 'wp2-shopify' ); ?></a>
@@ -149,6 +155,8 @@ final class Access {
 				<a class="nav-tab <?php echo 'test' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'test' ] ) ); ?>"><?php esc_html_e( 'Test', 'wp2-shopify' ); ?></a>
 			</nav>
 			<?php
+			echo '<p class="wp2s-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
+
 			Menu::result_notice(
 				[
 					'saved'             => [ 'success', __( 'Level saved.', 'wp2-shopify' ) ],
@@ -168,9 +176,8 @@ final class Access {
 				'test'     => AccessTest::render(),
 				default    => self::render_levels(),
 			};
-			?>
-		</div>
-		<?php
+
+		Menu::page_end();
 	}
 
 	private static function render_levels(): void {
@@ -186,107 +193,122 @@ final class Access {
 			'unknown_include' => __( 'Includes a level that does not exist.', 'wp2-shopify' ),
 		];
 		?>
-			<p style="max-width:760px"><?php esc_html_e( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'wp2-shopify' ); ?></p>
+		<?php if ( $managed ) : ?>
+			<div class="notice notice-info inline"><p><?php esc_html_e( 'Managed in code: the wp2_shopify_access_levels filter sets these levels, so they are read-only here.', 'wp2-shopify' ); ?></p></div>
+		<?php endif; ?>
 
-			<?php if ( $managed ) : ?>
-				<div class="notice notice-info inline"><p><?php esc_html_e( 'Managed in code: the wp2_shopify_access_levels filter sets these levels, so they are read-only here.', 'wp2-shopify' ); ?></p></div>
-			<?php endif; ?>
-
-			<table class="widefat striped" style="max-width:1100px">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'Level', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Customer tags', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Includes', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Health', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Would match today', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Features', 'wp2-shopify' ); ?></th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-				<?php foreach ( $levels->all() as $slug => $level ) : ?>
-					<?php
-					$problems = $levels->health( $slug, $known );
-					$missing  = $levels->missing_tags( $slug, $known );
-					?>
-					<tr>
-						<td>
-							<strong><?php echo esc_html( $level->label ); ?></strong>
-							<?php if ( $level->badge ) : ?>
-								<span style="display:inline-block;padding:0 6px;border-radius:3px;background:<?php echo esc_attr( $level->badge ); ?>;color:#fff;font-size:11px"><?php echo esc_html( $level->label ); ?></span>
-							<?php endif; ?>
-							<br><code><?php echo esc_html( $slug ); ?></code>
-						</td>
-						<td>
-							<?php
-							if ( Level::PUBLIC === $slug ) {
-								esc_html_e( 'Everyone', 'wp2-shopify' );
-							} elseif ( Level::SIGNED_IN === $slug ) {
-								esc_html_e( 'Any signed-in visitor', 'wp2-shopify' );
-							} else {
-								foreach ( $level->groups as $i => $group ) {
-									echo $i ? '<br>' . esc_html__( 'or ', 'wp2-shopify' ) : '';
-									echo esc_html( ( Rule::MATCH_ALL === $group->match_mode ? __( 'all of ', 'wp2-shopify' ) : __( 'any of ', 'wp2-shopify' ) ) . implode( ', ', $group->required_tags ) );
+		<?php Menu::panel_start( __( 'Levels', 'wp2-shopify' ), '', $managed ? '' : sprintf( '<a class="button button-primary" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) . '#level-form' ), esc_html__( 'Add a level', 'wp2-shopify' ) ) ); ?>
+			<div class="wp2s-panel__body wp2s-panel__body--flush wp2s-table-scroll">
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Level', 'wp2-shopify' ); ?></th>
+							<th><?php esc_html_e( 'Customer tags', 'wp2-shopify' ); ?></th>
+							<th><?php esc_html_e( 'Includes', 'wp2-shopify' ); ?></th>
+							<th><?php esc_html_e( 'Health', 'wp2-shopify' ); ?></th>
+							<th><?php esc_html_e( 'Would match today', 'wp2-shopify' ); ?></th>
+							<th><?php esc_html_e( 'Features', 'wp2-shopify' ); ?></th>
+							<th><span class="screen-reader-text"><?php esc_html_e( 'Actions', 'wp2-shopify' ); ?></span></th>
+						</tr>
+					</thead>
+					<tbody>
+					<?php foreach ( $levels->all() as $slug => $level ) : ?>
+						<?php
+						$problems = $levels->health( $slug, $known );
+						$missing  = $levels->missing_tags( $slug, $known );
+						?>
+						<tr>
+							<td>
+								<?php if ( $level->badge ) : ?>
+									<span class="wp2s-chip wp2s-chip--solid" style="background:<?php echo esc_attr( $level->badge ); ?>"><?php echo esc_html( $level->label ); ?></span>
+								<?php else : ?>
+									<strong><?php echo esc_html( $level->label ); ?></strong>
+								<?php endif; ?>
+								<br><code class="wp2s-code-small"><?php echo esc_html( $slug ); ?></code>
+							</td>
+							<td>
+								<?php
+								if ( Level::PUBLIC === $slug ) {
+									esc_html_e( 'Everyone', 'wp2-shopify' );
+								} elseif ( Level::SIGNED_IN === $slug ) {
+									esc_html_e( 'Any signed-in visitor', 'wp2-shopify' );
+								} else {
+									foreach ( $level->groups as $i => $group ) {
+										echo $i ? '<br>' . esc_html__( 'or ', 'wp2-shopify' ) : '';
+										echo esc_html( Rule::MATCH_ALL === $group->match_mode ? __( 'all of ', 'wp2-shopify' ) : __( 'any of ', 'wp2-shopify' ) );
+										echo implode( ' ', array_map( static fn( $tag ) => '<code class="wp2s-chip">' . esc_html( $tag ) . '</code>', $group->required_tags ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+									}
 								}
-							}
-							?>
-						</td>
-						<td><?php echo esc_html( implode( ', ', array_map( static fn( $s ) => $levels->get( $s )?->label ?? $s, $level->includes ) ) ?: '—' ); ?></td>
-						<td>
-							<?php if ( ! $problems ) : ?>
-								<?php echo Menu::dot( true ) . esc_html__( 'OK', 'wp2-shopify' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-							<?php else : ?>
-								<?php foreach ( $problems as $problem ) : ?>
-									<?php echo Menu::dot( false ) . esc_html( $words[ $problem ] ?? $problem ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-									<?php if ( 'missing_tags' === $problem ) : ?>
-										<code><?php echo esc_html( implode( ', ', $missing ) ); ?></code>
-									<?php endif; ?>
-									<br>
-								<?php endforeach; ?>
-							<?php endif; ?>
-						</td>
-						<td><?php echo $level->builtin() ? '—' : esc_html( sprintf( /* translators: %d: number of customers */ _n( '%d customer', '%d customers', $counts[ $slug ] ?? 0, 'wp2-shopify' ), $counts[ $slug ] ?? 0 ) ); ?></td>
-						<td><?php echo esc_html( implode( ', ', self::level_features( $slug ) ) ?: '—' ); ?></td>
-						<td>
-							<?php if ( ! $level->builtin() && ! $managed ) : ?>
-								<a class="button" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'edit' => $slug ] ) . '#level-form' ); ?>"><?php esc_html_e( 'Edit', 'wp2-shopify' ); ?></a>
-								<?php Menu::action_button( self::ACTION, 'delete_level', __( 'Delete', 'wp2-shopify' ), [ 'slug' => $slug ], 'delete' ); ?>
-							<?php endif; ?>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-				</tbody>
-			</table>
+								?>
+							</td>
+							<td><?php echo esc_html( implode( ', ', array_map( static fn( $s ) => $levels->get( $s )?->label ?? $s, $level->includes ) ) ?: '—' ); ?></td>
+							<td>
+								<?php if ( ! $problems ) : ?>
+									<?php echo Menu::status( true, __( 'OK', 'wp2-shopify' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+								<?php else : ?>
+									<?php foreach ( $problems as $problem ) : ?>
+										<p class="wp2s-problem">
+											<?php echo Menu::dot( false ) . esc_html( $words[ $problem ] ?? $problem ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+											<?php if ( 'missing_tags' === $problem ) : ?>
+												<code><?php echo esc_html( implode( ', ', $missing ) ); ?></code>
+											<?php endif; ?>
+										</p>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</td>
+							<td><?php echo $level->builtin() ? '—' : esc_html( sprintf( /* translators: %d: number of customers */ _n( '%d customer', '%d customers', $counts[ $slug ] ?? 0, 'wp2-shopify' ), $counts[ $slug ] ?? 0 ) ); ?></td>
+							<td><?php echo esc_html( implode( ', ', self::level_features( $slug ) ) ?: '—' ); ?></td>
+							<td class="wp2s-row-actions">
+								<?php if ( ! $level->builtin() && ! $managed ) : ?>
+									<a class="button button-small" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'edit' => $slug ] ) . '#level-form' ); ?>"><?php esc_html_e( 'Edit', 'wp2-shopify' ); ?></a>
+									<?php Menu::action_button( self::ACTION, 'delete_level', __( 'Delete', 'wp2-shopify' ), [ 'slug' => $slug ], 'delete small' ); ?>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
+			<div class="wp2s-panel__footer">
+				<?php Menu::action_button( self::ACTION, 'refresh', __( 'Refresh tag list now', 'wp2-shopify' ) ); ?>
+				<span class="description">
+					<?php
+					printf(
+						/* translators: %d: number of distinct tags */
+						esc_html__( 'Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts ignore sync freshness, so they show who would match, not who is signed in now.', 'wp2-shopify' ),
+						count( $known )
+					);
+					?>
+				</span>
+			</div>
+		<?php Menu::panel_end(); ?>
 
-			<p>
+		<?php if ( ! $managed ) : ?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
+				<input type="hidden" name="do" value="save_level">
+				<?php wp_nonce_field( self::ACTION ); ?>
 				<?php
-				printf(
-					/* translators: %d: number of distinct tags */
-					esc_html__( 'Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts ignore sync freshness, so they show who would match, not who is signed in now.', 'wp2-shopify' ),
-					count( $known )
+				Menu::panel_start(
+					/* translators: %s: level label */
+					$edit ? sprintf( __( 'Edit %s', 'wp2-shopify' ), $edit->label ) : __( 'Add a level', 'wp2-shopify' ),
+					__( 'Name the level, say which customer tags grant it, and what locked visitors see.', 'wp2-shopify' ),
+					$edit ? sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) . '#level-form' ), esc_html__( 'Cancel', 'wp2-shopify' ) ) : '',
+					'level-form'
 				);
 				?>
-			</p>
-			<?php Menu::action_button( self::ACTION, 'refresh', __( 'Refresh tag list now', 'wp2-shopify' ) ); ?>
-
-			<?php if ( ! $managed ) : ?>
-				<h2 id="level-form"><?php echo $edit ? esc_html( sprintf( /* translators: %s: level label */ __( 'Edit %s', 'wp2-shopify' ), $edit->label ) ) : esc_html__( 'Add a level', 'wp2-shopify' ); ?></h2>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
-					<input type="hidden" name="do" value="save_level">
-					<?php wp_nonce_field( self::ACTION ); ?>
-					<table class="form-table" role="presentation">
+				<div class="wp2s-panel__body wp2s-panel__body--flush">
+				<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><label for="wp2-level-slug"><?php esc_html_e( 'Slug', 'wp2-shopify' ); ?></label></th>
 							<td>
-								<input id="wp2-level-slug" name="slug" class="regular-text" required value="<?php echo esc_attr( $edit->slug ?? '' ); ?>" <?php echo $edit ? 'readonly' : ''; ?>>
+								<input type="text" id="wp2-level-slug" name="slug" class="regular-text" required value="<?php echo esc_attr( $edit->slug ?? '' ); ?>" <?php echo $edit ? 'readonly' : ''; ?>>
 								<p class="description"><?php esc_html_e( 'Rules store the slug, so it never changes after saving.', 'wp2-shopify' ); ?></p>
 							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="wp2-level-label"><?php esc_html_e( 'Label', 'wp2-shopify' ); ?></label></th>
-							<td><input id="wp2-level-label" name="label" class="regular-text" value="<?php echo esc_attr( $edit->label ?? '' ); ?>"></td>
+							<td><input type="text" id="wp2-level-label" name="label" class="regular-text" value="<?php echo esc_attr( $edit->label ?? '' ); ?>"></td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="wp2-level-groups"><?php esc_html_e( 'Customer tags', 'wp2-shopify' ); ?></label></th>
@@ -298,14 +320,14 @@ final class Access {
 						<tr>
 							<th scope="row"><label for="wp2-level-includes"><?php esc_html_e( 'Includes', 'wp2-shopify' ); ?></label></th>
 							<td>
-								<input id="wp2-level-includes" name="includes" class="regular-text" value="<?php echo esc_attr( implode( ', ', $edit->includes ?? [] ) ); ?>">
+								<input type="text" id="wp2-level-includes" name="includes" class="regular-text" value="<?php echo esc_attr( implode( ', ', $edit->includes ?? [] ) ); ?>">
 								<p class="description"><?php esc_html_e( 'Slugs of levels this one also opens, separated by commas. Gold including silver means Gold members read Silver content.', 'wp2-shopify' ); ?></p>
 							</td>
 						</tr>
 						<tr>
 							<th scope="row"><label for="wp2-level-badge"><?php esc_html_e( 'Badge colour', 'wp2-shopify' ); ?></label></th>
 							<td>
-								<input id="wp2-level-badge" name="badge" class="small-text" placeholder="#c9a227" value="<?php echo esc_attr( $edit->badge ?? '' ); ?>">
+								<input type="text" id="wp2-level-badge" name="badge" class="regular-text wp2s-input-short code" placeholder="#c9a227" value="<?php echo esc_attr( $edit->badge ?? '' ); ?>">
 								<p class="description"><?php esc_html_e( 'Badges always show the label too, never colour alone.', 'wp2-shopify' ); ?></p>
 							</td>
 						</tr>
@@ -316,8 +338,8 @@ final class Access {
 						<tr>
 							<th scope="row"><label for="wp2-level-cta-label"><?php esc_html_e( 'Call to action', 'wp2-shopify' ); ?></label></th>
 							<td>
-								<input id="wp2-level-cta-label" name="cta_label" class="regular-text" placeholder="<?php esc_attr_e( 'Become a Gold member', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( $edit->cta_label ?? '' ); ?>">
-								<input name="cta_url" class="regular-text" aria-label="<?php esc_attr_e( 'Call to action URL', 'wp2-shopify' ); ?>" placeholder="/join/gold/" value="<?php echo esc_attr( $edit->cta_url ?? '' ); ?>">
+								<input type="text" id="wp2-level-cta-label" name="cta_label" class="regular-text" placeholder="<?php esc_attr_e( 'Become a Gold member', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( $edit->cta_label ?? '' ); ?>">
+								<br><input type="text" name="cta_url" class="regular-text wp2s-stack" aria-label="<?php esc_attr_e( 'Call to action URL', 'wp2-shopify' ); ?>" placeholder="/join/gold/" value="<?php echo esc_attr( $edit->cta_url ?? '' ); ?>">
 							</td>
 						</tr>
 						<?php $wp2_features = array_filter( Registry::features(), static fn( Feature $f ) => ! $f->managed ); ?>
@@ -327,7 +349,7 @@ final class Access {
 								<td>
 									<input type="hidden" name="features_present" value="1">
 									<?php foreach ( $wp2_features as $wp2_slug => $wp2_feature ) : ?>
-										<label style="display:block">
+										<label class="wp2s-block-label">
 											<input type="checkbox" name="features[]" value="<?php echo esc_attr( $wp2_slug ); ?>" <?php checked( $edit && (bool) array_filter( $wp2_feature->routes, static fn( $r ) => $r->is_level_only( $edit->slug ) ) ); ?>>
 											<?php echo esc_html( $wp2_feature->label ); ?>
 										</label>
@@ -336,9 +358,13 @@ final class Access {
 								</td>
 							</tr>
 						<?php endif; ?>
-					</table>
-					<?php submit_button( $edit ? __( 'Save level', 'wp2-shopify' ) : __( 'Add level', 'wp2-shopify' ) ); ?>
-				</form>
+				</table>
+				</div>
+				<div class="wp2s-panel__footer">
+					<?php submit_button( $edit ? __( 'Save level', 'wp2-shopify' ) : __( 'Add level', 'wp2-shopify' ), 'primary', 'submit', false ); ?>
+				</div>
+				<?php Menu::panel_end(); ?>
+			</form>
 			<?php endif; ?>
 		<?php
 	}

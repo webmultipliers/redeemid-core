@@ -83,7 +83,7 @@ final class WebhooksTable extends \WP_List_Table {
 					<option value="<?php echo esc_attr( $topic ); ?>" <?php selected( $filters['topic'], $topic ); ?>><?php echo esc_html( $topic ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<input name="customer" placeholder="<?php esc_attr_e( 'Customer ID', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( $filters['customer'] ); ?>" style="width:12em">
+			<input type="text" name="customer" placeholder="<?php esc_attr_e( 'Customer ID', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( $filters['customer'] ); ?>" class="wp2s-filter-customer">
 			<?php submit_button( __( 'Filter', 'wp2-shopify' ), '', 'filter_action', false ); ?>
 		</div>
 		<?php

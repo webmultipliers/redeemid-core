@@ -143,12 +143,12 @@ final class CustomersTable extends \WP_List_Table {
 		$badge_html = '';
 
 		foreach ( $badges as $badge ) {
-			$badge_html .= ' <span style="display:inline-block;padding:0 6px;border-radius:3px;background:#f0f0f1;font-size:11px;line-height:18px">' . esc_html( (string) $badge ) . '</span>';
+			$badge_html .= ' <span class="wp2s-chip">' . esc_html( (string) $badge ) . '</span>';
 		}
 
 		return sprintf(
 			'%s<strong><a href="%s">%s</a></strong>%s<br><span class="description">%s</span>%s',
-			get_avatar( $user->ID, 32, '', '', [ 'extra_attr' => 'style="float:left;margin-right:8px"' ] ),
+			get_avatar( $user->ID, 32, '', '', [ 'class' => 'wp2s-avatar' ] ),
 			esc_url( $view ),
 			esc_html( $user->display_name ?: $user->user_login ),
 			$badge_html,
@@ -166,7 +166,7 @@ final class CustomersTable extends \WP_List_Table {
 	protected function column_tags( \WP_User $user ): string {
 		$tags = Mirror::tags( $user->ID );
 
-		return $tags ? implode( ' ', array_map( static fn( $tag ) => '<code>' . esc_html( $tag ) . '</code>', $tags ) ) : '—';
+		return $tags ? implode( ' ', array_map( static fn( $tag ) => '<code class="wp2s-chip">' . esc_html( $tag ) . '</code>', $tags ) ) : '—';
 	}
 
 	protected function column_state( \WP_User $user ): string {
@@ -180,7 +180,7 @@ final class CustomersTable extends \WP_List_Table {
 		$failed = get_user_meta( $user->ID, Mirror::SYNC_FAILED, true );
 		$source = (string) get_user_meta( $user->ID, Mirror::SYNC_SOURCE, true );
 
-		return Menu::ago( $last ) . ( $source ? '<br><span class="description">' . esc_html( $source ) . '</span>' : '' ) . ( $failed ? '<br><strong style="color:#d63638">' . esc_html__( 'Last attempt failed', 'wp2-shopify' ) . '</strong>' : '' );
+		return Menu::ago( $last ) . ( $source ? '<br><span class="description">' . esc_html( $source ) . '</span>' : '' ) . ( $failed ? '<br><strong class="wp2s-error-text">' . esc_html__( 'Last attempt failed', 'wp2-shopify' ) . '</strong>' : '' );
 	}
 
 	protected function column_linked( \WP_User $user ): string {
