@@ -22,11 +22,21 @@ $wp2_template = [
 
 if ( $isEditor ) {
 	$wp2_rule = \WP2_Shopify\Entitlement\Rule::from_attributes( $a );
+	$wp2_item = \WP2_Shopify\Blocks\Gate::RULE_ITEM === \WP2_Shopify\Blocks\Gate::option( $a['ruleSource'] ?? '', \WP2_Shopify\Blocks\Gate::RULE_CUSTOM );
+	$wp2_post = get_post();
 	?>
 	<div useBlockProps class="wp2-shopify-gate is-editor">
 		<p class="wp2-shopify-gate__summary">
 			<?php
-			if ( $wp2_rule->required_tags ) {
+			if ( $wp2_item ) {
+				$wp2_effective = $wp2_post instanceof \WP_Post ? \WP2_Shopify\Access\Gatekeeper::rule( $wp2_post ) : null;
+				echo esc_html(
+					$wp2_effective && ! $wp2_effective->open()
+						/* translators: %s: the item's rule and where it comes from */
+						? sprintf( __( 'Members only: this item\'s rule, %s.', 'wp2-shopify' ), $wp2_effective->explain( \WP2_Shopify\Access\LevelStore::levels() ) )
+						: __( 'This item\'s rule is open now, so everyone will see the Members only area. Set a rule in the Access box.', 'wp2-shopify' )
+				);
+			} elseif ( $wp2_rule->required_tags ) {
 				printf(
 					/* translators: 1: "any" or "all", 2: tag list */
 					esc_html__( 'Members only: needs %1$s of: %2$s', 'wp2-shopify' ),

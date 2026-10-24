@@ -71,8 +71,8 @@ final class LevelStore {
 		self::$levels = null;
 
 		/**
-		 * Levels changed. Later PRs bump the rules version here so cached
-		 * effective rules resolve fresh.
+		 * Levels changed. Surfaces relays this as wp2_shopify_access_changed
+		 * with no IDs ("possibly all"); a later PR bumps the rules version here.
 		 */
 		do_action( 'wp2_shopify_access_levels_changed', $saved );
 	}
