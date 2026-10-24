@@ -1,0 +1,22 @@
+.wp2-shopify-gate__panel {
+	padding: var(--wp--preset--spacing--40, 1.5rem);
+	border: 1px solid currentColor;
+	border-radius: 0.5rem;
+	display: grid;
+	gap: var(--wp--preset--spacing--20, 0.75rem);
+	justify-items: start;
+
+	p {
+		margin: 0;
+	}
+}
+
+.wp2-shopify-gate__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--wp--preset--spacing--20, 0.75rem);
+}
+
+.wp2-shopify-paywall {
+	margin-block: var(--wp--preset--spacing--40, 1.5rem);
+}

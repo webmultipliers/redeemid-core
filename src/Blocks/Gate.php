@@ -2,7 +2,10 @@
 
 namespace WP2_Shopify\Blocks;
 
+use WP2_Shopify\Access\Checker;
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Access\Level;
+use WP2_Shopify\Access\LevelStore;
 use WP2_Shopify\Access\Viewer;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Entitlement\Decision;
@@ -24,7 +27,11 @@ final class Gate {
 	public const TEASER  = 'wp2-shopify/membership-gate-fallback';
 
 	public const RULE_ITEM   = 'item';
+	public const RULE_LEVEL  = 'level';
 	public const RULE_CUSTOM = 'custom';
+
+	/** The Blockstudio component that renders the locked-visitor panel (blocks/locked-panel). */
+	public const PANEL = 'wp2-shopify/locked-panel';
 
 	public static function register(): void {
 		add_filter( 'render_block_data', [ self::class, 'filter_children' ], 10, 1 );
@@ -33,6 +40,7 @@ final class Gate {
 	}
 
 	public static function values( array $attrs ): array {
+		$attrs  = Upgrade::block( [ 'blockName' => self::PARENT, 'attrs' => $attrs ] )['attrs'];
 		$values = function_exists( 'bs_block_values' ) ? bs_block_values( self::PARENT, $attrs ) : null;
 
 		// Fail closed if Blockstudio cannot resolve the attributes: an empty rule still requires sign-in.
@@ -41,9 +49,10 @@ final class Gate {
 
 	/**
 	 * The gate's decision for the current visitor. A gate set to "This item's
-	 * rule" uses the item's verdict; a custom-tags gate uses its own tags. Either
-	 * way it only narrows: inside an item the visitor is locked out of, nothing
-	 * a gate holds is released.
+	 * rule" uses the item's verdict, a level gate asks whether the visitor
+	 * holds that access level, and a custom-tags gate uses its own tags. Every
+	 * kind only narrows: inside an item the visitor is locked out of, nothing a
+	 * gate holds is released.
 	 */
 	public static function decide( array $a ): Decision {
 		$post = get_post();
@@ -55,7 +64,9 @@ final class Gate {
 
 		$item = $post instanceof \WP_Post ? Gatekeeper::verdict( $post ) : null;
 
-		if ( self::RULE_ITEM === self::option( $a['ruleSource'] ?? '', self::RULE_CUSTOM ) ) {
+		$source = self::option( $a['ruleSource'] ?? '', self::RULE_CUSTOM );
+
+		if ( self::RULE_ITEM === $source ) {
 			// No item to inherit from (a template, a widget): fail closed to signed-in members only.
 			return $item ? $item->decision : Settings::evaluator()->decide( new Rule(), Viewer::member(), time() );
 		}
@@ -64,11 +75,59 @@ final class Gate {
 			return $item->decision;
 		}
 
+		if ( self::RULE_LEVEL === $source ) {
+			// An unknown or unchosen level is a BAD_RULE denial: fail closed.
+			return ( new Checker( LevelStore::levels(), Settings::evaluator() ) )->holds( self::option( $a['level'] ?? '', '' ), Viewer::member(), time() );
+		}
+
 		return Settings::evaluator()->decide( Rule::from_attributes( $a ), Viewer::member(), time() );
 	}
 
+	/**
+	 * A select value as a string. Blockstudio stores selects as {value, label};
+	 * content written by hand or by older versions may hold a bare string.
+	 */
 	public static function option( mixed $value, string $fallback ): string {
 		return is_array( $value ) ? (string) ( $value['value'] ?? $fallback ) : ( $value ? (string) $value : $fallback );
+	}
+
+	/**
+	 * A Blockstudio link field value ({url, title, ...}) as a URL. Plain strings,
+	 * from content saved before these fields became link fields, still work.
+	 */
+	public static function url( mixed $value ): string {
+		return trim( (string) ( is_array( $value ) ? ( $value['url'] ?? '' ) : ( is_string( $value ) ? $value : '' ) ) );
+	}
+
+	/**
+	 * The URL of the page being rendered, for "come back here" redirects.
+	 * Built from the request rather than home_url( add_query_arg( [] ) ), which
+	 * doubles the path on sites installed in a subdirectory.
+	 */
+	public static function current_url(): string {
+		$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '/';
+
+		return wp_validate_redirect( set_url_scheme( 'http://' . $host . $uri ), home_url( '/' ) );
+	}
+
+	/**
+	 * Options for the gate's Level picker, filled by Blockstudio's populate
+	 * (blocks/membership-gate/block.json). Built-in Public is left out: a gate
+	 * that lets everyone in is not a gate.
+	 *
+	 * @return array<int, array{value: string, label: string}>
+	 */
+	public static function level_options(): array {
+		$options = [];
+
+		foreach ( LevelStore::levels()->all() as $slug => $level ) {
+			if ( Level::PUBLIC !== $slug ) {
+				$options[] = [ 'value' => (string) $slug, 'label' => $level->label ];
+			}
+		}
+
+		return $options;
 	}
 
 	public static function filter_children( array $parsed ): array {
@@ -152,7 +211,7 @@ final class Gate {
 				continue;
 			}
 
-			$target = wp_validate_redirect( (string) ( $a['redirectUrl'] ?? '' ), '' );
+			$target = wp_validate_redirect( self::url( $a['redirectUrl'] ?? '' ), '' );
 
 			if ( '' !== $target && untrailingslashit( $target ) !== untrailingslashit( (string) get_permalink( $post ) ) ) {
 				nocache_headers();
@@ -162,35 +221,26 @@ final class Gate {
 		}
 	}
 
+	/**
+	 * The locked-visitor panel, rendered by the wp2-shopify/locked-panel
+	 * Blockstudio component so themes can restyle or override it.
+	 */
 	public static function fallback_panel( array $a, Decision $decision ): string {
-		$message = (string) ( $a['fallbackMessage'] ?: __( 'This content is for members.', 'wp2-shopify' ) );
-		$cta     = (string) ( $a['fallbackCtaLabel'] ?: '' );
-		$cta_url = (string) ( $a['fallbackCtaUrl'] ?: '' );
-		$extra   = match ( $decision->reason ) {
-			Decision::DISABLED  => __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' ),
-			Decision::STALE     => __( 'We could not confirm your membership just now. Try again shortly.', 'wp2-shopify' ),
-			Decision::NO_MIRROR => __( 'Your membership details are syncing. Try again shortly.', 'wp2-shopify' ),
-			default             => '',
-		};
+		$guest = Decision::GUEST === $decision->reason && false !== ( $a['showSignIn'] ?? true );
+		$data  = [
+			'message'   => (string) ( ( $a['fallbackMessage'] ?? '' ) ?: __( 'This content is for members.', 'wp2-shopify' ) ),
+			'reason'    => match ( $decision->reason ) {
+				Decision::DISABLED  => __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' ),
+				Decision::STALE     => __( 'We could not confirm your membership just now. Try again shortly.', 'wp2-shopify' ),
+				Decision::NO_MIRROR => __( 'Your membership details are syncing. Try again shortly.', 'wp2-shopify' ),
+				default             => '',
+			},
+			'ctaLabel'  => (string) ( $a['fallbackCtaLabel'] ?? '' ),
+			'ctaUrl'    => self::url( $a['fallbackCtaUrl'] ?? '' ),
+			'signInUrl' => $guest ? Flow::login_url( (string) get_permalink() ) : '',
+		];
 
-		ob_start();
-		?>
-		<div class="wp2-shopify-gate__panel" role="region" aria-label="<?php esc_attr_e( 'Members only', 'wp2-shopify' ); ?>">
-			<p><?php echo esc_html( $message ); ?></p>
-			<?php if ( $extra ) : ?>
-				<p class="wp2-shopify-gate__reason"><?php echo esc_html( $extra ); ?></p>
-			<?php endif; ?>
-			<div class="wp2-shopify-gate__actions">
-				<?php if ( $cta && $cta_url ) : ?>
-					<a class="wp-element-button" href="<?php echo esc_url( $cta_url ); ?>"><?php echo esc_html( $cta ); ?></a>
-				<?php endif; ?>
-				<?php if ( Decision::GUEST === $decision->reason && false !== ( $a['showSignIn'] ?? true ) ) : ?>
-					<a class="wp-element-button is-style-outline" href="<?php echo esc_url( Flow::login_url( (string) get_permalink() ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'wp2-shopify' ); ?></a>
-				<?php endif; ?>
-			</div>
-		</div>
-		<?php
-		return (string) ob_get_clean();
+		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'name' => self::PANEL, 'data' => $data ] ) : '';
 	}
 
 	/**

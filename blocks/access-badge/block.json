@@ -9,10 +9,8 @@
 	"keywords": [ "badge", "level", "members", "locked", "paywall" ],
 	"textdomain": "wp2-shopify",
 	"usesContext": [ "postId", "postType" ],
-	"supports": {
-		"html": false,
-		"align": false
-	},
+	"supports": { "html": false, "align": false },
+	"example": {},
 	"blockstudio": {
 		"attributes": [
 			{
@@ -36,6 +34,7 @@
 				]
 			},
 			{ "id": "showIcon", "type": "toggle", "label": "Show a lock icon", "default": true }
-		]
+		],
+		"refreshOn": [ "save" ]
 	}
 }

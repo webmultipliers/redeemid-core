@@ -1,0 +1,23 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/locked-panel",
+	"title": "Locked Content Panel",
+	"category": "widgets",
+	"icon": "lock",
+	"description": "The panel locked-out visitors see in place of gated content: a message, the reason when there is one, a call to action and a sign-in link. A Blockstudio component rendered by the plugin, not inserted by editors; a theme can restyle it or replace its template with a Blockstudio override.",
+	"textdomain": "wp2-shopify",
+	"supports": {
+		"html": false
+	},
+	"blockstudio": {
+		"component": true,
+		"attributes": [
+			{ "id": "message", "type": "text", "label": "Message" },
+			{ "id": "reason", "type": "text", "label": "Reason" },
+			{ "id": "ctaLabel", "type": "text", "label": "Call to action label" },
+			{ "id": "ctaUrl", "type": "text", "label": "Call to action URL" },
+			{ "id": "signInUrl", "type": "text", "label": "Sign-in URL" }
+		]
+	}
+}

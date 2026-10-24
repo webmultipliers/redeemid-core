@@ -2,6 +2,8 @@
 
 Sign in with Shopify customer accounts on WordPress, and gate content by Shopify customer tags. Built on [Blockstudio 7](https://blockstudio.dev).
 
+> **Working on this plugin? Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. See [Building on Blockstudio](#building-on-blockstudio) for what we use and the few places we deliberately don't.
+
 > **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging and the gate block are in place. Catalog, cart and the account card come in later phases. See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
 
 ## Requirements
@@ -124,7 +126,7 @@ A twice-daily reconciliation also re-reads linked customers from the Admin API, 
 
 ## How sign-in works
 
-1. The **Shopify sign-in** block (`wp2-shopify/auth-action`) links to the plugin's login handler.
+1. The **Shopify sign-in** block (`wp2-shopify/auth-action`) links to the plugin's login handler. The inserter also offers it as **Shopify Log In**, **Shopify Log Out** and **Connect Shopify Account**. Left empty, "After log in, go to" returns the visitor to the page they were on.
 2. The plugin redirects to Shopify with PKCE. The verifier stays on the server.
 3. Shopify returns to the callback. The plugin exchanges the code, checks the ID token claims (`iss`, `aud`, `exp` and `nonce`; the signature is not checked, as OIDC allows for tokens received directly from the token endpoint), and signs the visitor in.
 4. A new customer gets a **shadow user** with the `shopify_customer` role:
@@ -156,9 +158,9 @@ Add **Membership gate** (`wp2-shopify/membership-gate`). It always contains two 
 - **Members only.** It is removed on the server before rendering when the visitor doesn't qualify. It never reaches page HTML, REST, feeds or search excerpts.
 - **Public teaser.** Everyone sees it.
 
-Gate settings:
+Gate settings (the sidebar only shows the ones that apply):
 
-- Required tags, matching any or all.
+- Who gets in: required tags, matching any or all; or **an access level** picked from the levels under Shopify → Access (visitors who hold it, or a level that includes it); or this item's rule.
 - What non-members see:
   - a message with a call to action and an optional sign-in link;
   - the teaser blocks;
@@ -166,7 +168,9 @@ Gate settings:
 
 Rules fail closed. If the tag data is older than the freshness window (Shopify → Overview, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
 
-A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it.
+A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
+
+The panel locked visitors see, for a gate and for a locked item's wall, is the `wp2-shopify/locked-panel` Blockstudio component. Restyle it through `.wp2-shopify-gate__panel`, or replace its template from a theme with a [Blockstudio override](https://blockstudio.dev/docs/blocks/overrides).
 
 ### Access rules
 
@@ -211,7 +215,7 @@ Each item's rule layers are cached in `_wp2_access_effective`, stamped with a ru
 
 ### Plan cards and buy-now
 
-Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and give it a product handle. It shows the product's live Shopify price, cached for five minutes, and a button that goes straight to Shopify checkout. Put plan cards on the join page and in a gate's fallback.
+Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and pick a product: the sidebar searches your Shopify catalog by title. It shows the product's live Shopify price, cached for five minutes, and a button that goes straight to Shopify checkout. Put plan cards on the join page and in a gate's fallback.
 
 - **Buy-now is a plain form.** It posts to `admin-post.php?action=wp2_shopify_buy_now`, so it works without JavaScript. The server creates a one-line cart, attaches the visitor's identity if they're signed in with Shopify, and redirects to a fresh checkout URL. If Shopify refuses the customer token, it retries as a guest checkout rather than block the purchase.
 - **Cache-safe.** The card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per IP per minute.
@@ -239,7 +243,9 @@ Only tags in the map are touched. After checkout, the next signed-in page views 
 
 Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content. Singular items gated by access rules also send `X-WP2-Access: open|locked|granted|bypass`, and granted, bypass and preview responses are `Cache-Control: private`. The `wp2_shopify_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
 
-Personal pieces, such as the sign-in control, render as a neutral shell that any page cache can store. They fill themselves after load with one same-origin request to `admin-ajax.php?action=wp2_shopify_status`, which also returns fresh nonces.
+Personal pieces, such as the sign-in control, are [Blockstudio dynamic islands](https://blockstudio.dev/docs/blocks/islands). The page carries a neutral placeholder that any page cache can store (the guest "Log in" link, so sign-in works without JavaScript). After load, Blockstudio renders every island on the page for the visitor in one same-origin request to `POST /wp-json/blockstudio/v1/island/render` and swaps the results in. That response is never cached, so it can carry the visitor's own nonces; Blockstudio only restores the signed-in user for same-origin requests, so another site cannot read it.
+
+`admin-ajax.php?action=wp2_shopify_status` still returns the visitor's display-safe state and fresh nonces for scripts that are not blocks, such as the cart bridge.
 
 Cache rules should bypass or vary on these cookies:
 
@@ -277,8 +283,41 @@ The namespace is `wp2-shopify/v1`. Every write route needs the `wp_rest` nonce.
 | `POST /account/sync` | Re-syncs the current user's mirror (rate-limited) |
 | `POST /cart/identity` | Attaches the signed-in, linked customer to the official plugin's cart, `{cartId}` → `{attached}` (rate-limited; only when that plugin serves the same store) |
 | `POST /webhooks/events` | Shopify webhooks (HMAC-verified) |
+| `GET /editor/products?search=` | Plan Card product picker: `[{handle, title}]` from the Storefront API. Editors only (same-origin, `edit_posts`), because Blockstudio's picker calls it without a nonce |
 
 Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_logout`, `_connect`, `_link_confirm`, `_sync`, `_disconnect`), which redirect back to a page.
+
+## Building on Blockstudio
+
+The plugin is built on [Blockstudio](https://blockstudio.dev) (7.7.7, bundled through Composer). **Before writing any code for a block, check whether Blockstudio already does it.** Hand-made versions of features Blockstudio ships have to be maintained, tested and secured by us, and they drift from how the rest of the blocks behave. The Blockstudio docs are in `vendor/blockstudio/blockstudio/docs` after `composer install`, and at [blockstudio.dev/docs](https://blockstudio.dev/docs).
+
+What the plugin uses, and where:
+
+| Need | Blockstudio feature | Used in |
+|---|---|---|
+| Show a sidebar field only when another field has a value | [Conditional logic](https://blockstudio.dev/docs/blocks/attributes/conditional-logic) (`conditions`) | Membership Gate, Shopify Sign-in |
+| Fill a select from site data or an API | [Populate options](https://blockstudio.dev/docs/blocks/attributes/populating-options): `function` for site data, `fetch` for a search endpoint | Gate's level picker (`wp2_shopify_level_options()`), Plan Card's product picker |
+| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in |
+| Shared markup the plugin renders, that themes can restyle or replace | [Components](https://blockstudio.dev/docs/blocks/components) and [overrides](https://blockstudio.dev/docs/blocks/overrides) | `locked-panel`, rendered by `Gate::fallback_panel()` |
+| Several inserter entries for one block | [Variations](https://blockstudio.dev/docs/blocks/variations) | Shopify Sign-in, Membership Gate |
+| URL fields with a page picker | [`link` field](https://blockstudio.dev/docs/blocks/attributes/field-types) | Gate CTA and redirect, sign-in redirects |
+| Editor preview that reads post meta | [`refreshOn: ["save"]`](https://blockstudio.dev/docs/blocks/post-meta) | Access Badge, Membership Gate |
+| Inserter hover previews | [`example`](https://blockstudio.dev/docs/blocks/preview) and `$isPreview` | Every inserter block |
+| Read a stored block's values outside rendering | `bs_block_values()` | `Gate::values()` |
+| Styles and scripts per block | `style.scss`, `script.view.js` beside `block.json` | All blocks |
+
+Rules that follow from it:
+
+- Use the field type that fits (select, link, toggle, repeater) and read the value as Blockstudio returns it. Selects return `{value, label}` and links `{url, ...}`: read them with `Gate::option()` and `Gate::url()`.
+- Changing a field's type changes how it is stored. Add the field to `Blocks\Upgrade::FIELDS` so content saved before keeps rendering.
+- In a block template, `return;` means "this block renders nothing" to Blockstudio, which then also skips the block's stylesheet and scripts, even if markup was printed before the `return`. Use early returns only for branches that print nothing (or editor-only branches); branches that print markup end with `if`/`else`, as in Plan Card and Shopify Sign-in.
+- Blockstudio's `populate` function type only accepts global functions. Put a thin wrapper in `src/functions.php` and keep the logic in a class.
+- Register blocks with `Blockstudio\Build::init()` (see `Blocks\Registration`), never the `blockstudio/path` filter, which would hide the theme's blocks.
+- Where Blockstudio doesn't fit, write it ourselves and say why in a comment. Current cases:
+  - **The per-block Access panel** (`assets/block-access.js`), rather than an [extension](https://blockstudio.dev/docs/extensions). An extension can't warn when a block sits after the paywall break, can't skip the gate's own areas, and would move the saved setting out of `wp2Access`.
+  - **REST routes and `admin-post.php` forms**, rather than [RPC](https://blockstudio.dev/docs/blocks/block-api/rpc) or `db.php`. Blockstudio's client prints its nonce and token into the page HTML, which a page cache would serve stale.
+  - **WordPress cron and our own tables**, rather than `cron.php` or `db.php`, because they belong to the plugin's lifecycle, not to a block.
+- Leave Blockstudio's static prerendering off on gated sites, and never set `serveLoggedIn`.
 
 ## Hooks
 

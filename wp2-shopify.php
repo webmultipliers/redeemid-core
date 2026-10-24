@@ -31,6 +31,7 @@ if ( $wp2_shopify_problems ) {
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/src/functions.php';
 
 register_activation_hook( __FILE__, [ \WP2_Shopify\Lifecycle::class, 'activate' ] );
 register_deactivation_hook( __FILE__, [ \WP2_Shopify\Lifecycle::class, 'deactivate' ] );

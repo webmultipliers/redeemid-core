@@ -22,8 +22,10 @@ $wp2_template = [
 
 if ( $isEditor ) {
 	$wp2_rule = \WP2_Shopify\Entitlement\Rule::from_attributes( $a );
-	$wp2_item = \WP2_Shopify\Blocks\Gate::RULE_ITEM === \WP2_Shopify\Blocks\Gate::option( $a['ruleSource'] ?? '', \WP2_Shopify\Blocks\Gate::RULE_CUSTOM );
-	$wp2_post = get_post();
+	$wp2_source = \WP2_Shopify\Blocks\Gate::option( $a['ruleSource'] ?? '', \WP2_Shopify\Blocks\Gate::RULE_CUSTOM );
+	$wp2_item   = \WP2_Shopify\Blocks\Gate::RULE_ITEM === $wp2_source;
+	$wp2_level  = \WP2_Shopify\Blocks\Gate::RULE_LEVEL === $wp2_source ? \WP2_Shopify\Access\LevelStore::levels()->get( \WP2_Shopify\Blocks\Gate::option( $a['level'] ?? '', '' ) ) : null;
+	$wp2_post   = get_post();
 	?>
 	<div useBlockProps class="wp2-shopify-gate is-editor">
 		<p class="wp2-shopify-gate__summary">
@@ -35,6 +37,13 @@ if ( $isEditor ) {
 						/* translators: %s: the item's rule and where it comes from */
 						? sprintf( __( 'Members only: this item\'s rule, %s.', 'wp2-shopify' ), $wp2_effective->explain( \WP2_Shopify\Access\LevelStore::levels() ) )
 						: __( 'This item\'s rule is open now, so everyone will see the Members only area. Set a rule in the Access box.', 'wp2-shopify' )
+				);
+			} elseif ( \WP2_Shopify\Blocks\Gate::RULE_LEVEL === $wp2_source ) {
+				echo esc_html(
+					$wp2_level
+						/* translators: %s: access level label, such as Gold */
+						? sprintf( __( 'Members only: visitors with the %s level.', 'wp2-shopify' ), $wp2_level->label )
+						: __( 'Choose an access level. Until then nobody sees the Members only area.', 'wp2-shopify' )
 				);
 			} elseif ( $wp2_rule->required_tags ) {
 				printf(

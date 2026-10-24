@@ -70,6 +70,11 @@ final class LevelStore {
 		update_option( self::OPTION, $saved, true );
 		self::$levels = null;
 
+		// Blockstudio caches populated field options (the gate's Level picker); ask it to rebuild them.
+		if ( class_exists( \Blockstudio\Build_Cache::class ) ) {
+			\Blockstudio\Build_Cache::invalidate_populate_cache();
+		}
+
 		/**
 		 * Levels changed. Surfaces relays this as wp2_shopify_access_changed
 		 * with no IDs ("possibly all"); a later PR bumps the rules version here.

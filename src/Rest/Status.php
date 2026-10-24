@@ -8,8 +8,9 @@ use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Sync\Mirror;
 
 /**
- * The visitor's own display-safe state, used to hydrate personal chrome
- * (owner decision on review point 2) and by GET /auth/status.
+ * The visitor's own display-safe state, for GET /auth/status and for
+ * scripts that are not blocks (the cart bridge). Blocks with personal output
+ * are Blockstudio dynamic islands instead (owner decision on review point 2).
  */
 final class Status {
 	public const AJAX_ACTION = 'wp2_shopify_status';
