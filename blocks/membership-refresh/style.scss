@@ -1,0 +1,20 @@
+.wp2-shopify-refresh {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+
+	&[hidden] {
+		display: none;
+	}
+
+	&__button:disabled {
+		opacity: 0.6;
+		cursor: progress;
+	}
+
+	&__message {
+		opacity: 0.75;
+		font-size: var(--wp--preset--font-size--small, 0.8125rem);
+	}
+}

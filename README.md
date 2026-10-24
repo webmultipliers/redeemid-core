@@ -206,7 +206,7 @@ The decision is made on the server, so a hidden block is never sent. In a query 
 To show access on cards and pages:
 
 - **Post classes:** gated items get `wp2-gated`, `requires-{level}` for each level, and `is-locked` or `is-unlocked` for the current visitor, in themes and in the Query Loop.
-- **Access Badge** block (`wp2-shopify/access-badge`): the level an item needs, in the level's badge colour and always with its label, with a lock for visitors it locks out. In a query loop it describes each post.
+- **Access Badge** block (`wp2-shopify/access-badge`): the level an item needs, in the level's badge colour and always with its label, with a lock for visitors it locks out. In a query loop it describes each post. It reads the item's access rule or, for an item without one, the first Membership Gate in its content that is set to an access level (custom-tag gates have no level to name).
 - **Block bindings:** bind a paragraph, heading or button to the `wp2-shopify/access` source with a `key` of `level`, `levels`, `state` (Free to read, Locked, Included with your membership), `message`, `cta_label` or `cta_url`.
 
 From the command line, `wp wp2-shopify access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp wp2-shopify access recompute` rebuilds every item's cached rule and search text.
@@ -222,6 +222,14 @@ Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and pick a product: the side
 - **Independent of Shopify's plugin.** It works the same whether that plugin is installed or not, and never touches its cart.
 
 It needs `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN`, and the product must be published to the Headless channel that issued the token.
+
+### Account blocks
+
+- **Refresh Membership** (`wp2-shopify/membership-refresh`): a button for signed-in, linked customers that re-syncs their membership from Shopify through `POST /account/sync` and reloads the page, so gates open as soon as a new tag lands. Guests and unlinked accounts see nothing. Put it in a paywall's teaser or the header.
+- **Shopify Account Status** (`wp2-shopify/account-status`): tells the visitor whether they are signed in, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. "Show the raw status response" adds the `GET /auth/status` payload, nonces redacted, for troubleshooting.
+- **Shopify Health** (`wp2-shopify/health`): the at-a-glance version of Shopify → Debug (Blockstudio, the plugin's blocks, permalinks, the callback page, sign-in, which constants are set but never their values, Shopify's own plugin). Administrators only; everyone else sees a one-line note. Add rows with the `wp2_shopify_health_checks` filter.
+
+All three are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
 
 ### Memberships from purchases
 
@@ -264,6 +272,7 @@ WP2 works with or without it:
 - **Routes.** When active, the official plugin always owns `/cart` and, by default, `/products/*`. WP2 claims neither. Debug shows which ones it currently owns.
 - **Gating.** Official product and collection blocks can go inside a membership gate. The gate renders on the server, so non-members never receive the block's markup.
 - **Signed-in checkout from its cart.** When it serves the same store and `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` is set, WP2 adds a small script to front-end pages. If a linked customer is signed in and the official cart exists, the script sends the cart ID to `POST /cart/identity`, and WP2 attaches the customer on the server with `cartBuyerIdentityUpdate`. Checkout then opens signed in, so purchases unlock content. The customer token never reaches the browser. Guests with no cart make no request.
+- **Keyboard access to its cart toggle.** Its 1.0.0 cart toggle is a link with no `href`, which a keyboard can't reach. WP2 gives it a button role and a tab stop, and opens the cart on Enter or Space (`Integrations\OfficialCartToggle`).
 - **Shared devices.** After sign-out, the script drops a cart it signed in, so the next person can't check out as the previous customer. Turn on **Clear the cart on sign-out** to drop every cart a signed-in visitor used.
 - **Limits.** The bridge reads `localStorage['__shopify:cartId']`, which the official cart component uses but doesn't document. If Shopify changes it, the bridge stops attaching and the cart keeps working as a guest cart. Debug shows the last attach and the last failure. A visitor who adds to the cart and reaches checkout within a second or two may get there before the attach finishes.
 
@@ -297,7 +306,7 @@ What the plugin uses, and where:
 |---|---|---|
 | Show a sidebar field only when another field has a value | [Conditional logic](https://blockstudio.dev/docs/blocks/attributes/conditional-logic) (`conditions`) | Membership Gate, Shopify Sign-in |
 | Fill a select from site data or an API | [Populate options](https://blockstudio.dev/docs/blocks/attributes/populating-options): `function` for site data, `fetch` for a search endpoint | Gate's level picker (`wp2_shopify_level_options()`), Plan Card's product picker |
-| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in |
+| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in, Refresh Membership, Shopify Account Status, Shopify Health |
 | Shared markup the plugin renders, that themes can restyle or replace | [Components](https://blockstudio.dev/docs/blocks/components) and [overrides](https://blockstudio.dev/docs/blocks/overrides) | `locked-panel`, rendered by `Gate::fallback_panel()` |
 | Several inserter entries for one block | [Variations](https://blockstudio.dev/docs/blocks/variations) | Shopify Sign-in, Membership Gate |
 | URL fields with a page picker | [`link` field](https://blockstudio.dev/docs/blocks/attributes/field-types) | Gate CTA and redirect, sign-in redirects |
@@ -332,6 +341,8 @@ Rules that follow from it:
   - `wp2_shopify_reassign_user`, which picks who receives content when a Shopify redaction deletes a shadow user
   - `wp2_shopify_access_levels` and `wp2_shopify_access_rules`, which set levels and content rules from code (the admin screens then show them read-only)
   - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
+  - `wp2_shopify_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
+  - `wp2_shopify_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
 
 ## Upgrading from 1.x
 

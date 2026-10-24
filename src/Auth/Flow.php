@@ -370,7 +370,19 @@ final class Flow {
 			return 'sync_failed';
 		}
 
-		$last = (int) get_user_meta( $user_id, '_wp2_shopify_last_sync_request', true );
+		/**
+		 * Answer a "sync now" without asking Shopify: return synced, sync_wait or
+		 * sync_failed to short-circuit, or null to sync as usual. For customers
+		 * Shopify does not know, such as a test site's simulated fixtures (see
+		 * wp2_shopify_customer_is_fixture). Runs before the rate limit.
+		 */
+		$pre = apply_filters( 'wp2_shopify_pre_sync_now', null, $user_id );
+
+		if ( in_array( $pre, [ 'synced', 'sync_wait', 'sync_failed' ], true ) ) {
+			return $pre;
+		}
+
+		$last =(int) get_user_meta( $user_id, '_wp2_shopify_last_sync_request', true );
 
 		if ( time() - $last < MINUTE_IN_SECONDS ) {
 			return 'sync_wait';

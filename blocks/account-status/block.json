@@ -1,0 +1,20 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/account-status",
+	"title": "Shopify Account Status",
+	"category": "widgets",
+	"icon": "id",
+	"description": "Tells the visitor where they stand: signed in or not, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. A Blockstudio dynamic island: the cached page carries a neutral placeholder and each visitor's own fragment fills it in.",
+	"keywords": [ "shopify", "status", "account", "debug" ],
+	"textdomain": "wp2-shopify",
+	"supports": { "align": false, "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "title", "type": "text", "label": "Title", "default": "Your Shopify account" },
+			{ "id": "showRaw", "type": "toggle", "label": "Show the raw status response (nonces redacted), for troubleshooting", "default": false }
+		],
+		"island": { "mode": "dynamic" }
+	}
+}

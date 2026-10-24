@@ -22,6 +22,7 @@ use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Blocks\Registration;
 use WP2_Shopify\Commerce\BuyNow;
 use WP2_Shopify\Commerce\CartBridge;
+use WP2_Shopify\Integrations\OfficialCartToggle;
 use WP2_Shopify\Integrations\SeoPlugins;
 use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
@@ -53,6 +54,7 @@ final class Plugin {
 		Cli::register();
 		Surfaces::register();
 		SeoPlugins::register();
+		OfficialCartToggle::register();
 		BuyNow::register();
 		CartBridge::register();
 		Privacy::register();
