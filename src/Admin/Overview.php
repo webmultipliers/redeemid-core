@@ -4,7 +4,6 @@ namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Config;
 use WP2_Shopify\Integrations\OfficialPlugin;
-use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Support\EventLog;
@@ -13,13 +12,12 @@ use WP2_Shopify\Sync\Reconciler;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
 /**
- * Shopify → Overview: is everything connected, and the plugin's settings.
+ * Shopify → Overview: is everything connected. Settings live in SettingsPage.
  */
 final class Overview {
 	public static function render(): void {
 		global $wpdb;
 
-		$settings = Settings::all();
 		$inbox    = new WpdbInboxStore();
 		$last     = $inbox->last_received();
 		$recon    = get_option( Reconciler::STATS );
@@ -30,8 +28,8 @@ final class Overview {
 			[
 				Config::has( 'WP2_SHOPIFY_STORE_DOMAIN' ) && ! $missing,
 				__( 'Configuration', 'wp2-shopify' ),
-				$missing ? sprintf( /* translators: %s: constant names */ __( 'Missing in wp-config.php: %s', 'wp2-shopify' ), implode( ', ', $missing ) ) : sprintf( /* translators: %s: store domain */ __( 'Store %s', 'wp2-shopify' ), Config::store_domain() ),
-				Menu::url( Debug::PAGE ),
+				$missing ? sprintf( /* translators: %s: setting names */ __( 'Missing: %s. Add them in Settings or wp-config.php.', 'wp2-shopify' ), implode( ', ', array_map( static fn( $name ) => Config::definitions()[ $name ]['label'], $missing ) ) ) : sprintf( /* translators: %s: store domain */ __( 'Store %s', 'wp2-shopify' ), Config::store_domain() ),
+				Menu::url( SettingsPage::PAGE ),
 			],
 			[
 				Discovery::available(),
@@ -83,38 +81,7 @@ final class Overview {
 				<?php endforeach; ?>
 			</div>
 
-			<h2><?php esc_html_e( 'Settings', 'wp2-shopify' ); ?></h2>
-			<form method="post" action="options.php">
-				<?php settings_fields( 'wp2_shopify' ); ?>
-				<table class="form-table">
-					<tr>
-						<th><label for="wp2s-fresh"><?php esc_html_e( 'Membership freshness window (days)', 'wp2-shopify' ); ?></label></th>
-						<td><input id="wp2s-fresh" type="number" min="0" max="365" name="<?php echo esc_attr( Settings::OPTION ); ?>[freshness_days]" value="<?php echo esc_attr( (string) $settings['freshness_days'] ); ?>"> <p class="description"><?php esc_html_e( 'Synced tags older than this no longer unlock content. 0 disables the limit.', 'wp2-shopify' ); ?></p></td>
-					</tr>
-					<tr>
-						<th><?php esc_html_e( 'When Shopify is unreachable', 'wp2-shopify' ); ?></th>
-						<td>
-							<label><input type="radio" name="<?php echo esc_attr( Settings::OPTION ); ?>[stale_behavior]" value="honor" <?php checked( 'honor', $settings['stale_behavior'] ); ?>> <?php esc_html_e( 'Honor synced tags within the window (default)', 'wp2-shopify' ); ?></label><br>
-							<label><input type="radio" name="<?php echo esc_attr( Settings::OPTION ); ?>[stale_behavior]" value="fail_closed" <?php checked( 'fail_closed', $settings['stale_behavior'] ); ?>> <?php esc_html_e( 'Lock immediately after a failed sync', 'wp2-shopify' ); ?></label>
-						</td>
-					</tr>
-					<tr>
-						<th><label for="wp2s-map"><?php esc_html_e( 'Membership products', 'wp2-shopify' ); ?></label></th>
-						<td>
-							<textarea id="wp2s-map" rows="5" cols="60" class="code" name="<?php echo esc_attr( Settings::OPTION ); ?>[membership_map]" placeholder="1234567890: member, gold"><?php echo esc_textarea( (string) $settings['membership_map'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'One per line: Shopify product ID, a colon, then the customer tags a paid order grants. The plugin adds these tags on payment and removes them on refund or cancellation. It never touches other tags.', 'wp2-shopify' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th><?php esc_html_e( 'Shared devices', 'wp2-shopify' ); ?></th>
-						<td>
-							<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'wp2-shopify' ); ?></label>
-							<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'wp2-shopify' ); ?></p>
-						</td>
-					</tr>
-				</table>
-				<?php submit_button(); ?>
-			</form>
+			<p><a class="button" href="<?php echo esc_url( Menu::url( SettingsPage::PAGE ) ); ?>"><?php esc_html_e( 'Settings', 'wp2-shopify' ); ?></a> <?php esc_html_e( 'Shopify connection and membership products.', 'wp2-shopify' ); ?></p>
 		</div>
 		<?php
 	}

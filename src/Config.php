@@ -2,11 +2,22 @@
 
 namespace WP2_Shopify;
 
+use WP2_Shopify\Support\ConfigValues;
+use WP2_Shopify\Support\Crypto;
+
 /**
- * Configuration-as-code (spec 14.1). Secrets are read only from wp-config.php
- * constants; nothing secret is ever written to the database by this plugin.
+ * The plugin's configuration (spec 14.1). Each value comes from a
+ * wp-config.php constant when one is defined, and that always wins. Otherwise
+ * it comes from Shopify → Settings, saved in the options table, with secrets
+ * encrypted at rest (Support\Crypto, keyed from WP2_SHOPIFY_ENCRYPTION_KEY or
+ * the WordPress salts). Secret values are never shown back in the admin.
  */
 final class Config {
+	/** Values saved from Shopify → Settings. Secrets are stored as ciphertext. */
+	public const OPTION = 'wp2_shopify_config';
+
+	private static ?ConfigValues $values = null;
+
 	/** Pinned Shopify API version for every surface (Storefront, Customer Account, Admin, webhooks). */
 	public const API_VERSION = '2026-10';
 
@@ -14,10 +25,12 @@ final class Config {
 	public const SCOPES = 'openid email customer-account-api:full';
 
 	/**
-	 * Every constant the plugin reads, for the Debug page. This is the whole
-	 * configuration surface: anything not listed here is not read.
+	 * Every value the plugin reads, for Settings and Debug. This is the whole
+	 * configuration surface: anything not listed here is not read. Each can be
+	 * a wp-config.php constant of that name or, unless `editable` is false, a
+	 * value saved in Shopify → Settings.
 	 *
-	 * @return array<string, array{label: string, secret: bool, required: bool, help: string}>
+	 * @return array<string, array{label: string, secret: bool, required: bool, help: string, editable?: bool}>
 	 */
 	public static function definitions(): array {
 		return [
@@ -67,7 +80,8 @@ final class Config {
 				'label'    => 'Token encryption key',
 				'secret'   => true,
 				'required' => false,
-				'help'     => 'Optional 32-byte key, base64 encoded. When missing, a key is derived from the WordPress salts; set it if the salts get rotated.',
+				'editable' => false,
+				'help'     => 'Optional 32-byte key, base64 encoded. Encrypts stored tokens and the secrets saved in Settings. When missing, a key is derived from the WordPress salts; set it if the salts get rotated. Changing either means re-entering the secrets saved in Settings. Only a wp-config.php constant: a key kept in the database next to what it encrypts would protect nothing.',
 			],
 		];
 	}
@@ -88,15 +102,70 @@ final class Config {
 	}
 
 	public static function get( string $name ): string {
+		return self::values()->resolve( $name )['value'];
+	}
+
+	/**
+	 * Where a value comes from: ConfigValues::CONSTANT, SETTINGS,
+	 * UNREADABLE (saved, but the encryption key changed) or NONE.
+	 */
+	public static function source( string $name ): string {
+		return self::values()->resolve( $name )['source'];
+	}
+
+	/**
+	 * A wp-config.php constant sets this value, so Settings cannot edit it.
+	 */
+	public static function locked( string $name ): bool {
+		return self::values()->locked( $name );
+	}
+
+	public static function values(): ConfigValues {
+		if ( ! self::$values ) {
+			$stored       = function_exists( 'get_option' ) ? get_option( self::OPTION, [] ) : [];
+			self::$values = new ConfigValues(
+				self::definitions(),
+				self::constant( ... ),
+				is_array( $stored ) ? array_map( 'strval', array_filter( $stored, 'is_scalar' ) ) : [],
+				static function (): ?Crypto {
+					try {
+						return Plugin::crypto();
+					} catch ( \InvalidArgumentException ) {
+						return null;
+					}
+				}
+			);
+		}
+
+		return self::$values;
+	}
+
+	/**
+	 * Read the option again, after Settings saved it.
+	 */
+	public static function reset(): void {
+		self::$values = null;
+	}
+
+	/**
+	 * The constant that sets a value, if one is defined (including the 1.x alias).
+	 */
+	public static function constant_name( string $name ): ?string {
 		if ( defined( $name ) ) {
-			return trim( (string) constant( $name ) );
+			return $name;
 		}
 
 		if ( 'WP2_SHOPIFY_CLIENT_SECRET' === $name && defined( 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN' ) ) {
-			return trim( (string) constant( 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN' ) );
+			return 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN';
 		}
 
-		return '';
+		return null;
+	}
+
+	private static function constant( string $name ): ?string {
+		$constant = self::constant_name( $name );
+
+		return null === $constant ? null : (string) constant( $constant );
 	}
 
 	/**

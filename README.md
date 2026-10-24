@@ -41,7 +41,12 @@ The plugin runs its own Blockstudio instance from `blocks/`. It does not use the
 
 ## Configure
 
-Credentials are constants in `wp-config.php`, never options. These eight are the whole configuration surface; Shopify → Debug shows which are present, never their values.
+These eight values are the whole configuration surface. Each can be entered in **Shopify → Settings** or defined as a constant of the same name in `wp-config.php`:
+
+- **Settings** is the easy start. Values are saved in the options table (`wp2_shopify_config`). Secrets are encrypted before they are stored (libsodium, keyed from `WP2_SHOPIFY_ENCRYPTION_KEY` or the WordPress salts), are write-only (the field is always blank; leave it blank to keep the saved value) and are never shown again.
+- **A constant always wins.** Its field in Settings is locked and says which constant sets it. This is the more secure choice: the value never touches the database, so a database dump or a compromised admin account can't reach it. Move a value to `wp-config.php` whenever you are ready; the saved copy is then ignored.
+
+Changing the WordPress salts or `WP2_SHOPIFY_ENCRYPTION_KEY` makes secrets saved in Settings unreadable. Settings, Debug and the Health block then say so, and the secret has to be entered again. `WP2_SHOPIFY_ENCRYPTION_KEY` itself is constant-only. Shopify → Debug shows where each value comes from, never the value.
 
 | Constant | Required | Purpose |
 |---|---|---|
@@ -67,12 +72,13 @@ These constants are no longer read. If one is still defined, every admin screen 
 
 Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
 
-- **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours, plus the settings (freshness window, stale behaviour, membership products).
+- **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours.
+- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (freshness window, stale behaviour, membership products, shared devices).
 - **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
-- **Debug:** the constants above, platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
+- **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
 
 Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
 
