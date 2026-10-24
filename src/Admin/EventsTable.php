@@ -144,6 +144,6 @@ final class EventsTable extends \WP_List_Table {
 			$parts[] = esc_html( $key ) . '=<code>' . esc_html( is_scalar( $value ) || null === $value ? ( is_bool( $value ) ? ( $value ? 'true' : 'false' ) : (string) $value ) : '…' ) . '</code>';
 		}
 
-		return '<span style="font-size:12px">' . implode( ' ', $parts ) . '</span>';
+		return '<span class="wp2s-context">' . implode( ' ', $parts ) . '</span>';
 	}
 }

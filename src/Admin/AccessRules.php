@@ -117,7 +117,7 @@ final class AccessRules {
 		$checks   = static function ( string $name, array $chosen ) use ( $levels, $disabled ): void {
 			foreach ( $levels as $slug => $level ) {
 				printf(
-					'<label style="display:inline-block;margin-right:10px"><input type="checkbox" name="%s[]" value="%s" %s %s> %s</label>',
+					'<label><input type="checkbox" name="%s[]" value="%s" %s %s> %s</label>',
 					esc_attr( $name ),
 					esc_attr( $slug ),
 					checked( in_array( $slug, $chosen, true ), true, false ),
@@ -127,7 +127,6 @@ final class AccessRules {
 			}
 		};
 		?>
-		<p style="max-width:760px"><?php esc_html_e( 'The rule an item gets, from strongest to weakest: the item\'s own setting, then its terms, then its post type, then the site default. Leave every level unticked for "no rule here". Blocks inside an item can only narrow its rule.', 'wp2-shopify' ); ?></p>
 
 		<?php if ( $managed ) : ?>
 			<div class="notice notice-info inline"><p><?php esc_html_e( 'Managed in code: the wp2_shopify_access_rules filter sets these rules, so they are read-only here.', 'wp2-shopify' ); ?></p></div>
@@ -137,11 +136,13 @@ final class AccessRules {
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
 			<?php wp_nonce_field( self::ACTION ); ?>
 
+			<?php Menu::panel_start( __( 'Defaults', 'wp2-shopify' ), __( 'The fallback rule, and how an item in several gated terms is decided.', 'wp2-shopify' ) ); ?>
+			<div class="wp2s-panel__body wp2s-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Site default', 'wp2-shopify' ); ?></th>
 					<td>
-						<?php $checks( 'site_levels', $rules->site_levels ); ?>
+						<div class="wp2s-level-checks"><?php $checks( 'site_levels', $rules->site_levels ); ?></div>
 						<p class="description"><?php esc_html_e( 'Applies to items in any gated post type with no rule from their terms or post type. Usually left empty.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
@@ -156,15 +157,18 @@ final class AccessRules {
 						];
 						foreach ( $conflicts as $value => $label ) :
 							?>
-							<label style="display:block"><input type="radio" name="conflict" value="<?php echo esc_attr( $value ); ?>" <?php checked( $rules->conflict, $value ); ?> <?php echo esc_attr( $disabled ); ?>> <?php echo esc_html( $label ); ?></label>
+							<label class="wp2s-block-label"><input type="radio" name="conflict" value="<?php echo esc_attr( $value ); ?>" <?php checked( $rules->conflict, $value ); ?> <?php echo esc_attr( $disabled ); ?>> <?php echo esc_html( $label ); ?></label>
 						<?php endforeach; ?>
 						<p class="description"><?php esc_html_e( 'Level inclusion counts first: an item in a Silver term and a Gold term needs Gold when Gold includes Silver. An unexpired "open until" term always wins.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 			</table>
+			</div>
+			<?php Menu::panel_end(); ?>
 
-			<h2><?php esc_html_e( 'Post types', 'wp2-shopify' ); ?></h2>
-			<table class="widefat striped" style="max-width:1100px">
+			<?php Menu::panel_start( __( 'Post types', 'wp2-shopify' ), __( 'Which post types can be gated, what every item needs, and what locked visitors get.', 'wp2-shopify' ) ); ?>
+			<div class="wp2s-panel__body wp2s-panel__body--flush wp2s-table-scroll">
+			<table class="widefat striped">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Post type', 'wp2-shopify' ); ?></th>
@@ -183,16 +187,16 @@ final class AccessRules {
 					$base = 'types[' . $type . ']';
 					?>
 					<tr>
-						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code><?php echo esc_html( $type ); ?></code></td>
+						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code class="wp2s-code-small"><?php echo esc_html( $type ); ?></code></td>
 						<td><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" aria-label="<?php esc_attr_e( 'Can be gated', 'wp2-shopify' ); ?>" <?php checked( $row['enabled'] ); ?> <?php echo esc_attr( $disabled ); ?>></td>
-						<td><?php $checks( $base . '[levels]', $row['levels'] ); ?></td>
+						<td><div class="wp2s-level-checks"><?php $checks( $base . '[levels]', $row['levels'] ); ?></div></td>
 						<td>
-							<select name="<?php echo esc_attr( $base ); ?>[teaser_mode]" aria-label="<?php esc_attr_e( 'Teaser', 'wp2-shopify' ); ?>" <?php echo esc_attr( $disabled ); ?>>
+							<span class="wp2s-inline-form"><select name="<?php echo esc_attr( $base ); ?>[teaser_mode]" aria-label="<?php esc_attr_e( 'Teaser', 'wp2-shopify' ); ?>" <?php echo esc_attr( $disabled ); ?>>
 								<?php foreach ( $modes as $value => $label ) : ?>
 									<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $row['teaser']['mode'], $value ); ?>><?php echo esc_html( $label ); ?></option>
 								<?php endforeach; ?>
 							</select>
-							<input type="number" min="0" max="1000" class="small-text" name="<?php echo esc_attr( $base ); ?>[teaser_count]" aria-label="<?php esc_attr_e( 'How many blocks or words', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['teaser']['count'] ); ?>" <?php echo esc_attr( $disabled ); ?>>
+							<input type="number" min="0" max="1000" class="small-text" name="<?php echo esc_attr( $base ); ?>[teaser_count]" aria-label="<?php esc_attr_e( 'How many blocks or words', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['teaser']['count'] ); ?>" <?php echo esc_attr( $disabled ); ?>></span>
 						</td>
 						<td>
 							<input type="number" min="0" max="36500" class="small-text" name="<?php echo esc_attr( $base ); ?>[public_after_days]" aria-label="<?php esc_attr_e( 'Opens after days', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['public_after_days'] ); ?>" <?php echo esc_attr( $disabled ); ?>>
@@ -210,10 +214,16 @@ final class AccessRules {
 				<?php endforeach; ?>
 				</tbody>
 			</table>
-			<p class="description" style="max-width:1100px"><?php esc_html_e( 'A paywall break block in an item always sets its teaser. "Opens after" frees items that many days after they were published (0 for never), checked on every request. "Readers only" hides comments, the comment count and the form from visitors who cannot read the item. "Keep locked items out" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser.', 'wp2-shopify' ); ?></p>
+			</div>
+			<div class="wp2s-panel__footer">
+			<p class="description"><?php esc_html_e( 'A paywall break block in an item always sets its teaser. "Opens after" frees items that many days after they were published (0 for never), checked on every request. "Readers only" hides comments, the comment count and the form from visitors who cannot read the item. "Keep locked items out" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser.', 'wp2-shopify' ); ?></p>
 
-			<h2><?php esc_html_e( 'Taxonomies', 'wp2-shopify' ); ?></h2>
-			<table class="widefat striped" style="max-width:1100px">
+			</div>
+			<?php Menu::panel_end(); ?>
+
+			<?php Menu::panel_start( __( 'Taxonomies', 'wp2-shopify' ), __( 'Which taxonomies\' term rules count. Rules are set on each term\'s edit screen.', 'wp2-shopify' ) ); ?>
+			<div class="wp2s-panel__body wp2s-panel__body--flush wp2s-table-scroll">
+			<table class="widefat striped">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Taxonomy', 'wp2-shopify' ); ?></th>
@@ -231,7 +241,7 @@ final class AccessRules {
 					$used = self::terms_with_rules( $name );
 					?>
 					<tr>
-						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code><?php echo esc_html( $name ); ?></code></td>
+						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code class="wp2s-code-small"><?php echo esc_html( $name ); ?></code></td>
 						<td><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" aria-label="<?php esc_attr_e( 'Term rules count', 'wp2-shopify' ); ?>" <?php checked( $row['enabled'] ); ?> <?php echo esc_attr( $disabled ); ?>></td>
 						<td>
 							<?php if ( $object->hierarchical ) : ?>
@@ -242,16 +252,17 @@ final class AccessRules {
 						</td>
 						<td><input type="number" min="-100" max="100" class="small-text" name="<?php echo esc_attr( $base ); ?>[priority]" aria-label="<?php esc_attr_e( 'Priority', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['priority'] ); ?>" <?php echo esc_attr( $disabled ); ?>></td>
 						<td>
-							<?php echo esc_html( (string) $used ); ?>
+							<?php echo esc_html( (string) $used ); ?> &middot;
 							<a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=' . $name ) ); ?>"><?php esc_html_e( 'Edit terms', 'wp2-shopify' ); ?></a>
 						</td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>
-			<p class="description" style="max-width:1100px"><?php esc_html_e( 'Rules are set on each term\'s edit screen. In the priority mode the taxonomy priority counts first, then the term\'s own.', 'wp2-shopify' ); ?></p>
+			</div>
+			<div class="wp2s-panel__footer">
+			<p class="description"><?php esc_html_e( 'In the priority mode the taxonomy priority counts first, then the term\'s own.', 'wp2-shopify' ); ?>
 
-			<p class="description" style="max-width:1100px">
 				<?php
 				echo esc_html(
 					Index::pending()
@@ -260,6 +271,8 @@ final class AccessRules {
 				);
 				?>
 			</p>
+			</div>
+			<?php Menu::panel_end(); ?>
 
 			<?php if ( ! $managed ) : ?>
 				<?php submit_button( __( 'Save content rules', 'wp2-shopify' ) ); ?>

@@ -1,0 +1,715 @@
+/*
+ * Shopify admin screens. Loaded only on the plugin's own menu pages (Menu::enqueue).
+ * Builds on core admin styles (.button, .widefat, .form-table, notices) and only adds
+ * the page header, panels, status labels and a few layout helpers.
+ */
+.wp2s,
+.wp2s-topbar {
+	--wp2s-accent: var(--wp-admin-theme-color, #2271b1);
+	--wp2s-border: #dcdcde;
+	--wp2s-muted: #646970;
+	--wp2s-surface: #fff;
+	--wp2s-subtle: #f6f7f7;
+	--wp2s-radius: 8px;
+	--wp2s-ok: #00a32a;
+	--wp2s-ok-bg: #edfaef;
+	--wp2s-ok-fg: #005c12;
+	--wp2s-warn: #dba617;
+	--wp2s-warn-bg: #fcf9e8;
+	--wp2s-warn-fg: #614200;
+	--wp2s-error: #d63638;
+	--wp2s-error-bg: #fcf0f1;
+	--wp2s-error-fg: #8a2424;
+}
+
+.wp2s {
+	max-width: 1200px;
+}
+
+/*
+ * Page header: a white bar above the page, like core's own settings screens.
+ * A plain block (not flex) on purpose: core floats the Screen Options tab at
+ * the top right, and a flex box would shrink beside it instead of running
+ * underneath. The store details float right, so they sit left of that tab.
+ */
+.wp2s-topbar {
+	margin: 0 0 0 -20px;
+	padding: 12px 20px;
+	line-height: 24px;
+	background: #fff;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.wp2s-topbar::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.wp2s-topbar > * {
+	vertical-align: middle;
+}
+
+.wp2s-topbar__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+	text-decoration: none;
+}
+
+.wp2s-topbar__brand .dashicons {
+	color: #008060;
+}
+
+.wp2s-topbar__sep {
+	margin: 0 8px;
+	color: #c3c4c7;
+}
+
+.wp2s-topbar__page {
+	font-size: 14px;
+	color: #50575e;
+}
+
+.wp2s-topbar__store {
+	float: right;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	color: #50575e;
+}
+
+.wp2s-topbar__store a {
+	color: inherit;
+}
+
+.wp2s-topbar__store a.wp2s-topbar__status {
+	text-decoration: none;
+}
+
+.wp2s h1.wp-heading-inline,
+.wp2s > h1 {
+	font-size: 23px;
+	font-weight: 500;
+}
+
+.wp2s-intro {
+	max-width: 760px;
+	margin: 4px 0 20px;
+	font-size: 14px;
+	color: var(--wp2s-muted);
+}
+
+/* Panels: a titled white box. Forms, tables and checks all sit in one. */
+.wp2s-panel {
+	margin: 0 0 20px;
+	background: var(--wp2s-surface);
+	border: 1px solid var(--wp2s-border);
+	border-radius: var(--wp2s-radius);
+	overflow: hidden;
+}
+
+.wp2s-panel__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px 16px;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--wp2s-border);
+}
+
+.wp2s-panel__header h2,
+.wp2s-panel__header h3 {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.4;
+}
+
+.wp2s-panel__header p {
+	margin: 4px 0 0;
+	max-width: 760px;
+	color: var(--wp2s-muted);
+}
+
+.wp2s-panel__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.wp2s-panel__body {
+	padding: 16px 20px;
+}
+
+.wp2s-panel__body > :first-child {
+	margin-top: 0;
+}
+
+.wp2s-panel__body > :last-child {
+	margin-bottom: 0;
+}
+
+.wp2s-panel__body--flush {
+	padding: 0;
+}
+
+.wp2s-panel__footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 20px;
+	background: var(--wp2s-subtle);
+	border-top: 1px solid var(--wp2s-border);
+}
+
+.wp2s-panel__footer .description {
+	margin: 0;
+}
+
+.wp2s-panel__footer p.submit {
+	margin: 0;
+	padding: 0;
+}
+
+/* Tables inside a panel lose their own border. */
+.wp2s-panel .widefat {
+	border: 0;
+	box-shadow: none;
+}
+
+.wp2s-panel .widefat thead th,
+.wp2s-panel .widefat thead td {
+	padding: 10px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--wp2s-muted);
+	text-transform: uppercase;
+	letter-spacing: .02em;
+}
+
+.wp2s-panel .widefat td,
+.wp2s-panel .widefat tbody th {
+	padding: 12px;
+	vertical-align: top;
+}
+
+.wp2s-panel .widefat tr > :first-child {
+	padding-left: 20px;
+}
+
+.wp2s-panel .widefat tr > :last-child {
+	padding-right: 20px;
+}
+
+.wp2s-table-scroll {
+	overflow-x: auto;
+}
+
+/* Settings rows inside a panel. */
+.wp2s-panel .form-table {
+	margin: 0;
+}
+
+.wp2s-panel .form-table th {
+	width: 220px;
+	padding: 20px 10px 20px 20px;
+}
+
+.wp2s-panel .form-table td {
+	padding: 15px 20px 15px 10px;
+}
+
+.wp2s-panel .form-table tr + tr > * {
+	border-top: 1px solid #f0f0f1;
+}
+
+.wp2s-panel .form-table .wp2s-section-row th {
+	width: auto;
+	padding: 10px 20px;
+	background: var(--wp2s-subtle);
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--wp2s-muted);
+	text-transform: uppercase;
+	letter-spacing: .02em;
+}
+
+.wp2s-help {
+	max-width: 640px;
+}
+
+.wp2s-clear {
+	margin-left: 8px;
+}
+
+.wp2s-icon-inline {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	vertical-align: text-bottom;
+}
+
+.wp2s-field-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 8px;
+	margin-top: 6px;
+}
+
+.wp2s-required {
+	color: var(--wp2s-error);
+}
+
+.wp2s-invalid {
+	border-color: var(--wp2s-error) !important;
+}
+
+.wp2s-error-text {
+	color: var(--wp2s-error-fg);
+}
+
+/* Status labels: colour plus a word, never colour alone. */
+.wp2s-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 2px 10px 2px 8px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 20px;
+	white-space: nowrap;
+	background: #f0f0f1;
+	color: #3c434a;
+}
+
+.wp2s-status::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #8c8f94;
+	flex: none;
+}
+
+.wp2s-status.is-ok {
+	background: var(--wp2s-ok-bg);
+	color: var(--wp2s-ok-fg);
+}
+
+.wp2s-status.is-ok::before {
+	background: var(--wp2s-ok);
+}
+
+.wp2s-status.is-warn {
+	background: var(--wp2s-warn-bg);
+	color: var(--wp2s-warn-fg);
+}
+
+.wp2s-status.is-warn::before {
+	background: var(--wp2s-warn);
+}
+
+.wp2s-status.is-error {
+	background: var(--wp2s-error-bg);
+	color: var(--wp2s-error-fg);
+}
+
+.wp2s-status.is-error::before {
+	background: var(--wp2s-error);
+}
+
+/* The inline dot used in tables and lists (Menu::dot). */
+.wp2s-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	margin: 0 6px 1px 0;
+	border-radius: 50%;
+	background: var(--wp2s-ok, #00a32a);
+	vertical-align: middle;
+}
+
+.wp2s-dot.is-error {
+	background: var(--wp2s-error, #d63638);
+}
+
+/* Small grey labels: tags, slugs, flags. */
+.wp2s-chip {
+	display: inline-block;
+	margin: 0 4px 4px 0;
+	padding: 0 8px;
+	border-radius: 4px;
+	background: #f0f0f1;
+	color: #3c434a;
+	font-size: 12px;
+	line-height: 22px;
+}
+
+code.wp2s-chip {
+	font-size: 12px;
+}
+
+.wp2s-chip--solid {
+	color: #fff;
+}
+
+.wp2s-muted {
+	color: var(--wp2s-muted);
+}
+
+.wp2s-code-small {
+	font-size: 11px;
+}
+
+/* Overview */
+.wp2s-hero {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 16px 24px;
+	padding: 20px;
+}
+
+.wp2s-hero__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: var(--wp2s-ok-bg);
+	color: var(--wp2s-ok);
+	flex: none;
+}
+
+.wp2s-hero.is-warn .wp2s-hero__icon {
+	background: var(--wp2s-warn-bg);
+	color: #996800;
+}
+
+.wp2s-hero__icon .dashicons {
+	width: 28px;
+	height: 28px;
+	font-size: 28px;
+}
+
+.wp2s-hero__text {
+	flex: 1 1 320px;
+}
+
+.wp2s-hero__text h2 {
+	margin: 0 0 4px;
+	font-size: 18px;
+}
+
+.wp2s-hero__text p {
+	margin: 0;
+	color: var(--wp2s-muted);
+}
+
+.wp2s-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+	gap: 16px;
+	margin: 0 0 20px;
+}
+
+.wp2s-card {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 16px 20px;
+	background: var(--wp2s-surface);
+	border: 1px solid var(--wp2s-border);
+	border-radius: var(--wp2s-radius);
+	color: inherit;
+	text-decoration: none;
+	transition: border-color .1s ease-in-out, box-shadow .1s ease-in-out;
+}
+
+a.wp2s-card:hover,
+a.wp2s-card:focus {
+	border-color: var(--wp2s-accent);
+	box-shadow: 0 0 0 1px var(--wp2s-accent);
+	color: inherit;
+	outline: none;
+}
+
+.wp2s-card__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.wp2s-card__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.wp2s-card__title .dashicons {
+	color: var(--wp2s-muted);
+}
+
+.wp2s-card__detail {
+	flex: 1;
+	margin: 0;
+	color: #50575e;
+	overflow-wrap: anywhere;
+}
+
+.wp2s-card__link {
+	color: var(--wp2s-accent);
+	font-weight: 500;
+}
+
+/* Lists of checks: status, label, detail. */
+.wp2s-checks {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.wp2s-checks > li {
+	display: grid;
+	grid-template-columns: minmax(200px, 260px) 1fr;
+	gap: 4px 16px;
+	margin: 0;
+	padding: 12px 20px;
+	border-top: 1px solid #f0f0f1;
+}
+
+.wp2s-checks > li:first-child {
+	border-top: 0;
+}
+
+.wp2s-checks__label {
+	font-weight: 600;
+}
+
+.wp2s-checks__detail {
+	color: #50575e;
+	overflow-wrap: anywhere;
+}
+
+/* Key/value rows (customer details, trace). */
+.wp2s-kv th {
+	width: 25%;
+	font-weight: 500;
+	color: var(--wp2s-muted);
+}
+
+/* Side-by-side columns that stack on small screens. */
+.wp2s-columns {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+	gap: 20px;
+	align-items: start;
+}
+
+.wp2s-columns > .wp2s-panel {
+	margin-bottom: 0;
+}
+
+.wp2s-columns + * {
+	margin-top: 20px;
+}
+
+.wp2s-tag-list label {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0 6px 6px 0;
+	padding: 2px 8px 2px 4px;
+	border: 1px solid var(--wp2s-border);
+	border-radius: 4px;
+}
+
+.wp2s-tag-list input[type="checkbox"] {
+	margin: 0;
+}
+
+.wp2s-inline-form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.wp2s-inline-form label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.wp2s-choice-list label {
+	display: block;
+	margin: 0 0 6px;
+}
+
+.wp2s-level-checks label {
+	display: inline-block;
+	margin: 0 12px 4px 0;
+	white-space: nowrap;
+}
+
+.wp2s-action-form {
+	display: inline-block;
+	margin: 0;
+}
+
+.wp2s details > summary {
+	cursor: pointer;
+	color: var(--wp2s-accent);
+}
+
+.wp2s details[open] > summary {
+	margin-bottom: 8px;
+}
+
+.wp2s-copy-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.wp2s-copy-row code {
+	padding: 4px 8px;
+	border-radius: 4px;
+	overflow-wrap: anywhere;
+}
+
+/* Small helpers. */
+.wp2s-avatar {
+	float: left;
+	margin-right: 10px;
+	border-radius: 50%;
+}
+
+.wp2s-context {
+	font-size: 12px;
+}
+
+.wp2s-filter-customer {
+	width: 12em;
+}
+
+.wp2s-col-time {
+	width: 12em;
+}
+
+.wp2s-section-title {
+	margin: 28px 0 4px;
+	font-size: 15px;
+}
+
+.wp2s-input-short.regular-text {
+	width: 10em;
+}
+
+.wp2s-stack {
+	margin-top: 6px;
+}
+
+.wp2s-block-label {
+	display: block;
+	margin: 0 0 6px;
+}
+
+.wp2s-problem {
+	margin: 0 0 4px;
+}
+
+.wp2s-row-actions {
+	white-space: nowrap;
+	text-align: right;
+}
+
+.wp2s-row-actions .button,
+.wp2s-row-actions .wp2s-action-form {
+	vertical-align: middle;
+}
+
+.wp2s-tight {
+	margin: 4px 0 0;
+}
+
+.wp2s-trace-list {
+	margin: 0 0 0 1.2em;
+}
+
+ul.wp2s-trace-list {
+	margin-left: 0;
+}
+
+.wp2s-panel .wp2s-dry-result {
+	border-top: 1px solid var(--wp2s-border);
+}
+
+/* The tab bar sits on the page background, under the title. */
+.wp2s .nav-tab-wrapper {
+	margin-bottom: 20px;
+}
+
+/* Events list column widths. */
+.wp2s .wp-list-table.events .column-created_at {
+	width: 10em;
+}
+
+.wp2s .wp-list-table.events .column-event {
+	width: 13em;
+}
+
+.wp2s .wp-list-table.events .column-ms,
+.wp2s .wp-list-table.events .column-origin {
+	width: 6em;
+}
+
+.wp2s .wp-list-table.events .column-context {
+	width: 28%;
+	word-break: break-all;
+}
+
+@media screen and (max-width: 782px) {
+	.wp2s-topbar {
+		margin-left: -10px;
+		padding: 10px;
+	}
+
+	.wp2s-topbar__store {
+		float: none;
+		margin-top: 4px;
+	}
+
+	.wp2s-checks > li {
+		grid-template-columns: 1fr;
+	}
+
+	.wp2s-columns {
+		grid-template-columns: 1fr;
+	}
+
+	.wp2s-panel .form-table th,
+	.wp2s-panel .form-table td {
+		width: auto;
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+
+	.wp2s-panel .form-table tr + tr > td {
+		border-top: 0;
+	}
+}

@@ -56,55 +56,94 @@ final class Webhooks {
 		$rejected   = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
 		$table      = new WebhooksTable();
 		$table->prepare_items();
+		Menu::page_start( __( 'Webhooks', 'wp2-shopify' ), __( 'Shopify webhooks', 'wp2-shopify' ), '', __( 'What Shopify sent, what became of it, and the app\'s webhook subscriptions.', 'wp2-shopify' ) );
+		Menu::result_notice(
+			[
+				'registered'      => [ 'success', __( 'Webhook subscriptions are in place.', 'wp2-shopify' ) ],
+				'register_failed' => [ 'error', __( 'Some webhook subscriptions could not be created. Details below.', 'wp2-shopify' ) ],
+				'requeued'        => [ 'success', __( 'The webhook was queued again.', 'wp2-shopify' ) ],
+			]
+		);
 		?>
-		<div class="wrap">
-			<h1 class="wp-heading-inline"><?php esc_html_e( 'Shopify webhooks', 'wp2-shopify' ); ?></h1>
-			<hr class="wp-header-end">
-			<?php
-			Menu::result_notice(
-				[
-					'registered'      => [ 'success', __( 'Webhook subscriptions are in place.', 'wp2-shopify' ) ],
-					'register_failed' => [ 'error', __( 'Some webhook subscriptions could not be created. Details below.', 'wp2-shopify' ) ],
-					'requeued'        => [ 'success', __( 'The webhook was queued again.', 'wp2-shopify' ) ],
-				]
-			);
-			?>
 
-			<div class="card" style="max-width:1100px">
-				<p><?php esc_html_e( 'Endpoint:', 'wp2-shopify' ); ?> <code><?php echo esc_html( rest_url( 'wp2-shopify/v1/webhooks/events' ) ); ?></code></p>
-				<p><?php echo Menu::dot( $secret_set ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'wp2-shopify' ) : esc_html__( 'The Admin app client secret is missing, so every delivery is rejected. Add it in Settings.', 'wp2-shopify' ); ?></p>
-				<p>
-					<?php esc_html_e( 'Subscriptions through the app:', 'wp2-shopify' ); ?>
-					<?php
-					if ( is_array( $hooks ) ) {
-						echo Menu::time( $hooks['at'] ) . ' · ' . esc_html( sprintf( /* translators: 1: already present 2: created */ __( '%1$d already present, %2$d created', 'wp2-shopify' ), $hooks['existing'], count( $hooks['created'] ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput
-						echo $hooks['error'] ? ' · <strong>' . esc_html( $hooks['error'] ) . '</strong>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput
-						foreach ( $hooks['failed'] as $topic => $message ) {
-							echo '<br><code>' . esc_html( $topic ) . '</code>: ' . esc_html( $message ); // phpcs:ignore WordPress.Security.EscapeOutput
-						}
-					} else {
-						esc_html_e( 'not registered yet.', 'wp2-shopify' );
-					}
-					?>
-				</p>
-				<p class="description"><?php esc_html_e( 'Topics:', 'wp2-shopify' ); ?> <code><?php echo esc_html( implode( ', ', Registrar::topics() ) ); ?></code>. <?php esc_html_e( 'Compliance topics are declared in the app configuration, not registered here:', 'wp2-shopify' ); ?> <code><?php echo esc_html( implode( ', ', array_diff( Topics::subscribable(), Registrar::topics() ) ) ); ?></code></p>
-				<?php Menu::action_button( self::ACTION, 'register', __( 'Register webhooks with Shopify', 'wp2-shopify' ), [], 'primary' ); ?>
-				<?php if ( get_option( 'wp2_shopify_app_uninstalled' ) ) : ?>
-					<p><strong><?php esc_html_e( 'Shopify reported the app as uninstalled on', 'wp2-shopify' ); ?> <?php echo Menu::time( get_option( 'wp2_shopify_app_uninstalled' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></strong></p>
-				<?php endif; ?>
-			</div>
+			<?php Menu::panel_start( __( 'Delivery setup', 'wp2-shopify' ) ); ?>
+				<ul class="wp2s-checks">
+					<li>
+						<span class="wp2s-checks__label"><?php esc_html_e( 'Endpoint', 'wp2-shopify' ); ?></span>
+						<span class="wp2s-checks__detail"><code><?php echo esc_html( rest_url( 'wp2-shopify/v1/webhooks/events' ) ); ?></code></span>
+					</li>
+					<li>
+						<span class="wp2s-checks__label"><?php echo Menu::dot( $secret_set ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Signatures', 'wp2-shopify' ); ?></span>
+						<span class="wp2s-checks__detail"><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'wp2-shopify' ) : esc_html__( 'The Admin app client secret is missing, so every delivery is rejected. Add it in Settings.', 'wp2-shopify' ); ?></span>
+					</li>
+					<li>
+						<span class="wp2s-checks__label"><?php echo Menu::dot( is_array( $hooks ) && ! $hooks['error'] && ! $hooks['failed'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Subscriptions through the app', 'wp2-shopify' ); ?></span>
+						<span class="wp2s-checks__detail">
+							<?php
+							if ( is_array( $hooks ) ) {
+								echo Menu::time( $hooks['at'] ) . ' · ' . esc_html( sprintf( /* translators: 1: already present 2: created */ __( '%1$d already present, %2$d created', 'wp2-shopify' ), $hooks['existing'], count( $hooks['created'] ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+								echo $hooks['error'] ? ' · <strong>' . esc_html( $hooks['error'] ) . '</strong>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput
+								foreach ( $hooks['failed'] as $topic => $message ) {
+									echo '<br><code>' . esc_html( $topic ) . '</code>: ' . esc_html( $message ); // phpcs:ignore WordPress.Security.EscapeOutput
+								}
+							} else {
+								esc_html_e( 'Not registered yet.', 'wp2-shopify' );
+							}
+							?>
+						</span>
+					</li>
+					<li>
+						<span class="wp2s-checks__label"><?php esc_html_e( 'Topics', 'wp2-shopify' ); ?></span>
+						<span class="wp2s-checks__detail">
+							<details>
+								<summary>
+									<?php
+									/* translators: %d: number of topics */
+									echo esc_html( sprintf( __( '%d topics registered by the plugin', 'wp2-shopify' ), count( Registrar::topics() ) ) );
+									?>
+								</summary>
+								<?php foreach ( Registrar::topics() as $topic ) : ?>
+									<code class="wp2s-chip"><?php echo esc_html( $topic ); ?></code>
+								<?php endforeach; ?>
+								<p class="description"><?php esc_html_e( 'Compliance topics are declared in the app configuration, not registered here:', 'wp2-shopify' ); ?></p>
+								<?php foreach ( array_diff( Topics::subscribable(), Registrar::topics() ) as $topic ) : ?>
+									<code class="wp2s-chip"><?php echo esc_html( $topic ); ?></code>
+								<?php endforeach; ?>
+							</details>
+						</span>
+					</li>
+					<?php if ( get_option( 'wp2_shopify_app_uninstalled' ) ) : ?>
+						<li>
+							<span class="wp2s-checks__label"><?php echo Menu::dot( false ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'App', 'wp2-shopify' ); ?></span>
+							<span class="wp2s-checks__detail"><strong><?php esc_html_e( 'Shopify reported the app as uninstalled on', 'wp2-shopify' ); ?> <?php echo Menu::time( get_option( 'wp2_shopify_app_uninstalled' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></strong></span>
+						</li>
+					<?php endif; ?>
+				</ul>
+				<div class="wp2s-panel__footer">
+					<?php Menu::action_button( self::ACTION, 'register', __( 'Register webhooks with Shopify', 'wp2-shopify' ), [], 'primary' ); ?>
+					<span class="description"><?php esc_html_e( 'Creates any subscription that is missing. Safe to run again.', 'wp2-shopify' ); ?></span>
+				</div>
+			<?php Menu::panel_end(); ?>
 
 			<?php if ( $rejected['total'] ) : ?>
-				<h2><?php esc_html_e( 'Rejected deliveries', 'wp2-shopify' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored.', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Events::PAGE, [ 'event' => 'webhook.rejected' ] ) ); ?>"><?php echo esc_html( sprintf( /* translators: %d: count */ __( 'All %d', 'wp2-shopify' ), $rejected['total'] ) ); ?></a></p>
-				<table class="widefat striped" style="max-width:1100px">
-					<?php foreach ( $rejected['rows'] as $row ) : ?>
-						<tr><td style="width:12em"><?php echo Menu::time( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['label'] ?: '?' ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
-					<?php endforeach; ?>
-				</table>
+				<?php
+				Menu::panel_start(
+					__( 'Rejected deliveries', 'wp2-shopify' ),
+					__( 'Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored.', 'wp2-shopify' ),
+					sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Events::PAGE, [ 'event' => 'webhook.rejected' ] ) ), esc_html( sprintf( /* translators: %d: count */ __( 'All %d', 'wp2-shopify' ), $rejected['total'] ) ) )
+				);
+				?>
+					<div class="wp2s-panel__body wp2s-panel__body--flush">
+						<table class="widefat striped">
+							<?php foreach ( $rejected['rows'] as $row ) : ?>
+								<tr><td class="wp2s-col-time"><?php echo Menu::time( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['label'] ?: '?' ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
+							<?php endforeach; ?>
+						</table>
+					</div>
+				<?php Menu::panel_end(); ?>
 			<?php endif; ?>
 
-			<h2><?php esc_html_e( 'Received', 'wp2-shopify' ); ?></h2>
+			<h2 class="wp2s-section-title"><?php esc_html_e( 'Received', 'wp2-shopify' ); ?></h2>
 			<p class="description"><?php echo esc_html( sprintf( /* translators: %d: days */ __( 'Kept for %d days. Payloads are not stored; only the fields the plugin acts on, until the delivery is processed.', 'wp2-shopify' ), WpdbInboxStore::RETENTION / DAY_IN_SECONDS ) ); ?></p>
 			<?php $table->views(); ?>
 			<form method="get">
@@ -114,7 +153,7 @@ final class Webhooks {
 				<?php endif; ?>
 				<?php $table->display(); ?>
 			</form>
-		</div>
 		<?php
+		Menu::page_end();
 	}
 }

@@ -30,59 +30,93 @@ final class Overview {
 				__( 'Configuration', 'wp2-shopify' ),
 				$missing ? sprintf( /* translators: %s: setting names */ __( 'Missing: %s. Add them in Settings or wp-config.php.', 'wp2-shopify' ), implode( ', ', array_map( static fn( $name ) => Config::definitions()[ $name ]['label'], $missing ) ) ) : sprintf( /* translators: %s: store domain */ __( 'Store %s', 'wp2-shopify' ), Config::store_domain() ),
 				Menu::url( SettingsPage::PAGE ),
+				'admin-settings',
+				__( 'Open settings', 'wp2-shopify' ),
 			],
 			[
 				Discovery::available(),
 				__( 'Customer sign-in', 'wp2-shopify' ),
 				Discovery::available() ? __( 'Customer Account API reachable.', 'wp2-shopify' ) : __( 'Shopify discovery failed, so sign-in is off.', 'wp2-shopify' ),
 				Menu::url( Debug::PAGE ),
+				'admin-users',
+				__( 'Check in Debug', 'wp2-shopify' ),
 			],
 			[
 				AdminApi::available() && ! get_option( 'wp2_shopify_admin_token_error' ),
 				__( 'Admin API', 'wp2-shopify' ),
 				AdminApi::available() ? ( get_option( 'wp2_shopify_admin_token_error' ) ? __( 'The last token request failed.', 'wp2-shopify' ) : __( 'Dev Dashboard app, tokens renewed automatically.', 'wp2-shopify' ) ) : __( 'Not configured.', 'wp2-shopify' ),
 				Menu::url( Events::PAGE ),
+				'rest-api',
+				__( 'View app events', 'wp2-shopify' ),
 			],
 			[
 				(bool) $last,
 				__( 'Webhooks', 'wp2-shopify' ),
 				$last ? sprintf( /* translators: 1: topic 2: time */ __( 'Last: %1$s, %2$s ago', 'wp2-shopify' ), $last['topic'], human_time_diff( (int) $last['received_at'] ) ) : __( 'Nothing received yet.', 'wp2-shopify' ),
 				Menu::url( Webhooks::PAGE ),
+				'controls-repeat',
+				__( 'View webhooks', 'wp2-shopify' ),
 			],
 			[
 				true,
 				__( 'Linked customers', 'wp2-shopify' ),
 				is_array( $recon ) ? sprintf( /* translators: 1: count 2: time */ __( '%1$d linked. Last reconciliation %2$s ago.', 'wp2-shopify' ), $linked, human_time_diff( (int) ( $recon['finished'] ?? 0 ) ) ) : sprintf( /* translators: %d: count */ __( '%d linked.', 'wp2-shopify' ), $linked ),
 				Menu::url( Customers::PAGE ),
+				'groups',
+				__( 'View customers', 'wp2-shopify' ),
 			],
 			[
 				in_array( OfficialPlugin::state(), [ OfficialPlugin::ABSENT, OfficialPlugin::SAME_STORE ], true ),
 				__( 'Shopify\'s WordPress plugin', 'wp2-shopify' ),
 				OfficialPlugin::summary(),
 				Menu::url( Debug::PAGE ) . '#official-plugin',
+				'admin-plugins',
+				__( 'Details', 'wp2-shopify' ),
 			],
 			[
 				0 === $failures,
 				__( 'Last 24 hours', 'wp2-shopify' ),
 				sprintf( /* translators: %d: count */ __( '%d failed Shopify calls or rejected webhooks.', 'wp2-shopify' ), $failures ),
 				Menu::url( Events::PAGE ),
+				'chart-line',
+				__( 'View app events', 'wp2-shopify' ),
 			],
 		];
-		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Shopify', 'wp2-shopify' ); ?></h1>
+		$problems = count( array_filter( $cards, static fn( $card ) => ! $card[0] ) );
 
-			<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;max-width:1100px;margin:16px 0 24px">
-				<?php foreach ( $cards as [ $ok, $title, $detail, $link ] ) : ?>
-					<a href="<?php echo esc_url( $link ); ?>" class="card" style="margin:0;max-width:none;text-decoration:none;color:inherit">
-						<h2 class="title" style="margin-top:0"><?php echo Menu::dot( $ok ) . esc_html( $title ); // phpcs:ignore WordPress.Security.EscapeOutput ?></h2>
-						<p style="overflow-wrap:anywhere"><?php echo esc_html( $detail ); ?></p>
+		Menu::page_start( __( 'Overview', 'wp2-shopify' ), __( 'Shopify', 'wp2-shopify' ) );
+		?>
+			<section class="wp2s-panel">
+				<div class="wp2s-hero <?php echo $problems ? 'is-warn' : ''; ?>">
+					<span class="wp2s-hero__icon"><span class="dashicons <?php echo $problems ? 'dashicons-warning' : 'dashicons-yes-alt'; ?>" aria-hidden="true"></span></span>
+					<div class="wp2s-hero__text">
+						<h2>
+							<?php
+							echo $problems
+								/* translators: %d: number of checks that need attention */
+								? esc_html( sprintf( _n( '%d check needs attention', '%d checks need attention', $problems, 'wp2-shopify' ), $problems ) )
+								: esc_html__( 'Everything is connected', 'wp2-shopify' );
+							?>
+						</h2>
+						<p><?php esc_html_e( 'Sign-in, memberships and webhooks at a glance. Select a card for the details.', 'wp2-shopify' ); ?></p>
+					</div>
+					<a class="button <?php echo $missing ? 'button-primary' : ''; ?>" href="<?php echo esc_url( Menu::url( SettingsPage::PAGE ) ); ?>"><?php esc_html_e( 'Settings', 'wp2-shopify' ); ?></a>
+				</div>
+			</section>
+
+			<div class="wp2s-cards">
+				<?php foreach ( $cards as [ $ok, $title, $detail, $link, $icon, $more ] ) : ?>
+					<a href="<?php echo esc_url( $link ); ?>" class="wp2s-card">
+						<div class="wp2s-card__head">
+							<h2 class="wp2s-card__title"><span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>" aria-hidden="true"></span><?php echo esc_html( $title ); ?></h2>
+							<?php echo Menu::status( $ok, $ok ? __( 'OK', 'wp2-shopify' ) : __( 'Attention', 'wp2-shopify' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+						</div>
+						<p class="wp2s-card__detail"><?php echo esc_html( $detail ); ?></p>
+						<span class="wp2s-card__link"><?php echo esc_html( $more ); ?> &rarr;</span>
 					</a>
 				<?php endforeach; ?>
 			</div>
-
-			<p><a class="button" href="<?php echo esc_url( Menu::url( SettingsPage::PAGE ) ); ?>"><?php esc_html_e( 'Settings', 'wp2-shopify' ); ?></a> <?php esc_html_e( 'Shopify connection and membership products.', 'wp2-shopify' ); ?></p>
-		</div>
 		<?php
+		Menu::page_end();
 	}
 }

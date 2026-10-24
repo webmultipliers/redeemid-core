@@ -47,11 +47,11 @@ final class AccessTest {
 		$viewers[ Explain::AS_TAGS ] = __( 'A synced customer with these tags', 'wp2-shopify' );
 		$viewers[ Explain::AS_USER ] = __( 'A real user, from their synced record', 'wp2-shopify' );
 		?>
-		<p style="max-width:760px"><?php esc_html_e( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'wp2-shopify' ); ?></p>
-
 		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 			<input type="hidden" name="page" value="<?php echo esc_attr( Access::PAGE ); ?>">
 			<input type="hidden" name="tab" value="test">
+			<?php Menu::panel_start( __( 'Explain access', 'wp2-shopify' ) ); ?>
+			<div class="wp2s-panel__body wp2s-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="wp2-test-post"><?php esc_html_e( 'Item', 'wp2-shopify' ); ?></label></th>
@@ -73,15 +73,19 @@ final class AccessTest {
 								<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $as, $value ); ?>><?php echo esc_html( $label ); ?></option>
 							<?php endforeach; ?>
 						</select>
-						<p>
-							<label><?php esc_html_e( 'Tags', 'wp2-shopify' ); ?> <input name="tags" class="regular-text" placeholder="gold, vip" value="<?php echo esc_attr( $tags ); ?>"></label>
+						<p class="wp2s-inline-form">
+							<label><?php esc_html_e( 'Tags', 'wp2-shopify' ); ?> <input type="text" name="tags" class="regular-text" placeholder="gold, vip" value="<?php echo esc_attr( $tags ); ?>"></label>
 							<label><?php esc_html_e( 'User ID', 'wp2-shopify' ); ?> <input name="user" type="number" min="0" class="small-text" value="<?php echo esc_attr( $user_id ? (string) $user_id : '' ); ?>"></label>
 						</p>
 						<p class="description"><?php esc_html_e( 'Tags are used with "A synced customer with these tags", the user ID with "A real user". Test members are always freshly synced; a real user\'s record may be stale, which locks just as it does on the site.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 			</table>
-			<?php submit_button( __( 'Explain', 'wp2-shopify' ), 'primary', '', false ); ?>
+			</div>
+			<div class="wp2s-panel__footer">
+				<?php submit_button( __( 'Explain', 'wp2-shopify' ), 'primary', '', false ); ?>
+			</div>
+			<?php Menu::panel_end(); ?>
 		</form>
 		<?php
 		$post   = $post_id ? get_post( $post_id ) : null;
@@ -103,12 +107,13 @@ final class AccessTest {
 	 */
 	private static function render_features( array $rows ): void {
 		?>
-		<h2><?php esc_html_e( 'Features for this viewer', 'wp2-shopify' ); ?></h2>
-		<table class="widefat striped" style="max-width:1100px">
+		<?php Menu::panel_start( __( 'Features for this viewer', 'wp2-shopify' ) ); ?>
+		<div class="wp2s-panel__body wp2s-panel__body--flush">
+		<table class="widefat striped wp2s-kv">
 			<tbody>
 				<?php foreach ( $rows as $row ) : ?>
 					<tr>
-						<th scope="row" style="width:200px"><?php echo esc_html( $row['label'] ); ?><br><code><?php echo esc_html( $row['slug'] ); ?></code></th>
+						<th scope="row"><?php echo esc_html( $row['label'] ); ?><br><code class="wp2s-code-small"><?php echo esc_html( $row['slug'] ); ?></code></th>
 						<td>
 							<?php echo Menu::dot( $row['granted'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 							<strong>
@@ -123,7 +128,7 @@ final class AccessTest {
 								(<code><?php echo esc_html( $row['reason'] ); ?></code>)
 							<?php endif; ?>
 							<?php if ( $row['trace'] ) : ?>
-								<ol style="margin:6px 0 0 1.2em">
+								<ol class="wp2s-trace-list">
 									<?php foreach ( $row['trace'] as $route ) : ?>
 										<li>
 											<?php echo Menu::dot( $route['passed'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
@@ -139,7 +144,9 @@ final class AccessTest {
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+		</div>
 		<?php
+		Menu::panel_end();
 	}
 
 	private static function render_trace( array $t ): void {
@@ -151,22 +158,26 @@ final class AccessTest {
 			BlockAccess::WITHOUT => __( 'visitors without', 'wp2-shopify' ),
 		];
 		?>
-		<h2>
-			<?php
+		<?php
+		Menu::panel_start(
 			/* translators: 1: item title, 2: post type, 3: status */
-			echo esc_html( sprintf( __( '%1$s (%2$s, %3$s)', 'wp2-shopify' ), $t['post']['title'], $t['post']['type'], $t['post']['status'] ) );
-			?>
-		</h2>
+			sprintf( __( '%1$s (%2$s, %3$s)', 'wp2-shopify' ), $t['post']['title'], $t['post']['type'], $t['post']['status'] ),
+			'',
+			sprintf( '<a class="button" href="%s">%s</a>', esc_url( (string) get_edit_post_link( $t['post']['id'] ) ), esc_html__( 'Edit item', 'wp2-shopify' ) )
+			. sprintf( '<a class="button" href="%s">%s</a>', esc_url( add_query_arg( 'wp2_preview_as', 'locked', (string) get_permalink( $t['post']['id'] ) ) ), esc_html__( 'View as a locked visitor', 'wp2-shopify' ) )
+		);
+		?>
 
 		<?php if ( ! $t['gated'] ) : ?>
-			<div class="notice notice-warning inline"><p><?php esc_html_e( 'This post type is not gated, so rules on it are ignored and it is always open.', 'wp2-shopify' ); ?></p></div>
+			<div class="wp2s-panel__body"><div class="notice notice-warning inline"><p><?php esc_html_e( 'This post type is not gated, so rules on it are ignored and it is always open.', 'wp2-shopify' ); ?></p></div></div>
 		<?php endif; ?>
 
-		<table class="widefat striped" style="max-width:1100px">
+		<div class="wp2s-panel__body wp2s-panel__body--flush">
+		<table class="widefat striped wp2s-kv">
 			<tbody>
 				<tr>
-					<th scope="row" style="width:200px"><?php esc_html_e( 'Layers', 'wp2-shopify' ); ?></th>
-					<td><ol style="margin:0 0 0 1.2em"><?php foreach ( $t['layers'] as $line ) : ?><li><?php echo esc_html( $line ); ?></li><?php endforeach; ?></ol></td>
+					<th scope="row"><?php esc_html_e( 'Layers', 'wp2-shopify' ); ?></th>
+					<td><ol class="wp2s-trace-list"><?php foreach ( $t['layers'] as $line ) : ?><li><?php echo esc_html( $line ); ?></li><?php endforeach; ?></ol></td>
 				</tr>
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Effective rule', 'wp2-shopify' ); ?></th>
@@ -201,7 +212,7 @@ final class AccessTest {
 						<?php if ( ! $t['blocks'] ) : ?>
 							<?php esc_html_e( 'None.', 'wp2-shopify' ); ?>
 						<?php else : ?>
-							<ul style="margin:0">
+							<ul class="wp2s-trace-list">
 								<?php foreach ( $t['blocks'] as $b ) : ?>
 									<li>
 										<?php echo Menu::dot( $b['visible'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
@@ -221,10 +232,8 @@ final class AccessTest {
 				</tr>
 			</tbody>
 		</table>
-		<p>
-			<a class="button" href="<?php echo esc_url( (string) get_edit_post_link( $t['post']['id'] ) ); ?>"><?php esc_html_e( 'Edit item', 'wp2-shopify' ); ?></a>
-			<a class="button" href="<?php echo esc_url( add_query_arg( 'wp2_preview_as', 'locked', (string) get_permalink( $t['post']['id'] ) ) ); ?>"><?php esc_html_e( 'View as a locked visitor', 'wp2-shopify' ); ?></a>
-		</p>
+		</div>
 		<?php
+		Menu::panel_end();
 	}
 }
