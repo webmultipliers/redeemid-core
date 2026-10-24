@@ -24,6 +24,7 @@ $wp2_options = [
 	'wp2_shopify_app_uninstalled', 'wp2_shopify_admin_token_error', 'wp2_shopify_admin_token_scopes', 'wp2_shopify_webhook_registration',
 	'wp2_shopify_events_db_version', 'wp2_shopify_cart_bridge', 'wp2_shopify_access_levels',
 	'wp2_shopify_access_rules', 'wp2_shopify_access_rules_version',
+	'wp2_shopify_access_reindex_cursor', 'wp2_shopify_access_index_version',
 ];
 
 foreach ( $wp2_options as $wp2_option ) {
@@ -33,11 +34,13 @@ foreach ( $wp2_options as $wp2_option ) {
 $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wp2\\_shopify\\_lock\\_%' OR option_name LIKE '\\_transient\\_wp2s\\_%' OR option_name LIKE '\\_transient\\_timeout\\_wp2s\\_%' OR option_name LIKE '\\_transient\\_wp2\\_shopify\\_%' OR option_name LIKE '\\_transient\\_timeout\\_wp2\\_shopify\\_%'" );
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wp2_shopify_webhooks" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wp2_shopify_events" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
-// The per-item rule cache is derived data. The access rules editors set on items and terms stay.
-$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_wp2_access_effective'" );
+// The per-item rule cache and access index are derived data. The access rules editors set on items and terms stay.
+$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ( '_wp2_access_effective', '_wp2_access_search', '_wp2_access_locked', '_wp2_access_next' )" );
 
 wp_clear_scheduled_hook( 'wp2_shopify_reconcile' );
 wp_clear_scheduled_hook( 'wp2_shopify_prune' );
+wp_clear_scheduled_hook( 'wp2_shopify_access_reindex' );
+wp_clear_scheduled_hook( 'wp2_shopify_access_timed' );
 
 // Collect a stable list of user IDs first, then act on it. (The POC paged
 // through users while deleting them, which skipped every other page.)

@@ -179,7 +179,13 @@ Whole items can be gated without a block, by rules on four layers. The strongest
 
 When several terms require different levels, the site combines them **most restrictively** (every term must pass, after level inclusion is counted), **least restrictively**, or **by priority**. Dates are checked on every request, so an embargo ends or a free window closes with no edit.
 
-A locked item shows its teaser and a wall everywhere it renders: the page, query loops, REST, feeds, oEmbed and excerpts. The teaser ends at a **Paywall break** block if the item has one, otherwise follows the post type's setting. Locked items are left out of search results for visitors who cannot read them, carry `isAccessibleForFree: false` markup, and get teaser-only descriptions in Yoast SEO and Rank Math. Search crawlers see what a locked visitor sees. Files linked from a gated item, such as PDFs, keep public URLs.
+A locked item shows its teaser and a wall everywhere it renders: the page, query loops, REST, feeds, oEmbed, excerpts and WPGraphQL. The teaser ends at a **Paywall break** block if the item has one, otherwise follows the post type's setting. Locked items carry `isAccessibleForFree: false` markup and get teaser-only descriptions in Yoast SEO and Rank Math. Search crawlers see what a locked visitor sees. Files linked from a gated item, such as PDFs, keep public URLs.
+
+- **Search** matches locked items, and items holding a membership gate, on their public text only (title, excerpt and teaser), for every visitor. A locked phrase never finds its item, and result counts stay exact. The public text is indexed in post meta and rebuilt in the background after a rule change; until then each result is checked again in PHP.
+- **Comments** on a locked item are shown only to visitors who can read it, by default: others see no comments, no count and no form, in templates, REST and comment feeds. A post type can show them to everyone instead.
+- **Search engines:** locked items stay indexed and in sitemaps by default. A post type can keep them out: they then get `noindex` and leave the WordPress, Yoast and Rank Math sitemaps together.
+- **Editors** (anyone with `wp2_bypass_gates`, by default anyone who can edit others' posts) read a gated item in full on its own page only, never in lists, feeds, search, REST or GraphQL. The toolbar's **Access** menu switches that page to **View as a locked visitor** or **View as** any level for one request, with nothing stored.
+- **Newsletters:** tools that build emails from the feed, REST or excerpts get the teaser. A tool that reads `post_content` directly bypasses WordPress's filters and is not covered: The Newsletter Plugin's "full post" layout is one, so use its excerpt layouts for gated posts.
 
 Each item's rule layers are cached in `_wp2_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
 
@@ -211,7 +217,7 @@ Only tags in the map are touched. After checkout, the next signed-in page views 
 
 ## Caching
 
-Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content. Singular items gated by access rules also send `X-WP2-Access: open|locked|granted`, and granted responses are `Cache-Control: private`. The `wp2_shopify_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
+Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content. Singular items gated by access rules also send `X-WP2-Access: open|locked|granted|bypass`, and granted, bypass and preview responses are `Cache-Control: private`. The `wp2_shopify_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
 
 Personal pieces, such as the sign-in control, render as a neutral shell that any page cache can store. They fill themselves after load with one same-origin request to `admin-ajax.php?action=wp2_shopify_status`, which also returns fresh nonces.
 
@@ -259,7 +265,7 @@ Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_l
 - Actions:
   - `wp2_shopify_signed_in`, `wp2_shopify_linked`, `wp2_shopify_disconnected` and `wp2_shopify_before_logout`
   - `wp2_shopify_log`, which receives redacted log events
-  - `wp2_shopify_access_changed` (`int[] $post_ids`) and `wp2_shopify_access_levels_changed`
+  - `wp2_shopify_access_changed` (`int[] $post_ids`), `wp2_shopify_access_levels_changed` and `wp2_shopify_access_locked_changed` (`int $post_id, bool $locked`)
 - Filters:
   - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
   - `wp2_shopify_membership_map` and `wp2_shopify_setting_{key}`

@@ -3,6 +3,8 @@
 namespace WP2_Shopify\Integrations;
 
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Access\Index;
+use WP2_Shopify\Access\Surfaces;
 use WP2_Shopify\Blocks\Gate;
 
 /**
@@ -20,6 +22,9 @@ use WP2_Shopify\Blocks\Gate;
  *   focus keyword, else the first paragraph. Open Graph, Twitter and schema
  *   reuse that description, so rank_math/frontend/description covers them.
  *
+ * Robots and sitemaps follow the post type's "keep locked items out of
+ * search engines" setting, as core's do (Access\Surfaces).
+ *
  * Items whose rule is not open always get teaser-only descriptions, whoever
  * is viewing: search engines see the locked view. So do open items with a
  * membership gate block in them: the gate protects its members area only
@@ -30,6 +35,76 @@ final class SeoPlugins {
 	public static function register(): void {
 		add_filter( 'wpseo_replacements', [ self::class, 'yoast_replacements' ], 10, 2 );
 		add_filter( 'rank_math/frontend/description', [ self::class, 'rank_math_description' ] );
+
+		// Where a post type keeps locked items out of search engines (Surfaces), these plugins agree.
+		add_filter( 'wpseo_robots_array', [ self::class, 'robots' ] );
+		add_filter( 'rank_math/frontend/robots', [ self::class, 'robots' ] );
+		add_filter( 'wpseo_exclude_from_sitemap_by_post_ids', [ self::class, 'yoast_sitemap_exclude' ] );
+		add_filter( 'rank_math/sitemap/entry', [ self::class, 'rank_math_sitemap_entry' ], 10, 3 );
+		add_action( 'wp2_shopify_access_locked_changed', [ self::class, 'clear_sitemap_caches' ] );
+		add_action( 'wp2_shopify_access_changed', [ self::class, 'clear_sitemap_caches' ] );
+	}
+
+	/**
+	 * Both plugins cache sitemaps, and neither knows an item locked or opened.
+	 */
+	public static function clear_sitemap_caches( mixed $post_id = null ): void {
+		if ( ! Surfaces::noindex_types() ) {
+			return;
+		}
+
+		if ( class_exists( 'WPSEO_Sitemaps_Cache' ) ) {
+			is_int( $post_id ) ? \WPSEO_Sitemaps_Cache::invalidate_post( $post_id ) : \WPSEO_Sitemaps_Cache::clear();
+		}
+
+		if ( class_exists( 'RankMath\\Sitemap\\Cache' ) ) {
+			\RankMath\Sitemap\Cache::invalidate_storage();
+		}
+	}
+
+	/**
+	 * @param array<string, string> $robots 'index' => 'index'|'noindex', and so on.
+	 */
+	public static function robots( mixed $robots ): mixed {
+		if ( is_array( $robots ) && is_singular() && Surfaces::noindex( get_queried_object() ) ) {
+			$robots['index'] = 'noindex';
+		}
+
+		return $robots;
+	}
+
+	/**
+	 * @param int[] $ids
+	 */
+	public static function yoast_sitemap_exclude( mixed $ids ): mixed {
+		$types = Surfaces::noindex_types();
+
+		if ( ! $types ) {
+			return $ids;
+		}
+
+		$locked = get_posts(
+			[
+				'post_type'        => $types,
+				'post_status'      => 'publish',
+				'fields'           => 'ids',
+				'posts_per_page'   => -1,
+				'no_found_rows'    => true,
+				'suppress_filters' => true,
+				'meta_key'         => Index::LOCKED, // phpcs:ignore WordPress.DB.SlowDBQuery
+			]
+		);
+
+		return array_values( array_unique( array_merge( is_array( $ids ) ? $ids : [], $locked ) ) );
+	}
+
+	/**
+	 * Rank Math passes a database row here, not always a WP_Post.
+	 */
+	public static function rank_math_sitemap_entry( mixed $url, mixed $type, mixed $object ): mixed {
+		$post = 'post' === $type && is_object( $object ) && isset( $object->ID ) ? get_post( (int) $object->ID ) : null;
+
+		return $post && in_array( $post->post_type, Surfaces::noindex_types(), true ) && '' !== get_post_meta( $post->ID, Index::LOCKED, true ) ? false : $url;
 	}
 
 	/**

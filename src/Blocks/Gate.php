@@ -3,11 +3,11 @@
 namespace WP2_Shopify\Blocks;
 
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Access\Viewer;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Entitlement\Decision;
 use WP2_Shopify\Entitlement\Rule;
 use WP2_Shopify\Settings;
-use WP2_Shopify\Sync\Mirror;
 
 /**
  * Server-side gating for wp2-shopify/membership-gate (spec 7.2, 9.4).
@@ -47,18 +47,24 @@ final class Gate {
 	 */
 	public static function decide( array $a ): Decision {
 		$post = get_post();
+
+		// An editor reading an item on its own page sees every gate in it open (Viewer).
+		if ( $post instanceof \WP_Post && Viewer::bypassing( $post ) ) {
+			return Decision::grant();
+		}
+
 		$item = $post instanceof \WP_Post ? Gatekeeper::verdict( $post ) : null;
 
 		if ( self::RULE_ITEM === self::option( $a['ruleSource'] ?? '', self::RULE_CUSTOM ) ) {
 			// No item to inherit from (a template, a widget): fail closed to signed-in members only.
-			return $item ? $item->decision : Settings::evaluator()->decide( new Rule(), Mirror::member( get_current_user_id() ), time() );
+			return $item ? $item->decision : Settings::evaluator()->decide( new Rule(), Viewer::member(), time() );
 		}
 
 		if ( $item && ! $item->granted() && ! Gatekeeper::rule( $post )->open() ) {
 			return $item->decision;
 		}
 
-		return Settings::evaluator()->decide( Rule::from_attributes( $a ), Mirror::member( get_current_user_id() ), time() );
+		return Settings::evaluator()->decide( Rule::from_attributes( $a ), Viewer::member(), time() );
 	}
 
 	public static function option( mixed $value, string $fallback ): string {

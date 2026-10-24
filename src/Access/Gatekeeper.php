@@ -5,7 +5,6 @@ namespace WP2_Shopify\Access;
 use WP2_Shopify\Blocks\Gate;
 use WP2_Shopify\Entitlement\Decision;
 use WP2_Shopify\Settings;
-use WP2_Shopify\Sync\Mirror;
 
 /**
  * The one teaser path. Every surface that renders an item's content goes
@@ -65,12 +64,11 @@ final class Gatekeeper {
 	}
 
 	public static function verdict( \WP_Post $post ): Verdict {
-		$user = get_current_user_id();
-		$key  = $post->ID . ':' . $user;
+		$key = $post->ID . ':' . Viewer::key();
 
 		if ( ! isset( self::$verdicts[ $key ] ) ) {
 			$checker                = new Checker( LevelStore::levels(), Settings::evaluator() );
-			self::$verdicts[ $key ] = $checker->check( self::rule( $post ), Mirror::member( $user ), time() );
+			self::$verdicts[ $key ] = $checker->check( self::rule( $post ), Viewer::member(), time() );
 		}
 
 		return self::$verdicts[ $key ];
@@ -101,7 +99,7 @@ final class Gatekeeper {
 
 		$verdict = self::verdict( $post );
 
-		if ( $verdict->granted() ) {
+		if ( $verdict->granted() || Viewer::bypassing( $post ) ) {
 			if ( ! defined( 'DONOTCACHEPAGE' ) ) {
 				// Entitled output must never land in a shared page cache.
 				define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals

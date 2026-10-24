@@ -3,10 +3,12 @@
 namespace WP2_Shopify;
 
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Access\Index;
 use WP2_Shopify\Access\ItemRule;
 use WP2_Shopify\Access\Layers;
 use WP2_Shopify\Access\Surfaces;
 use WP2_Shopify\Access\TermRules;
+use WP2_Shopify\Access\Viewer;
 use WP2_Shopify\Admin\AccessColumn;
 use WP2_Shopify\Admin\AccessMetaBox;
 use WP2_Shopify\Admin\AccessTermFields;
@@ -41,6 +43,8 @@ final class Plugin {
 		ItemRule::register();
 		TermRules::register();
 		Layers::register();
+		Index::register();
+		Viewer::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		BuyNow::register();

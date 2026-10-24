@@ -14,7 +14,7 @@ final class RulesTest extends TestCase {
 
 		$this->assertSame( Context::CONFLICT_MOST, $rules->conflict );
 		$this->assertSame( [], $rules->site_levels );
-		$this->assertSame( [ 'enabled' => true, 'levels' => [], 'teaser' => [ 'mode' => 'blocks', 'count' => 2 ], 'public_after_days' => 0 ], $rules->type( 'post' ) );
+		$this->assertSame( [ 'enabled' => true, 'levels' => [], 'teaser' => [ 'mode' => 'blocks', 'count' => 2 ], 'public_after_days' => 0, 'comments' => 'members', 'noindex' => false ], $rules->type( 'post' ) );
 	}
 
 	public function test_taxonomy_defaults_inherit_only_when_hierarchical(): void {
@@ -31,7 +31,7 @@ final class RulesTest extends TestCase {
 				'site_levels' => [ 'Gold', 'gold', '' ],
 				'conflict'    => 'loudest',
 				'types'       => [
-					'lesson' => [ 'enabled' => '', 'levels' => 'Silver', 'teaser' => [ 'mode' => 'paragraphs', 'count' => 5000 ], 'public_after_days' => -3 ],
+					'lesson' => [ 'enabled' => '', 'levels' => 'Silver', 'teaser' => [ 'mode' => 'paragraphs', 'count' => 5000 ], 'public_after_days' => -3, 'comments' => 'nobody' ],
 					0        => [ 'levels' => [ 'gold' ] ],
 				],
 				'taxonomies'  => [ 'topic' => [ 'priority' => 500, 'inherit' => 1 ] ],
@@ -41,7 +41,7 @@ final class RulesTest extends TestCase {
 		$this->assertSame( [ 'gold' ], $rules->site_levels );
 		$this->assertSame( Context::CONFLICT_MOST, $rules->conflict );
 		$this->assertSame( [ 'lesson' ], array_keys( $rules->types ) );
-		$this->assertSame( [ 'enabled' => false, 'levels' => [ 'silver' ], 'teaser' => [ 'mode' => 'blocks', 'count' => 1000 ], 'public_after_days' => 0 ], $rules->type( 'lesson' ) );
+		$this->assertSame( [ 'enabled' => false, 'levels' => [ 'silver' ], 'teaser' => [ 'mode' => 'blocks', 'count' => 1000 ], 'public_after_days' => 0, 'comments' => 'members', 'noindex' => false ], $rules->type( 'lesson' ) );
 		$this->assertSame( [ 'enabled' => true, 'inherit' => true, 'priority' => 100 ], $rules->taxonomy( 'topic' ) );
 	}
 

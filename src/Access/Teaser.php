@@ -55,6 +55,51 @@ final class Teaser {
 	}
 
 	/**
+	 * $blocks with every block named $name removed, at any depth, along with
+	 * its inner blocks. The parent's innerContent keeps one null placeholder
+	 * per inner block, so the placeholder of a removed block goes too.
+	 *
+	 * @param array[] $blocks Parsed blocks.
+	 * @return array[]
+	 */
+	public static function strip( array $blocks, string $name ): array {
+		$out = [];
+
+		foreach ( $blocks as $block ) {
+			if ( $name === ( $block['blockName'] ?? null ) ) {
+				continue;
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$kept    = [];
+				$content = [];
+				$i       = 0;
+
+				foreach ( $block['innerContent'] ?? [] as $chunk ) {
+					if ( null !== $chunk ) {
+						$content[] = $chunk;
+						continue;
+					}
+
+					$inner = $block['innerBlocks'][ $i++ ] ?? null;
+
+					if ( null !== $inner && $name !== ( $inner['blockName'] ?? null ) ) {
+						$kept[]    = self::strip( [ $inner ], $name )[0];
+						$content[] = null;
+					}
+				}
+
+				$block['innerBlocks']  = $kept;
+				$block['innerContent'] = $content;
+			}
+
+			$out[] = $block;
+		}
+
+		return $out;
+	}
+
+	/**
 	 * @param array[] $blocks  Top-level parsed blocks (parse_blocks() output).
 	 * @param string  $excerpt The item's hand-written excerpt, if any.
 	 * @return array{blocks: array[], source: string}

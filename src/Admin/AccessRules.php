@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Access\Context;
+use WP2_Shopify\Access\Index;
 use WP2_Shopify\Access\Level;
 use WP2_Shopify\Access\LevelStore;
 use WP2_Shopify\Access\RuleStore;
@@ -41,6 +42,8 @@ final class AccessRules {
 				'levels'            => array_map( 'sanitize_key', (array) ( $row['levels'] ?? [] ) ),
 				'teaser'            => [ 'mode' => sanitize_key( (string) ( $row['teaser_mode'] ?? '' ) ), 'count' => (int) ( $row['teaser_count'] ?? 2 ) ],
 				'public_after_days' => (int) ( $row['public_after_days'] ?? 0 ),
+				'comments'          => sanitize_key( (string) ( $row['comments'] ?? '' ) ),
+				'noindex'           => ! empty( $row['noindex'] ),
 			];
 		}
 
@@ -169,6 +172,8 @@ final class AccessRules {
 						<th><?php esc_html_e( 'Every item needs', 'wp2-shopify' ); ?></th>
 						<th><?php esc_html_e( 'Teaser for locked visitors', 'wp2-shopify' ); ?></th>
 						<th><?php esc_html_e( 'Opens after (days)', 'wp2-shopify' ); ?></th>
+						<th><?php esc_html_e( 'Comments on locked items', 'wp2-shopify' ); ?></th>
+						<th><?php esc_html_e( 'Search engines', 'wp2-shopify' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -192,11 +197,20 @@ final class AccessRules {
 						<td>
 							<input type="number" min="0" max="36500" class="small-text" name="<?php echo esc_attr( $base ); ?>[public_after_days]" aria-label="<?php esc_attr_e( 'Opens after days', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['public_after_days'] ); ?>" <?php echo esc_attr( $disabled ); ?>>
 						</td>
+						<td>
+							<select name="<?php echo esc_attr( $base ); ?>[comments]" aria-label="<?php esc_attr_e( 'Comments on locked items', 'wp2-shopify' ); ?>" <?php echo esc_attr( $disabled ); ?>>
+								<option value="<?php echo esc_attr( Rules::COMMENTS_MEMBERS ); ?>" <?php selected( $row['comments'], Rules::COMMENTS_MEMBERS ); ?>><?php esc_html_e( 'Readers only', 'wp2-shopify' ); ?></option>
+								<option value="<?php echo esc_attr( Rules::COMMENTS_EVERYONE ); ?>" <?php selected( $row['comments'], Rules::COMMENTS_EVERYONE ); ?>><?php esc_html_e( 'Everyone', 'wp2-shopify' ); ?></option>
+							</select>
+						</td>
+						<td>
+							<label><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[noindex]" value="1" <?php checked( $row['noindex'] ); ?> <?php echo esc_attr( $disabled ); ?>> <?php esc_html_e( 'Keep locked items out', 'wp2-shopify' ); ?></label>
+						</td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>
-			<p class="description" style="max-width:1100px"><?php esc_html_e( 'A paywall break block in an item always sets its teaser. "Opens after" frees items that many days after they were published (0 for never), checked on every request.', 'wp2-shopify' ); ?></p>
+			<p class="description" style="max-width:1100px"><?php esc_html_e( 'A paywall break block in an item always sets its teaser. "Opens after" frees items that many days after they were published (0 for never), checked on every request. "Readers only" hides comments, the comment count and the form from visitors who cannot read the item. "Keep locked items out" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser.', 'wp2-shopify' ); ?></p>
 
 			<h2><?php esc_html_e( 'Taxonomies', 'wp2-shopify' ); ?></h2>
 			<table class="widefat striped" style="max-width:1100px">
@@ -236,6 +250,16 @@ final class AccessRules {
 				</tbody>
 			</table>
 			<p class="description" style="max-width:1100px"><?php esc_html_e( 'Rules are set on each term\'s edit screen. In the priority mode the taxonomy priority counts first, then the term\'s own.', 'wp2-shopify' ); ?></p>
+
+			<p class="description" style="max-width:1100px">
+				<?php
+				echo esc_html(
+					Index::pending()
+						? __( 'Search index: updating in the background after a rule change. Until it finishes, search still checks every result against public text.', 'wp2-shopify' )
+						: __( 'Search index: up to date. Search matches locked items on their public text only.', 'wp2-shopify' )
+				);
+				?>
+			</p>
 
 			<?php if ( ! $managed ) : ?>
 				<?php submit_button( __( 'Save content rules', 'wp2-shopify' ) ); ?>

@@ -9,7 +9,8 @@ namespace WP2_Shopify\Access;
  *
  * A post type row: whether its items can be gated at all, the levels its
  * items need (any one passes; none means no post type rule), its teaser
- * setting, and an archive window after which old items open.
+ * setting, an archive window after which old items open, who sees comments
+ * on locked items, and whether locked items stay out of search engines.
  *
  * A taxonomy row: whether its term rules count, whether a term with no rule
  * of its own takes its nearest ancestor's, and a priority for the priority
@@ -18,9 +19,13 @@ namespace WP2_Shopify\Access;
 final class Rules {
 	public const CONFLICTS = [ Context::CONFLICT_MOST, Context::CONFLICT_LEAST, Context::CONFLICT_PRIORITY ];
 
+	/** Comments on a locked item: shown only to visitors who can read it, or to everyone. */
+	public const COMMENTS_MEMBERS  = 'members';
+	public const COMMENTS_EVERYONE = 'everyone';
+
 	/**
 	 * @param string[]                                                                                      $site_levels
-	 * @param array<string, array{enabled: bool, levels: string[], teaser: array{mode: string, count: int}, public_after_days: int}> $types
+	 * @param array<string, array{enabled: bool, levels: string[], teaser: array{mode: string, count: int}, public_after_days: int, comments: string, noindex: bool}> $types
 	 * @param array<string, array{enabled: bool, inherit: bool, priority: int}>                             $taxonomies
 	 */
 	public function __construct(
@@ -66,7 +71,8 @@ final class Rules {
 	}
 
 	/**
-	 * A post type with no saved row: gated, no rule of its own, two teaser blocks.
+	 * A post type with no saved row: gated, no rule of its own, two teaser
+	 * blocks, comments on locked items for readers only, indexed.
 	 */
 	public function type( string $type ): array {
 		return $this->types[ $type ] ?? self::type_row( [] );
@@ -85,6 +91,8 @@ final class Rules {
 			'levels'            => self::levels( $row['levels'] ?? [] ),
 			'teaser'            => ( Teaser::from_array( is_array( $row['teaser'] ?? null ) ? $row['teaser'] : [] ) )->to_array(),
 			'public_after_days' => max( 0, min( 36500, (int) ( $row['public_after_days'] ?? 0 ) ) ),
+			'comments'          => self::COMMENTS_EVERYONE === ( $row['comments'] ?? '' ) ? self::COMMENTS_EVERYONE : self::COMMENTS_MEMBERS,
+			'noindex'           => ! empty( $row['noindex'] ),
 		];
 	}
 
