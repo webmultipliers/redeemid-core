@@ -2,6 +2,7 @@
 
 namespace WP2_Shopify;
 
+use WP2_Shopify\Access\Gatekeeper;
 use WP2_Shopify\Admin\Menu;
 use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
@@ -28,6 +29,7 @@ final class Plugin {
 		Status::register();
 		PostCheckout::register();
 		Registration::register();
+		Gatekeeper::register();
 		BuyNow::register();
 		CartBridge::register();
 		Privacy::register();
