@@ -30,7 +30,28 @@ $wp2_unavailable = static function ( string $message ) use ( $wp2_classes, $a ):
 	<?php
 };
 
+// Blockstudio reads a template that returns early as one that rendered nothing, and then skips the
+// block's stylesheet, so every branch that prints markup runs to the end of the file instead.
+$wp2_product = null;
+$wp2_problem = '';
+
 if ( $isPreview ) {
+	$wp2_problem = 'preview';
+} elseif ( '' === $wp2_handle ) {
+	$wp2_problem = $isEditor ? __( 'Choose a Shopify product in the block settings.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
+} elseif ( ! \WP2_Shopify\Shopify\Storefront::available() ) {
+	$wp2_problem = $isEditor ? __( 'Add WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN to wp-config.php to show live prices and checkout.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
+} else {
+	$wp2_product = \WP2_Shopify\Shopify\Storefront::product( $wp2_handle );
+
+	if ( is_wp_error( $wp2_product ) ) {
+		$wp2_problem = __( 'Plans are temporarily unavailable. Please try again shortly.', 'wp2-shopify' );
+	} elseif ( null === $wp2_product || ! $wp2_product['variants'] ) {
+		$wp2_problem = $isEditor ? sprintf( /* translators: %s: product handle */ __( 'No Shopify product with the handle "%s" is published to this sales channel.', 'wp2-shopify' ), $wp2_handle ) : __( 'This plan is not available right now.', 'wp2-shopify' );
+	}
+}
+
+if ( 'preview' === $wp2_problem ) :
 	// The inserter preview shows sample data, never a live Shopify call.
 	?>
 	<div useBlockProps class="<?php echo esc_attr( $wp2_classes ); ?>">
@@ -40,31 +61,9 @@ if ( $isPreview ) {
 		<span class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></span>
 	</div>
 	<?php
-	return;
-}
-
-if ( '' === $wp2_handle ) {
-	$wp2_unavailable( $isEditor ? __( 'Choose a Shopify product in the block settings.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' ) );
-	return;
-}
-
-if ( ! \WP2_Shopify\Shopify\Storefront::available() ) {
-	$wp2_unavailable( $isEditor ? __( 'Add WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN to wp-config.php to show live prices and checkout.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' ) );
-	return;
-}
-
-$wp2_product = \WP2_Shopify\Shopify\Storefront::product( $wp2_handle );
-
-if ( is_wp_error( $wp2_product ) ) {
-	$wp2_unavailable( __( 'Plans are temporarily unavailable. Please try again shortly.', 'wp2-shopify' ) );
-	return;
-}
-
-if ( null === $wp2_product || ! $wp2_product['variants'] ) {
-	$wp2_unavailable( $isEditor ? sprintf( /* translators: %s: product handle */ __( 'No Shopify product with the handle "%s" is published to this sales channel.', 'wp2-shopify' ), $wp2_handle ) : __( 'This plan is not available right now.', 'wp2-shopify' ) );
-	return;
-}
-
+elseif ( '' !== $wp2_problem ) :
+	$wp2_unavailable( $wp2_problem );
+else :
 $wp2_variant     = \WP2_Shopify\Shopify\Storefront::pick_variant( $wp2_product, (string) ( $a['variantId'] ?? '' ) );
 $wp2_title       = (string) ( $a['heading'] ?? '' ) ?: $wp2_product['title'];
 $wp2_description = (string) ( $a['description'] ?? '' ) ?: $wp2_product['description'];
@@ -113,3 +112,4 @@ $wp2_return = $isEditor ? '' : remove_query_arg( 'wp2s_notice', \WP2_Shopify\Blo
 		</form>
 	<?php endif; ?>
 </div>
+<?php endif; ?>

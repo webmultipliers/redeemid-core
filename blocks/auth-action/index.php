@@ -38,15 +38,6 @@ if ( $isEditor ) {
 	return;
 }
 
-if ( ! \WP2_Shopify\Shopify\Discovery::available() ) {
-	?>
-	<div useBlockProps class="wp2-shopify-auth is-unavailable">
-		<button type="button" class="<?php echo esc_attr( $wp2_class ); ?>" disabled><?php esc_html_e( 'Sign-in is temporarily unavailable', 'wp2-shopify' ); ?></button>
-	</div>
-	<?php
-	return;
-}
-
 // The page the control sits on. The placeholder is cached per URL, so the URL itself is safe in it;
 // the fragment is rendered by a separate request and reads the page from its same-origin referer.
 $wp2_here        = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
@@ -66,7 +57,14 @@ $wp2_form = static function ( string $action, string $label, string $redirect ) 
 	</form>
 	<?php
 };
-?>
+
+// No early return here: Blockstudio reads a template that returns as one that rendered nothing and skips its stylesheet.
+if ( ! \WP2_Shopify\Shopify\Discovery::available() ) :
+	?>
+	<div useBlockProps class="wp2-shopify-auth is-unavailable">
+		<button type="button" class="<?php echo esc_attr( $wp2_class ); ?>" disabled><?php esc_html_e( 'Sign-in is temporarily unavailable', 'wp2-shopify' ); ?></button>
+	</div>
+<?php else : ?>
 <div useBlockProps class="wp2-shopify-auth" aria-live="polite">
 	<?php if ( ! $wp2_user ) : ?>
 		<?php if ( 'logout' !== $wp2_mode && 'connect' !== $wp2_mode ) : ?>
@@ -78,3 +76,4 @@ $wp2_form = static function ( string $action, string $label, string $redirect ) 
 		<?php $wp2_form( 'wp2_shopify_connect', $wp2_connect, $wp2_here ); ?>
 	<?php endif; ?>
 </div>
+<?php endif; ?>
