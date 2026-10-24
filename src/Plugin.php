@@ -3,6 +3,9 @@
 namespace WP2_Shopify;
 
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Access\ItemRule;
+use WP2_Shopify\Access\Surfaces;
+use WP2_Shopify\Admin\AccessMetaBox;
 use WP2_Shopify\Admin\Menu;
 use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
@@ -10,6 +13,7 @@ use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Blocks\Registration;
 use WP2_Shopify\Commerce\BuyNow;
 use WP2_Shopify\Commerce\CartBridge;
+use WP2_Shopify\Integrations\SeoPlugins;
 use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
@@ -30,6 +34,9 @@ final class Plugin {
 		PostCheckout::register();
 		Registration::register();
 		Gatekeeper::register();
+		ItemRule::register();
+		Surfaces::register();
+		SeoPlugins::register();
 		BuyNow::register();
 		CartBridge::register();
 		Privacy::register();
@@ -47,6 +54,7 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			Menu::register();
+			AccessMetaBox::register();
 			UserProfile::register();
 		}
 	}

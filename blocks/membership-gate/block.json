@@ -15,6 +15,17 @@
 	"blockstudio": {
 		"attributes": [
 			{
+				"id": "ruleSource",
+				"type": "select",
+				"label": "Rule",
+				"default": "custom",
+				"help": "This item's access rule needs no tags and follows the post's Access box. Either way a gate only narrows the item's rule.",
+				"options": [
+					{ "value": "custom", "label": "Custom tags (below)" },
+					{ "value": "item", "label": "This item's access rule" }
+				]
+			},
+			{
 				"id": "requiredTags",
 				"type": "repeater",
 				"label": "Required Shopify customer tags",

@@ -14,9 +14,9 @@ use WP2_Shopify\Sync\Mirror;
  * 8, before do_blocks, this cuts a locked item's parsed blocks down to its
  * teaser, so the locked part never renders anywhere.
  *
- * Which rule applies comes from the Resolver. Until item, post type and term
- * rules ship (PR 1c and 2), the context is empty unless code supplies one
- * with the wp2_shopify_access_context filter, so nothing changes by default.
+ * Which rule applies comes from the Resolver, fed by the item's own rule
+ * (ItemRule) and the wp2_shopify_access_context filter. Post type and term
+ * layers join in a later PR.
  */
 final class Gatekeeper {
 	/** @var array<string, Verdict> */
@@ -39,10 +39,10 @@ final class Gatekeeper {
 
 	public static function context( \WP_Post $post ): Context {
 		/**
-		 * Filter the rule layers for an item. Later PRs fill this from the
-		 * item, its terms and its post type; code can supply its own now.
+		 * Filter the rule layers for an item. The item's own rule is filled in;
+		 * post type and term layers join in a later PR.
 		 */
-		$context = apply_filters( 'wp2_shopify_access_context', new Context(), $post );
+		$context = apply_filters( 'wp2_shopify_access_context', ItemRule::context( $post ), $post );
 
 		// A broken filter must lock, not leak: an unknown level fails closed in the Checker.
 		return $context instanceof Context ? $context : new Context( item_mode: Context::ITEM_LEVEL, item_levels: [ '__invalid_context' ] );
@@ -151,9 +151,7 @@ final class Gatekeeper {
 			return $text;
 		}
 
-		$cut  = self::teaser( $post )->cut( parse_blocks( $post->post_content ) );
-		$html = excerpt_remove_blocks( serialize_blocks( $cut['blocks'] ) );
-		$text = trim( wp_strip_all_tags( strip_shortcodes( $html ) ) );
+		$text = self::public_text( $post );
 
 		if ( '' === $text ) {
 			// Nothing public to show. A single space stops core building one from the full content.
@@ -166,6 +164,17 @@ final class Gatekeeper {
 		$more = apply_filters( 'excerpt_more', ' [&hellip;]' );
 
 		return wp_trim_words( $text, $length, $more );
+	}
+
+	/**
+	 * The plain text of an item's teaser: what any visitor may read. SEO
+	 * descriptions of gated items are built from this, never from raw content.
+	 */
+	public static function public_text( \WP_Post $post ): string {
+		$cut  = self::teaser( $post )->cut( parse_blocks( $post->post_content ) );
+		$html = excerpt_remove_blocks( serialize_blocks( $cut['blocks'] ) );
+
+		return trim( (string) preg_replace( '/\s+/u', ' ', wp_strip_all_tags( strip_shortcodes( $html ) ) ) );
 	}
 
 	/**

@@ -2,6 +2,7 @@
 
 namespace WP2_Shopify\Blocks;
 
+use WP2_Shopify\Access\Gatekeeper;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Entitlement\Decision;
 use WP2_Shopify\Entitlement\Rule;
@@ -22,6 +23,9 @@ final class Gate {
 	public const MEMBERS = 'wp2-shopify/membership-gate-content';
 	public const TEASER  = 'wp2-shopify/membership-gate-fallback';
 
+	public const RULE_ITEM   = 'item';
+	public const RULE_CUSTOM = 'custom';
+
 	public static function register(): void {
 		add_filter( 'render_block_data', [ self::class, 'filter_children' ], 10, 1 );
 		add_filter( 'pre_render_block', [ self::class, 'guard_members_area' ], 10, 3 );
@@ -35,7 +39,25 @@ final class Gate {
 		return is_array( $values ) ? $values : ( $attrs['blockstudio']['attributes'] ?? $attrs );
 	}
 
+	/**
+	 * The gate's decision for the current visitor. A gate set to "This item's
+	 * rule" uses the item's verdict; a custom-tags gate uses its own tags. Either
+	 * way it only narrows: inside an item the visitor is locked out of, nothing
+	 * a gate holds is released.
+	 */
 	public static function decide( array $a ): Decision {
+		$post = get_post();
+		$item = $post instanceof \WP_Post ? Gatekeeper::verdict( $post ) : null;
+
+		if ( self::RULE_ITEM === self::option( $a['ruleSource'] ?? '', self::RULE_CUSTOM ) ) {
+			// No item to inherit from (a template, a widget): fail closed to signed-in members only.
+			return $item ? $item->decision : Settings::evaluator()->decide( new Rule(), Mirror::member( get_current_user_id() ), time() );
+		}
+
+		if ( $item && ! $item->granted() && ! Gatekeeper::rule( $post )->open() ) {
+			return $item->decision;
+		}
+
 		return Settings::evaluator()->decide( Rule::from_attributes( $a ), Mirror::member( get_current_user_id() ), time() );
 	}
 
