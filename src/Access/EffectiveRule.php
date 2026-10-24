@@ -45,7 +45,7 @@ final class EffectiveRule {
 
 		$label   = static fn( string $slug ) => $levels?->get( $slug )?->label ?? $slug;
 		$need    = implode( ' and ', array_map( static fn( array $c ) => implode( ' or ', array_map( $label, $c ) ), $this->clauses ) );
-		$others  = array_values( array_diff( $this->contributing, [ $this->source ] ) );
+		$others  = array_values( array_diff( $this->contributing, explode( ' + ', $this->source ) ) );
 		$suffix  = $others ? ' (also ' . implode( ', ', $others ) . ')' : '';
 
 		return $need . ', from ' . $this->source . $suffix;

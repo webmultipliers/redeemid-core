@@ -140,6 +140,7 @@ final class ResolverTest extends TestCase {
 		$rule = $this->resolve( new Context( terms: [ $this->needs( 'Culture', [ 'silver' ] ), $this->needs( 'Investigations', [ 'gold' ] ) ], conflict: Context::CONFLICT_LEAST ) );
 
 		$this->assertSame( [ [ 'silver' ] ], $rule->clauses, 'Gold holders pass Silver anyway' );
+		$this->assertSame( 'Silver, from Category: Culture + Category: Investigations', $rule->explain( $this->levels ), 'A joined source is not repeated as "also"' );
 	}
 
 	public function test_priority_mode_takes_highest_priority_term(): void {

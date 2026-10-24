@@ -14,9 +14,9 @@ use WP2_Shopify\Sync\Mirror;
  * 8, before do_blocks, this cuts a locked item's parsed blocks down to its
  * teaser, so the locked part never renders anywhere.
  *
- * Which rule applies comes from the Resolver, fed by the item's own rule
- * (ItemRule) and the wp2_shopify_access_context filter. Post type and term
- * layers join in a later PR.
+ * Which rule applies comes from the Resolver, fed by the item's layers
+ * (Layers: item, terms, post type, site default) and the
+ * wp2_shopify_access_context filter.
  */
 final class Gatekeeper {
 	/** @var array<string, Verdict> */
@@ -39,10 +39,10 @@ final class Gatekeeper {
 
 	public static function context( \WP_Post $post ): Context {
 		/**
-		 * Filter the rule layers for an item. The item's own rule is filled in;
-		 * post type and term layers join in a later PR.
+		 * Filter the rule layers for an item. Runs on every request, after the
+		 * cache, so a filter here never needs a cache flush.
 		 */
-		$context = apply_filters( 'wp2_shopify_access_context', ItemRule::context( $post ), $post );
+		$context = apply_filters( 'wp2_shopify_access_context', Layers::context( $post ), $post );
 
 		// A broken filter must lock, not leak: an unknown level fails closed in the Checker.
 		return $context instanceof Context ? $context : new Context( item_mode: Context::ITEM_LEVEL, item_levels: [ '__invalid_context' ] );
@@ -81,7 +81,7 @@ final class Gatekeeper {
 		 * Filter the teaser setting for a post type: mode (blocks, words,
 		 * excerpt, none) and count. A paywall break in the content always wins.
 		 */
-		$setting = apply_filters( 'wp2_shopify_teaser_settings', [ 'mode' => Teaser::MODE_BLOCKS, 'count' => 2 ], $post->post_type, $post );
+		$setting = apply_filters( 'wp2_shopify_teaser_settings', RuleStore::rules()->type( $post->post_type )['teaser'], $post->post_type, $post );
 
 		return Teaser::from_array( is_array( $setting ) ? $setting : [] );
 	}

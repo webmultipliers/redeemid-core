@@ -11,8 +11,8 @@ use WP2_Shopify\Entitlement\Rule;
  *
  * Each level lists its tags with a health check (tags no synced customer
  * carries, usually a tag renamed in Shopify) and a dry run of how many linked
- * customers hold it today. Post type, taxonomy and test tabs join this screen
- * in later PRs.
+ * customers hold it today. The Content rules tab (AccessRules) holds the
+ * site default and the post type and taxonomy controls.
  */
 final class Access {
 	public const PAGE   = 'wp2-shopify-access';
@@ -106,6 +106,33 @@ final class Access {
 	}
 
 	public static function render(): void {
+		$tab = 'rules' === ( $_GET['tab'] ?? '' ) ? 'rules' : 'levels'; // phpcs:ignore WordPress.Security.NonceVerification
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Access', 'wp2-shopify' ); ?></h1>
+			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'Access sections', 'wp2-shopify' ); ?>">
+				<a class="nav-tab <?php echo 'levels' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE ) ); ?>"><?php esc_html_e( 'Levels', 'wp2-shopify' ); ?></a>
+				<a class="nav-tab <?php echo 'rules' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Content rules', 'wp2-shopify' ); ?></a>
+			</nav>
+			<?php
+			Menu::result_notice(
+				[
+					'saved'       => [ 'success', __( 'Level saved.', 'wp2-shopify' ) ],
+					'deleted'     => [ 'success', __( 'Level deleted. Content that still names it now fails closed.', 'wp2-shopify' ) ],
+					'refreshed'   => [ 'success', __( 'Tag list refreshed from synced customers.', 'wp2-shopify' ) ],
+					'bad_slug'    => [ 'error', __( 'Give the level a slug other than public or signed-in.', 'wp2-shopify' ) ],
+					'managed'     => [ 'warning', __( 'These settings are managed in code, so nothing was changed.', 'wp2-shopify' ) ],
+					'rules_saved' => [ 'success', __( 'Content rules saved. Every item picks them up on its next view.', 'wp2-shopify' ) ],
+				]
+			);
+
+			'rules' === $tab ? AccessRules::render() : self::render_levels();
+			?>
+		</div>
+		<?php
+	}
+
+	private static function render_levels(): void {
 		$levels  = LevelStore::levels();
 		$known   = LevelStore::known_tags();
 		$counts  = LevelStore::dry_run();
@@ -118,19 +145,6 @@ final class Access {
 			'unknown_include' => __( 'Includes a level that does not exist.', 'wp2-shopify' ),
 		];
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Access levels', 'wp2-shopify' ); ?></h1>
-			<?php
-			Menu::result_notice(
-				[
-					'saved'     => [ 'success', __( 'Level saved.', 'wp2-shopify' ) ],
-					'deleted'   => [ 'success', __( 'Level deleted. Content that still names it now fails closed.', 'wp2-shopify' ) ],
-					'refreshed' => [ 'success', __( 'Tag list refreshed from synced customers.', 'wp2-shopify' ) ],
-					'bad_slug'  => [ 'error', __( 'Give the level a slug other than public or signed-in.', 'wp2-shopify' ) ],
-					'managed'   => [ 'warning', __( 'Levels are managed in code, so nothing was changed.', 'wp2-shopify' ) ],
-				]
-			);
-			?>
 			<p style="max-width:760px"><?php esc_html_e( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'wp2-shopify' ); ?></p>
 
 			<?php if ( $managed ) : ?>
@@ -267,7 +281,6 @@ final class Access {
 					<?php submit_button( $edit ? __( 'Save level', 'wp2-shopify' ) : __( 'Add level', 'wp2-shopify' ) ); ?>
 				</form>
 			<?php endif; ?>
-		</div>
 		<?php
 	}
 }

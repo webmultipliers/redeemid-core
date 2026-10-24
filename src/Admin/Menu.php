@@ -12,7 +12,8 @@ use WP2_Shopify\Settings;
  * - Customers: linked customers, with resync, tag editing and Shopify admin links.
  * - Webhooks: every delivery Shopify sent, and webhook registration.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
- * - Access: the named access levels gating rules point at, with a health check.
+ * - Access: the named access levels gating rules point at, with a health
+ *   check, and the content rules for the site, post types and taxonomies.
  * - Debug: wp-config constants, platform checks, maintenance actions, dry run.
  *
  * Other code can add pages under the menu with
@@ -38,6 +39,7 @@ final class Menu {
 		Webhooks::register();
 		Events::register();
 		Access::register();
+		AccessRules::register();
 		Debug::register();
 	}
 
@@ -48,7 +50,7 @@ final class Menu {
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'wp2-shopify' ), __( 'Customers', 'wp2-shopify' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
 		$webhooks  = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'wp2-shopify' ), __( 'Webhooks', 'wp2-shopify' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
 		$events    = add_submenu_page( self::SLUG, __( 'Shopify app events', 'wp2-shopify' ), __( 'App events', 'wp2-shopify' ), self::CAP, Events::PAGE, [ Events::class, 'render' ] );
-		add_submenu_page( self::SLUG, __( 'Shopify access levels', 'wp2-shopify' ), __( 'Access', 'wp2-shopify' ), self::CAP, Access::PAGE, [ Access::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Shopify access', 'wp2-shopify' ), __( 'Access', 'wp2-shopify' ), self::CAP, Access::PAGE, [ Access::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Shopify debug', 'wp2-shopify' ), __( 'Debug', 'wp2-shopify' ), self::CAP, Debug::PAGE, [ Debug::class, 'render' ] );
 
 		if ( $customers ) {

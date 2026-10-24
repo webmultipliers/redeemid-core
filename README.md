@@ -69,6 +69,7 @@ Everything lives under the top-level **Shopify** menu (Settings → Shopify redi
 - **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
+- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. See [Access rules](#access-rules).
 - **Debug:** the constants above, platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
 
 Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
@@ -165,6 +166,23 @@ Gate settings:
 
 Rules fail closed. If the tag data is older than the freshness window (Shopify → Overview, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
 
+A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it.
+
+### Access rules
+
+Whole items can be gated without a block, by rules on four layers. The strongest layer that has a rule wins:
+
+1. **The item** (the Access box in the editor, or quick and bulk edit on the post list): inherit, Public, these levels instead, or the inherited rule plus these levels. Optional dates: locked until (embargo) and free until.
+2. **Its terms** (each term's edit screen): *Requires* one of some levels, or *free to everyone until* a date. A free-until rule must have an end date and beats every Requires term until then. In a hierarchical taxonomy a child term with no rule takes its nearest ancestor's.
+3. **Its post type** (Access → Content rules): the levels every item needs, the teaser locked visitors see, and an optional number of days after publishing when items open.
+4. **The site default** (Access → Content rules).
+
+When several terms require different levels, the site combines them **most restrictively** (every term must pass, after level inclusion is counted), **least restrictively**, or **by priority**. Dates are checked on every request, so an embargo ends or a free window closes with no edit.
+
+A locked item shows its teaser and a wall everywhere it renders: the page, query loops, REST, feeds, oEmbed and excerpts. The teaser ends at a **Paywall break** block if the item has one, otherwise follows the post type's setting. Locked items are left out of search results for visitors who cannot read them, carry `isAccessibleForFree: false` markup, and get teaser-only descriptions in Yoast SEO and Rank Math. Search crawlers see what a locked visitor sees. Files linked from a gated item, such as PDFs, keep public URLs.
+
+Each item's rule layers are cached in `_wp2_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
+
 ### Plan cards and buy-now
 
 Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and give it a product handle. It shows the product's live Shopify price, cached for five minutes, and a button that goes straight to Shopify checkout. Put plan cards on the join page and in a gate's fallback.
@@ -193,7 +211,7 @@ Only tags in the map are touched. After checkout, the next signed-in page views 
 
 ## Caching
 
-Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content.
+Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content. Singular items gated by access rules also send `X-WP2-Access: open|locked|granted`, and granted responses are `Cache-Control: private`. The `wp2_shopify_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
 
 Personal pieces, such as the sign-in control, render as a neutral shell that any page cache can store. They fill themselves after load with one same-origin request to `admin-ajax.php?action=wp2_shopify_status`, which also returns fresh nonces.
 
@@ -241,11 +259,14 @@ Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_l
 - Actions:
   - `wp2_shopify_signed_in`, `wp2_shopify_linked`, `wp2_shopify_disconnected` and `wp2_shopify_before_logout`
   - `wp2_shopify_log`, which receives redacted log events
+  - `wp2_shopify_access_changed` (`int[] $post_ids`) and `wp2_shopify_access_levels_changed`
 - Filters:
   - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
   - `wp2_shopify_membership_map` and `wp2_shopify_setting_{key}`
   - `wp2_shopify_official_state`, which overrides the detected state of Shopify's own plugin
   - `wp2_shopify_reassign_user`, which picks who receives content when a Shopify redaction deletes a shadow user
+  - `wp2_shopify_access_levels` and `wp2_shopify_access_rules`, which set levels and content rules from code (the admin screens then show them read-only)
+  - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
 
 ## Upgrading from 1.x
 

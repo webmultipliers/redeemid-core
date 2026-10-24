@@ -4,8 +4,12 @@ namespace WP2_Shopify;
 
 use WP2_Shopify\Access\Gatekeeper;
 use WP2_Shopify\Access\ItemRule;
+use WP2_Shopify\Access\Layers;
 use WP2_Shopify\Access\Surfaces;
+use WP2_Shopify\Access\TermRules;
+use WP2_Shopify\Admin\AccessColumn;
 use WP2_Shopify\Admin\AccessMetaBox;
+use WP2_Shopify\Admin\AccessTermFields;
 use WP2_Shopify\Admin\Menu;
 use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
@@ -35,6 +39,8 @@ final class Plugin {
 		Registration::register();
 		Gatekeeper::register();
 		ItemRule::register();
+		TermRules::register();
+		Layers::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		BuyNow::register();
@@ -55,6 +61,8 @@ final class Plugin {
 		if ( is_admin() ) {
 			Menu::register();
 			AccessMetaBox::register();
+			AccessColumn::register();
+			AccessTermFields::register();
 			UserProfile::register();
 		}
 	}

@@ -24,6 +24,30 @@ final class TermRule {
 		public readonly int $priority = 0,
 	) {}
 
+	public static function from_array( array $a ): self {
+		$until = $a['opens_until'] ?? null;
+
+		return new self(
+			(string) ( $a['taxonomy'] ?? '' ),
+			(string) ( $a['term'] ?? '' ),
+			self::OPENS === ( $a['kind'] ?? '' ) ? self::OPENS : self::REQUIRES,
+			Rules::levels( $a['levels'] ?? [] ),
+			is_numeric( $until ) && (int) $until > 0 ? (int) $until : null,
+			(int) ( $a['priority'] ?? 0 ),
+		);
+	}
+
+	public function to_array(): array {
+		return [
+			'taxonomy'    => $this->taxonomy,
+			'term'        => $this->term,
+			'kind'        => $this->kind,
+			'levels'      => $this->levels,
+			'opens_until' => $this->opens_until,
+			'priority'    => $this->priority,
+		];
+	}
+
 	public function label(): string {
 		return $this->taxonomy . ': ' . $this->term;
 	}
