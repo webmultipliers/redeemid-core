@@ -5,13 +5,17 @@ namespace WP2_Shopify\Admin;
 use WP2_Shopify\Access\Level;
 use WP2_Shopify\Access\LevelStore;
 use WP2_Shopify\Entitlement\Rule;
+use WP2_Shopify\Features\Feature;
+use WP2_Shopify\Features\Registry;
 
 /**
  * Shopify → Access: the named access levels that gating rules point at.
  *
  * Each level lists its tags with a health check (tags no synced customer
  * carries, usually a tag renamed in Shopify) and a dry run of how many linked
- * customers hold it today. The Content rules tab (AccessRules) holds the
+ * customers hold it today. The Features tab (AccessFeatures) maps registered
+ * features to levels and tags; a level's form shows the same mapping from
+ * the other side. The Content rules tab (AccessRules) holds the
  * site default and the post type and taxonomy controls, and the Test tab
  * (AccessTest) explains how one item resolves for one viewer.
  */
@@ -55,6 +59,12 @@ final class Access {
 					]
 				);
 				LevelStore::known_tags( true );
+
+				if ( isset( $_POST['features_present'] ) ) {
+					// The level-side view of the one feature condition store.
+					Registry::assign_level( $slug, array_map( [ Feature::class, 'slug' ], (array) wp_unslash( $_POST['features'] ?? [] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cleaned by Feature::slug().
+				}
+
 				$result = 'saved';
 				break;
 			case 'delete_level':
@@ -106,33 +116,57 @@ final class Access {
 		);
 	}
 
+	/**
+	 * Labels of the features with a route that names this level.
+	 *
+	 * @return string[]
+	 */
+	private static function level_features( string $slug ): array {
+		$out = [];
+
+		foreach ( Registry::features() as $feature ) {
+			foreach ( $feature->routes as $route ) {
+				if ( in_array( $slug, $route->levels(), true ) ) {
+					$out[] = $feature->label;
+					break;
+				}
+			}
+		}
+
+		return $out;
+	}
+
 	public static function render(): void {
 		$tab = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$tab = in_array( $tab, [ 'rules', 'test' ], true ) ? $tab : 'levels';
+		$tab = in_array( $tab, [ 'rules', 'features', 'test' ], true ) ? $tab : 'levels';
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Access', 'wp2-shopify' ); ?></h1>
 			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'Access sections', 'wp2-shopify' ); ?>">
 				<a class="nav-tab <?php echo 'levels' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE ) ); ?>"><?php esc_html_e( 'Levels', 'wp2-shopify' ); ?></a>
 				<a class="nav-tab <?php echo 'rules' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Content rules', 'wp2-shopify' ); ?></a>
+				<a class="nav-tab <?php echo 'features' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'features' ] ) ); ?>"><?php esc_html_e( 'Features', 'wp2-shopify' ); ?></a>
 				<a class="nav-tab <?php echo 'test' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'test' ] ) ); ?>"><?php esc_html_e( 'Test', 'wp2-shopify' ); ?></a>
 			</nav>
 			<?php
 			Menu::result_notice(
 				[
-					'saved'       => [ 'success', __( 'Level saved.', 'wp2-shopify' ) ],
-					'deleted'     => [ 'success', __( 'Level deleted. Content that still names it now fails closed.', 'wp2-shopify' ) ],
-					'refreshed'   => [ 'success', __( 'Tag list refreshed from synced customers.', 'wp2-shopify' ) ],
-					'bad_slug'    => [ 'error', __( 'Give the level a slug other than public or signed-in.', 'wp2-shopify' ) ],
-					'managed'     => [ 'warning', __( 'These settings are managed in code, so nothing was changed.', 'wp2-shopify' ) ],
-					'rules_saved' => [ 'success', __( 'Content rules saved. Every item picks them up on its next view.', 'wp2-shopify' ) ],
+					'saved'             => [ 'success', __( 'Level saved.', 'wp2-shopify' ) ],
+					'deleted'           => [ 'success', __( 'Level deleted. Content that still names it now fails closed.', 'wp2-shopify' ) ],
+					'refreshed'         => [ 'success', __( 'Tag list refreshed from synced customers.', 'wp2-shopify' ) ],
+					'bad_slug'          => [ 'error', __( 'Give the level a slug other than public or signed-in.', 'wp2-shopify' ) ],
+					'managed'           => [ 'warning', __( 'These settings are managed in code, so nothing was changed.', 'wp2-shopify' ) ],
+					'rules_saved'       => [ 'success', __( 'Content rules saved. Every item picks them up on its next view.', 'wp2-shopify' ) ],
+					'feature_saved'     => [ 'success', __( 'Feature mapping saved. It applies on every page from the next request.', 'wp2-shopify' ) ],
+					'feature_forgotten' => [ 'success', __( 'Stored condition removed.', 'wp2-shopify' ) ],
 				]
 			);
 
 			match ( $tab ) {
-				'rules' => AccessRules::render(),
-				'test'  => AccessTest::render(),
-				default => self::render_levels(),
+				'rules'    => AccessRules::render(),
+				'features' => AccessFeatures::render(),
+				'test'     => AccessTest::render(),
+				default    => self::render_levels(),
 			};
 			?>
 		</div>
@@ -166,6 +200,7 @@ final class Access {
 						<th><?php esc_html_e( 'Includes', 'wp2-shopify' ); ?></th>
 						<th><?php esc_html_e( 'Health', 'wp2-shopify' ); ?></th>
 						<th><?php esc_html_e( 'Would match today', 'wp2-shopify' ); ?></th>
+						<th><?php esc_html_e( 'Features', 'wp2-shopify' ); ?></th>
 						<th></th>
 					</tr>
 				</thead>
@@ -212,6 +247,7 @@ final class Access {
 							<?php endif; ?>
 						</td>
 						<td><?php echo $level->builtin() ? '—' : esc_html( sprintf( /* translators: %d: number of customers */ _n( '%d customer', '%d customers', $counts[ $slug ] ?? 0, 'wp2-shopify' ), $counts[ $slug ] ?? 0 ) ); ?></td>
+						<td><?php echo esc_html( implode( ', ', self::level_features( $slug ) ) ?: '—' ); ?></td>
 						<td>
 							<?php if ( ! $level->builtin() && ! $managed ) : ?>
 								<a class="button" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'edit' => $slug ] ) . '#level-form' ); ?>"><?php esc_html_e( 'Edit', 'wp2-shopify' ); ?></a>
@@ -284,6 +320,22 @@ final class Access {
 								<input name="cta_url" class="regular-text" aria-label="<?php esc_attr_e( 'Call to action URL', 'wp2-shopify' ); ?>" placeholder="/join/gold/" value="<?php echo esc_attr( $edit->cta_url ?? '' ); ?>">
 							</td>
 						</tr>
+						<?php $wp2_features = array_filter( Registry::features(), static fn( Feature $f ) => ! $f->managed ); ?>
+						<?php if ( $wp2_features ) : ?>
+							<tr>
+								<th scope="row"><?php esc_html_e( 'Features', 'wp2-shopify' ); ?></th>
+								<td>
+									<input type="hidden" name="features_present" value="1">
+									<?php foreach ( $wp2_features as $wp2_slug => $wp2_feature ) : ?>
+										<label style="display:block">
+											<input type="checkbox" name="features[]" value="<?php echo esc_attr( $wp2_slug ); ?>" <?php checked( $edit && (bool) array_filter( $wp2_feature->routes, static fn( $r ) => $r->is_level_only( $edit->slug ) ) ); ?>>
+											<?php echo esc_html( $wp2_feature->label ); ?>
+										</label>
+									<?php endforeach; ?>
+									<p class="description"><?php esc_html_e( 'Holders of this level get these features. The same mapping as Access → Features: a box here adds or removes the route "this level" there, and leaves other routes alone. Features managed in code are not listed.', 'wp2-shopify' ); ?></p>
+								</td>
+							</tr>
+						<?php endif; ?>
 					</table>
 					<?php submit_button( $edit ? __( 'Save level', 'wp2-shopify' ) : __( 'Add level', 'wp2-shopify' ) ); ?>
 				</form>

@@ -6,6 +6,7 @@ namespace WP2_Shopify\Access;
  * Access rules from the command line.
  *
  *     wp wp2-shopify access explain <post> [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
+ *     wp wp2-shopify access features [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
  *     wp wp2-shopify access recompute
  */
 final class Cli {
@@ -66,6 +67,66 @@ final class Cli {
 	}
 
 	/**
+	 * Which features a viewer holds, and which route grants each one.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--as=<viewer>]
+	 * : guest, signed-in, a level slug, tags or user.
+	 * ---
+	 * default: guest
+	 * ---
+	 *
+	 * [--tags=<tags>]
+	 * : Comma-separated tags, with --as=tags.
+	 *
+	 * [--user=<id>]
+	 * : A user ID, with --as=user. Uses their synced record.
+	 *
+	 * [--format=<format>]
+	 * : text or json.
+	 * ---
+	 * default: text
+	 * ---
+	 *
+	 * @param string[]             $args
+	 * @param array<string, mixed> $assoc
+	 */
+	public function features( array $args, array $assoc ): void {
+		$as   = (string) ( $assoc['as'] ?? Explain::AS_GUEST );
+		$user = (int) ( $assoc['user'] ?? 0 );
+		$rows = Explain::features( Explain::member( $as, explode( ',', (string) ( $assoc['tags'] ?? '' ) ), $user ), Explain::AS_USER === $as ? $user : 0 );
+
+		if ( 'json' === ( $assoc['format'] ?? 'text' ) ) {
+			\WP_CLI::line( (string) wp_json_encode( $rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+			return;
+		}
+
+		foreach ( self::feature_lines( $rows ) as $line ) {
+			\WP_CLI::line( $line );
+		}
+	}
+
+	/**
+	 * Feature rows as plain lines. Pure.
+	 *
+	 * @return string[]
+	 */
+	public static function feature_lines( array $rows ): array {
+		$lines = [];
+
+		foreach ( $rows as $row ) {
+			$lines[] = sprintf( '%s (%s): %s', $row['label'], $row['slug'], $row['granted'] ? 'granted, from ' . implode( ' and ', $row['routes'] ) : 'not granted (' . $row['reason'] . ')' );
+
+			foreach ( $row['trace'] as $i => $route ) {
+				$lines[] = sprintf( '  %d. %s: %s [%s]', $i + 1, $route['when'] ?: $route['label'], $route['passed'] ? 'passes' : 'fails', implode( '; ', $route['tests'] ) );
+			}
+		}
+
+		return $lines ?: [ 'No features are registered.' ];
+	}
+
+	/**
 	 * Rebuild every item's cached layers and public-text index in the background.
 	 */
 	public function recompute(): void {
@@ -93,7 +154,7 @@ final class Cli {
 		$lines[] = 'Sees:    ' . $t['sees'];
 
 		foreach ( $t['blocks'] as $b ) {
-			$lines[] = sprintf( 'Block:   %s, %s%s: %s', $b['name'], $b['show'], $b['levels'] ? ' ' . implode( ',', $b['levels'] ) : '', $b['visible'] ? 'shown' : 'hidden' );
+			$lines[] = sprintf( 'Block:   %s, %s%s%s: %s', $b['name'], $b['show'], $b['levels'] ? ' ' . implode( ',', $b['levels'] ) : '', '' !== ( $b['feature'] ?? '' ) ? ', feature ' . $b['feature'] . ( BlockAccess::LACKS === $b['when'] ? ' (not held)' : ' (held)' ) : '', $b['visible'] ? 'shown' : 'hidden' );
 		}
 
 		foreach ( $t['surfaces'] as $s ) {

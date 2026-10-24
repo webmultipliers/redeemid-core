@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Access;
 
 use WP2_Shopify\Entitlement\Member;
+use WP2_Shopify\Features\Registry;
 use WP2_Shopify\Settings;
 use WP2_Shopify\Sync\Mirror;
 
@@ -85,8 +86,10 @@ final class Explain {
 			};
 		}
 
+		$grants     = Registry::resolve( $member, 0, $now );
+		$feature    = static fn( string $slug ): bool => (bool) ( $grants[ $slug ] ?? null )?->granted;
 		$conditions = array_map(
-			static fn( array $c ) => $c + [ 'visible' => BlockAccess::visible( $c, $reads, $holds ) ],
+			static fn( array $c ) => $c + [ 'visible' => BlockAccess::visible( $c, $reads, $holds, $feature ) ],
 			BlockAccess::conditions( $blocks )
 		);
 
@@ -114,6 +117,41 @@ final class Explain {
 					: __( 'Search engines: indexed and in sitemaps. Locked items show crawlers the teaser only.', 'wp2-shopify' ),
 			],
 		];
+	}
+
+	/**
+	 * Every registered feature for one member, with the per-route trace:
+	 * which route passed, which test inside it, and the provenance label.
+	 *
+	 * @return array<int, array{slug: string, label: string, granted: bool, reason: string, provenance: string, routes: string[], trace: array<int, array{label: string, passed: bool, when: string, tests: string[]}>}>
+	 */
+	public static function features( Member $member, int $user_id = 0, ?int $now = null ): array {
+		$resolver = Registry::resolver();
+		$rows     = [];
+
+		foreach ( Registry::resolve( $member, $user_id, $now ?? time() ) as $slug => $grant ) {
+			$feature = Registry::get( $slug );
+			$rows[]  = [
+				'slug'       => $slug,
+				'label'      => $feature?->label ?? $slug,
+				'granted'    => $grant->granted,
+				'reason'     => $grant->reason,
+				'provenance' => $grant->provenance(),
+				'routes'     => $grant->routes,
+				'trace'      => array_map(
+					static fn( array $route, int $i ) => [
+						'label'  => $route['label'],
+						'passed' => $route['passed'],
+						'when'   => $feature && isset( $feature->routes[ $i ] ) ? $resolver->describe( $feature->routes[ $i ] ) : '',
+						'tests'  => array_map( static fn( $t ) => sprintf( '%s:%s%s %s', $t['type'], $t['value'], '' !== $t['arg'] ? '=' . $t['arg'] : '', $t['passed'] ? 'passes' : 'fails (' . $t['reason'] . ')' ), $route['tests'] ),
+					],
+					$grant->trace,
+					array_keys( $grant->trace )
+				),
+			];
+		}
+
+		return $rows;
 	}
 
 	/**

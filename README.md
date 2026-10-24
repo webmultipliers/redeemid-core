@@ -71,7 +71,7 @@ Everything lives under the top-level **Shopify** menu (Settings → Shopify redi
 - **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
-- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets and which blocks they see. See [Access rules](#access-rules).
+- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
 - **Debug:** the constants above, platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
 
 Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
@@ -213,6 +213,10 @@ From the command line, `wp wp2-shopify access explain <post> --as=<guest|signed-
 
 Each item's rule layers are cached in `_wp2_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
 
+### Features
+
+Features are site behaviours a customer unlocks through what Shopify already granted, such as ad-free reading or downloads. Code registers them with the `wp2_shopify_features` filter, and Shopify → Access → Features maps each one to levels, add-on tags or custom tests. Consumers check them with `wp2_shopify_has_feature( $slug )`, the block **Access → Feature** setting (including "does not hold it" for upgrade prompts), the `wp2-feature-<slug>` body class, `GET /features`, or the `[wp2_feature]` shortcode. Grants come only from the mirror, so they are revoked the same way gates close. See [docs/features.md](docs/features.md).
+
 ### Plan cards and buy-now
 
 Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and pick a product: the sidebar searches your Shopify catalog by title. It shows the product's live Shopify price, cached for five minutes, and a button that goes straight to Shopify checkout. Put plan cards on the join page and in a gate's fallback.
@@ -227,9 +231,10 @@ It needs `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN`, and the product must be published to
 
 - **Refresh Membership** (`wp2-shopify/membership-refresh`): a button for signed-in, linked customers that re-syncs their membership from Shopify through `POST /account/sync` and reloads the page, so gates open as soon as a new tag lands. Guests and unlinked accounts see nothing. Put it in a paywall's teaser or the header.
 - **Shopify Account Status** (`wp2-shopify/account-status`): tells the visitor whether they are signed in, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. "Show the raw status response" adds the `GET /auth/status` payload, nonces redacted, for troubleshooting.
+- **Membership Features** (`wp2-shopify/member-features`): the visitor's granted features and where each comes from ("Download access, from Add-on purchase"), for the account page. A menu mode shows only the features registered as primary, at most three, for a header.
 - **Shopify Health** (`wp2-shopify/health`): the at-a-glance version of Shopify → Debug (Blockstudio, the plugin's blocks, permalinks, the callback page, sign-in, which constants are set but never their values, Shopify's own plugin). Administrators only; everyone else sees a one-line note. Add rows with the `wp2_shopify_health_checks` filter.
 
-All three are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
+All four are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
 
 ### Memberships from purchases
 
@@ -260,6 +265,7 @@ Cache rules should bypass or vary on these cookies:
 - `wordpress_logged_in_*`
 - `wp2_shopify_oauth_state`
 - `wp2_shopify_cart` (later phases)
+- `wp2_shopify_fset`, only when a [feature](docs/features.md#caching) declares the `vary` caching option: an opaque hash of the visitor's granted set
 
 ## Shopify's WordPress plugin
 
@@ -292,6 +298,7 @@ The namespace is `wp2-shopify/v1`. Every write route needs the `wp_rest` nonce.
 | `POST /account/sync` | Re-syncs the current user's mirror (rate-limited) |
 | `POST /cart/identity` | Attaches the signed-in, linked customer to the official plugin's cart, `{cartId}` → `{attached}` (rate-limited; only when that plugin serves the same store) |
 | `POST /webhooks/events` | Shopify webhooks (HMAC-verified) |
+| `GET /features` | The caller's own granted feature slugs, for features that declare the REST surface; guests get Public ones only. `/wp/v2/users/me` carries the same list as `wp2_features` |
 | `GET /editor/products?search=` | Plan Card product picker: `[{handle, title}]` from the Storefront API. Editors only (same-origin, `edit_posts`), because Blockstudio's picker calls it without a nonce |
 
 Non-JavaScript forms post to `admin-post.php` handlers (`wp2_shopify_login`, `_logout`, `_connect`, `_link_confirm`, `_sync`, `_disconnect`), which redirect back to a page.
@@ -306,7 +313,7 @@ What the plugin uses, and where:
 |---|---|---|
 | Show a sidebar field only when another field has a value | [Conditional logic](https://blockstudio.dev/docs/blocks/attributes/conditional-logic) (`conditions`) | Membership Gate, Shopify Sign-in |
 | Fill a select from site data or an API | [Populate options](https://blockstudio.dev/docs/blocks/attributes/populating-options): `function` for site data, `fetch` for a search endpoint | Gate's level picker (`wp2_shopify_level_options()`), Plan Card's product picker |
-| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in, Refresh Membership, Shopify Account Status, Shopify Health |
+| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in, Refresh Membership, Shopify Account Status, Shopify Health, Membership Features |
 | Shared markup the plugin renders, that themes can restyle or replace | [Components](https://blockstudio.dev/docs/blocks/components) and [overrides](https://blockstudio.dev/docs/blocks/overrides) | `locked-panel`, rendered by `Gate::fallback_panel()` |
 | Several inserter entries for one block | [Variations](https://blockstudio.dev/docs/blocks/variations) | Shopify Sign-in, Membership Gate |
 | URL fields with a page picker | [`link` field](https://blockstudio.dev/docs/blocks/attributes/field-types) | Gate CTA and redirect, sign-in redirects |
@@ -334,6 +341,7 @@ Rules that follow from it:
   - `wp2_shopify_signed_in`, `wp2_shopify_linked`, `wp2_shopify_disconnected` and `wp2_shopify_before_logout`
   - `wp2_shopify_log`, which receives redacted log events
   - `wp2_shopify_access_changed` (`int[] $post_ids`), `wp2_shopify_access_levels_changed` and `wp2_shopify_access_locked_changed` (`int $post_id, bool $locked`)
+  - `wp2_shopify_features_changed` (`int $user_id, string[] $added, string[] $removed`) and `wp2_shopify_features_mapping_changed` (`string[] $slugs`); see [docs/features.md](docs/features.md#hooks)
 - Filters:
   - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
   - `wp2_shopify_membership_map` and `wp2_shopify_setting_{key}`
@@ -342,6 +350,7 @@ Rules that follow from it:
   - `wp2_shopify_access_levels` and `wp2_shopify_access_rules`, which set levels and content rules from code (the admin screens then show them read-only)
   - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
   - `wp2_shopify_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
+  - `wp2_shopify_features`, `wp2_shopify_feature_tests` and `wp2_shopify_feature_decision`, which register features and custom tests and can alter one decision (see [docs/features.md](docs/features.md))
   - `wp2_shopify_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
 
 ## Upgrading from 1.x

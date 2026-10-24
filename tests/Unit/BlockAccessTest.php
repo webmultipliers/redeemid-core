@@ -30,9 +30,11 @@ final class BlockAccessTest extends TestCase {
 	}
 
 	public function test_setting_defaults_to_everyone_and_cleans_levels(): void {
-		$this->assertSame( [ 'show' => BlockAccess::EVERYONE, 'levels' => [] ], BlockAccess::setting( self::block( 'core/paragraph' ) ) );
-		$this->assertSame( [ 'show' => BlockAccess::EVERYONE, 'levels' => [] ], BlockAccess::setting( self::block( 'core/paragraph', [ 'show' => 'nobody' ] ) ), 'Unknown values are ignored' );
-		$this->assertSame( [ 'show' => BlockAccess::LEVELS, 'levels' => [ 'gold' ] ], BlockAccess::setting( self::block( 'core/paragraph', [ 'show' => 'levels', 'levels' => [ ' Gold ', 'gold', '' ] ] ) ) );
+		$none = [ 'feature' => '', 'when' => BlockAccess::HAS ];
+
+		$this->assertSame( [ 'show' => BlockAccess::EVERYONE, 'levels' => [] ] + $none, BlockAccess::setting( self::block( 'core/paragraph' ) ) );
+		$this->assertSame( [ 'show' => BlockAccess::EVERYONE, 'levels' => [] ] + $none, BlockAccess::setting( self::block( 'core/paragraph', [ 'show' => 'nobody' ] ) ), 'Unknown values are ignored' );
+		$this->assertSame( [ 'show' => BlockAccess::LEVELS, 'levels' => [ 'gold' ] ] + $none, BlockAccess::setting( self::block( 'core/paragraph', [ 'show' => 'levels', 'levels' => [ ' Gold ', 'gold', '' ] ] ) ) );
 	}
 
 	public function test_the_break_and_gate_areas_ignore_a_setting(): void {
@@ -95,8 +97,8 @@ final class BlockAccessTest extends TestCase {
 
 		$this->assertSame(
 			[
-				[ 'name' => 'core/group', 'show' => 'readers', 'levels' => [] ],
-				[ 'name' => 'core/paragraph', 'show' => 'locked', 'levels' => [] ],
+				[ 'name' => 'core/group', 'show' => 'readers', 'levels' => [], 'feature' => '', 'when' => BlockAccess::HAS ],
+				[ 'name' => 'core/paragraph', 'show' => 'locked', 'levels' => [], 'feature' => '', 'when' => BlockAccess::HAS ],
 			],
 			BlockAccess::conditions( $blocks )
 		);
