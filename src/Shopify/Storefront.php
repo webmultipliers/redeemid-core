@@ -5,10 +5,16 @@ namespace WP2_Shopify\Shopify;
 use WP2_Shopify\Config;
 
 /**
- * Storefront API with the public access token (spec 3.2): public catalog reads
- * and cart creation for buy-now. Public by design, so it is safe in server
- * calls and never personalised except for the buyer identity a signed-in
- * customer's own token adds to their cart.
+ * Storefront API from the server (spec 3.2): public catalog reads, cart
+ * creation for buy-now and buyer identity for the official plugin's cart.
+ * Never personalised except for the buyer identity a signed-in customer's own
+ * token adds to their cart.
+ *
+ * Shopify asks server-side callers to use a private token and to pass the
+ * buyer's IP on requests that come from buyer traffic; without it every
+ * visitor looks like the server's one IP, and checkout creation is throttled
+ * per minute. So the private token is used when it is set, with the buyer IP
+ * on buy-now and cart calls, and the public token is the fallback.
  */
 final class Storefront {
 	/** Catalog responses are display data, cached briefly (spec 15.1). */
@@ -62,7 +68,7 @@ mutation WP2CartBuyer($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
 GRAPHQL;
 
 	public static function available(): bool {
-		return '' !== Config::store_domain() && Config::has( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' );
+		return '' !== Config::store_domain() && ( Config::has( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' ) || Config::has( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' ) );
 	}
 
 	public static function endpoint(): string {
@@ -227,7 +233,7 @@ GRAPHQL;
 			$input['buyerIdentity'] = [ 'customerAccessToken' => $customer_token ];
 		}
 
-		$data = Http::graphql( self::endpoint(), self::headers(), self::CART_CREATE, [ 'input' => $input ], 'storefront.cart_create' );
+		$data = Http::graphql( self::endpoint(), self::headers( true ), self::CART_CREATE, [ 'input' => $input ], 'storefront.cart_create' );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;
@@ -254,7 +260,7 @@ GRAPHQL;
 			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
 		}
 
-		$data = Http::graphql( self::endpoint(), self::headers(), self::CART_BUYER, [ 'cartId' => $cart_gid, 'buyerIdentity' => [ 'customerAccessToken' => $customer_token ] ], 'storefront.cart_buyer' );
+		$data = Http::graphql( self::endpoint(), self::headers( true ), self::CART_BUYER, [ 'cartId' => $cart_gid, 'buyerIdentity' => [ 'customerAccessToken' => $customer_token ] ], 'storefront.cart_buyer' );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;
@@ -289,7 +295,31 @@ GRAPHQL;
 		return $money['amount'] . ' ' . $money['currency'];
 	}
 
-	private static function headers(): array {
-		return [ 'X-Shopify-Storefront-Access-Token' => Config::get( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' ) ];
+	/**
+	 * @param bool $buyer The request comes from a buyer's action (buy-now, cart), not a cached catalog read.
+	 */
+	private static function headers( bool $buyer = false ): array {
+		$private = Config::get( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' );
+
+		if ( '' === $private ) {
+			return [ 'X-Shopify-Storefront-Access-Token' => Config::get( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' ) ];
+		}
+
+		$ip = $buyer ? self::buyer_ip() : '';
+
+		return [ 'Shopify-Storefront-Private-Token' => $private ] + ( '' !== $ip ? [ 'Shopify-Storefront-Buyer-IP' => $ip ] : [] );
+	}
+
+	/**
+	 * The visitor's IP as the web server saw it. Behind a proxy or CDN that is
+	 * the proxy's address; the wp2_shopify_buyer_ip filter can return the real
+	 * one from a header the site trusts. Forwarded headers are not read here,
+	 * because a visitor can set them.
+	 */
+	private static function buyer_ip(): string {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$ip = (string) apply_filters( 'wp2_shopify_buyer_ip', $ip );
+
+		return false !== filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
 	}
 }
