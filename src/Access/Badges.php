@@ -9,8 +9,9 @@ use WP2_Shopify\Settings;
  * What a theme can show about an item's access, for the item itself and for
  * every card in a query loop (each card is decided for its own post):
  *
- * - post classes: wp2-gated, requires-{level} for each level the rule names,
- *   and is-locked or is-unlocked for the current visitor;
+ * - post classes: wp2-gated, requires-{level} for each level the rule names
+ *   (or the level of an inline level gate), and is-locked or is-unlocked for
+ *   the current visitor;
  * - the wp2-shopify/access block binding source, so any paragraph, heading
  *   or button can show the level label, the visitor's state or the level's
  *   call to action;
@@ -57,7 +58,15 @@ final class Badges {
 			return $classes;
 		}
 
-		return array_merge( $classes, self::classes( Gatekeeper::rule( $post ), Gatekeeper::locked( $post ) ) );
+		$rule   = Gatekeeper::rule( $post );
+		$inline = $rule->open() ? self::inline_gate( $post ) : null;
+
+		if ( $inline ) {
+			// A body gated inline gets the same classes, so a theme can mark it in a list like a ruled item.
+			return array_merge( $classes, [ 'wp2-gated', $inline['locked'] ? 'is-locked' : 'is-unlocked', 'requires-' . $inline['level']->slug ] );
+		}
+
+		return array_merge( $classes, self::classes( $rule, Gatekeeper::locked( $post ) ) );
 	}
 
 	/**
@@ -95,11 +104,20 @@ final class Badges {
 		$rule   = Gatekeeper::rule( $post );
 		$level  = self::level( $post );
 		$locked = Gatekeeper::locked( $post );
+		// An open item whose body sits in a level gate is not free: name the gate's level, as the badge does.
+		$inline = $rule->open() ? self::inline_gate( $post ) : null;
+
+		if ( $inline ) {
+			$level  = $inline['level'];
+			$locked = $inline['locked'];
+		}
+
+		$open = $rule->open() && ! $inline;
 
 		return match ( $key ) {
 			'level'     => $level?->label ?? '',
-			'levels'    => $rule->open() ? '' : self::need( $rule ),
-			'state'     => $rule->open() ? __( 'Free to read', 'wp2-shopify' ) : ( $locked ? __( 'Locked', 'wp2-shopify' ) : __( 'Included with your membership', 'wp2-shopify' ) ),
+			'levels'    => $open ? '' : ( $inline ? $inline['level']->label : self::need( $rule ) ),
+			'state'     => $open ? __( 'Free to read', 'wp2-shopify' ) : ( $locked ? __( 'Locked', 'wp2-shopify' ) : __( 'Included with your membership', 'wp2-shopify' ) ),
 			'message'   => $locked ? ( $level?->message ?? '' ) : '',
 			'cta_label' => $locked ? ( $level?->cta_label ?? '' ) : '',
 			'cta_url'   => $locked ? ( $level?->cta_url ?? '' ) : '',

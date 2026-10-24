@@ -5,7 +5,7 @@
 	"title": "Access Badge",
 	"category": "widgets",
 	"icon": "lock",
-	"description": "Names the level an item needs, in the level's badge colour, with a lock for visitors it locks out. Reads the item's access rule, or a Membership Gate in its content set to an access level. Inside a query loop it describes each post. Shows nothing on open items.",
+	"description": "Names the level an item needs, in the level's badge colour, with a lock for visitors it locks out. Reads the item's access rule, or a Membership Gate in its content set to an access level. Inside a query loop it describes each post. Shows nothing on open items, unless a free label is set.",
 	"keywords": [ "badge", "level", "members", "locked", "paywall" ],
 	"textdomain": "wp2-shopify",
 	"usesContext": [ "postId", "postType" ],
@@ -33,7 +33,14 @@
 					{ "value": "state", "label": "The visitor's state (Locked, Included with your membership)" }
 				]
 			},
-			{ "id": "showIcon", "type": "toggle", "label": "Show a lock icon", "default": true }
+			{ "id": "showIcon", "type": "toggle", "label": "Show a lock icon", "default": true },
+			{
+				"id": "freeLabel",
+				"type": "text",
+				"label": "Label for free items",
+				"default": "",
+				"help": "Leave empty to show nothing on items anyone can read. Set it (for example Free) to mark them too, so free and paid items read differently in a list."
+			}
 		],
 		"refreshOn": [ "save" ]
 	}
