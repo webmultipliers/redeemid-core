@@ -40,7 +40,7 @@ if ( $isPreview ) {
 } elseif ( '' === $wp2_handle ) {
 	$wp2_problem = $isEditor ? __( 'Choose a Shopify product in the block settings.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
 } elseif ( ! \WP2_Shopify\Shopify\Storefront::available() ) {
-	$wp2_problem = $isEditor ? __( 'Add WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN to wp-config.php to show live prices and checkout.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
+	$wp2_problem = $isEditor ? __( 'Add WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN (or WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN) to wp-config.php to show live prices and checkout.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
 } else {
 	$wp2_product = \WP2_Shopify\Shopify\Storefront::product( $wp2_handle );
 

@@ -91,7 +91,7 @@ final class Health {
 				$bridge
 					/* translators: %s: date and time, or "never" */
 					? sprintf( __( 'active, last attached %s', 'wp2-shopify' ), $last['ok_at'] ? wp_date( 'Y-m-d H:i', (int) $last['ok_at'] ) : __( 'never', 'wp2-shopify' ) )
-					: __( 'off: needs the same store and WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN', 'wp2-shopify' )
+					: __( 'off: needs the same store and a Storefront token', 'wp2-shopify' )
 			);
 		}
 

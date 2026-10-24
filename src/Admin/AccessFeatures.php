@@ -4,6 +4,7 @@ namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Access\Explain;
 use WP2_Shopify\Features\Feature;
+use WP2_Shopify\Features\Grant;
 use WP2_Shopify\Features\Registry;
 use WP2_Shopify\Features\Route;
 
@@ -165,7 +166,7 @@ final class AccessFeatures {
 									/* translators: %s: route labels */
 									? esc_html( sprintf( __( 'Granted, from %s', 'wp2-shopify' ), implode( __( ' and ', 'wp2-shopify' ), $grant->routes ) ) )
 									/* translators: %s: reason code */
-									: esc_html( sprintf( __( 'Not granted (%s)', 'wp2-shopify' ), $grant?->reason ?? 'unregistered' ) );
+									: esc_html( sprintf( __( 'Not granted (%s)', 'wp2-shopify' ), $grant?->reason ?? Grant::UNREGISTERED ) );
 								?>
 							</td>
 						<?php endif; ?>

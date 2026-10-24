@@ -83,16 +83,17 @@ final class OAuth {
 			return new \WP_Error( 'wp2_shopify_unconfigured', 'Shopify sign-in is not configured.' );
 		}
 
-		$headers = [ 'Content-Type' => 'application/x-www-form-urlencoded' ];
-		$secret  = Config::get( 'WP2_SHOPIFY_CLIENT_SECRET' );
+		// Shopify marks client_id required on every token request, confidential clients included.
+		$params['client_id'] = $client_id;
+		$headers             = [ 'Content-Type' => 'application/x-www-form-urlencoded' ];
+		$secret              = Config::get( 'WP2_SHOPIFY_CLIENT_SECRET' );
 
 		if ( '' !== $secret ) {
 			// Confidential client.
 			$headers['Authorization'] = 'Basic ' . base64_encode( $client_id . ':' . $secret );
 		} else {
-			// Public client: identified by client_id; Shopify checks the request origin.
-			$params['client_id'] = $client_id;
-			$headers['Origin']   = untrailingslashit( home_url() );
+			// Public client: Shopify checks the request origin against the app's JavaScript origins.
+			$headers['Origin'] = untrailingslashit( home_url() );
 		}
 
 		$response = Http::request( 'POST', $endpoint, $headers, http_build_query( $params ), $label );

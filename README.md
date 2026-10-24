@@ -4,7 +4,7 @@ Sign in with Shopify customer accounts on WordPress, and gate content by Shopify
 
 > **Working on this plugin? Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. See [Building on Blockstudio](#building-on-blockstudio) for what we use and the few places we deliberately don't.
 
-> **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging and the gate block are in place. Catalog, cart and the account card come in later phases. See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
+> **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging, gates, access rules, features, plan cards and the bridge to Shopify's own cart are in place. The account card comes in a later phase; catalog blocks are cut in favour of Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
 
 ## Requirements
 
@@ -41,7 +41,7 @@ The plugin runs its own Blockstudio instance from `blocks/`. It does not use the
 
 ## Configure
 
-Credentials are constants in `wp-config.php`, never options. These seven are the whole configuration surface; Shopify → Debug shows which are present, never their values.
+Credentials are constants in `wp-config.php`, never options. These eight are the whole configuration surface; Shopify → Debug shows which are present, never their values.
 
 | Constant | Required | Purpose |
 |---|---|---|
@@ -51,6 +51,7 @@ Credentials are constants in `wp-config.php`, never options. These seven are the
 | `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers purchase-to-tag, reconciliation, resync, tag editing and webhook registration. |
 | `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | yes | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
 | `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | for plan cards | Storefront API public token from the Headless channel. Powers plan cards and buy-now. Public by design. |
+| `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same Headless channel. When set it replaces the public token for every Storefront call, and buy-now and cart calls send the buyer's IP (`Shopify-Storefront-Buyer-IP`), as Shopify asks of server-side callers. Without it every visitor looks like your server's one IP, so Shopify may throttle checkout creation. |
 | `WP2_SHOPIFY_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
 
 `WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, with an admin notice. Rename it to `WP2_SHOPIFY_CLIENT_SECRET`.
@@ -59,7 +60,6 @@ These constants are no longer read. If one is still defined, every admin screen 
 
 - `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
 - `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
-- `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN`: nothing reads it yet; it returns with the server-side cart.
 - `WP2_SHOPIFY_API_VERSION`: the API version is pinned to `2026-10`.
 - `WP2_SHOPIFY_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
 
@@ -225,7 +225,7 @@ Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and pick a product: the side
 - **Cache-safe.** The card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per IP per minute.
 - **Independent of Shopify's plugin.** It works the same whether that plugin is installed or not, and never touches its cart.
 
-It needs `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN`, and the product must be published to the Headless channel that issued the token.
+It needs `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` (recommended) or `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN`, and the product must be published to the Headless channel that issued the token. Behind a proxy or CDN, the buyer IP the plugin sends is the proxy's unless the `wp2_shopify_buyer_ip` filter returns the visitor's from a header your proxy sets.
 
 ### Account blocks
 
@@ -277,7 +277,7 @@ WP2 works with or without it:
 - **Credentials stay separate.** WP2 reads only the official plugin's store domain, to compare it. It never reads its Storefront token.
 - **Routes.** When active, the official plugin always owns `/cart` and, by default, `/products/*`. WP2 claims neither. Debug shows which ones it currently owns.
 - **Gating.** Official product and collection blocks can go inside a membership gate. The gate renders on the server, so non-members never receive the block's markup.
-- **Signed-in checkout from its cart.** When it serves the same store and `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` is set, WP2 adds a small script to front-end pages. If a linked customer is signed in and the official cart exists, the script sends the cart ID to `POST /cart/identity`, and WP2 attaches the customer on the server with `cartBuyerIdentityUpdate`. Checkout then opens signed in, so purchases unlock content. The customer token never reaches the browser. Guests with no cart make no request.
+- **Signed-in checkout from its cart.** When it serves the same store and a Storefront token is set, WP2 adds a small script to front-end pages. If a linked customer is signed in and the official cart exists, the script sends the cart ID to `POST /cart/identity`, and WP2 attaches the customer on the server with `cartBuyerIdentityUpdate`. Checkout then opens signed in, so purchases unlock content. The customer token never reaches the browser. Guests with no cart make no request.
 - **Keyboard access to its cart toggle.** Its 1.0.0 cart toggle is a link with no `href`, which a keyboard can't reach. WP2 gives it a button role and a tab stop, and opens the cart on Enter or Space (`Integrations\OfficialCartToggle`).
 - **Shared devices.** After sign-out, the script drops a cart it signed in, so the next person can't check out as the previous customer. Turn on **Clear the cart on sign-out** to drop every cart a signed-in visitor used.
 - **Limits.** The bridge reads `localStorage['__shopify:cartId']`, which the official cart component uses but doesn't document. If Shopify changes it, the bridge stops attaching and the cart keeps working as a guest cart. Debug shows the last attach and the last failure. A visitor who adds to the cart and reaches checkout within a second or two may get there before the attach finishes.
@@ -351,6 +351,7 @@ Rules that follow from it:
   - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
   - `wp2_shopify_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
   - `wp2_shopify_features`, `wp2_shopify_feature_tests` and `wp2_shopify_feature_decision`, which register features and custom tests and can alter one decision (see [docs/features.md](docs/features.md))
+  - `wp2_shopify_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `wp2_shopify_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
 
 ## Upgrading from 1.x

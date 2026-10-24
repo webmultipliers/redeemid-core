@@ -148,7 +148,7 @@ final class Debug {
 					}
 					?>
 				</li>
-				<li><?php echo $ok( Storefront::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Storefront API (plan cards and buy-now):', 'wp2-shopify' ); ?> <?php echo esc_html( Storefront::available() ? __( 'public access token present.', 'wp2-shopify' ) : __( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN not set, so plan cards show as unavailable.', 'wp2-shopify' ) ); ?></li>
+				<li><?php echo $ok( Storefront::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Storefront API (plan cards and buy-now):', 'wp2-shopify' ); ?> <?php echo esc_html( Storefront::available() ? ( Config::has( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' ) ? __( 'private access token present; buy-now and cart calls send the buyer\'s IP.', 'wp2-shopify' ) : __( 'public access token present. Add WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN so Shopify doesn\'t throttle checkout as if every visitor were one IP.', 'wp2-shopify' ) ) : __( 'neither WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN nor WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN is set, so plan cards show as unavailable.', 'wp2-shopify' ) ); ?></li>
 				<li><?php esc_html_e( 'Shopify app settings: callback URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( Config::callback_url() ); ?></code>, <?php esc_html_e( 'JavaScript origin', 'wp2-shopify' ); ?> <code><?php echo esc_html( untrailingslashit( home_url() ) ); ?></code>, <?php esc_html_e( 'logout URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( home_url( '/' ) ); ?></code></li>
 				<li><?php esc_html_e( 'Webhooks:', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Webhooks::PAGE ) ); ?>"><?php esc_html_e( 'Shopify → Webhooks', 'wp2-shopify' ); ?></a></li>
 			</ul>
@@ -194,7 +194,7 @@ final class Debug {
 				<li><?php esc_html_e( 'Serves /products/{handle}:', 'wp2-shopify' ); ?> <?php echo esc_html( $info['product_routes'] ? __( 'yes. Product SEO is the official plugin\'s.', 'wp2-shopify' ) : __( 'no.', 'wp2-shopify' ) ); ?></li>
 				<li><?php echo $ok( CartBridge::enabled() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Cart sign-in bridge:', 'wp2-shopify' ); ?>
 					<?php
-					echo esc_html( CartBridge::enabled() ? __( 'active. Signed-in customers check out from its cart as themselves.', 'wp2-shopify' ) : __( 'off. It needs the same store and WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN.', 'wp2-shopify' ) );
+					echo esc_html( CartBridge::enabled() ? __( 'active. Signed-in customers check out from its cart as themselves.', 'wp2-shopify' ) : __( 'off. It needs the same store and a Storefront token.', 'wp2-shopify' ) );
 					echo ' ' . esc_html__( 'Last attached:', 'wp2-shopify' ) . ' ' . $fmt_time( $bridge['ok_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput
 					if ( $bridge['error'] ) {
 						echo ' · <strong>' . esc_html__( 'Last failure:', 'wp2-shopify' ) . ' ' . esc_html( $bridge['error'] ) . '</strong> ' . $fmt_time( $bridge['error_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput

@@ -68,8 +68,4 @@ final class CustomerId {
 	public function gid(): string {
 		return self::GID_PREFIX . $this->numeric;
 	}
-
-	public function equals( self $other ): bool {
-		return $this->numeric === $other->numeric;
-	}
 }

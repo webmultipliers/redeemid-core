@@ -22,7 +22,7 @@ These rules stay in force for everything WP2 renders. They are relaxed only for 
 | Spec rule | Official plugin | Accepted because |
 |---|---|---|
 | 9: server-rendered commerce markup | Web Components render in the browser | WP2's own blocks (plan card, gates) still render on the server, and gates hide official blocks from non-members on the server |
-| 10.3 / 15.3: no-JS cart and keyboard access | Cart needs JavaScript; the 1.0.0 cart toggle is not keyboard-reachable | Buy-now on plan cards works without JavaScript. Themes should style or replace the toggle (sandbox theme does) |
+| 10.3 / 15.3: no-JS cart and keyboard access | Cart needs JavaScript; the 1.0.0 cart toggle is not keyboard-reachable | Buy-now on plan cards works without JavaScript. WP2 gives the toggle a button role and a tab stop (`Integrations\OfficialCartToggle`) |
 | 4.2 / 12: cart ID held on the server | Cart ID lives in the browser's `localStorage` | The bridge sends it to the server only to attach identity, and WP2 stores no cart IDs |
 
 ## Guarantees WP2 keeps

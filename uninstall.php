@@ -41,6 +41,8 @@ wp_clear_scheduled_hook( 'wp2_shopify_reconcile' );
 wp_clear_scheduled_hook( 'wp2_shopify_prune' );
 wp_clear_scheduled_hook( 'wp2_shopify_access_reindex' );
 wp_clear_scheduled_hook( 'wp2_shopify_access_timed' );
+// Queued webhook processing carries a row ID per event, so clear every instance.
+wp_unschedule_hook( 'wp2_shopify_process_webhook' );
 
 // Collect a stable list of user IDs first, then act on it. (The POC paged
 // through users while deleting them, which skipped every other page.)

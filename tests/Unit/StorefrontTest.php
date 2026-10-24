@@ -4,6 +4,7 @@ namespace WP2_Shopify\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use WP2_Shopify\Commerce\BuyNow;
+use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Shopify\Storefront;
 
 final class StorefrontTest extends TestCase {
@@ -56,5 +57,19 @@ final class StorefrontTest extends TestCase {
 		$this->assertSame( '', BuyNow::variant_gid( 'gid://shopify/Product/42' ) );
 		$this->assertSame( '', BuyNow::variant_gid( '42; drop' ) );
 		$this->assertSame( '', BuyNow::variant_gid( '' ) );
+	}
+
+	public function test_title_query_uses_prefix_terms(): void {
+		$this->assertNull( Storefront::title_query( '  ' ) );
+		$this->assertSame( 'title:gold*', Storefront::title_query( 'gold' ) );
+		$this->assertSame( 'title:gold* title:memb*', Storefront::title_query( ' gold   memb ' ) );
+	}
+
+	public function test_customer_api_url_keeps_the_pinned_version(): void {
+		$this->assertSame(
+			'https://shopify.com/100/account/customer/api/2026-10/graphql',
+			Discovery::pin_version( 'https://shopify.com/100/account/customer/api/2027-01/graphql', '2026-10' )
+		);
+		$this->assertSame( 'https://example.test/other', Discovery::pin_version( 'https://example.test/other', '2026-10' ) );
 	}
 }

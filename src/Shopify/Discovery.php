@@ -67,12 +67,24 @@ final class Discovery {
 
 		$value = self::openid()[ $key ] ?? '';
 
-		if ( 'graphql_api' === $key && '' === $value && '' !== Config::store_domain() ) {
-			// Documented default shape; versioned with the pinned API version.
-			$value = 'https://' . Config::store_domain() . '/customer/api/' . Config::api_version() . '/graphql';
+		if ( 'graphql_api' === $key ) {
+			$value = '' === $value && '' !== Config::store_domain()
+				// Documented default shape; versioned with the pinned API version.
+				? 'https://' . Config::store_domain() . '/customer/api/' . Config::api_version() . '/graphql'
+				: self::pin_version( (string) $value, Config::api_version() );
 		}
 
 		return esc_url_raw( (string) $value );
+	}
+
+	/**
+	 * Discovery returns the Customer Account API URL with Shopify's latest
+	 * stable version in it, which moves every quarter. Shopify's docs say to
+	 * build the versioned URL from the discovered one when a specific version
+	 * is needed, so queries keep the version they were written against.
+	 */
+	public static function pin_version( string $url, string $version ): string {
+		return (string) preg_replace( '#/customer/api/\d{4}-\d{2}/graphql$#', '/customer/api/' . $version . '/graphql', $url );
 	}
 
 	public static function available(): bool {
