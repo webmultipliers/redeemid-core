@@ -98,4 +98,13 @@ final class Discovery {
 	public static function flush(): void {
 		delete_transient( self::CACHE );
 	}
+
+	/**
+	 * The store changed: the last-good copy belongs to the old one.
+	 */
+	public static function forget_store(): void {
+		self::flush();
+		delete_option( self::LAST_GOOD );
+		delete_option( self::LAST_FETCH );
+	}
 }

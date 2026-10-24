@@ -14,7 +14,8 @@ use WP2_Shopify\Shopify\Discovery;
  * this is the at-a-glance version a site or a theme can put on a page.
  *
  * Configuration rows come from Config::definitions(), so the checklist never
- * keeps its own copy of the config rules. No constant's value is ever shown.
+ * keeps its own copy of the config rules. Each says whether the value comes
+ * from wp-config.php or Settings; no value is ever shown.
  * Themes and add-ons append their own rows with wp2_shopify_health_checks.
  */
 final class Health {
@@ -59,11 +60,18 @@ final class Health {
 		$add( __( 'Shopify sign-in available', 'wp2-shopify' ), $available ? self::OK : self::FAIL, $available ? __( 'OIDC discovery answered', 'wp2-shopify' ) : __( 'no discovery: check the store domain and client ID', 'wp2-shopify' ) );
 
 		foreach ( Config::definitions() as $name => $def ) {
-			$set = Config::has( $name );
+			$source = Config::source( $name );
+			$set    = Config::has( $name );
+
+			if ( ConfigValues::UNREADABLE === $source ) {
+				$add( $name, $def['required'] ? self::FAIL : self::WARN, __( 'saved in Settings but unreadable: the encryption key changed', 'wp2-shopify' ) );
+				continue;
+			}
+
 			$add(
 				$name,
 				$set ? self::OK : ( $def['required'] ? self::FAIL : self::INFO ),
-				$set ? __( 'set', 'wp2-shopify' ) : ( $def['required'] ? __( 'missing (required)', 'wp2-shopify' ) : __( 'not set (optional)', 'wp2-shopify' ) )
+				$set ? ( ConfigValues::CONSTANT === $source ? __( 'set in wp-config.php', 'wp2-shopify' ) : __( 'set in Settings', 'wp2-shopify' ) ) : ( $def['required'] ? __( 'missing (required)', 'wp2-shopify' ) : __( 'not set (optional)', 'wp2-shopify' ) )
 			);
 		}
 

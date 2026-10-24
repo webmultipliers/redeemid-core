@@ -8,13 +8,15 @@ use WP2_Shopify\Settings;
 /**
  * The top-level Shopify menu (spec 14.2):
  *
- * - Overview: connection summary and the plugin's settings.
+ * - Overview: connection summary.
+ * - Settings: the Shopify credentials (wp-config.php constants win) and the
+ *   membership settings.
  * - Customers: linked customers, with resync, tag editing and Shopify admin links.
  * - Webhooks: every delivery Shopify sent, and webhook registration.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
  * - Access: the named access levels gating rules point at, with a health
  *   check, and the content rules for the site, post types and taxonomies.
- * - Debug: wp-config constants, platform checks, maintenance actions, dry run.
+ * - Debug: where each config value comes from, platform checks, maintenance actions, dry run.
  *
  * Other code can add pages under the menu with
  * add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... ) on admin_menu after priority 10.
@@ -35,6 +37,7 @@ final class Menu {
 		// Runs before admin_menu, so it is added here.
 		add_filter( 'set_screen_option_wp2_shopify_per_page', static fn( $keep, $option, $value ) => max( 10, min( 500, (int) $value ) ), 10, 3 );
 
+		SettingsPage::register();
 		Customers::register();
 		Webhooks::register();
 		Events::register();
@@ -47,6 +50,7 @@ final class Menu {
 	public static function menu(): void {
 		add_menu_page( __( 'Shopify', 'wp2-shopify' ), __( 'Shopify', 'wp2-shopify' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'dashicons-cart', 58 );
 		add_submenu_page( self::SLUG, __( 'Shopify overview', 'wp2-shopify' ), __( 'Overview', 'wp2-shopify' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Shopify settings', 'wp2-shopify' ), __( 'Settings', 'wp2-shopify' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
 
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'wp2-shopify' ), __( 'Customers', 'wp2-shopify' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
 		$webhooks  = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'wp2-shopify' ), __( 'Webhooks', 'wp2-shopify' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );

@@ -13,12 +13,13 @@ use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\AdminToken;
 use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Shopify\Storefront;
+use WP2_Shopify\Support\ConfigValues;
 use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Sync\Reconciler;
 
 /**
- * Shopify → Debug: wp-config constants, platform checks, the Shopify
+ * Shopify → Debug: where each config value comes from, platform checks, the Shopify
  * connection, maintenance actions and the dry-run entitlement check.
  * Secret values are never displayed, only their presence.
  */
@@ -92,15 +93,20 @@ final class Debug {
 			);
 			?>
 
-			<h2><?php esc_html_e( 'Configuration (wp-config.php)', 'wp2-shopify' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'These are the only constants the plugin reads. Secret values are never shown.', 'wp2-shopify' ); ?></p>
+			<h2><?php esc_html_e( 'Configuration', 'wp2-shopify' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from', 'wp2-shopify' ); ?>
+				<a href="<?php echo esc_url( Menu::url( SettingsPage::PAGE ) ); ?>"><?php esc_html_e( 'Shopify → Settings', 'wp2-shopify' ); ?></a>.
+				<?php esc_html_e( 'Secret values are never shown.', 'wp2-shopify' ); ?>
+			</p>
 			<table class="widefat striped" style="max-width:1100px">
 				<tbody>
 				<?php foreach ( Config::definitions() as $name => $def ) : ?>
+					<?php $source = Config::source( $name ); ?>
 					<tr>
-						<td><?php echo $ok( Config::has( $name ) || ! $def['required'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><code><?php echo esc_html( $name ); ?></code></td>
+						<td><?php echo $ok( ConfigValues::UNREADABLE !== $source && ( Config::has( $name ) || ! $def['required'] ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?><code><?php echo esc_html( $name ); ?></code></td>
 						<td><?php echo esc_html( $def['label'] ); ?></td>
-						<td><?php echo Config::has( $name ) ? esc_html__( 'Present', 'wp2-shopify' ) : ( $def['required'] ? '<strong>' . esc_html__( 'Missing (required)', 'wp2-shopify' ) . '</strong>' : esc_html__( 'Not set (optional)', 'wp2-shopify' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
+						<td><?php echo self::source_label( $source, $def['required'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
 						<td><?php echo esc_html( $def['help'] ); ?></td>
 					</tr>
 				<?php endforeach; ?>
@@ -148,7 +154,7 @@ final class Debug {
 					}
 					?>
 				</li>
-				<li><?php echo $ok( Storefront::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Storefront API (plan cards and buy-now):', 'wp2-shopify' ); ?> <?php echo esc_html( Storefront::available() ? ( Config::has( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' ) ? __( 'private access token present; buy-now and cart calls send the buyer\'s IP.', 'wp2-shopify' ) : __( 'public access token present. Add WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN so Shopify doesn\'t throttle checkout as if every visitor were one IP.', 'wp2-shopify' ) ) : __( 'neither WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN nor WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN is set, so plan cards show as unavailable.', 'wp2-shopify' ) ); ?></li>
+				<li><?php echo $ok( Storefront::available() ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Storefront API (plan cards and buy-now):', 'wp2-shopify' ); ?> <?php echo esc_html( Storefront::available() ? ( Config::has( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' ) ? __( 'private access token present; buy-now and cart calls send the buyer\'s IP.', 'wp2-shopify' ) : __( 'public access token present. Add the Storefront private access token so Shopify doesn\'t throttle checkout as if every visitor were one IP.', 'wp2-shopify' ) ) : __( 'no Storefront private or public access token is set, so plan cards show as unavailable.', 'wp2-shopify' ) ); ?></li>
 				<li><?php esc_html_e( 'Shopify app settings: callback URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( Config::callback_url() ); ?></code>, <?php esc_html_e( 'JavaScript origin', 'wp2-shopify' ); ?> <code><?php echo esc_html( untrailingslashit( home_url() ) ); ?></code>, <?php esc_html_e( 'logout URI', 'wp2-shopify' ); ?> <code><?php echo esc_html( home_url( '/' ) ); ?></code></li>
 				<li><?php esc_html_e( 'Webhooks:', 'wp2-shopify' ); ?> <a href="<?php echo esc_url( Menu::url( Webhooks::PAGE ) ); ?>"><?php esc_html_e( 'Shopify → Webhooks', 'wp2-shopify' ); ?></a></li>
 			</ul>
@@ -174,6 +180,18 @@ final class Debug {
 			<?php self::dry_run(); ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Present, and from where. Escaped HTML.
+	 */
+	private static function source_label( string $source, bool $required ): string {
+		return match ( $source ) {
+			ConfigValues::CONSTANT   => esc_html__( 'Present (wp-config.php)', 'wp2-shopify' ),
+			ConfigValues::SETTINGS   => esc_html__( 'Present (Settings, stored in the database)', 'wp2-shopify' ),
+			ConfigValues::UNREADABLE => '<strong>' . esc_html__( 'Saved in Settings but unreadable: the encryption key changed. Enter it again.', 'wp2-shopify' ) . '</strong>',
+			default                  => $required ? '<strong>' . esc_html__( 'Missing (required)', 'wp2-shopify' ) . '</strong>' : esc_html__( 'Not set (optional)', 'wp2-shopify' ),
+		};
 	}
 
 	/**

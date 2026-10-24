@@ -72,7 +72,7 @@ final class Webhooks {
 
 			<div class="card" style="max-width:1100px">
 				<p><?php esc_html_e( 'Endpoint:', 'wp2-shopify' ); ?> <code><?php echo esc_html( rest_url( 'wp2-shopify/v1/webhooks/events' ) ); ?></code></p>
-				<p><?php echo Menu::dot( $secret_set ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'wp2-shopify' ) : esc_html__( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET is missing, so every delivery is rejected.', 'wp2-shopify' ); ?></p>
+				<p><?php echo Menu::dot( $secret_set ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'wp2-shopify' ) : esc_html__( 'The Admin app client secret is missing, so every delivery is rejected. Add it in Settings.', 'wp2-shopify' ); ?></p>
 				<p>
 					<?php esc_html_e( 'Subscriptions through the app:', 'wp2-shopify' ); ?>
 					<?php
