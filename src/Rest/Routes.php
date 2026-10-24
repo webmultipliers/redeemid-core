@@ -5,6 +5,7 @@ namespace WP2_Shopify\Rest;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\TokenVault;
 use WP2_Shopify\Commerce\CartBridge;
+use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Webhooks\Endpoint;
 
@@ -92,6 +93,17 @@ final class Routes {
 			]
 		);
 
+		register_rest_route(
+			self::NS,
+			'/editor/products',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ self::class, 'products' ],
+				'permission_callback' => [ self::class, 'can_pick_products' ],
+				'args'                => [ 'search' => [ 'type' => 'string', 'default' => '' ] ],
+			]
+		);
+
 		Endpoint::register_routes();
 	}
 
@@ -122,6 +134,42 @@ final class Routes {
 		return is_wp_error( $url )
 			? new \WP_Error( $url->get_error_code(), $url->get_error_message(), [ 'status' => 400 ] )
 			: self::no_cache( [ 'redirect' => $url ] );
+	}
+
+	/**
+	 * Options for the Plan Card's product picker: Blockstudio's "fetch"
+	 * populate calls this URL with a plain fetch() and the search appended, and
+	 * maps handle to value and title to label (blocks/plan-card/block.json).
+	 */
+	public static function products( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$products = Storefront::search_products( (string) $request->get_param( 'search' ) );
+
+		if ( is_wp_error( $products ) ) {
+			return new \WP_Error( $products->get_error_code(), $products->get_error_message(), [ 'status' => 503 ] );
+		}
+
+		return self::no_cache( $products );
+	}
+
+	/**
+	 * Blockstudio's fetch populate sends cookies but no REST nonce, so core
+	 * treats the request as a guest. Accept a same-origin request carrying the
+	 * cookie of someone who can edit posts; the catalog is public data anyway.
+	 */
+	public static function can_pick_products(): bool {
+		$site = isset( $_SERVER['HTTP_SEC_FETCH_SITE'] ) ? sanitize_key( wp_unslash( $_SERVER['HTTP_SEC_FETCH_SITE'] ) ) : '';
+
+		if ( '' !== $site && 'same-origin' !== $site ) {
+			return false;
+		}
+
+		if ( current_user_can( 'edit_posts' ) ) {
+			return true;
+		}
+
+		$user_id = (int) wp_validate_auth_cookie( '', 'logged_in' );
+
+		return $user_id > 0 && user_can( $user_id, 'edit_posts' );
 	}
 
 	private static function no_cache( array $data ): \WP_REST_Response {

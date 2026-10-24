@@ -8,10 +8,24 @@
 	"description": "Releases its Members only area to entitled members. The decision is made on the server; locked content is never sent to anyone else.",
 	"keywords": [ "members", "paywall", "gate", "shopify", "tags" ],
 	"textdomain": "wp2-shopify",
-	"supports": {
-		"align": [ "wide", "full" ],
-		"html": false
-	},
+	"supports": { "align": [ "wide", "full" ], "html": false },
+	"example": { "attributes": { "requiredTags": [ { "tag": "gold-member" } ] } },
+	"variations": [
+		{
+			"name": "level",
+			"title": "Membership Gate: access level",
+			"description": "Releases its Members only area to visitors who hold an access level.",
+			"attributes": { "ruleSource": { "value": "level" } },
+			"scope": [ "inserter", "transform" ]
+		},
+		{
+			"name": "item",
+			"title": "Membership Gate: this item's rule",
+			"description": "Releases its Members only area to whoever the post's Access box lets in.",
+			"attributes": { "ruleSource": { "value": "item" } },
+			"scope": [ "inserter", "transform" ]
+		}
+	],
 	"blockstudio": {
 		"attributes": [
 			{
@@ -19,36 +33,43 @@
 				"type": "select",
 				"label": "Rule",
 				"default": "custom",
-				"help": "This item's access rule needs no tags and follows the post's Access box. Either way a gate only narrows the item's rule.",
+				"help": "An access level and this item's rule come from Shopify → Access. This item's rule follows the post's Access box. Whatever you pick, a gate only narrows the item's rule.",
 				"options": [
 					{ "value": "custom", "label": "Custom tags (below)" },
+					{ "value": "level", "label": "An access level" },
 					{ "value": "item", "label": "This item's access rule" }
 				]
+			},
+			{
+				"id": "level",
+				"type": "select",
+				"label": "Access level",
+				"help": "Visitors who hold this level, or one that includes it, see the Members only area. Levels are managed under Shopify → Access.",
+				"populate": { "type": "function", "function": "wp2_shopify_level_options" },
+				"conditions": [ [ { "id": "ruleSource", "operator": "==", "value": "level" } ] ]
 			},
 			{
 				"id": "requiredTags",
 				"type": "repeater",
 				"label": "Required Shopify customer tags",
 				"textButton": "Add tag",
-				"attributes": [
-					{ "id": "tag", "type": "text", "label": "Tag" }
-				]
+				"attributes": [ { "id": "tag", "type": "text", "label": "Tag" } ],
+				"conditions": [ [ { "id": "ruleSource", "operator": "==", "value": "custom" } ] ]
 			},
 			{
 				"id": "matchMode",
 				"type": "select",
 				"label": "Members need",
 				"default": "any",
-				"options": [
-					{ "value": "any", "label": "Any of these tags" },
-					{ "value": "all", "label": "All of these tags" }
-				]
+				"options": [ { "value": "any", "label": "Any of these tags" }, { "value": "all", "label": "All of these tags" } ],
+				"conditions": [ [ { "id": "ruleSource", "operator": "==", "value": "custom" } ] ]
 			},
 			{
 				"id": "requireLogin",
 				"type": "toggle",
 				"label": "Require sign-in",
-				"default": true
+				"default": true,
+				"conditions": [ [ { "id": "ruleSource", "operator": "==", "value": "custom" } ] ]
 			},
 			{
 				"id": "fallbackMode",
@@ -61,11 +82,41 @@
 					{ "value": "redirect", "label": "A redirect to another page" }
 				]
 			},
-			{ "id": "fallbackMessage", "type": "textarea", "label": "Message", "default": "This content is for members." },
-			{ "id": "fallbackCtaLabel", "type": "text", "label": "Call to action label", "default": "Become a member" },
-			{ "id": "fallbackCtaUrl", "type": "text", "label": "Call to action URL" },
-			{ "id": "showSignIn", "type": "toggle", "label": "Offer sign-in to guests", "default": true },
-			{ "id": "redirectUrl", "type": "text", "label": "Redirect URL (on this site)", "help": "Used when Non-members see is a redirect. Only applies when the page is viewed directly." }
-		]
+			{
+				"id": "fallbackMessage",
+				"type": "textarea",
+				"label": "Message",
+				"default": "This content is for members.",
+				"conditions": [ [ { "id": "fallbackMode", "operator": "==", "value": "message" } ] ]
+			},
+			{
+				"id": "fallbackCtaLabel",
+				"type": "text",
+				"label": "Call to action label",
+				"default": "Become a member",
+				"conditions": [ [ { "id": "fallbackMode", "operator": "==", "value": "message" } ] ]
+			},
+			{
+				"id": "fallbackCtaUrl",
+				"type": "link",
+				"label": "Call to action URL",
+				"conditions": [ [ { "id": "fallbackMode", "operator": "==", "value": "message" } ] ]
+			},
+			{
+				"id": "showSignIn",
+				"type": "toggle",
+				"label": "Offer sign-in to guests",
+				"default": true,
+				"conditions": [ [ { "id": "fallbackMode", "operator": "==", "value": "message" } ] ]
+			},
+			{
+				"id": "redirectUrl",
+				"type": "link",
+				"label": "Redirect to (on this site)",
+				"help": "Only applies when the page is viewed directly.",
+				"conditions": [ [ { "id": "fallbackMode", "operator": "==", "value": "redirect" } ] ]
+			}
+		],
+		"refreshOn": [ "save" ]
 	}
 }

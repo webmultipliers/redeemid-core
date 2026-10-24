@@ -1,23 +1,4 @@
 .wp2-shopify-gate {
-	&__panel {
-		padding: var(--wp--preset--spacing--40, 1.5rem);
-		border: 1px solid currentColor;
-		border-radius: 0.5rem;
-		display: grid;
-		gap: var(--wp--preset--spacing--20, 0.75rem);
-		justify-items: start;
-	}
-
-	&__panel p {
-		margin: 0;
-	}
-
-	&__actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--wp--preset--spacing--20, 0.75rem);
-	}
-
 	&__summary {
 		font-size: var(--wp--preset--font-size--small, 0.8125rem);
 		margin: 0 0 0.5rem;

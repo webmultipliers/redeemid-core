@@ -15,8 +15,26 @@ final class Registration {
 	public const STATUS_OPTION = 'wp2_shopify_block_registration';
 
 	public static function register(): void {
+		add_filter( 'blockstudio/blocks/attributes', [ self::class, 'product_picker_url' ], 10, 2 );
 		add_action( 'init', [ self::class, 'init_blocks' ], 9 );
 		add_action( 'init', [ Gate::class, 'register' ] );
+		add_filter( 'render_block_data', [ Upgrade::class, 'block' ], 5, 1 );
+	}
+
+	/**
+	 * Point the Plan Card's product picker (a Blockstudio "fetch" populate) at
+	 * this site's REST route. block.json can only hold a fixed URL, and the
+	 * REST root differs per site.
+	 */
+	public static function product_picker_url( mixed $attribute, mixed $block ): mixed {
+		if ( is_array( $attribute ) && 'productHandle' === ( $attribute['id'] ?? '' ) && 'fetch' === ( $attribute['populate']['type'] ?? '' ) ) {
+			$url = rest_url( \WP2_Shopify\Rest\Routes::NS . '/editor/products' );
+
+			// Blockstudio appends the search term to this URL as is.
+			$attribute['populate']['arguments']['urlSearch'] = $url . ( str_contains( $url, '?' ) ? '&' : '?' ) . 'search=';
+		}
+
+		return $attribute;
 	}
 
 	public static function directory(): string {
@@ -45,7 +63,8 @@ final class Registration {
 		foreach ( glob( self::directory() . '/*/block.json' ) ?: [] as $file ) {
 			$meta = json_decode( (string) file_get_contents( $file ), true );
 
-			if ( is_array( $meta ) && ! empty( $meta['name'] ) ) {
+			// Blockstudio components (blockstudio.component) render through bs_block() and never enter the WordPress registry.
+			if ( is_array( $meta ) && ! empty( $meta['name'] ) && empty( $meta['blockstudio']['component'] ) ) {
 				$expected[] = $meta['name'];
 			}
 		}

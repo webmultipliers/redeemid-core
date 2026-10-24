@@ -5,13 +5,37 @@
 	"title": "Shopify Sign-in",
 	"category": "widgets",
 	"icon": "admin-users",
-	"description": "Log in with Shopify, log out, or connect an existing account. Works without JavaScript; the signed-in state fills in after load so cached pages stay cacheable.",
+	"description": "Log in with Shopify, log out, or connect an existing account. Works without JavaScript: the page carries the guest link, and a Blockstudio island swaps in the visitor's own action after load, so cached pages stay cacheable.",
 	"keywords": [ "login", "logout", "shopify", "account" ],
 	"textdomain": "wp2-shopify",
-	"supports": {
-		"align": false,
-		"html": false
-	},
+	"supports": { "align": false, "html": false },
+	"example": {},
+	"variations": [
+		{
+			"name": "login",
+			"title": "Shopify Log In",
+			"description": "A log in link for guests, hidden once the visitor is signed in.",
+			"icon": "admin-users",
+			"attributes": { "mode": { "value": "login" } },
+			"scope": [ "inserter", "transform" ]
+		},
+		{
+			"name": "logout",
+			"title": "Shopify Log Out",
+			"description": "A log out button for signed-in customers, hidden for guests.",
+			"icon": "exit",
+			"attributes": { "mode": { "value": "logout" } },
+			"scope": [ "inserter", "transform" ]
+		},
+		{
+			"name": "connect",
+			"title": "Connect Shopify Account",
+			"description": "Lets a signed-in WordPress user link their Shopify customer account.",
+			"icon": "admin-links",
+			"attributes": { "mode": { "value": "connect" } },
+			"scope": [ "inserter", "transform" ]
+		}
+	],
 	"blockstudio": {
 		"attributes": [
 			{
@@ -26,20 +50,66 @@
 					{ "value": "connect", "label": "Connect only (signed-in, unlinked accounts)" }
 				]
 			},
-			{ "id": "loginLabel", "type": "text", "label": "Log in label", "default": "Log in with Shopify" },
-			{ "id": "logoutLabel", "type": "text", "label": "Log out label", "default": "Log out" },
-			{ "id": "connectLabel", "type": "text", "label": "Connect label", "default": "Connect Shopify account" },
-			{ "id": "redirectAfterLogin", "type": "text", "label": "After log in, go to (URL on this site)", "help": "Leave empty to return to the current page." },
-			{ "id": "redirectAfterLogout", "type": "text", "label": "After log out, go to (URL on this site)" },
+			{
+				"id": "loginLabel",
+				"type": "text",
+				"label": "Log in label",
+				"default": "Log in with Shopify",
+				"conditions": [
+					[
+						{ "id": "mode", "operator": "!=", "value": "logout" },
+						{ "id": "mode", "operator": "!=", "value": "connect" }
+					]
+				]
+			},
+			{
+				"id": "logoutLabel",
+				"type": "text",
+				"label": "Log out label",
+				"default": "Log out",
+				"conditions": [
+					[ { "id": "mode", "operator": "==", "value": "auto" } ],
+					[ { "id": "mode", "operator": "==", "value": "logout" } ]
+				]
+			},
+			{
+				"id": "connectLabel",
+				"type": "text",
+				"label": "Connect label",
+				"default": "Connect Shopify account",
+				"conditions": [
+					[ { "id": "mode", "operator": "==", "value": "auto" } ],
+					[ { "id": "mode", "operator": "==", "value": "connect" } ]
+				]
+			},
+			{
+				"id": "redirectAfterLogin",
+				"type": "link",
+				"label": "After log in, go to (on this site)",
+				"help": "Leave empty to return to the page the visitor was on.",
+				"conditions": [
+					[
+						{ "id": "mode", "operator": "!=", "value": "logout" },
+						{ "id": "mode", "operator": "!=", "value": "connect" }
+					]
+				]
+			},
+			{
+				"id": "redirectAfterLogout",
+				"type": "link",
+				"label": "After log out, go to (on this site)",
+				"help": "Leave empty to stay on the same page.",
+				"conditions": [
+					[ { "id": "mode", "operator": "==", "value": "auto" } ],
+					[ { "id": "mode", "operator": "==", "value": "logout" } ]
+				]
+			},
 			{
 				"id": "controlStyle",
 				"type": "select",
 				"label": "Style",
 				"default": "button",
-				"options": [
-					{ "value": "button", "label": "Button" },
-					{ "value": "link", "label": "Link" }
-				]
+				"options": [ { "value": "button", "label": "Button" }, { "value": "link", "label": "Link" } ]
 			},
 			{
 				"id": "previewState",
@@ -51,8 +121,10 @@
 					{ "value": "guest", "label": "Guest" },
 					{ "value": "member", "label": "Signed in" },
 					{ "value": "unlinked", "label": "Signed in, not connected" }
-				]
+				],
+				"conditions": [ [ { "id": "mode", "operator": "==", "value": "auto" } ] ]
 			}
-		]
+		],
+		"island": { "mode": "dynamic" }
 	}
 }

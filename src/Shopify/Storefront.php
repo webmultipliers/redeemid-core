@@ -35,6 +35,14 @@ query WP2PlanProduct($handle: String!) {
 }
 GRAPHQL;
 
+	private const PRODUCT_SEARCH = <<<'GRAPHQL'
+query WP2ProductSearch($query: String) {
+  products(first: 20, query: $query, sortKey: TITLE) {
+    nodes { handle title }
+  }
+}
+GRAPHQL;
+
 	private const CART_CREATE = <<<'GRAPHQL'
 mutation WP2BuyNow($input: CartInput!) {
   cartCreate(input: $input) {
@@ -59,6 +67,45 @@ GRAPHQL;
 
 	public static function endpoint(): string {
 		return 'https://' . Config::store_domain() . '/api/' . Config::api_version() . '/graphql.json';
+	}
+
+	/**
+	 * Products whose title matches a search, for the Plan Card's product
+	 * picker in the editor. Cached briefly per search like every catalog read.
+	 *
+	 * @return array<int, array{handle: string, title: string}>|\WP_Error
+	 */
+	public static function search_products( string $search ): array|\WP_Error {
+		$search = trim( preg_replace( '/[^\p{L}\p{N} _-]+/u', ' ', $search ) ?? '' );
+		$key    = 'wp2_shopify_sf_search_' . md5( Config::store_domain() . '|' . strtolower( $search ) );
+		$cached = get_transient( $key );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		if ( ! self::available() ) {
+			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
+		}
+
+		$query = '' === $search ? null : 'title:*' . $search . '*';
+		$data  = Http::graphql( self::endpoint(), self::headers(), self::PRODUCT_SEARCH, [ 'query' => $query ], 'storefront.product_search' );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$products = [];
+
+		foreach ( (array) ( $data['products']['nodes'] ?? [] ) as $node ) {
+			if ( is_array( $node ) && ! empty( $node['handle'] ) ) {
+				$products[] = [ 'handle' => (string) $node['handle'], 'title' => (string) ( $node['title'] ?? $node['handle'] ) ];
+			}
+		}
+
+		set_transient( $key, $products, self::CACHE_TTL );
+
+		return $products;
 	}
 
 	/**
