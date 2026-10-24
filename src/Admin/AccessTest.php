@@ -8,6 +8,7 @@ use WP2_Shopify\Access\ItemRule;
 use WP2_Shopify\Access\Level;
 use WP2_Shopify\Access\LevelStore;
 use WP2_Shopify\Entitlement\Decision;
+use WP2_Shopify\Features\Registry;
 
 /**
  * Shopify → Access → Test: pick an item and a viewer, and see the whole
@@ -46,7 +47,7 @@ final class AccessTest {
 		$viewers[ Explain::AS_TAGS ] = __( 'A synced customer with these tags', 'wp2-shopify' );
 		$viewers[ Explain::AS_USER ] = __( 'A real user, from their synced record', 'wp2-shopify' );
 		?>
-		<p style="max-width:760px"><?php esc_html_e( 'Pick an item and who is looking. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'wp2-shopify' ); ?></p>
+		<p style="max-width:760px"><?php esc_html_e( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'wp2-shopify' ); ?></p>
 
 		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 			<input type="hidden" name="page" value="<?php echo esc_attr( Access::PAGE ); ?>">
@@ -83,15 +84,67 @@ final class AccessTest {
 			<?php submit_button( __( 'Explain', 'wp2-shopify' ), 'primary', '', false ); ?>
 		</form>
 		<?php
-		$post = $post_id ? get_post( $post_id ) : null;
+		$post   = $post_id ? get_post( $post_id ) : null;
+		$member = Explain::member( $as, explode( ',', $tags ), $user_id );
 
 		if ( $post instanceof \WP_Post ) {
-			self::render_trace( Explain::trace( $post, Explain::member( $as, explode( ',', $tags ), $user_id ) ) );
+			self::render_trace( Explain::trace( $post, $member ) );
 		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification -- read-only.
+		if ( isset( $_GET['as'] ) && Registry::features() ) {
+			self::render_features( Explain::features( $member, Explain::AS_USER === $as ? $user_id : 0 ) );
+		}
+	}
+
+	/**
+	 * The same granted-feature set the live check returns for this viewer,
+	 * with which route passed and which test inside it.
+	 */
+	private static function render_features( array $rows ): void {
+		?>
+		<h2><?php esc_html_e( 'Features for this viewer', 'wp2-shopify' ); ?></h2>
+		<table class="widefat striped" style="max-width:1100px">
+			<tbody>
+				<?php foreach ( $rows as $row ) : ?>
+					<tr>
+						<th scope="row" style="width:200px"><?php echo esc_html( $row['label'] ); ?><br><code><?php echo esc_html( $row['slug'] ); ?></code></th>
+						<td>
+							<?php echo Menu::dot( $row['granted'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+							<strong>
+								<?php
+								echo $row['granted']
+									/* translators: %s: route labels */
+									? esc_html( sprintf( __( 'Granted, from %s', 'wp2-shopify' ), implode( __( ' and ', 'wp2-shopify' ), $row['routes'] ) ) )
+									: esc_html__( 'Not granted', 'wp2-shopify' );
+								?>
+							</strong>
+							<?php if ( ! $row['granted'] ) : ?>
+								(<code><?php echo esc_html( $row['reason'] ); ?></code>)
+							<?php endif; ?>
+							<?php if ( $row['trace'] ) : ?>
+								<ol style="margin:6px 0 0 1.2em">
+									<?php foreach ( $row['trace'] as $route ) : ?>
+										<li>
+											<?php echo Menu::dot( $route['passed'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+											<?php echo esc_html( $route['when'] ?: $route['label'] ); ?>:
+											<?php echo esc_html( $route['passed'] ? __( 'passes', 'wp2-shopify' ) : __( 'does not pass', 'wp2-shopify' ) ); ?>
+											<span class="description">(<?php echo esc_html( implode( '; ', $route['tests'] ) ); ?>)</span>
+										</li>
+									<?php endforeach; ?>
+								</ol>
+							<?php endif; ?>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
 	}
 
 	private static function render_trace( array $t ): void {
 		$shows = [
+			BlockAccess::EVERYONE => __( 'everyone', 'wp2-shopify' ),
 			BlockAccess::READERS => __( 'readers', 'wp2-shopify' ),
 			BlockAccess::LEVELS  => __( 'readers holding', 'wp2-shopify' ),
 			BlockAccess::LOCKED  => __( 'locked visitors', 'wp2-shopify' ),
@@ -153,7 +206,7 @@ final class AccessTest {
 									<li>
 										<?php echo Menu::dot( $b['visible'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 										<code><?php echo esc_html( $b['name'] ); ?></code>:
-										<?php echo esc_html( ( $shows[ $b['show'] ] ?? $b['show'] ) . ( $b['levels'] ? ' ' . implode( ', ', array_map( static fn( $s ) => LevelStore::levels()->get( $s )?->label ?? $s, $b['levels'] ) ) : '' ) ); ?>,
+										<?php echo esc_html( ( $shows[ $b['show'] ] ?? $b['show'] ) . ( $b['levels'] ? ' ' . implode( ', ', array_map( static fn( $s ) => LevelStore::levels()->get( $s )?->label ?? $s, $b['levels'] ) ) : '' ) ); ?><?php echo '' !== ( $b['feature'] ?? '' ) ? esc_html( sprintf( /* translators: 1: holding / not holding, 2: feature label */ __( ', %1$s %2$s', 'wp2-shopify' ), BlockAccess::LACKS === $b['when'] ? __( 'not holding', 'wp2-shopify' ) : __( 'holding', 'wp2-shopify' ), Registry::get( $b['feature'] )?->label ?? $b['feature'] ) ) : ''; ?>,
 										<?php echo $b['visible'] ? esc_html__( 'shown', 'wp2-shopify' ) : esc_html__( 'hidden', 'wp2-shopify' ); ?>
 									</li>
 								<?php endforeach; ?>

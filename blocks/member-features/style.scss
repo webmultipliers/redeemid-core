@@ -1,0 +1,51 @@
+.wp2-shopify-member-features {
+	font-size: var(--wp--preset--font-size--small, 0.875rem);
+
+	&__title {
+		margin: 0 0 0.5rem;
+		font-weight: 650;
+	}
+
+	&__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__item {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 0.75rem;
+		justify-content: space-between;
+		padding: 0.35rem 0;
+		border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+
+		&.is-missing {
+			opacity: 0.6;
+		}
+	}
+
+	&__label {
+		font-weight: 500;
+	}
+
+	&__from {
+		opacity: 0.75;
+	}
+
+	&__note {
+		margin: 0.5rem 0 0;
+		opacity: 0.8;
+	}
+
+	&.is-menu &__list {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	&.is-menu &__item {
+		padding: 0.15rem 0.6rem;
+		border: 1px solid currentColor;
+		border-radius: 999px;
+	}
+}

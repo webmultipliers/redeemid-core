@@ -1,0 +1,31 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/member-features",
+	"title": "Membership Features",
+	"category": "widgets",
+	"icon": "awards",
+	"description": "Lists the features the visitor holds and where each comes from (\"Ad-free reading, from Gold\"), for the account page; a menu mode shows only primary features, at most three, for a header. A Blockstudio dynamic island: the cached page carries a neutral placeholder and each visitor's own list fills it in.",
+	"keywords": [ "shopify", "features", "membership", "perks", "account", "menu" ],
+	"textdomain": "wp2-shopify",
+	"supports": { "align": false, "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "title", "type": "text", "label": "Title", "default": "Your membership features" },
+			{
+				"id": "display",
+				"type": "select",
+				"label": "Show",
+				"default": "list",
+				"options": [
+					{ "value": "list", "label": "Every feature held, with where it comes from (account page)" },
+					{ "value": "menu", "label": "Primary features only, at most three (member menu)" }
+				]
+			},
+			{ "id": "showMissing", "type": "toggle", "label": "Also list features this visitor does not hold, marked \"not included\"", "default": false, "conditions": [ [ { "id": "display", "operator": "==", "value": "list" } ] ] },
+			{ "id": "emptyText", "type": "text", "label": "When the visitor holds none", "default": "No membership features yet." }
+		],
+		"island": { "mode": "dynamic" }
+	}
+}

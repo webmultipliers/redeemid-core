@@ -12,6 +12,8 @@ use WP2_Shopify\Access\Layers;
 use WP2_Shopify\Access\Surfaces;
 use WP2_Shopify\Access\TermRules;
 use WP2_Shopify\Access\Viewer;
+use WP2_Shopify\Features\Registry as FeatureRegistry;
+use WP2_Shopify\Features\Surfaces as FeatureSurfaces;
 use WP2_Shopify\Admin\AccessColumn;
 use WP2_Shopify\Admin\AccessMetaBox;
 use WP2_Shopify\Admin\AccessTermFields;
@@ -50,6 +52,8 @@ final class Plugin {
 		Index::register();
 		Viewer::register();
 		BlockAccess::register();
+		FeatureRegistry::register();
+		FeatureSurfaces::register();
 		Badges::register();
 		Cli::register();
 		Surfaces::register();

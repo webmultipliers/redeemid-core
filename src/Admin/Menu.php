@@ -40,6 +40,7 @@ final class Menu {
 		Events::register();
 		Access::register();
 		AccessRules::register();
+		AccessFeatures::register();
 		Debug::register();
 	}
 

@@ -35,6 +35,28 @@ final class Evaluator {
 			return Decision::grant();
 		}
 
+		$problem = $this->account_problem( $member, $now );
+
+		if ( $problem ) {
+			return $problem;
+		}
+
+		$have = array_map( [ self::class, 'normalize_tag' ], $member->tags );
+		$need = array_map( [ self::class, 'normalize_tag' ], $rule->required_tags );
+		$hits = array_intersect( $need, $have );
+
+		$ok = Rule::MATCH_ALL === $rule->match_mode
+			? count( array_unique( $hits ) ) === count( array_unique( $need ) )
+			: count( $hits ) > 0;
+
+		return $ok ? Decision::grant() : Decision::deny( Decision::MISSING_TAGS );
+	}
+
+	/**
+	 * Why a signed-in visitor's synced record can't be trusted for a tag
+	 * check: not linked, disabled, never synced, or stale. Null when it can.
+	 */
+	public function account_problem( Member $member, int $now ): ?Decision {
 		if ( ! $member->linked ) {
 			return Decision::deny( Decision::NOT_LINKED );
 		}
@@ -55,15 +77,7 @@ final class Evaluator {
 			return Decision::deny( Decision::STALE );
 		}
 
-		$have = array_map( [ self::class, 'normalize_tag' ], $member->tags );
-		$need = array_map( [ self::class, 'normalize_tag' ], $rule->required_tags );
-		$hits = array_intersect( $need, $have );
-
-		$ok = Rule::MATCH_ALL === $rule->match_mode
-			? count( array_unique( $hits ) ) === count( array_unique( $need ) )
-			: count( $hits ) > 0;
-
-		return $ok ? Decision::grant() : Decision::deny( Decision::MISSING_TAGS );
+		return null;
 	}
 
 	/**

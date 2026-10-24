@@ -1,6 +1,7 @@
 <?php
 /**
- * Global functions, for Blockstudio features that call functions by name.
+ * Global functions: the public feature API, and wrappers for Blockstudio
+ * features that call functions by name.
  *
  * Blockstudio's "populate": { "type": "function" } only accepts a global
  * function name (it checks function_exists()), so each one here is a thin
@@ -16,4 +17,38 @@ defined( 'ABSPATH' ) || exit;
  */
 function wp2_shopify_level_options(): array {
 	return \WP2_Shopify\Blocks\Gate::level_options();
+}
+
+/**
+ * The canonical feature check: does this visitor (the current one by
+ * default) hold the feature? Server-side, from the synced mirror, resolved
+ * once per request. Unknown slug: false.
+ *
+ * @param string            $slug A registered feature slug.
+ * @param int|WP_User|null  $user
+ */
+function wp2_shopify_has_feature( string $slug, int|\WP_User|null $user = null ): bool {
+	return \WP2_Shopify\Features\Registry::has( $slug, $user );
+}
+
+/**
+ * The visitor's granted features: slug => label, provenance (the first
+ * granting route, "Gold") and every granting route. No tags, no customer
+ * record.
+ *
+ * @param int|WP_User|null $user
+ * @return array<string, array{label: string, provenance: string, routes: string[], primary: bool}>
+ */
+function wp2_shopify_granted_features( int|\WP_User|null $user = null ): array {
+	return \WP2_Shopify\Features\Registry::granted( $user );
+}
+
+/**
+ * Granted features flagged primary, for a member menu: at most three.
+ *
+ * @param int|WP_User|null $user
+ * @return array<string, array{label: string, provenance: string, routes: string[], primary: bool}>
+ */
+function wp2_shopify_menu_features( int|\WP_User|null $user = null ): array {
+	return \WP2_Shopify\Features\Registry::menu( $user );
 }

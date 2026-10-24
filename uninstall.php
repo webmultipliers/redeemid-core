@@ -24,7 +24,7 @@ $wp2_options = [
 	'wp2_shopify_app_uninstalled', 'wp2_shopify_admin_token_error', 'wp2_shopify_admin_token_scopes', 'wp2_shopify_webhook_registration',
 	'wp2_shopify_events_db_version', 'wp2_shopify_cart_bridge', 'wp2_shopify_access_levels',
 	'wp2_shopify_access_rules', 'wp2_shopify_access_rules_version',
-	'wp2_shopify_access_reindex_cursor', 'wp2_shopify_access_index_version',
+	'wp2_shopify_access_reindex_cursor', 'wp2_shopify_access_index_version', 'wp2_shopify_feature_conditions',
 ];
 
 foreach ( $wp2_options as $wp2_option ) {

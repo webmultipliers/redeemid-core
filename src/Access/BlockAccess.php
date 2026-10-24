@@ -3,6 +3,8 @@
 namespace WP2_Shopify\Access;
 
 use WP2_Shopify\Blocks\Gate;
+use WP2_Shopify\Features\Feature;
+use WP2_Shopify\Features\Registry;
 use WP2_Shopify\Settings;
 
 /**
@@ -26,6 +28,11 @@ use WP2_Shopify\Settings;
  * as public text. The first two never do: search, SEO descriptions and auto
  * excerpts are built with them taken out (members_only()).
  *
+ * Separately, a block can depend on a feature (Features\Registry): shown
+ * only to visitors who hold it, or only to those who don't (an upgrade
+ * prompt). Features are site-wide, so this is a block consuming a feature,
+ * not the item owning one. Both conditions must pass.
+ *
  * In a query loop each block is decided for the loop's post, not the page.
  * Outside any item (a template part, a widget), "readers" means signed-in
  * visitors. An editor bypassing on an item's own page sees it as a reader
@@ -41,6 +48,9 @@ final class BlockAccess {
 	public const WITHOUT  = 'without';
 
 	public const SHOWS = [ self::EVERYONE, self::READERS, self::LEVELS, self::LOCKED, self::WITHOUT ];
+
+	public const HAS   = 'has';
+	public const LACKS = 'lacks';
 
 	/** Blocks whose visibility is already the point of the block. */
 	public const SKIP = [ Teaser::BREAK_BLOCK, Gate::MEMBERS, Gate::TEASER ];
@@ -81,21 +91,38 @@ final class BlockAccess {
 	/**
 	 * A block's setting, cleaned. Pure.
 	 *
-	 * @return array{show: string, levels: string[]}
+	 * @return array{show: string, levels: string[], feature: string, when: string}
 	 */
 	public static function setting( array $block ): array {
-		$raw  = $block['attrs'][ self::ATTR ] ?? null;
-		$raw  = is_array( $raw ) ? $raw : [];
-		$show = in_array( $raw['show'] ?? '', self::SHOWS, true ) && ! in_array( $block['blockName'] ?? '', self::SKIP, true ) ? $raw['show'] : self::EVERYONE;
+		$raw     = $block['attrs'][ self::ATTR ] ?? null;
+		$raw     = is_array( $raw ) ? $raw : [];
+		$skip    = in_array( $block['blockName'] ?? '', self::SKIP, true );
+		$show    = in_array( $raw['show'] ?? '', self::SHOWS, true ) && ! $skip ? $raw['show'] : self::EVERYONE;
+		$feature = $skip ? '' : Feature::slug( $raw['feature'] ?? '' );
 
-		return [ 'show' => $show, 'levels' => Rules::levels( $raw['levels'] ?? [] ) ];
+		return [
+			'show'    => $show,
+			'levels'  => Rules::levels( $raw['levels'] ?? [] ),
+			'feature' => $feature,
+			'when'    => '' !== $feature && self::LACKS === ( $raw['when'] ?? '' ) ? self::LACKS : self::HAS,
+		];
+	}
+
+	/**
+	 * Does the block have any condition of its own? Pure.
+	 */
+	public static function limited( array $setting ): bool {
+		return self::EVERYONE !== $setting['show'] || '' !== ( $setting['feature'] ?? '' );
 	}
 
 	/**
 	 * Could this block be hidden from someone who may see the public text? Pure.
 	 */
 	public static function members_only( array $block ): bool {
-		return in_array( self::setting( $block )['show'], [ self::READERS, self::LEVELS ], true );
+		$setting = self::setting( $block );
+
+		// Shown only to a feature's holders: not public text either.
+		return in_array( $setting['show'], [ self::READERS, self::LEVELS ], true ) || ( '' !== $setting['feature'] && self::HAS === $setting['when'] );
 	}
 
 	/**
@@ -108,11 +135,22 @@ final class BlockAccess {
 	/**
 	 * Is the block shown? Pure.
 	 *
-	 * @param array{show: string, levels: string[]} $setting
-	 * @param bool                                   $reads Can the visitor read the item in full?
-	 * @param callable(string): bool                 $holds Does the visitor hold this level?
+	 * @param array{show: string, levels: string[], feature?: string, when?: string} $setting
+	 * @param bool                                   $reads   Can the visitor read the item in full?
+	 * @param callable(string): bool                 $holds   Does the visitor hold this level?
+	 * @param (callable(string): bool)|null          $feature Does the visitor hold this feature? Missing: nobody does.
 	 */
-	public static function visible( array $setting, bool $reads, callable $holds ): bool {
+	public static function visible( array $setting, bool $reads, callable $holds, ?callable $feature = null ): bool {
+		$slug = (string) ( $setting['feature'] ?? '' );
+
+		if ( '' !== $slug ) {
+			$held = $feature ? (bool) $feature( $slug ) : false;
+
+			if ( $held !== ( self::LACKS !== ( $setting['when'] ?? self::HAS ) ) ) {
+				return false;
+			}
+		}
+
 		$any = static function () use ( $setting, $holds ): bool {
 			foreach ( $setting['levels'] as $slug ) {
 				if ( $holds( $slug ) ) {
@@ -140,7 +178,7 @@ final class BlockAccess {
 
 		$setting = self::setting( $parsed );
 
-		if ( self::EVERYONE === $setting['show'] ) {
+		if ( ! self::limited( $setting ) ) {
 			return $pre;
 		}
 
@@ -149,7 +187,14 @@ final class BlockAccess {
 			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
 		}
 
-		return self::visible( $setting, ...self::viewer() ) ? null : '';
+		if ( self::EVERYONE === $setting['show'] ) {
+			// A feature-only condition needs no item decision.
+			return self::visible( $setting, true, static fn() => true, [ Registry::class, 'has' ] ) ? null : '';
+		}
+
+		[ $reads, $holds ] = self::viewer();
+
+		return self::visible( $setting, $reads, $holds, [ Registry::class, 'has' ] ) ? null : '';
 	}
 
 	/**
@@ -180,7 +225,7 @@ final class BlockAccess {
 	/**
 	 * Every block with a condition of its own, at any depth, for the Test tab.
 	 *
-	 * @return array<int, array{name: string, show: string, levels: string[]}>
+	 * @return array<int, array{name: string, show: string, levels: string[], feature: string, when: string}>
 	 */
 	public static function conditions( array $blocks ): array {
 		$found = [];
@@ -188,7 +233,7 @@ final class BlockAccess {
 		foreach ( $blocks as $block ) {
 			$setting = self::setting( $block );
 
-			if ( self::EVERYONE !== $setting['show'] ) {
+			if ( self::limited( $setting ) ) {
 				$found[] = [ 'name' => (string) ( $block['blockName'] ?? '' ) ] + $setting;
 			}
 
@@ -224,11 +269,18 @@ final class BlockAccess {
 			$handle,
 			'window.wp2ShopifyBlockAccess = ' . wp_json_encode(
 				[
-					'attr'   => self::ATTR,
-					'skip'   => self::SKIP,
-					'break'  => Teaser::BREAK_BLOCK,
-					'source' => Badges::SOURCE,
-					'levels' => $levels,
+					'attr'     => self::ATTR,
+					'skip'     => self::SKIP,
+					'break'    => Teaser::BREAK_BLOCK,
+					'source'   => Badges::SOURCE,
+					'levels'   => $levels,
+					// Only features whose registration declares block visibility as an enforcement point.
+					'features' => array_values(
+						array_map(
+							static fn( Feature $f ) => [ 'slug' => $f->slug, 'label' => $f->label, 'sensitive' => $f->sensitive ],
+							array_filter( Registry::features(), static fn( Feature $f ) => $f->uses( Feature::BLOCK ) )
+						)
+					),
 				]
 			) . ';',
 			'before'

@@ -69,21 +69,31 @@
 			[ clientId ]
 		);
 
+	const FEATURES = config.features || [];
+
 	const Panel = ( { attributes, setAttributes, clientId } ) => {
 		const value = attributes[ ATTR ] || {};
 		const show = value.show || 'everyone';
 		const levels = Array.isArray( value.levels ) ? value.levels : [];
+		const feature = value.feature || '';
+		const when = value.when === 'lacks' ? 'lacks' : 'has';
 		const afterBreak = useAfterBreak( clientId );
 		const set = ( next ) => {
-			const merged = { show, levels, ...next };
+			const merged = { show, levels, feature, when, ...next };
 
-			setAttributes( { [ ATTR ]: merged.show === 'everyone' ? undefined : merged } );
+			if ( ! merged.feature ) {
+				delete merged.feature;
+				delete merged.when;
+			}
+
+			setAttributes( { [ ATTR ]: merged.show === 'everyone' && ! merged.feature ? undefined : merged } );
 		};
 		const needsLevels = show === 'levels' || show === 'without';
+		const known = FEATURES.find( ( f ) => f.slug === feature );
 
 		return el(
 			PanelBody,
-			{ title: __( 'Access', 'wp2-shopify' ), initialOpen: show !== 'everyone' },
+			{ title: __( 'Access', 'wp2-shopify' ), initialOpen: show !== 'everyone' || !! feature },
 			el( SelectControl, {
 				label: __( 'Show this block to', 'wp2-shopify' ),
 				value: show,
@@ -125,6 +135,35 @@
 					Notice,
 					{ status: 'warning', isDismissible: false },
 					__( 'This block is after the paywall break, so locked visitors never reach it. Move it above the break.', 'wp2-shopify' )
+				),
+			( FEATURES.length > 0 || feature ) &&
+				el( SelectControl, {
+					label: __( 'Feature', 'wp2-shopify' ),
+					value: feature,
+					options: [ { value: '', label: __( 'No feature rule', 'wp2-shopify' ) } ]
+						.concat( FEATURES.map( ( f ) => ( { value: f.slug, label: f.label } ) ) )
+						.concat( feature && ! known ? [ { value: feature, label: feature + ' ' + __( '(not registered)', 'wp2-shopify' ) } ] : [] ),
+					help: __( 'Features are site-wide behaviours from Shopify → Access → Features. Decided on the server: a hidden block is never sent.', 'wp2-shopify' ),
+					onChange: ( next ) => set( { feature: next } ),
+					__nextHasNoMarginBottom: true,
+				} ),
+			feature &&
+				el( SelectControl, {
+					label: __( 'Show when the visitor', 'wp2-shopify' ),
+					value: when,
+					options: [
+						{ value: 'has', label: __( 'holds this feature', 'wp2-shopify' ) },
+						{ value: 'lacks', label: __( 'does not hold it (upgrade prompts)', 'wp2-shopify' ) },
+					],
+					onChange: ( next ) => set( { when: next } ),
+					__nextHasNoMarginBottom: true,
+				} ),
+			feature &&
+				! known &&
+				el(
+					Notice,
+					{ status: 'warning', isDismissible: false },
+					__( 'This feature is not registered for blocks, so nobody holds it here.', 'wp2-shopify' )
 				)
 		);
 	};
@@ -174,13 +213,13 @@
 			( BlockListBlock ) => ( props ) => {
 				const value = props.attributes && props.attributes[ ATTR ];
 
-				if ( ! value || ! value.show || value.show === 'everyone' ) {
+				if ( ! value || ( ( ! value.show || value.show === 'everyone' ) && ! value.feature ) ) {
 					return el( BlockListBlock, props );
 				}
 
 				return el( BlockListBlock, {
 					...props,
-					className: [ props.className, 'wp2-access-limited', 'wp2-access-' + value.show ].filter( Boolean ).join( ' ' ),
+					className: [ props.className, 'wp2-access-limited', 'wp2-access-' + ( value.show || 'everyone' ), value.feature ? 'wp2-access-feature' : '' ].filter( Boolean ).join( ' ' ),
 				} );
 			},
 			'withWp2AccessOutline'
