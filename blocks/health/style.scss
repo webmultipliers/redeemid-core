@@ -1,0 +1,45 @@
+.wp2-shopify-health {
+	padding: var(--wp--preset--spacing--30, 1rem) var(--wp--preset--spacing--40, 1.5rem);
+	border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+	border-radius: 0.5rem;
+	font-size: var(--wp--preset--font-size--small, 0.875rem);
+
+	&__title {
+		margin: 0 0 0.5rem;
+		font-weight: 650;
+	}
+
+	&__note {
+		margin: 0;
+		opacity: 0.75;
+	}
+
+	&__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__item {
+		display: grid;
+		grid-template-columns: 1.5rem 1fr auto;
+		gap: 0.5rem;
+		padding: 0.3rem 0;
+		border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+	}
+
+	&__state {
+		font-weight: 700;
+		text-align: center;
+	}
+
+	&__item.is-ok &__state { color: #1a7f37; }
+	&__item.is-warn &__state { color: #9a6700; }
+	&__item.is-fail &__state { color: #b42318; }
+
+	&__detail {
+		opacity: 0.75;
+		text-align: right;
+		overflow-wrap: anywhere;
+	}
+}

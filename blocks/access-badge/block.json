@@ -5,7 +5,7 @@
 	"title": "Access Badge",
 	"category": "widgets",
 	"icon": "lock",
-	"description": "Names the level an item needs, in the level's badge colour, with a lock for visitors it locks out. Inside a query loop it describes each post. Shows nothing on open items.",
+	"description": "Names the level an item needs, in the level's badge colour, with a lock for visitors it locks out. Reads the item's access rule, or a Membership Gate in its content set to an access level. Inside a query loop it describes each post. Shows nothing on open items.",
 	"keywords": [ "badge", "level", "members", "locked", "paywall" ],
 	"textdomain": "wp2-shopify",
 	"usesContext": [ "postId", "postType" ],

@@ -1,0 +1,49 @@
+.wp2-shopify-account-status {
+	padding: var(--wp--preset--spacing--30, 1rem) var(--wp--preset--spacing--40, 1.5rem);
+	border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+	border-radius: 0.5rem;
+	font-size: var(--wp--preset--font-size--small, 0.875rem);
+
+	&.is-linked {
+		border-color: currentColor;
+	}
+
+	&__title {
+		margin: 0 0 0.5rem;
+		font-weight: 650;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+
+		th,
+		td {
+			padding: 0.3rem 0;
+			border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+			text-align: left;
+			vertical-align: top;
+		}
+
+		th {
+			padding-right: 1rem;
+			font-weight: 500;
+			opacity: 0.75;
+		}
+	}
+
+	&__note {
+		margin: 0.75rem 0 0;
+		opacity: 0.75;
+	}
+
+	&__raw {
+		margin-top: 0.75rem;
+
+		pre {
+			overflow-x: auto;
+			padding: 0.75rem;
+			font-size: 0.8rem;
+		}
+	}
+}

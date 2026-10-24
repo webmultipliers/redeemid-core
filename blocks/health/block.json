@@ -1,0 +1,19 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/health",
+	"title": "Shopify Health",
+	"category": "widgets",
+	"icon": "heart",
+	"description": "An at-a-glance checklist of what WP2 Shopify needs: Blockstudio, its blocks, permalinks, the callback page, Shopify sign-in, which wp-config constants are set (never their values) and Shopify's own plugin. Shown to administrators only, in a Blockstudio dynamic island, so a cached page never carries it. Themes add rows with the wp2_shopify_health_checks filter.",
+	"keywords": [ "shopify", "health", "debug", "diagnostics" ],
+	"textdomain": "wp2-shopify",
+	"supports": { "align": false, "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "title", "type": "text", "label": "Title", "default": "Shopify health" }
+		],
+		"island": { "mode": "dynamic" }
+	}
+}

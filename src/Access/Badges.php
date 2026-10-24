@@ -2,6 +2,9 @@
 
 namespace WP2_Shopify\Access;
 
+use WP2_Shopify\Blocks\Gate;
+use WP2_Shopify\Settings;
+
 /**
  * What a theme can show about an item's access, for the item itself and for
  * every card in a query loop (each card is decided for its own post):
@@ -12,6 +15,10 @@ namespace WP2_Shopify\Access;
  *   or button can show the level label, the visitor's state or the level's
  *   call to action;
  * - the Access Badge block (blocks/access-badge), built on the same data.
+ *
+ * An item with no rule of its own can still hold a Membership Gate block set
+ * to an access level (a story whose body is gated inline). The badge names
+ * that level too, through inline_gate().
  */
 final class Badges {
 	public const SOURCE = 'wp2-shopify/access';
@@ -111,6 +118,55 @@ final class Badges {
 			' ' . __( 'and', 'wp2-shopify' ) . ' ',
 			array_map( static fn( array $c ) => implode( ' ' . __( 'or', 'wp2-shopify' ) . ' ', array_map( $label, $c ) ), $rule->clauses )
 		);
+	}
+
+	/**
+	 * The access level of the first Membership Gate in an item, when that gate
+	 * is set to "An access level", and whether it locks the current visitor
+	 * out. Null when the item has no such gate. Custom-tag gates have no level
+	 * to name, so they are left out.
+	 *
+	 * @return array{level: Level, locked: bool}|null
+	 */
+	public static function inline_gate( \WP_Post $post ): ?array {
+		static $found = [];
+
+		if ( ! array_key_exists( $post->ID, $found ) ) {
+			$found[ $post->ID ] = has_block( Gate::PARENT, $post ) ? self::first_level_gate( parse_blocks( $post->post_content ) ) : '';
+		}
+
+		$level = '' !== $found[ $post->ID ] ? LevelStore::levels()->get( $found[ $post->ID ] ) : null;
+
+		if ( ! $level ) {
+			return null;
+		}
+
+		$decision = ( new Checker( LevelStore::levels(), Settings::evaluator() ) )->holds( $level->slug, Viewer::member(), time() );
+
+		return [ 'level' => $level, 'locked' => ! $decision->granted ];
+	}
+
+	/**
+	 * The level slug of the first level gate in a block tree, '' for none.
+	 */
+	private static function first_level_gate( array $blocks ): string {
+		foreach ( $blocks as $block ) {
+			if ( Gate::PARENT === ( $block['blockName'] ?? '' ) ) {
+				$a = Gate::values( (array) ( $block['attrs'] ?? [] ) );
+
+				if ( Gate::RULE_LEVEL === Gate::option( $a['ruleSource'] ?? '', Gate::RULE_CUSTOM ) ) {
+					return Gate::option( $a['level'] ?? '', '' );
+				}
+			}
+
+			$inner = self::first_level_gate( $block['innerBlocks'] ?? [] );
+
+			if ( '' !== $inner ) {
+				return $inner;
+			}
+		}
+
+		return '';
 	}
 
 	public static function register_source(): void {
