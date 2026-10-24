@@ -55,18 +55,21 @@ final class Teaser {
 	}
 
 	/**
-	 * $blocks with every block named $name removed, at any depth, along with
-	 * its inner blocks. The parent's innerContent keeps one null placeholder
-	 * per inner block, so the placeholder of a removed block goes too.
+	 * $blocks with every block named $drop (or every block $drop returns true
+	 * for) removed, at any depth, along with its inner blocks. The parent's
+	 * innerContent keeps one null placeholder per inner block, so the
+	 * placeholder of a removed block goes too.
 	 *
-	 * @param array[] $blocks Parsed blocks.
+	 * @param array[]                $blocks Parsed blocks.
+	 * @param string|callable(array): bool $drop
 	 * @return array[]
 	 */
-	public static function strip( array $blocks, string $name ): array {
-		$out = [];
+	public static function strip( array $blocks, string|callable $drop ): array {
+		$out   = [];
+		$match = is_string( $drop ) ? static fn( array $b ) => $drop === ( $b['blockName'] ?? null ) : $drop;
 
 		foreach ( $blocks as $block ) {
-			if ( $name === ( $block['blockName'] ?? null ) ) {
+			if ( $match( $block ) ) {
 				continue;
 			}
 
@@ -83,8 +86,8 @@ final class Teaser {
 
 					$inner = $block['innerBlocks'][ $i++ ] ?? null;
 
-					if ( null !== $inner && $name !== ( $inner['blockName'] ?? null ) ) {
-						$kept[]    = self::strip( [ $inner ], $name )[0];
+					if ( null !== $inner && ! $match( $inner ) ) {
+						$kept[]    = self::strip( [ $inner ], $match )[0];
 						$content[] = null;
 					}
 				}

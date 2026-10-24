@@ -12,7 +12,8 @@ use WP2_Shopify\Entitlement\Rule;
  * Each level lists its tags with a health check (tags no synced customer
  * carries, usually a tag renamed in Shopify) and a dry run of how many linked
  * customers hold it today. The Content rules tab (AccessRules) holds the
- * site default and the post type and taxonomy controls.
+ * site default and the post type and taxonomy controls, and the Test tab
+ * (AccessTest) explains how one item resolves for one viewer.
  */
 final class Access {
 	public const PAGE   = 'wp2-shopify-access';
@@ -106,13 +107,15 @@ final class Access {
 	}
 
 	public static function render(): void {
-		$tab = 'rules' === ( $_GET['tab'] ?? '' ) ? 'rules' : 'levels'; // phpcs:ignore WordPress.Security.NonceVerification
+		$tab = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$tab = in_array( $tab, [ 'rules', 'test' ], true ) ? $tab : 'levels';
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Access', 'wp2-shopify' ); ?></h1>
 			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'Access sections', 'wp2-shopify' ); ?>">
 				<a class="nav-tab <?php echo 'levels' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE ) ); ?>"><?php esc_html_e( 'Levels', 'wp2-shopify' ); ?></a>
 				<a class="nav-tab <?php echo 'rules' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Content rules', 'wp2-shopify' ); ?></a>
+				<a class="nav-tab <?php echo 'test' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'test' ] ) ); ?>"><?php esc_html_e( 'Test', 'wp2-shopify' ); ?></a>
 			</nav>
 			<?php
 			Menu::result_notice(
@@ -126,7 +129,11 @@ final class Access {
 				]
 			);
 
-			'rules' === $tab ? AccessRules::render() : self::render_levels();
+			match ( $tab ) {
+				'rules' => AccessRules::render(),
+				'test'  => AccessTest::render(),
+				default => self::render_levels(),
+			};
 			?>
 		</div>
 		<?php

@@ -2,6 +2,9 @@
 
 namespace WP2_Shopify;
 
+use WP2_Shopify\Access\Badges;
+use WP2_Shopify\Access\BlockAccess;
+use WP2_Shopify\Access\Cli;
 use WP2_Shopify\Access\Gatekeeper;
 use WP2_Shopify\Access\Index;
 use WP2_Shopify\Access\ItemRule;
@@ -45,6 +48,9 @@ final class Plugin {
 		Layers::register();
 		Index::register();
 		Viewer::register();
+		BlockAccess::register();
+		Badges::register();
+		Cli::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		BuyNow::register();

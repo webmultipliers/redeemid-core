@@ -69,7 +69,7 @@ Everything lives under the top-level **Shopify** menu (Settings → Shopify redi
 - **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
-- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. See [Access rules](#access-rules).
+- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets and which blocks they see. See [Access rules](#access-rules).
 - **Debug:** the constants above, platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
 
 Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
@@ -186,6 +186,26 @@ A locked item shows its teaser and a wall everywhere it renders: the page, query
 - **Search engines:** locked items stay indexed and in sitemaps by default. A post type can keep them out: they then get `noindex` and leave the WordPress, Yoast and Rank Math sitemaps together.
 - **Editors** (anyone with `wp2_bypass_gates`, by default anyone who can edit others' posts) read a gated item in full on its own page only, never in lists, feeds, search, REST or GraphQL. The toolbar's **Access** menu switches that page to **View as a locked visitor** or **View as** any level for one request, with nothing stored.
 - **Newsletters:** tools that build emails from the feed, REST or excerpts get the teaser. A tool that reads `post_content` directly bypasses WordPress's filters and is not covered: The Newsletter Plugin's "full post" layout is one, so use its excerpt layouts for gated posts.
+
+### Block controls
+
+Every block has an **Access** panel in its sidebar. A block can only narrow what the item allows:
+
+- **Everyone** (the default): no condition of its own.
+- **Readers:** visitors who can read the item.
+- **Readers who hold one of these levels:** for a Gold box inside a Members story.
+- **Locked visitors only:** for upgrade prompts. Put it above the paywall break, or locked visitors never reach it; the editor warns when it is below.
+- **Visitors without these levels:** for "Upgrade to Gold" shown to everyone below Gold, readers included.
+
+The decision is made on the server, so a hidden block is never sent. In a query loop each block is decided for the loop's post. Outside an item (a template part or a widget), "readers" means signed-in visitors. Blocks for readers never feed search, excerpts or SEO descriptions; the other two count as public text.
+
+To show access on cards and pages:
+
+- **Post classes:** gated items get `wp2-gated`, `requires-{level}` for each level, and `is-locked` or `is-unlocked` for the current visitor, in themes and in the Query Loop.
+- **Access Badge** block (`wp2-shopify/access-badge`): the level an item needs, in the level's badge colour and always with its label, with a lock for visitors it locks out. In a query loop it describes each post.
+- **Block bindings:** bind a paragraph, heading or button to the `wp2-shopify/access` source with a `key` of `level`, `levels`, `state` (Free to read, Locked, Included with your membership), `message`, `cta_label` or `cta_url`.
+
+From the command line, `wp wp2-shopify access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp wp2-shopify access recompute` rebuilds every item's cached rule and search text.
 
 Each item's rule layers are cached in `_wp2_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
 

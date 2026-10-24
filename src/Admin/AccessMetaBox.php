@@ -4,6 +4,7 @@ namespace WP2_Shopify\Admin;
 
 use WP2_Shopify\Access\Context;
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Access\Index;
 use WP2_Shopify\Access\ItemRule;
 use WP2_Shopify\Access\Level;
 use WP2_Shopify\Access\LevelStore;
@@ -44,6 +45,18 @@ final class AccessMetaBox {
 		wp_nonce_field( self::NONCE, self::NONCE );
 		?>
 		<p><strong><?php esc_html_e( 'Now:', 'wp2-shopify' ); ?></strong> <?php echo esc_html( Gatekeeper::rule( $post )->explain( $levels ) ); ?></p>
+		<?php $next = Index::next_change( Gatekeeper::context( $post ), time() ); ?>
+		<?php if ( $next ) : ?>
+			<p>
+				<?php
+				/* translators: %s: date and time */
+				echo esc_html( sprintf( __( 'A date changes this on %s.', 'wp2-shopify' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next ) ) );
+				?>
+			</p>
+		<?php endif; ?>
+		<?php if ( current_user_can( Menu::CAP ) ) : ?>
+			<p><a href="<?php echo esc_url( Menu::url( Access::PAGE, [ 'tab' => 'test', 'post' => $post->ID ] ) ); ?>"><?php esc_html_e( 'Test who can read it', 'wp2-shopify' ); ?></a></p>
+		<?php endif; ?>
 		<?php foreach ( Gatekeeper::context( $post )->terms as $term ) : ?>
 			<?php if ( $term->opens_at( time() ) && Context::ITEM_INHERIT === $rule['mode'] ) : ?>
 				<p class="notice notice-warning inline" style="padding:6px 8px">

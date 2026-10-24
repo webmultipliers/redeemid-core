@@ -2,7 +2,6 @@
 
 namespace WP2_Shopify\Access;
 
-use WP2_Shopify\Blocks\Gate;
 use WP2_Shopify\Entitlement\Member;
 use WP2_Shopify\Sync\Mirror;
 
@@ -117,7 +116,7 @@ final class Viewer {
 
 		$post = get_queried_object();
 
-		if ( ! $post instanceof \WP_Post || ( Gatekeeper::rule( $post )->open() && ! has_block( Gate::PARENT, $post ) ) ) {
+		if ( ! $post instanceof \WP_Post || ! Gatekeeper::protected( $post ) ) {
 			return;
 		}
 

@@ -5,7 +5,6 @@ namespace WP2_Shopify\Integrations;
 use WP2_Shopify\Access\Gatekeeper;
 use WP2_Shopify\Access\Index;
 use WP2_Shopify\Access\Surfaces;
-use WP2_Shopify\Blocks\Gate;
 
 /**
  * Keeps SEO plugins from describing a gated item with its locked text.
@@ -148,7 +147,7 @@ final class SeoPlugins {
 	}
 
 	private static function gated( mixed $post ): bool {
-		return $post instanceof \WP_Post && ! post_password_required( $post ) && ( ! Gatekeeper::rule( $post )->open() || has_block( Gate::PARENT, $post ) );
+		return $post instanceof \WP_Post && ! post_password_required( $post ) && Gatekeeper::protected( $post );
 	}
 
 	/**

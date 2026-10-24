@@ -2,8 +2,6 @@
 
 namespace WP2_Shopify\Access;
 
-use WP2_Shopify\Blocks\Gate;
-
 /**
  * Every surface besides the body that could show, match or confirm locked
  * text, and what it does:
@@ -135,7 +133,7 @@ final class Surfaces {
 	}
 
 	private static function protected( \WP_Post $post ): bool {
-		return ! Gatekeeper::rule( $post )->open() || has_block( Gate::PARENT, $post );
+		return Gatekeeper::protected( $post );
 	}
 
 	private static function public_haystack( \WP_Post $post ): string {

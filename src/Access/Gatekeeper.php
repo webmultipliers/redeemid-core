@@ -169,10 +169,20 @@ final class Gatekeeper {
 	 * descriptions of gated items are built from this, never from raw content.
 	 */
 	public static function public_text( \WP_Post $post ): string {
-		$cut  = self::teaser( $post )->cut( parse_blocks( $post->post_content ) );
+		$cut  = self::teaser( $post )->cut( Teaser::strip( parse_blocks( $post->post_content ), [ BlockAccess::class, 'members_only' ] ) );
 		$html = excerpt_remove_blocks( serialize_blocks( $cut['blocks'] ) );
 
 		return trim( (string) preg_replace( '/\s+/u', ' ', wp_strip_all_tags( strip_shortcodes( $html ) ) ) );
+	}
+
+	/**
+	 * Could some visitor be shown less of this item than its full text? True
+	 * when its rule is not open, or it holds a membership gate or a block
+	 * with an Access setting of its own. Search, SEO descriptions and the
+	 * public-text index treat such items as protected.
+	 */
+	public static function protected( \WP_Post $post ): bool {
+		return ! self::rule( $post )->open() || has_block( Gate::PARENT, $post ) || BlockAccess::in_content( $post->post_content );
 	}
 
 	/**
