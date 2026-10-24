@@ -82,6 +82,7 @@ final class Surfaces {
 			return $join;
 		}
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- self::JOIN is a constant alias.
 		return $join . $wpdb->prepare( " LEFT JOIN {$wpdb->postmeta} AS " . self::JOIN . " ON ( " . self::JOIN . ".post_id = {$wpdb->posts}.ID AND " . self::JOIN . '.meta_key = %s )', Index::SEARCH );
 	}
 
@@ -215,7 +216,7 @@ final class Surfaces {
 
 		$in = implode( ',', array_fill( 0, count( $types ), '%s' ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders
+		// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $in is a list of %s placeholders.
 		return $where . $wpdb->prepare( " AND {$wpdb->comments}.comment_post_ID NOT IN ( SELECT wp2l.post_id FROM {$wpdb->postmeta} AS wp2l INNER JOIN {$wpdb->posts} AS wp2p ON wp2p.ID = wp2l.post_id WHERE wp2l.meta_key = %s AND wp2p.post_type IN ($in) )", array_merge( [ Index::LOCKED ], $types ) );
 	}
 

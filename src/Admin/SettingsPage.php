@@ -28,6 +28,7 @@ final class SettingsPage {
 
 	public static function save(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
 		$input  = wp_unslash( $_POST['config'] ?? [] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- ConfigValues::apply validates each field.
 		$clear  = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['clear'] ?? [] ) );
@@ -50,6 +51,7 @@ final class SettingsPage {
 
 		wp_safe_redirect( Menu::url( self::PAGE, $args ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	/**
@@ -80,6 +82,7 @@ final class SettingsPage {
 		Menu::page_start( __( 'Settings', 'wp2-shopify' ), __( 'Shopify settings', 'wp2-shopify' ) );
 		Menu::result_notice(
 			[
+				/* translators: %d: number of values changed */
 				'config_saved'   => [ 'success', __( 'Connection saved. %d values changed.', 'wp2-shopify' ) ],
 				'config_invalid' => [ 'error', __( 'Some values were not saved. They are marked below.', 'wp2-shopify' ) ],
 			]

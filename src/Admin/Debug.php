@@ -33,6 +33,7 @@ final class Debug {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
 		$do     = sanitize_key( wp_unslash( $_POST['do'] ?? '' ) );
 		$result = '';
@@ -59,7 +60,7 @@ final class Debug {
 				$query = [
 					'dry_customer' => sanitize_text_field( wp_unslash( $_POST['customer'] ?? '' ) ),
 					'dry_tags'     => sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) ),
-					'dry_mode'     => 'all' === ( $_POST['mode'] ?? '' ) ? 'all' : 'any',
+					'dry_mode'     => 'all' === sanitize_key( wp_unslash( $_POST['mode'] ?? '' ) ) ? 'all' : 'any',
 				];
 				wp_safe_redirect( Menu::url( self::PAGE, $query ) . '#dry-run' );
 				exit;
@@ -67,6 +68,7 @@ final class Debug {
 
 		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	public static function render(): void {
@@ -289,7 +291,7 @@ final class Debug {
 		// phpcs:disable WordPress.Security.NonceVerification -- read-only display.
 		$customer = sanitize_text_field( wp_unslash( $_GET['dry_customer'] ?? '' ) );
 		$tags     = sanitize_text_field( wp_unslash( $_GET['dry_tags'] ?? '' ) );
-		$mode     = 'all' === ( $_GET['dry_mode'] ?? '' ) ? 'all' : 'any';
+		$mode     = 'all' === sanitize_key( wp_unslash( $_GET['dry_mode'] ?? '' ) ) ? 'all' : 'any';
 		// phpcs:enable
 		?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="wp2s-panel__body wp2s-inline-form">

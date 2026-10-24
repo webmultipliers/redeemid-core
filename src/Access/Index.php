@@ -127,7 +127,7 @@ final class Index {
 		}
 
 		$in  = implode( ',', array_fill( 0, count( $types ), '%s' ) );
-		$ids = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE ID > %d AND post_type IN ($in) AND post_status NOT IN ('auto-draft', 'trash', 'inherit') ORDER BY ID LIMIT %d", array_merge( [ (int) $cursor ], $types, [ self::BATCH ] ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders
+		$ids = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE ID > %d AND post_type IN ($in) AND post_status NOT IN ('auto-draft', 'trash', 'inherit') ORDER BY ID LIMIT %d", array_merge( [ (int) $cursor ], $types, [ self::BATCH ] ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- $in is a list of %s placeholders; batched cron reindex.
 
 		foreach ( $ids as $id ) {
 			self::refresh( get_post( $id ) );
@@ -147,9 +147,9 @@ final class Index {
 				'post_type'        => 'any',
 				'post_status'      => 'any',
 				'fields'           => 'ids',
-				'posts_per_page'   => 500,
+				'posts_per_page'   => 500, // phpcs:ignore WordPress.WP.PostsPerPage -- cron batch.
 				'no_found_rows'    => true,
-				'suppress_filters' => true,
+				'suppress_filters' => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams -- cron must see every item, not the gated view.
 				// phpcs:ignore WordPress.DB.SlowDBQuery
 				'meta_query'       => [ [ 'key' => self::NEXT, 'value' => time(), 'compare' => '<=', 'type' => 'NUMERIC' ] ],
 			]

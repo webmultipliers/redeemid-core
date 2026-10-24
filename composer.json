@@ -10,6 +10,7 @@
 		"blockstudio/blockstudio": "^7.7"
 	},
 	"require-dev": {
+		"automattic/vipwpcs": "^3.1",
 		"phpunit/phpunit": "^11.0"
 	},
 	"autoload": {
@@ -25,6 +26,7 @@
 	"scripts": {
 		"test": "phpunit",
 		"lint": "find src blocks tests wp2-shopify.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
+		"phpcs": "phpcs",
 		"build-prod": [
 			"@composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress"
 		],
@@ -35,11 +37,15 @@
 		"sort-packages": true,
 		"platform": {
 			"php": "8.2.0"
+		},
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
 	},
 	"minimum-stability": "stable",
 	"prefer-stable": true,
 	"scripts-descriptions": {
+		"phpcs": "Check the code against the WordPress VIP rules in phpcs.xml.dist.",
 		"build-prod": "Install production dependencies so this directory runs as the plugin (used by deploys and release zips).",
 		"release": "Alias of build-prod."
 	}

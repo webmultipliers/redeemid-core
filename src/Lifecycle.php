@@ -15,7 +15,7 @@ final class Lifecycle {
 		EventLog::install();
 		ShadowUsers::ensure_role();
 		Flow::add_rewrite();
-		flush_rewrite_rules();
+		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules -- activation hook only.
 
 		if ( ! wp_next_scheduled( Reconciler::HOOK ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'twicedaily', Reconciler::HOOK );
@@ -33,6 +33,6 @@ final class Lifecycle {
 		wp_clear_scheduled_hook( 'wp2_shopify_prune' );
 		wp_clear_scheduled_hook( Index::REINDEX );
 		wp_clear_scheduled_hook( Index::TIMED );
-		flush_rewrite_rules();
+		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules -- deactivation hook only.
 	}
 }

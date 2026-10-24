@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ruleset name="WP2 Shopify">
+	<description>WordPress VIP rules (WordPress-VIP-Go) for the plugin. Run with: composer phpcs</description>
+
+	<file>.</file>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/blocks/*/_dist/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<config name="minimum_wp_version" value="6.7"/>
+
+	<rule ref="WordPress-VIP-Go"/>
+
+	<!-- It misreads translators: comments as commented-out code. -->
+	<rule ref="Squiz.PHP.CommentedOutCode">
+		<severity>0</severity>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="wp2-shopify"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- The plugin's own tables (inbox, event log) have no core API, and they
+	     are written far more than read, so they are not object cached. -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery">
+		<exclude-pattern>/src/Webhooks/WpdbInboxStore\.php</exclude-pattern>
+		<exclude-pattern>/src/Support/EventLog\.php</exclude-pattern>
+		<exclude-pattern>/src/Migration\.php</exclude-pattern>
+		<exclude-pattern>/uninstall\.php</exclude-pattern>
+	</rule>
+
+	<!-- Unit tests run without WordPress loaded. -->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPressVIPMinimum.Functions.StripTags">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+</ruleset>

@@ -19,6 +19,7 @@ final class StateStore {
 
 		set_transient( self::key( $state ), $data + [ 'created' => time() ], self::TTL );
 
+		// phpcs:disable WordPressVIPMinimum.Functions.RestrictedFunctions.cookies_setcookie, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE -- OAuth state lives only on the uncached sign-in redirect and callback.
 		setcookie(
 			self::COOKIE,
 			$state,
@@ -73,6 +74,8 @@ final class StateStore {
 		);
 		unset( $_COOKIE[ self::COOKIE ] );
 	}
+
+	// phpcs:enable
 
 	private static function key( string $state ): string {
 		return 'wp2s_oauth_' . substr( hash( 'sha256', $state ), 0, 40 );

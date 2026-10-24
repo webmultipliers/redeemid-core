@@ -29,6 +29,7 @@ final class Webhooks {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
 		$do     = sanitize_key( wp_unslash( $_REQUEST['do'] ?? '' ) );
 		$result = '';
@@ -37,7 +38,7 @@ final class Webhooks {
 			$sync   = Registrar::sync();
 			$result = $sync['error'] || $sync['failed'] ? 'register_failed' : 'registered';
 		} elseif ( 'retry' === $do ) {
-			$row = (int) ( $_REQUEST['row'] ?? 0 );
+			$row = absint( $_REQUEST['row'] ?? 0 );
 
 			if ( ( new WpdbInboxStore() )->requeue( $row ) ) {
 				Endpoint::schedule( $row );
@@ -48,6 +49,7 @@ final class Webhooks {
 
 		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	public static function render(): void {

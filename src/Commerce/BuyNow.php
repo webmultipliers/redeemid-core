@@ -92,6 +92,7 @@ final class BuyNow {
 	}
 
 	private static function within_rate_limit(): bool {
+		// phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__ -- only hashed into a rate-limit key on an uncached POST.
 		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$key = 'wp2_shopify_buy_' . md5( $ip );
 		$n   = (int) get_transient( $key );

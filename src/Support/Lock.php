@@ -24,6 +24,7 @@ final class Lock {
 		// Stale: replace only if nobody else replaced it first.
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- compare-and-swap needs one atomic UPDATE.
 		$taken = (bool) $wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",

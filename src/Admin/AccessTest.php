@@ -31,7 +31,7 @@ final class AccessTest {
 				'post_status'      => [ 'publish', 'future', 'draft', 'private' ],
 				'posts_per_page'   => 100,
 				'orderby'          => 'modified',
-				'suppress_filters' => true,
+				'suppress_filters' => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams -- admin tool lists items ungated.
 			]
 		);
 		$viewers = [

@@ -51,7 +51,7 @@ final class EventsTable extends \WP_List_Table {
 		return [
 			'event'  => sanitize_text_field( wp_unslash( $_GET['event'] ?? '' ) ),
 			'prefix' => isset( self::GROUPS[ $prefix ] ) ? $prefix : '',
-			'user'   => (int) ( $_GET['user'] ?? 0 ),
+			'user'   => absint( $_GET['user'] ?? 0 ),
 			'search' => sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) ),
 		];
 		// phpcs:enable

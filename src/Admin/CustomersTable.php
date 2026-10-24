@@ -48,7 +48,7 @@ final class CustomersTable extends \WP_List_Table {
 		// phpcs:disable WordPress.Security.NonceVerification -- list display.
 		$search  = sanitize_text_field( wp_unslash( $_REQUEST['s'] ?? '' ) );
 		$orderby = sanitize_key( $_REQUEST['orderby'] ?? '' );
-		$order   = 'asc' === strtolower( (string) ( $_REQUEST['order'] ?? '' ) ) ? 'ASC' : 'DESC';
+		$order   = 'asc' === sanitize_key( wp_unslash( $_REQUEST['order'] ?? '' ) ) ? 'ASC' : 'DESC';
 		$filter  = sanitize_key( $_REQUEST['state'] ?? '' );
 		// phpcs:enable
 

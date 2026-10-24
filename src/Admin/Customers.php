@@ -46,7 +46,7 @@ final class Customers {
 	 * select "action", which admin-post.php also uses.
 	 */
 	public static function load(): void {
-		if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) || empty( $_POST['users'] ) ) {
+		if ( 'POST' !== sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) || empty( $_POST['users'] ) ) {
 			return;
 		}
 
@@ -64,8 +64,9 @@ final class Customers {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
-		$user_id = (int) ( $_REQUEST['user'] ?? 0 );
+		$user_id = absint( $_REQUEST['user'] ?? 0 );
 		$do      = sanitize_key( wp_unslash( $_REQUEST['do'] ?? '' ) );
 
 		if ( 'sync_all' === $do ) {
@@ -77,9 +78,10 @@ final class Customers {
 			self::finish( self::edit_tags( $user_id ), 1, $user_id );
 		}
 
-		$detail = 'detail' === ( $_REQUEST['back'] ?? '' ) && 'unlink' !== $do;
+		$detail = 'detail' === sanitize_key( wp_unslash( $_REQUEST['back'] ?? '' ) ) && 'unlink' !== $do;
 
 		self::finish( self::apply( $do, [ $user_id ] ), 1, $detail ? $user_id : 0 );
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	/**
@@ -167,7 +169,7 @@ final class Customers {
 
 	public static function render(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification
-		$user_id = (int) ( $_GET['user'] ?? 0 );
+		$user_id = absint( $_GET['user'] ?? 0 );
 		$user    = $user_id ? get_userdata( $user_id ) : null;
 
 		if ( $user && Mirror::customer_id( $user->ID ) ) {
@@ -182,10 +184,13 @@ final class Customers {
 	private static function notices(): void {
 		Menu::result_notice(
 			[
+				/* translators: %d: number of customers */
 				'synced'      => [ 'success', __( 'Resynced %d customer(s) from Shopify.', 'wp2-shopify' ) ],
+				/* translators: %d: number of customers */
 				'synced_all'  => [ 'success', __( 'Reconciliation checked %d customer(s).', 'wp2-shopify' ) ],
 				'sync_failed' => [ 'error', __( 'Shopify could not be reached. See App events for the failed call.', 'wp2-shopify' ) ],
 				'no_admin'    => [ 'error', __( 'The Admin API is not configured, so the plugin cannot read from or write to Shopify. See Debug.', 'wp2-shopify' ) ],
+				/* translators: %d: number of users */
 				'unlinked'    => [ 'success', __( 'Disconnected %d user(s) from Shopify. Their WordPress accounts were kept.', 'wp2-shopify' ) ],
 				'tags_saved'  => [ 'success', __( 'Tags saved.', 'wp2-shopify' ) ],
 				'tags_failed' => [ 'error', __( 'Shopify rejected the tag change. The tags below are what Shopify holds now.', 'wp2-shopify' ) ],

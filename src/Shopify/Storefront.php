@@ -317,6 +317,7 @@ GRAPHQL;
 	 * because a visitor can set them.
 	 */
 	private static function buyer_ip(): string {
+		// phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__ -- validated with FILTER_VALIDATE_IP below; read on uncached checkout calls.
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$ip = (string) apply_filters( 'wp2_shopify_buyer_ip', $ip );
 

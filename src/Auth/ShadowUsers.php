@@ -85,7 +85,7 @@ final class ShadowUsers {
 
 	public static function hide_admin_bar(): void {
 		if ( self::is_shadow( get_current_user_id() ) && ! current_user_can( 'edit_posts' ) ) {
-			show_admin_bar( false );
+			show_admin_bar( false ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval -- shadow customers only, never editors or admins.
 		}
 	}
 

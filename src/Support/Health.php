@@ -127,7 +127,7 @@ final class Health {
 		$missing  = [];
 
 		foreach ( glob( Registration::directory() . '/*/block.json' ) ?: [] as $file ) {
-			$meta = json_decode( (string) file_get_contents( $file ), true );
+			$meta = json_decode( (string) file_get_contents( $file ), true ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData -- local block.json.
 
 			// Components render through bs_block() and are never in the registry.
 			if ( is_array( $meta ) && ! empty( $meta['name'] ) && empty( $meta['blockstudio']['component'] ) && ! $registry->is_registered( $meta['name'] ) ) {
