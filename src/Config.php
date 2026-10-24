@@ -6,7 +6,7 @@ use WP2_Shopify\Support\ConfigValues;
 use WP2_Shopify\Support\Crypto;
 
 /**
- * The plugin's configuration (spec 14.1). Each value comes from a
+ * The plugin's configuration. Each value comes from a
  * wp-config.php constant when one is defined, and that always wins. Otherwise
  * it comes from Shopify → Settings, saved in the options table, with secrets
  * encrypted at rest (Support\Crypto, keyed from WP2_SHOPIFY_ENCRYPTION_KEY or

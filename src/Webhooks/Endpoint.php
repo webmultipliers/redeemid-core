@@ -6,7 +6,7 @@ use WP2_Shopify\Config;
 use WP2_Shopify\Support\Logger;
 
 /**
- * POST /wp-json/wp2-shopify/v1/webhooks/events (spec 13). Replaces the POC's
+ * POST /wp-json/wp2-shopify/v1/webhooks/events. Replaces the POC's
  * misspelled /iwebhooks/events; the old path is not kept.
  */
 final class Endpoint {

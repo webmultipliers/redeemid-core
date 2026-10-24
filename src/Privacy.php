@@ -6,7 +6,7 @@ use WP2_Shopify\Auth\TokenVault;
 use WP2_Shopify\Sync\Mirror;
 
 /**
- * WordPress privacy export and erasure for the Shopify mirror (spec 15.2).
+ * WordPress privacy export and erasure for the Shopify mirror.
  */
 final class Privacy {
 	public static function register(): void {

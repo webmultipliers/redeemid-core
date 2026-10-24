@@ -5,7 +5,7 @@ namespace WP2_Shopify\Shopify;
 use WP2_Shopify\Config;
 
 /**
- * Storefront API from the server (spec 3.2): public catalog reads, cart
+ * Storefront API from the server: public catalog reads, cart
  * creation for buy-now and buyer identity for the official plugin's cart.
  * Never personalised except for the buyer identity a signed-in customer's own
  * token adds to their cart.
@@ -17,7 +17,7 @@ use WP2_Shopify\Config;
  * on buy-now and cart calls, and the public token is the fallback.
  */
 final class Storefront {
-	/** Catalog responses are display data, cached briefly (spec 15.1). */
+	/** Catalog responses are display data, cached briefly. */
 	public const CACHE_TTL = 5 * MINUTE_IN_SECONDS;
 
 	private const PRODUCT_QUERY = <<<'GRAPHQL'
@@ -219,7 +219,7 @@ GRAPHQL;
 
 	/**
 	 * Create a one-line cart and return its checkout URL, requested fresh
-	 * (spec 10.2 buy-now, 12.3). A signed-in customer's token attaches buyer
+	 * for buy-now. A signed-in customer's token attaches buyer
 	 * identity so checkout opens signed in.
 	 */
 	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null ): string|\WP_Error {
@@ -276,7 +276,7 @@ GRAPHQL;
 	}
 
 	/**
-	 * Money as Shopify returned it, in its own currency (spec 10.1: never converted).
+	 * Money as Shopify returned it, in its own currency (never converted).
 	 */
 	public static function format_money( ?array $money ): string {
 		if ( ! $money || '' === $money['amount'] ) {

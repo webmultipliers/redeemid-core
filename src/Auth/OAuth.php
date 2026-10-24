@@ -54,8 +54,8 @@ final class OAuth {
 	}
 
 	/**
-	 * Shopify's end-session endpoint needs a browser redirect with id_token_hint
-	 * (review point 6), so logout returns a URL rather than calling Shopify.
+	 * Shopify's end-session endpoint needs a browser redirect with id_token_hint,
+	 * so logout returns a URL rather than calling Shopify.
 	 */
 	public static function logout_url( string $id_token, string $after ): string {
 		$endpoint = Discovery::endpoint( 'end_session_endpoint' );

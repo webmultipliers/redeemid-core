@@ -6,7 +6,7 @@ namespace WP2_Shopify\Auth;
  * Server-side storage for an in-flight sign-in, keyed by the OAuth state.
  *
  * The PKCE verifier, the OIDC nonce, the post-login redirect and any link
- * token reference live here, never in browser storage (review point 6). The
+ * token reference live here, never in browser storage. The
  * browser holds only the state value, in an HttpOnly cookie, which binds the
  * callback to the browser that started the flow.
  */

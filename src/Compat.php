@@ -6,7 +6,7 @@ namespace WP2_Shopify;
  * Backwards compatibility with the proof of concept.
  *
  * [wp2_shopify_identity] stays as a deprecated alias. Until the account-card
- * block lands (Phase 1) it renders the sign-in control.
+ * block lands it renders the sign-in control.
  */
 final class Compat {
 	public static function register(): void {

@@ -1,10 +1,18 @@
 # WP2 Shopify
 
-Sign in with Shopify customer accounts on WordPress, and gate content by Shopify customer tags. Built on [Blockstudio 7](https://blockstudio.dev).
+Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, and what they bought in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
 
-> **Working on this plugin? Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. See [Building on Blockstudio](#building-on-blockstudio) for what we use and the few places we deliberately don't.
+Shopify stays the single source of truth. A purchase adds a tag to the customer in Shopify, WordPress mirrors those tags, and every access decision is made on the server from that mirror. WordPress never grants access that Shopify doesn't know about.
 
-> **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging, gates, access rules, features, plan cards and the bridge to Shopify's own cart are in place. The account card comes in a later phase; catalog blocks are cut in favour of Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
+- **Sign in with Shopify.** OAuth with PKCE against the Customer Account API, shadow users for new customers, and optional linking of existing WordPress accounts.
+- **Memberships from purchases.** Map products to customer tags; paid, cancelled and refunded orders add or remove them in Shopify.
+- **Gate content.** A Membership Gate block, access rules per item, term, post type and site, per-block visibility, a paywall break, and teasers that stay out of feeds, REST, search and SEO descriptions.
+- **Features.** Site behaviours such as ad-free reading or downloads, unlocked by the same tags.
+- **Sell memberships.** Plan cards with live Shopify prices and a no-JavaScript buy-now button that opens a Shopify checkout.
+- **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
+- **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
+
+> **Status: 2.0.0-alpha.1.** Sign-in, linking, webhooks, membership tagging, gates, access rules, features, plan cards and the bridge to Shopify's own cart are in place. A server-rendered account card is planned. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 2.0.0.
 
 ## Requirements
 
@@ -25,9 +33,9 @@ composer test               # unit tests
 composer build-prod         # production vendor/ for a deploy or release zip
 ```
 
-### Deploying from the repository (InstaWP and similar)
+### Deploying from a Git repository
 
-Have the host run `composer build-prod` in the plugin folder after each sync. That is the only build step; Blockstudio compiles block styles on first load, so `blocks/*/_dist/` must be writable.
+If your host syncs the plugin folder from Git, have it run `composer build-prod` in the plugin folder after each sync. That is the only build step; Blockstudio compiles block styles on first load, so `blocks/*/_dist/` must be writable.
 
 Run these WP-CLI steps separately, once per site:
 
@@ -103,7 +111,7 @@ New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopif
 - **`read_all_orders`** is a protected scope. The Dev Dashboard rejects it as invalid until Shopify approves a request for it in the app's settings. Without it, Shopify shows only the last 60 days of orders. The plugin then still grants tags from any visible paid order, and removes a tag only for a refund or cancellation it can see, so older members keep their tags. The same rule applies to a customer with more than 100 orders, or an order with more than 100 line items, because the plugin reads one page of each. Request the scope if refunds of purchases older than 60 days must revoke access automatically.
 - **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
 
-Install it on the store, then set `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`. Shopify → Debug shows the scopes Shopify granted.
+Install it on the store, then enter its client ID and secret in Shopify → Settings (or define `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`). Shopify → Debug shows the scopes Shopify granted.
 
 ### Webhooks
 
@@ -172,7 +180,7 @@ Gate settings (the sidebar only shows the ones that apply):
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed. If the tag data is older than the freshness window (Shopify → Overview, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
+Rules fail closed. If the tag data is older than the freshness window (Shopify → Settings, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
 
 A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
 
@@ -238,17 +246,17 @@ It needs `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` (recommended) or `WP2_SHOPIFY_PU
 - **Refresh Membership** (`wp2-shopify/membership-refresh`): a button for signed-in, linked customers that re-syncs their membership from Shopify through `POST /account/sync` and reloads the page, so gates open as soon as a new tag lands. Guests and unlinked accounts see nothing. Put it in a paywall's teaser or the header.
 - **Shopify Account Status** (`wp2-shopify/account-status`): tells the visitor whether they are signed in, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. "Show the raw status response" adds the `GET /auth/status` payload, nonces redacted, for troubleshooting.
 - **Membership Features** (`wp2-shopify/member-features`): the visitor's granted features and where each comes from ("Download access, from Add-on purchase"), for the account page. A menu mode shows only the features registered as primary, at most three, for a header.
-- **Shopify Health** (`wp2-shopify/health`): the at-a-glance version of Shopify → Debug (Blockstudio, the plugin's blocks, permalinks, the callback page, sign-in, which constants are set but never their values, Shopify's own plugin). Administrators only; everyone else sees a one-line note. Add rows with the `wp2_shopify_health_checks` filter.
+- **Shopify Health** (`wp2-shopify/health`): the at-a-glance version of Shopify → Debug (Blockstudio, the plugin's blocks, permalinks, the callback page, sign-in, which configuration values are set but never the values themselves, Shopify's own plugin). Administrators only; everyone else sees a one-line note. Add rows with the `wp2_shopify_health_checks` filter.
 
 All four are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
 
 ### Memberships from purchases
 
-Under Shopify → Overview, map products to tags, one per line:
+Under Shopify → Settings, map products to tags, one product per line. A product can grant several tags, separated by commas:
 
 ```
 1234567890: gold-member
-gid://shopify/Product/987: silver-member
+gid://shopify/Product/987: silver-member, newsletter
 ```
 
 When an order is paid, cancelled or refunded, the plugin:
@@ -256,7 +264,7 @@ When an order is paid, cancelled or refunded, the plugin:
 1. recomputes that customer's mapped tags from their orders;
 2. adds or removes those tags in Shopify.
 
-Only tags in the map are touched. After checkout, the next signed-in page views also re-sync, at most once a minute for 30 minutes, so access usually arrives before the webhook.
+Only tags in the map are touched. Access arrives when Shopify's webhook does, usually within seconds. A customer who is already signed in can pull it sooner with the **Refresh Membership** block.
 
 ## Caching
 
@@ -270,7 +278,6 @@ Cache rules should bypass or vary on these cookies:
 
 - `wordpress_logged_in_*`
 - `wp2_shopify_oauth_state`
-- `wp2_shopify_cart` (later phases)
 - `wp2_shopify_fset`, only when a [feature](docs/features.md#caching) declares the `vary` caching option: an opaque hash of the visitor's granted set
 
 ## Shopify's WordPress plugin
@@ -383,3 +390,28 @@ To also delete shadow users and every linked field, add `define( 'WP2_SHOPIFY_UN
 ## Privacy
 
 The plugin registers a personal data exporter and an eraser for the Shopify fields it mirrors. With Shopify's plugin active, the cart bridge stores two flags in the visitor's `localStorage` (`wp2-shopify:attachedCart` and `wp2-shopify:signedInCart`) and keeps no cart IDs on the server. Shopify's `customers/data_request` creates a WordPress export request. `customers/redact` deletes or unlinks the account.
+
+## Contributing
+
+Issues and pull requests are welcome. Work branches from `development`, and pull requests go back into it.
+
+```sh
+composer install
+composer lint   # php -l on every PHP file
+composer test   # PHPUnit; no WordPress install needed
+```
+
+- **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
+- **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.
+- **Fail closed.** When data is missing, stale or unreadable, the visitor gets less access, not more.
+- **Never log or return secrets or tokens**, and keep personal data and nonces out of cacheable HTML.
+
+The test theme in [webmultipliers/shopify-for-wp-theme](https://github.com/webmultipliers/shopify-for-wp-theme) seeds a demo news site, test pages and test accounts that exercise every feature, which makes it a good companion for manual testing.
+
+### Reporting a security issue
+
+Please don't open a public issue for a vulnerability. Report it privately from the repository's **Security** tab (**Report a vulnerability**).
+
+## License
+
+GPL-2.0-or-later. See [LICENSE](LICENSE). Blockstudio, bundled through Composer, is also GPL-2.0-or-later.

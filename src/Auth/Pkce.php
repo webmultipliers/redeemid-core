@@ -4,7 +4,7 @@ namespace WP2_Shopify\Auth;
 
 /**
  * PKCE and OAuth random values (RFC 7636). Generated server-side only; the
- * verifier never reaches the browser (review point 6).
+ * verifier never reaches the browser.
  */
 final class Pkce {
 	public static function random( int $bytes = 32 ): string {

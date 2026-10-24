@@ -1,7 +1,7 @@
 <?php
 /**
- * Membership gate (spec 9.4), structured as parent + two child blocks
- * because a block can only have one InnerBlocks area (review point 4).
+ * Membership gate, structured as parent + two child blocks
+ * because a block can only have one InnerBlocks area.
  *
  * Which child reaches the page is decided before rendering, in
  * WP2_Shopify\Blocks\Gate::filter_children(): the Members only child is

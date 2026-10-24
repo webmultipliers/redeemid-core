@@ -6,7 +6,7 @@ use WP2_Shopify\Shopify\Admin;
 use WP2_Shopify\Support\Logger;
 
 /**
- * Scheduled reconciliation (spec 6.4). Webhooks are not a reliable entitlement
+ * Scheduled reconciliation. Webhooks are not a reliable entitlement
  * source on their own, so linked customers' tags and status are re-read from
  * Shopify on a schedule, on demand, and after checkout.
  *

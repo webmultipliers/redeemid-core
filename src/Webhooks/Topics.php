@@ -4,11 +4,11 @@ namespace WP2_Shopify\Webhooks;
 
 /**
  * Webhook topics verified against Shopify API 2026-10 on 2026-10-23
- * (Admin REST "Webhook" resource topic list). See docs/phase-0-report.md.
+ * (Admin REST "Webhook" resource topic list).
  *
  * Note: tags left the customers/* payloads in 2025-01; tag changes arrive only
  * on customer.tags_added / customer.tags_removed, so reconciliation is the
- * backstop (spec 6.4). The POC's customers/add_tags and customers/remove_tags
+ * backstop. The POC's customers/add_tags and customers/remove_tags
  * do not exist and are not mapped.
  */
 final class Topics {
@@ -45,7 +45,7 @@ final class Topics {
 		'customers/redact'                          => self::COMPLIANCE,
 		'shop/redact'                               => self::COMPLIANCE,
 		'app/uninstalled'                           => self::UNINSTALL,
-		// Purchase-to-tag loop (owner decision, review point 1).
+		// Purchase-to-tag loop.
 		'orders/paid'                               => self::MEMBERSHIP,
 		'orders/cancelled'                          => self::MEMBERSHIP,
 		'refunds/create'                            => self::MEMBERSHIP,

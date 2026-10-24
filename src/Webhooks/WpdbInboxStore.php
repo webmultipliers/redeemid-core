@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Webhooks;
 
 /**
- * Inbox records in a dedicated table with a retention cap (spec 4.2, 15.2).
+ * Inbox records in a dedicated table with a retention cap.
  * The data column holds only extracted fields and is cleared once processed.
  */
 final class WpdbInboxStore implements InboxStore {

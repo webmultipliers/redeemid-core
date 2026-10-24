@@ -1,6 +1,6 @@
 <?php
 /**
- * Plan card (spec 10.4): one membership plan or product with its live price
+ * Plan card: one membership plan or product with its live price
  * and a buy-now form.
  *
  * The markup holds no personal data and no nonce, so pages with plan cards

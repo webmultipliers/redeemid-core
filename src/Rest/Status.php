@@ -10,7 +10,7 @@ use WP2_Shopify\Sync\Mirror;
 /**
  * The visitor's own display-safe state, for GET /auth/status and for
  * scripts that are not blocks (the cart bridge). Blocks with personal output
- * are Blockstudio dynamic islands instead (owner decision on review point 2).
+ * are Blockstudio dynamic islands instead.
  */
 final class Status {
 	public const AJAX_ACTION = 'wp2_shopify_status';
@@ -45,7 +45,7 @@ final class Status {
 				'displayName' => $user->display_name,
 				'lastSync'    => (int) get_user_meta( $user_id, Mirror::LAST_SYNC, true ) ?: null,
 				'actionUrl'   => Flow::action_url(),
-				// Fresh per-user nonces for the hydrated forms; never baked into cacheable HTML (review point 3).
+				// Fresh per-user nonces for the hydrated forms; never baked into cacheable HTML.
 				'nonces'      => [
 					'logout'  => wp_create_nonce( 'wp2_shopify_logout' ),
 					'connect' => wp_create_nonce( 'wp2_shopify_connect' ),

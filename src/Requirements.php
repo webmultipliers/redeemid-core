@@ -1,6 +1,6 @@
 <?php
 /**
- * Activation floors (spec 3.1). Kept free of PHP 8 syntax so it can run, and
+ * Activation floors. Kept free of PHP 8 syntax so it can run, and
  * explain itself, on an unsupported host instead of fataling.
  */
 

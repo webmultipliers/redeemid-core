@@ -6,7 +6,7 @@ use WP2_Shopify\Entitlement\Evaluator;
 use WP2_Shopify\Membership\TagPlan;
 
 /**
- * Non-secret settings (spec 14.1). Each can also be forced from code with the
+ * Non-secret settings. Each can also be forced from code with the
  * matching filter, so a site can keep them under version control.
  */
 final class Settings {

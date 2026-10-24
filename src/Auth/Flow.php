@@ -16,7 +16,7 @@ use WP2_Shopify\Sync\Reconciler;
  * Sign-in, linking, logout, disconnect and sync-now as server-side flows.
  *
  * Every user-facing action is a real link or form post that works without
- * JavaScript (review point 5): forms post to admin-post.php and redirect, so
+ * JavaScript: forms post to admin-post.php and redirect, so
  * the visitor always lands on a page, never on raw JSON.
  */
 final class Flow {
@@ -361,7 +361,7 @@ final class Flow {
 	}
 
 	/**
-	 * "Sync now" for the signed-in customer only (spec 6.4). Rate limited.
+	 * "Sync now" for the signed-in customer only. Rate limited.
 	 */
 	public static function sync_now( int $user_id ): string {
 		$id = Mirror::customer_id( $user_id );
@@ -442,7 +442,7 @@ final class Flow {
 
 	/**
 	 * The callback page shows the outcome of a flow, or the explicit confirm
-	 * step for linking (spec 5.2 step 2).
+	 * step for linking.
 	 */
 	public static function callback_notice( string $content ): string {
 		if ( ! get_query_var( self::QUERY_VAR ) || ! in_the_loop() || ! is_main_query() ) {
@@ -500,7 +500,7 @@ final class Flow {
 	}
 
 	/**
-	 * Redirect targets are allow-listed to this site (spec 13).
+	 * Redirect targets are allow-listed to this site.
 	 */
 	public static function safe_redirect( string $url ): string {
 		$fallback = (string) apply_filters( 'wp2_shopify_default_redirect', home_url( '/' ) );

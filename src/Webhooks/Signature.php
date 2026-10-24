@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Webhooks;
 
 /**
- * Shopify webhook HMAC check (spec 6.1): base64(HMAC-SHA256(raw body, secret)),
+ * Shopify webhook HMAC check: base64(HMAC-SHA256(raw body, secret)),
  * compared in constant time before anything else touches the payload.
  */
 final class Signature {

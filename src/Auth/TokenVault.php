@@ -7,7 +7,7 @@ use WP2_Shopify\Support\Lock;
 use WP2_Shopify\Support\Logger;
 
 /**
- * Shopify tokens for one WordPress login session (spec 5.3, 5.4; review point 6).
+ * Shopify tokens for one WordPress login session.
  *
  * Access, refresh and ID tokens are encrypted and stored inside the WordPress
  * session record (WP_Session_Tokens), so they are bound to that session,
@@ -169,7 +169,7 @@ final class TokenVault {
 	}
 
 	/**
-	 * The Shopify session was revoked or expired for good (review point 8).
+	 * The Shopify session was revoked or expired for good.
 	 *
 	 * Shadow users have no other credential, so their WordPress session ends.
 	 * A linked regular WordPress account keeps its WordPress session and only

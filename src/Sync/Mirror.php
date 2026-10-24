@@ -7,10 +7,10 @@ use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Support\Logger;
 
 /**
- * The WordPress-side mirror of a Shopify customer (spec 4.2). Shopify stays the
+ * The WordPress-side mirror of a Shopify customer. Shopify stays the
  * record; this is display and gating data, stamped with when and how it synced.
  *
- * Meta keys keep the POC names where they already existed (spec 16.2).
+ * Meta keys keep the POC names where they already existed.
  */
 final class Mirror {
 	public const GID         = '_wp2_shopify_customer_id';

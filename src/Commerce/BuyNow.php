@@ -8,12 +8,12 @@ use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Support\Logger;
 
 /**
- * Buy-now without JavaScript (spec 10.2): a plain form POST creates a
+ * Buy-now without JavaScript: a plain form POST creates a
  * one-line cart, attaches the signed-in customer's identity, and redirects to
  * a fresh checkoutUrl. This is the purchase path for plan cards whether or not
  * Shopify's own plugin is installed, and it never touches that plugin's cart.
  *
- * No nonce: the form sits in cacheable HTML (spec: no nonces in cached pages),
+ * No nonce: the form sits in cacheable HTML (no nonces in cached pages),
  * and the action only creates a cart for public merchandise and sends the
  * visitor to Shopify. A per-IP rate limit stops it being used to spam carts.
  */

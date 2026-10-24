@@ -10,7 +10,7 @@ use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Webhooks\Endpoint;
 
 /**
- * REST surface, namespace wp2-shopify/v1 (spec 13). No endpoint returns an
+ * REST surface, namespace wp2-shopify/v1. No endpoint returns an
  * access token, refresh token, client secret, webhook secret, or a Shopify
  * payload. Mutations require a logged-in user plus the wp_rest nonce; the
  * JavaScript path gets that nonce from the status call, never from cached HTML.

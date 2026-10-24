@@ -3,11 +3,11 @@
 namespace WP2_Shopify\Shopify;
 
 /**
- * Customer Account API: the signed-in customer's own data, server-side only (spec 3.2).
+ * Customer Account API: the signed-in customer's own data, server-side only.
  */
 final class CustomerAccount {
 	/**
-	 * Field names verified at build time against the pinned version; see the Phase 0 report.
+	 * Field names verified at build time against the pinned version.
 	 */
 	private const IDENTITY_QUERY = <<<'GRAPHQL'
 query WP2Identity {

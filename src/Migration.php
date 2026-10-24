@@ -8,7 +8,7 @@ use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
 /**
- * One-time upgrade from the proof of concept (spec 16.2).
+ * One-time upgrade from the proof of concept.
  *
  * - Keeps shadow users and their GID meta; backfills the numeric ID.
  * - Discards stored refresh tokens (plaintext in the POC) instead of carrying
