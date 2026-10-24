@@ -44,4 +44,34 @@ final class Context {
 		public readonly ?int $type_public_after = null,
 		public readonly bool $meter_exempt = false,
 	) {}
+
+	/**
+	 * For the per-item cache. Only the layers are stored; the Resolver runs on
+	 * them at request time, so windows and Opens expiry are never baked in.
+	 */
+	public function to_array(): array {
+		$a          = get_object_vars( $this );
+		$a['terms'] = array_map( static fn( TermRule $t ) => $t->to_array(), $this->terms );
+
+		return $a;
+	}
+
+	public static function from_array( array $a ): self {
+		$int = static fn( $v ) => is_numeric( $v ) ? (int) $v : null;
+
+		return new self(
+			item_mode: (string) ( $a['item_mode'] ?? self::ITEM_INHERIT ),
+			item_levels: Rules::levels( $a['item_levels'] ?? [] ),
+			terms: array_map( static fn( $t ) => TermRule::from_array( (array) $t ), array_values( (array) ( $a['terms'] ?? [] ) ) ),
+			type_levels: Rules::levels( $a['type_levels'] ?? [] ),
+			type_label: (string) ( $a['type_label'] ?? 'Post type' ),
+			site_levels: Rules::levels( $a['site_levels'] ?? [] ),
+			conflict: (string) ( $a['conflict'] ?? self::CONFLICT_MOST ),
+			locked_until: $int( $a['locked_until'] ?? null ),
+			public_until: $int( $a['public_until'] ?? null ),
+			published: $int( $a['published'] ?? null ),
+			type_public_after: $int( $a['type_public_after'] ?? null ),
+			meter_exempt: ! empty( $a['meter_exempt'] ),
+		);
+	}
 }

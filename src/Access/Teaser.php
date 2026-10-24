@@ -48,6 +48,13 @@ final class Teaser {
 	}
 
 	/**
+	 * @return array{mode: string, count: int}
+	 */
+	public function to_array(): array {
+		return [ 'mode' => $this->mode, 'count' => $this->count ];
+	}
+
+	/**
 	 * @param array[] $blocks  Top-level parsed blocks (parse_blocks() output).
 	 * @param string  $excerpt The item's hand-written excerpt, if any.
 	 * @return array{blocks: array[], source: string}

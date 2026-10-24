@@ -12,12 +12,14 @@ final class ItemRule {
 	public const MODES = [ Context::ITEM_INHERIT, Context::ITEM_PUBLIC, Context::ITEM_LEVEL, Context::ITEM_ADD ];
 
 	/**
-	 * Post types that can carry access rules. Public types except media by default.
+	 * Post types that can carry access rules: public types except media, less
+	 * any switched off in the rule settings.
 	 *
 	 * @return string[]
 	 */
 	public static function post_types(): array {
-		$types = array_values( array_diff( get_post_types( [ 'public' => true ] ), [ 'attachment' ] ) );
+		$rules = RuleStore::rules();
+		$types = array_values( array_filter( array_diff( get_post_types( [ 'public' => true ] ), [ 'attachment' ] ), static fn( $t ) => $rules->type( $t )['enabled'] ) );
 
 		/**
 		 * Filter which post types can be gated.
@@ -89,25 +91,5 @@ final class ItemRule {
 		 * @param int[] $post_ids Affected items; an empty list means "possibly all".
 		 */
 		do_action( 'wp2_shopify_access_changed', [ $post_id ] );
-	}
-
-	/**
-	 * The item's layers for the Resolver. Post type and term layers join in a later PR.
-	 */
-	public static function context( \WP_Post $post ): Context {
-		if ( ! self::gated( $post ) ) {
-			return new Context();
-		}
-
-		$rule = self::get( $post );
-
-		return new Context(
-			item_mode: $rule['mode'],
-			item_levels: $rule['levels'],
-			locked_until: $rule['locked_until'],
-			public_until: $rule['public_until'],
-			published: (int) get_post_time( 'U', true, $post ) ?: null,
-			meter_exempt: $rule['meter_exempt'],
-		);
 	}
 }

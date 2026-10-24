@@ -34,7 +34,7 @@ final class AccessMetaBox {
 		$levels = LevelStore::levels();
 		$custom = array_filter( $levels->all(), static fn( Level $l ) => Level::PUBLIC !== $l->slug );
 		$modes  = [
-			Context::ITEM_INHERIT => __( 'Inherit (post type and terms)', 'wp2-shopify' ),
+			Context::ITEM_INHERIT => __( 'Inherit (terms, then post type)', 'wp2-shopify' ),
 			Context::ITEM_PUBLIC  => __( 'Public: open this item', 'wp2-shopify' ),
 			Context::ITEM_LEVEL   => __( 'Require these levels instead', 'wp2-shopify' ),
 			Context::ITEM_ADD     => __( 'Inherited rule, plus these levels', 'wp2-shopify' ),
@@ -44,6 +44,16 @@ final class AccessMetaBox {
 		wp_nonce_field( self::NONCE, self::NONCE );
 		?>
 		<p><strong><?php esc_html_e( 'Now:', 'wp2-shopify' ); ?></strong> <?php echo esc_html( Gatekeeper::rule( $post )->explain( $levels ) ); ?></p>
+		<?php foreach ( Gatekeeper::context( $post )->terms as $term ) : ?>
+			<?php if ( $term->opens_at( time() ) && Context::ITEM_INHERIT === $rule['mode'] ) : ?>
+				<p class="notice notice-warning inline" style="padding:6px 8px">
+					<?php
+					/* translators: 1: term, such as "Category: Culture", 2: date */
+					echo esc_html( sprintf( __( '%1$s makes this item free to everyone until %2$s. To keep it locked, give it its own levels below.', 'wp2-shopify' ), $term->label(), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $term->opens_until ) ) );
+					?>
+				</p>
+			<?php endif; ?>
+		<?php endforeach; ?>
 
 		<p>
 			<label for="wp2-access-mode"><?php esc_html_e( 'This item', 'wp2-shopify' ); ?></label><br>

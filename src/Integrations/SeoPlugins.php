@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Integrations;
 
 use WP2_Shopify\Access\Gatekeeper;
+use WP2_Shopify\Blocks\Gate;
 
 /**
  * Keeps SEO plugins from describing a gated item with its locked text.
@@ -20,8 +21,10 @@ use WP2_Shopify\Access\Gatekeeper;
  *   reuse that description, so rank_math/frontend/description covers them.
  *
  * Items whose rule is not open always get teaser-only descriptions, whoever
- * is viewing: search engines see the locked view. Hand-written excerpts and
- * hand-written SEO descriptions are public by definition and kept.
+ * is viewing: search engines see the locked view. So do open items with a
+ * membership gate block in them: the gate protects its members area only
+ * when it renders, and these plugins read the raw content. Hand-written
+ * excerpts and hand-written SEO descriptions are public by definition and kept.
  */
 final class SeoPlugins {
 	public static function register(): void {
@@ -70,7 +73,7 @@ final class SeoPlugins {
 	}
 
 	private static function gated( mixed $post ): bool {
-		return $post instanceof \WP_Post && ! post_password_required( $post ) && ! Gatekeeper::rule( $post )->open();
+		return $post instanceof \WP_Post && ! post_password_required( $post ) && ( ! Gatekeeper::rule( $post )->open() || has_block( Gate::PARENT, $post ) );
 	}
 
 	/**
