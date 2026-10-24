@@ -1,0 +1,20 @@
+.wp2-shopify-paywall-break {
+	display: grid;
+	gap: 0.25rem;
+	justify-items: center;
+	padding: var(--wp--preset--spacing--20, 0.75rem) 0;
+	border-top: 2px dashed currentColor;
+	border-bottom: 2px dashed currentColor;
+	text-align: center;
+
+	&__label {
+		font-size: var(--wp--preset--font-size--small, 0.75rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+}
+
+.wp2-shopify-paywall {
+	margin-block: var(--wp--preset--spacing--40, 1.5rem);
+}
