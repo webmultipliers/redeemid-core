@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Webhooks;
 
 /**
- * Idempotent webhook ingest (spec 6.1). The dedupe key is Shopify's webhook ID
+ * Idempotent webhook ingest. The dedupe key is Shopify's webhook ID
  * plus topic, so a replayed delivery is accepted and changes nothing.
  */
 final class Inbox {

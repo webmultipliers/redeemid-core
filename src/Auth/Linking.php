@@ -5,7 +5,7 @@ namespace WP2_Shopify\Auth;
 use WP2_Shopify\Support\Logger;
 
 /**
- * Linking an existing WordPress account to a Shopify customer (spec 5.2).
+ * Linking an existing WordPress account to a Shopify customer.
  *
  * The POC set a link-user cookie in JavaScript that the server never read.
  * Here the server issues a short-lived, single-use token, hashed at rest and

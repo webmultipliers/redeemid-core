@@ -3,8 +3,8 @@
 namespace WP2_Shopify\Entitlement;
 
 /**
- * A gate rule as saved in block attributes (spec 7.1, 7.4). It stores a rule,
- * not a hard-coded tag check, so Phase 3 can add order and subscription
+ * A gate rule as saved in block attributes. It stores a rule,
+ * not a hard-coded tag check, so a later version can add order and subscription
  * sources without changing saved content.
  */
 final class Rule {

@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Support;
 
 /**
- * Authenticated encryption for tokens at rest (spec 5.4).
+ * Authenticated encryption for tokens at rest.
  *
  * The POC loaded a base64 string with Defuse's Key::loadFromAsciiSafeString(),
  * which only accepts Defuse's own checksummed hex format, so every encrypt and

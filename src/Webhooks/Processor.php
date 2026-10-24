@@ -13,7 +13,7 @@ use WP2_Shopify\Sync\Reconciler;
 
 /**
  * Applies a queued inbox row. Handlers are idempotent; transient failures are
- * retried with backoff, then dead-lettered (spec 6.1).
+ * retried with backoff, then dead-lettered.
  */
 final class Processor {
 	private const MAX_ATTEMPTS = 5;
@@ -85,7 +85,7 @@ final class Processor {
 		}
 
 		if ( ! $user ) {
-			// A countable outcome, not a silent early return (spec 6.2).
+			// A countable outcome, not a silent early return.
 			Logger::log( 'webhook.unmatched', [ 'topic' => $topic, 'customer' => $id?->numeric ] );
 
 			return InboxStore::UNMATCHED;
@@ -153,9 +153,9 @@ final class Processor {
 	}
 
 	/**
-	 * customers/delete and customers/redact actually remove data (spec 6.5).
-	 * Shadow users are deleted, with their content reassigned, not deleted
-	 * (spec 16.3). Linked regular accounts keep the WordPress account and lose
+	 * customers/delete and customers/redact actually remove data.
+	 * Shadow users are deleted, with their content reassigned, not deleted.
+	 * Linked regular accounts keep the WordPress account and lose
 	 * every Shopify-linked field.
 	 */
 	public static function erase( \WP_User $user ): void {

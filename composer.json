@@ -1,6 +1,6 @@
 {
 	"name": "webmultipliers/wp2-shopify",
-	"description": "Shopify for WordPress: Shopify Customer Accounts identity, tag-based membership gating, and Storefront commerce blocks built on Blockstudio 7.",
+	"description": "Shopify for WordPress: Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating, built on Blockstudio 7.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {

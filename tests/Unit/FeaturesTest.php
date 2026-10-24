@@ -16,8 +16,8 @@ use WP2_Shopify\Features\Route;
 use WP2_Shopify\Features\Surfaces;
 
 /**
- * The feature registry's pure core: the acceptance matrix and named tests
- * from the spec (section 12), on the same Levels, Checker and Evaluator that
+ * The feature registry's pure core: the acceptance matrix and named tests,
+ * on the same Levels, Checker and Evaluator that
  * gate content.
  */
 final class FeaturesTest extends TestCase {
@@ -53,7 +53,7 @@ final class FeaturesTest extends TestCase {
 	}
 
 	/**
-	 * Spec section 12, visitor-state matrix: [ member, gold only, gold or add-on, signed in ].
+	 * Visitor-state matrix: [ member, gold only, gold or add-on, signed in ].
 	 *
 	 * @return array<string, array{0: Member, 1: bool, 2: bool, 3: bool}>
 	 */

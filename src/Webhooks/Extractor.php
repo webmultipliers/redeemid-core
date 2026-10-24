@@ -5,7 +5,7 @@ namespace WP2_Shopify\Webhooks;
 use WP2_Shopify\Support\CustomerId;
 
 /**
- * Reduce a webhook payload to the few fields its handler needs (spec 15.2).
+ * Reduce a webhook payload to the few fields its handler needs.
  * Full payloads are never stored; this is what goes into the inbox row.
  */
 final class Extractor {
@@ -22,7 +22,7 @@ final class Extractor {
 					'state'          => self::str( $payload['state'] ?? null ),
 					'verified_email' => isset( $payload['verified_email'] ) ? (bool) $payload['verified_email'] : null,
 				];
-				// Older payloads may still carry tags; a missing field never means "tags removed" (spec 6.3).
+				// Older payloads may still carry tags; a missing field never means "tags removed".
 				if ( array_key_exists( 'tags', $payload ) ) {
 					$data['tags'] = self::tags( $payload['tags'] );
 				}

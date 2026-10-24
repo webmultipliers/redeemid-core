@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Entitlement;
 
 /**
- * Pure entitlement decision (spec 7.1, 7.3). No WordPress calls, so the whole
+ * Pure entitlement decision. No WordPress calls, so the whole
  * truth table is unit tested. Every unknown fails closed.
  */
 final class Evaluator {
@@ -21,7 +21,7 @@ final class Evaluator {
 
 	public function decide( Rule $rule, Member $member, int $now ): Decision {
 		if ( 'tags' !== $rule->source ) {
-			// Order / subscription sources are Phase 3; until they exist they fail closed.
+			// Order / subscription sources don't exist yet, so they fail closed.
 			return Decision::deny( Decision::BAD_RULE );
 		}
 

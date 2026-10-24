@@ -6,7 +6,7 @@ use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Sync\Mirror;
 
 /**
- * Shadow WordPress users for Shopify customers (spec 5.1): keyed by the
+ * Shadow WordPress users for Shopify customers: keyed by the
  * customer ID, role shopify_customer, no password reset, no admin bar, no
  * wp-admin, hidden from the standard user list. No email matching happens at
  * sign-in; linking an existing account is the explicit flow in Linking.

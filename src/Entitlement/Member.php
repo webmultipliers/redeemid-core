@@ -4,7 +4,7 @@ namespace WP2_Shopify\Entitlement;
 
 /**
  * What the gate knows about the current visitor: the synced mirror only,
- * never a client-side flag (spec 5.3, 7.2).
+ * never a client-side flag.
  */
 final class Member {
 	/**

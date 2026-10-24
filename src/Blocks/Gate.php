@@ -13,7 +13,7 @@ use WP2_Shopify\Entitlement\Rule;
 use WP2_Shopify\Settings;
 
 /**
- * Server-side gating for wp2-shopify/membership-gate (spec 7.2, 9.4).
+ * Server-side gating for wp2-shopify/membership-gate.
  *
  * The decision is applied to the parsed block tree before anything renders:
  * render_block_data removes the Members only child for visitors who are not
@@ -140,7 +140,7 @@ final class Gate {
 		$teaser   = 'teaser-blocks' === self::option( $a['fallbackMode'] ?? '', 'message' );
 
 		if ( $decision->granted && ! defined( 'DONOTCACHEPAGE' ) ) {
-			// Member-only output must never land in a shared page cache (spec 15.1).
+			// Member-only output must never land in a shared page cache.
 			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
 		}
 

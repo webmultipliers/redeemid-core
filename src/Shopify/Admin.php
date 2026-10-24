@@ -7,7 +7,7 @@ use WP2_Shopify\Support\CustomerId;
 
 /**
  * Admin API client, server-side only. Used for the plugin-owned purchase-to-tag
- * loop and for reconciliation (owner decision on review point 1). Never called
+ * loop and for reconciliation. Never called
  * with credentials from the browser.
  */
 final class Admin {

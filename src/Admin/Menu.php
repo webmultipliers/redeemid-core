@@ -6,7 +6,7 @@ use WP2_Shopify\Config;
 use WP2_Shopify\Settings;
 
 /**
- * The top-level Shopify menu (spec 14.2):
+ * The top-level Shopify menu:
  *
  * - Overview: connection summary.
  * - Settings: the Shopify credentials (wp-config.php constants win) and the

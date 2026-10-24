@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       WP2 Shopify
  * Plugin URI:        https://github.com/webmultipliers/shopify-for-wp
- * Description:       Shopify Customer Accounts sign-in, tag-based membership gating, and Shopify commerce blocks for WordPress, built on Blockstudio 7.
+ * Description:       Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7.
  * Version:           2.0.0-alpha.1
  * Requires at least: 6.7
  * Requires PHP:      8.2

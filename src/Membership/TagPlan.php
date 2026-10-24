@@ -5,7 +5,7 @@ namespace WP2_Shopify\Membership;
 use WP2_Shopify\Entitlement\Evaluator;
 
 /**
- * Pure purchase-to-tag computation (owner decision on review point 1).
+ * Pure purchase-to-tag computation.
  *
  * Given which products grant which tags, and the customer's orders, work out
  * the tags the customer should hold. Only tags that appear in the map are

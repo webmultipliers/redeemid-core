@@ -6,7 +6,7 @@ use WP2_Shopify\Support\Logger;
 
 /**
  * Shared transport: version-pinned URLs are built by callers; this enforces
- * timeouts and logs outcomes without request or response bodies (spec 4.3).
+ * timeouts and logs outcomes without request or response bodies.
  */
 final class Http {
 	public static function graphql( string $url, array $headers, string $query, array $variables = [], string $label = 'graphql' ): array|\WP_Error {

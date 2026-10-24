@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Support;
 
 /**
- * Canonical Shopify customer identity (spec 6.2).
+ * Canonical Shopify customer identity.
  *
  * Login returns a GID (gid://shopify/Customer/123), REST webhook payloads carry
  * the numeric ID (123), and some payloads carry either as a string or integer.

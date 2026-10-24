@@ -6,10 +6,10 @@ use WP2_Shopify\Membership\MembershipSync;
 use WP2_Shopify\Shopify\Admin;
 
 /**
- * Closes the gap between paying and access (review point 1): a buyer who
+ * Closes the gap between paying and access: a buyer who
  * returns from checkout should not see a page that is still locked while the
- * orders/paid webhook is in flight. The checkout handoff (Phase 2) calls
- * mark(); the next signed-in page views re-run the membership computation,
+ * orders/paid webhook is in flight. A checkout handoff calls mark()
+ * (nothing does yet); the next signed-in page views re-run the membership computation,
  * at most once a minute, for up to 30 minutes.
  */
 final class PostCheckout {

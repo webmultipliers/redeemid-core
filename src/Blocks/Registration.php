@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Blocks;
 
 /**
- * Registers the plugin's Blockstudio blocks next to any theme blocks (spec 3.1).
+ * Registers the plugin's Blockstudio blocks next to any theme blocks.
  *
  * Verified against Blockstudio 7.7.7: the blockstudio/path filter REPLACES the
  * theme's block directory (Build::get_build_dir() returns the filter value

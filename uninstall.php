@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall (spec 16.3).
+ * Uninstall.
  *
  * Non-destructive by default: WordPress users and their content stay. Plugin
  * options, transients, the webhook table and Shopify tokens inside sessions

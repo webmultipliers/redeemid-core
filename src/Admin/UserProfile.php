@@ -5,7 +5,7 @@ namespace WP2_Shopify\Admin;
 use WP2_Shopify\Sync\Mirror;
 
 /**
- * The per-user Shopify card on the profile screen (spec 14.2). Shows both ID
+ * The per-user Shopify card on the profile screen. Shows both ID
  * forms and the mirror; never tokens.
  */
 final class UserProfile {

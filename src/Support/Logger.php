@@ -3,7 +3,7 @@
 namespace WP2_Shopify\Support;
 
 /**
- * Operational log lines: IDs, topics, timings and outcomes only (spec 15.2).
+ * Operational log lines: IDs, topics, timings and outcomes only.
  * Never pass tokens, secrets, authorization codes, checkout URLs or payloads.
  */
 final class Logger {
