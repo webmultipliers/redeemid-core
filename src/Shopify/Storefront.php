@@ -88,8 +88,7 @@ GRAPHQL;
 			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
 		}
 
-		$query = '' === $search ? null : 'title:*' . $search . '*';
-		$data  = Http::graphql( self::endpoint(), self::headers(), self::PRODUCT_SEARCH, [ 'query' => $query ], 'storefront.product_search' );
+		$data = Http::graphql( self::endpoint(), self::headers(), self::PRODUCT_SEARCH, [ 'query' => self::title_query( $search ) ], 'storefront.product_search' );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;
@@ -106,6 +105,18 @@ GRAPHQL;
 		set_transient( $key, $products, self::CACHE_TTL );
 
 		return $products;
+	}
+
+	/**
+	 * Shopify search syntax for "title has words starting with each of these".
+	 * Shopify's `*` only matches as a suffix (a prefix query), so `*gold*`
+	 * finds nothing for a word in the middle of a title; each word becomes
+	 * its own `title:word*` term instead. Null (every product) when empty.
+	 */
+	public static function title_query( string $search ): ?string {
+		$words = preg_split( '/\s+/', trim( $search ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+
+		return $words ? implode( ' ', array_map( static fn( string $word ) => 'title:' . $word . '*', $words ) ) : null;
 	}
 
 	/**
