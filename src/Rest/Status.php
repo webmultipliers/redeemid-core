@@ -15,9 +15,6 @@ use WP2_Shopify\Sync\Mirror;
 final class Status {
 	public const AJAX_ACTION = 'wp2_shopify_status';
 
-	/** Cookie names cache layers must vary on or bypass for (published in the README). */
-	public const CACHE_BYPASS_COOKIES = [ 'wordpress_logged_in_*', 'wp2_shopify_oauth_state', 'wp2_shopify_cart' ];
-
 	public static function register(): void {
 		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ self::class, 'ajax' ] );
 		add_action( 'wp_ajax_nopriv_' . self::AJAX_ACTION, [ self::class, 'ajax' ] );

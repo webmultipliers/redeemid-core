@@ -4,7 +4,7 @@ Sign in with Shopify customer accounts on WordPress, and gate content by Shopify
 
 > **Working on this plugin? Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. See [Building on Blockstudio](#building-on-blockstudio) for what we use and the few places we deliberately don't.
 
-> **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging and the gate block are in place. Catalog, cart and the account card come in later phases. See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
+> **Status: 2.0.0-alpha.1 (Phase 0).** Identity, linking, webhooks, membership tagging, gates, access rules, features, plan cards and the bridge to Shopify's own cart are in place. The account card comes in a later phase; catalog blocks are cut in favour of Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). See [docs/phase-0-report.md](docs/phase-0-report.md) for what was verified and what is still open.
 
 ## Requirements
 
