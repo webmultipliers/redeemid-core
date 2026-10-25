@@ -47,11 +47,14 @@ final class Admin {
 	 * Gating fields for up to 50 customers in one call.
 	 *
 	 * @param CustomerId[] $ids
-	 * @return array<string, array{tags: string[], state: string}>|\WP_Error Keyed by numeric ID; missing keys were not found.
+	 * Also reads the optional membership.member_since and membership.renews_on
+	 * customer metafields, for the member's account card.
+	 *
+	 * @return array<string, array{tags: string[], state: string, since: ?string, renews: ?string}>|\WP_Error Keyed by numeric ID; missing keys were not found.
 	 */
 	public static function customers( array $ids ): array|\WP_Error {
 		$data = self::query(
-			'query WP2Reconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state } } }',
+			'query WP2Reconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }',
 			[ 'ids' => array_map( static fn( CustomerId $id ) => $id->gid(), array_slice( $ids, 0, 50 ) ) ],
 			'admin.customers'
 		);
@@ -67,8 +70,10 @@ final class Admin {
 
 			if ( $id ) {
 				$out[ $id->numeric ] = [
-					'tags'  => array_values( array_filter( (array) ( $node['tags'] ?? [] ), 'is_string' ) ),
-					'state' => (string) ( $node['state'] ?? '' ),
+					'tags'   => array_values( array_filter( (array) ( $node['tags'] ?? [] ), 'is_string' ) ),
+					'state'  => (string) ( $node['state'] ?? '' ),
+					'since'  => isset( $node['since']['value'] ) ? (string) $node['since']['value'] : null,
+					'renews' => isset( $node['renews']['value'] ) ? (string) $node['renews']['value'] : null,
 				];
 			}
 		}

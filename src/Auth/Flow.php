@@ -50,6 +50,7 @@ final class Flow {
 		'synced'                  => 'Your membership details were refreshed.',
 		'sync_failed'             => 'Your details could not be refreshed right now. Please try again later.',
 		'sync_wait'               => 'Your details were refreshed a moment ago.',
+		'existing_expired'        => 'That sign-in expired. Please log in with Shopify again.',
 	];
 
 	public static function register(): void {
@@ -59,7 +60,7 @@ final class Flow {
 		add_filter( 'the_content', [ self::class, 'callback_notice' ], 5 );
 		add_action( 'set_auth_cookie', [ TokenVault::class, 'capture_session_token' ], 10, 6 );
 
-		foreach ( [ 'login', 'logout' ] as $action ) {
+		foreach ( [ 'login', 'logout', 'new_account' ] as $action ) {
 			add_action( 'admin_post_wp2_shopify_' . $action, [ self::class, 'handle_' . $action ] );
 			add_action( 'admin_post_nopriv_wp2_shopify_' . $action, [ self::class, 'handle_' . $action ] );
 		}
@@ -194,13 +195,97 @@ final class Flow {
 			return self::complete_link( (int) $data['link_user'], (string) $data['link_token'], $id, $identity, $claims, $tokens, (string) $data['redirect_to'] );
 		}
 
-		$user = Mirror::find_user( $id ) ?? ShadowUsers::create( $id, $identity );
+		$user = Mirror::find_user( $id );
+
+		if ( ! $user ) {
+			$match = self::existing_account( $claims );
+
+			if ( $match ) {
+				// Never link by email on its own: ask, so their history isn't split into two accounts.
+				Logger::log( 'auth.existing_account', [ 'user' => $match->ID, 'customer' => $id->numeric ] );
+
+				return add_query_arg(
+					'wp2s_existing',
+					rawurlencode(
+						Linking::hold(
+							[
+								'kind'        => 'existing',
+								'user_id'     => $match->ID,
+								'customer'    => $id->numeric,
+								'email'       => (string) ( $claims['email'] ?? '' ),
+								'identity'    => $identity,
+								'tokens'      => Plugin::crypto()->encrypt( (string) wp_json_encode( $tokens ) ),
+								'redirect_to' => (string) $data['redirect_to'],
+							]
+						)
+					),
+					Config::callback_url()
+				);
+			}
+
+			$user = ShadowUsers::create( $id, $identity );
+		}
 
 		if ( is_wp_error( $user ) ) {
 			Logger::log( 'auth.user_create_failed', [ 'customer' => $id->numeric ] );
 			return self::notice_url( 'profile_failed' );
 		}
 
+		return self::sign_in( $user, $id, $identity, $tokens, (string) $data['redirect_to'] );
+	}
+
+	/**
+	 * An existing WordPress account, not linked to Shopify and not staff, whose
+	 * email Shopify has verified as this customer's. Null when there is none.
+	 */
+	private static function existing_account( array $claims ): ?\WP_User {
+		$email = strtolower( trim( (string) ( $claims['email'] ?? '' ) ) );
+
+		if ( true !== ( $claims['email_verified'] ?? null ) || '' === $email || ! apply_filters( 'wp2_shopify_offer_existing_account', true ) ) {
+			return null;
+		}
+
+		$user = get_user_by( 'email', $email );
+
+		if ( ! $user || ShadowUsers::is_shadow( $user->ID ) || Mirror::customer_id( $user->ID ) || Linking::privileged( $user ) ) {
+			return null;
+		}
+
+		return $user;
+	}
+
+	/**
+	 * "Use a separate account" from the existing-account prompt: create the
+	 * shadow account after all and sign in.
+	 */
+	public static function handle_new_account(): void {
+		$pending = Linking::take( sanitize_text_field( wp_unslash( $_POST['ref'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification -- the single-use ref is the secret; the visitor is a guest.
+
+		if ( ! $pending || 'existing' !== ( $pending['kind'] ?? '' ) ) {
+			self::redirect( self::notice_url( 'existing_expired' ) );
+		}
+
+		$id     = CustomerId::parse( (string) $pending['customer'] );
+		$tokens = json_decode( (string) Plugin::crypto()->decrypt( (string) $pending['tokens'] ), true );
+
+		if ( ! $id || ! is_array( $tokens ) ) {
+			self::redirect( self::notice_url( 'existing_expired' ) );
+		}
+
+		$user = Mirror::find_user( $id ) ?? ShadowUsers::create( $id, (array) $pending['identity'] );
+
+		if ( is_wp_error( $user ) ) {
+			self::redirect( self::notice_url( 'profile_failed' ) );
+		}
+
+		Logger::log( 'auth.separate_account', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
+		self::redirect( self::sign_in( $user, $id, (array) $pending['identity'], $tokens, (string) $pending['redirect_to'] ) );
+	}
+
+	/**
+	 * Sign $user in as Shopify customer $id. Returns where to go next.
+	 */
+	private static function sign_in( \WP_User $user, CustomerId $id, array $identity, array $tokens, string $redirect_to ): string {
 		// A linked account can gain a privileged role after linking; the link-time check alone would let it in.
 		if ( Linking::privileged( $user ) ) {
 			Logger::log( 'auth.sign_in_refused', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
@@ -216,7 +301,7 @@ final class Flow {
 		Logger::log( 'auth.signed_in', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
 		do_action( 'wp2_shopify_signed_in', $user->ID, $id );
 
-		return (string) $data['redirect_to'];
+		return $redirect_to;
 	}
 
 	private static function complete_link( int $user_id, string $link_token, CustomerId $id, array $identity, array $claims, array $tokens, string $redirect_to ): string {
@@ -454,9 +539,30 @@ final class Flow {
 
 	private static function notice_html(): string {
 		// phpcs:disable WordPress.Security.NonceVerification -- display only.
-		$notice = sanitize_key( wp_unslash( $_GET['wp2s_notice'] ?? '' ) );
-		$ref    = sanitize_text_field( wp_unslash( $_GET['wp2s_confirm'] ?? '' ) );
+		$notice   = sanitize_key( wp_unslash( $_GET['wp2s_notice'] ?? '' ) );
+		$ref      = sanitize_text_field( wp_unslash( $_GET['wp2s_confirm'] ?? '' ) );
+		$existing = sanitize_text_field( wp_unslash( $_GET['wp2s_existing'] ?? '' ) );
+		$connect  = ! empty( $_GET['wp2s_connect'] );
+		$back     = self::safe_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ?? '' ) ) );
 		// phpcs:enable
+
+		if ( '' !== $existing ) {
+			return self::existing_html( $existing );
+		}
+
+		if ( $connect && is_user_logged_in() && ! Mirror::customer_id( get_current_user_id() ) && ! Linking::refusal( get_current_user_id() ) ) {
+			ob_start();
+			?>
+			<form class="wp2-shopify-notice wp2-shopify-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
+				<p><?php esc_html_e( 'You\'re signed in. Connect your Shopify account to this one so your membership works here.', 'wp2-shopify' ); ?></p>
+				<input type="hidden" name="action" value="wp2_shopify_connect">
+				<input type="hidden" name="redirect_to" value="<?php echo esc_attr( $back ); ?>">
+				<?php wp_nonce_field( 'wp2_shopify_connect' ); ?>
+				<button type="submit" class="wp-element-button"><?php esc_html_e( 'Connect your Shopify account', 'wp2-shopify' ); ?></button>
+			</form>
+			<?php
+			return (string) ob_get_clean();
+		}
 
 		if ( '' !== $ref ) {
 			$pending = Linking::peek( $ref );
@@ -493,6 +599,50 @@ final class Flow {
 		$message = self::message( $notice );
 
 		return '' === $message ? '' : '<div class="wp2-shopify-notice" role="status"><p>' . esc_html( $message ) . '</p></div>';
+	}
+
+	/**
+	 * Shopify verified an email that an existing account here uses. Offer to
+	 * sign in to that account and connect it, or to carry on separately.
+	 */
+	private static function existing_html( string $ref ): string {
+		$pending = Linking::peek( $ref );
+
+		if ( ! $pending || 'existing' !== ( $pending['kind'] ?? '' ) ) {
+			return '<div class="wp2-shopify-notice" role="alert"><p>' . esc_html( self::message( 'existing_expired' ) ) . '</p></div>';
+		}
+
+		$after = add_query_arg(
+			[
+				'wp2s_connect' => 1,
+				'redirect_to'  => rawurlencode( (string) $pending['redirect_to'] ),
+			],
+			Config::callback_url()
+		);
+
+		ob_start();
+		?>
+		<div class="wp2-shopify-notice wp2-shopify-existing">
+			<p>
+				<?php
+				printf(
+					/* translators: %s: email address */
+					esc_html__( 'You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place.', 'wp2-shopify' ),
+					'<strong>' . esc_html( (string) $pending['email'] ) . '</strong>'
+				);
+				?>
+			</p>
+			<p>
+				<a class="wp-element-button" href="<?php echo esc_url( wp_login_url( $after ) ); ?>"><?php esc_html_e( 'Sign in to my account', 'wp2-shopify' ); ?></a>
+			</p>
+			<form method="post" action="<?php echo esc_url( self::action_url() ); ?>">
+				<input type="hidden" name="action" value="wp2_shopify_new_account">
+				<input type="hidden" name="ref" value="<?php echo esc_attr( $ref ); ?>">
+				<button type="submit" class="wp2-shopify-link-button"><?php esc_html_e( 'No thanks, use a separate account', 'wp2-shopify' ); ?></button>
+			</form>
+		</div>
+		<?php
+		return (string) ob_get_clean();
 	}
 
 	private static function posted_redirect(): string {

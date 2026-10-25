@@ -254,7 +254,7 @@ final class SettingsPage {
 		<?php endif; ?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'wp2_shopify' ); ?>
-			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How synced Shopify tags unlock content, what happens on sign-out, and when to warn you about webhooks.', 'wp2-shopify' ) ); ?>
+			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How members sign in and come back from checkout, what happens on sign-out, and when to warn you about webhooks.', 'wp2-shopify' ) ); ?>
 			<div class="wp2s-panel__body wp2s-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
@@ -268,6 +268,28 @@ final class SettingsPage {
 					<td>
 						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'wp2-shopify' ); ?></label>
 						<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'wp2-shopify' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Sign-in links', 'wp2-shopify' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[login_button]" value="1" <?php checked( ! empty( $settings['login_button'] ) ); ?>> <?php esc_html_e( 'Show "Log in with Shopify" on the WordPress login screen', 'wp2-shopify' ); ?></label><br>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[shopify_login_links]" value="1" <?php checked( ! empty( $settings['shopify_login_links'] ) ); ?>> <?php esc_html_e( 'Send visitors to Shopify sign-in from the site\'s login links (comment forms, themes, other plugins)', 'wp2-shopify' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Log in and Log out under Appearance → Menus → Shopify, and classic themes can use the [wp2_shopify_login] shortcode.', 'wp2-shopify' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="wp2s-subscription-url"><?php esc_html_e( 'Subscription management', 'wp2-shopify' ); ?></label></th>
+					<td>
+						<input type="url" id="wp2s-subscription-url" class="regular-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[subscription_url]" value="<?php echo esc_attr( (string) $settings['subscription_url'] ); ?>" placeholder="https://">
+						<p class="description"><?php esc_html_e( 'Where members manage or cancel a subscription, such as your subscription app\'s customer portal. Shown on the Member Account block; leave empty to hide the link.', 'wp2-shopify' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Return link for Shopify', 'wp2-shopify' ); ?></th>
+					<td>
+						<input type="text" class="regular-text code" readonly value="<?php echo esc_attr( \WP2_Shopify\Sync\PostCheckout::return_url() ); ?>" onfocus="this.select()">
+						<p class="description"><?php esc_html_e( 'Add this as a "Return to the site" link on Shopify\'s order status page and in the order confirmation email. Signed-in buyers go back to the page they bought from; guests are asked to log in with the email from their order.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 				<tr>

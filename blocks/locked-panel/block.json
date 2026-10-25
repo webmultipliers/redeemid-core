@@ -5,7 +5,7 @@
 	"title": "Locked Content Panel",
 	"category": "widgets",
 	"icon": "lock",
-	"description": "The panel locked-out visitors see in place of gated content: a message, the reason when there is one, a call to action and a sign-in link. A Blockstudio component rendered by the plugin, not inserted by editors; a theme can restyle it or replace its template with a Blockstudio override.",
+	"description": "The panel locked-out visitors see in place of gated content: a message, why they can't read it, and what to do next (log in, connect their Shopify account, refresh after a purchase, upgrade, renew). A Blockstudio component rendered by the plugin, not inserted by editors; a theme can restyle it or replace its template with a Blockstudio override.",
 	"textdomain": "wp2-shopify",
 	"supports": {
 		"html": false
@@ -15,9 +15,16 @@
 		"attributes": [
 			{ "id": "message", "type": "text", "label": "Message" },
 			{ "id": "reason", "type": "text", "label": "Reason" },
+			{ "id": "kind", "type": "text", "label": "Kind: sign_in, connect, finishing, renew, upgrade, join, disabled or none" },
+			{ "id": "level", "type": "text", "label": "Level slug the content needs" },
 			{ "id": "ctaLabel", "type": "text", "label": "Call to action label" },
 			{ "id": "ctaUrl", "type": "text", "label": "Call to action URL" },
-			{ "id": "signInUrl", "type": "text", "label": "Sign-in URL" }
+			{ "id": "signInUrl", "type": "text", "label": "Sign-in URL" },
+			{ "id": "hint", "type": "text", "label": "Small print under the buttons" },
+			{ "id": "formAction", "type": "text", "label": "admin-post action of the panel's form: wp2_shopify_connect or wp2_shopify_sync" },
+			{ "id": "formLabel", "type": "text", "label": "Form button label" },
+			{ "id": "formNonce", "type": "text", "label": "Form nonce" },
+			{ "id": "redirectTo", "type": "text", "label": "Where the form returns to" }
 		]
 	}
 }

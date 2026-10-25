@@ -1,0 +1,70 @@
+.wp2-shopify-account {
+	padding: var(--wp--preset--spacing--40, 1.5rem);
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+	border-radius: 0.5rem;
+
+	&__title {
+		margin: 0 0 1rem;
+	}
+
+	&__details {
+		display: grid;
+		grid-template-columns: minmax(8rem, max-content) 1fr;
+		gap: 0.5rem 1.5rem;
+		margin: 0 0 1.25rem;
+
+		dt {
+			font-weight: 600;
+		}
+
+		dd {
+			margin: 0;
+		}
+
+		@media (max-width: 480px) {
+			grid-template-columns: 1fr;
+			gap: 0.15rem;
+
+			dd {
+				margin-bottom: 0.6rem;
+			}
+		}
+	}
+
+	&__levels {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		span {
+			opacity: 0.75;
+		}
+	}
+
+	&__ended,
+	&__alert {
+		margin: 0.4rem 0 0;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	&__form {
+		display: inline;
+		margin: 0;
+	}
+
+	.wp2-shopify-link-button {
+		padding: 0;
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+}

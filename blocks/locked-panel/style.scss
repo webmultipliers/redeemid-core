@@ -20,3 +20,13 @@
 .wp2-shopify-paywall {
 	margin-block: var(--wp--preset--spacing--40, 1.5rem);
 }
+
+.wp2-shopify-gate__hint {
+	font-size: 0.9em;
+	opacity: 0.85;
+}
+
+.wp2-shopify-gate__actions form {
+	display: inline;
+	margin: 0;
+}

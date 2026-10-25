@@ -133,7 +133,7 @@ final class Gatekeeper {
 		];
 
 		return '<div class="wp2-shopify-paywall" data-wp2-level="' . esc_attr( (string) $verdict->next_level ) . '">'
-			. Gate::fallback_panel( $a, $verdict->decision )
+			. Gate::fallback_panel( $a, $verdict->decision, (string) $verdict->next_level )
 			. '</div>';
 	}
 

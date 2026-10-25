@@ -1,0 +1,52 @@
+/* Post-checkout banner and the plugin's small no-JavaScript forms. Themes can restyle both. */
+.wp2-shopify-checkout-banner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem 1rem;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid currentColor;
+	text-align: center;
+}
+
+.wp2-shopify-checkout-banner p {
+	margin: 0;
+}
+
+.wp2-shopify-inline-form {
+	display: inline;
+	margin: 0;
+}
+
+.wp2-shopify-link-button {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.wp2-shopify-gate__hint {
+	font-size: 0.9em;
+	opacity: 0.85;
+}
+
+.wp2-shopify-login {
+	margin: 0 0 1rem;
+	padding: 0 24px;
+}
+
+.wp2-shopify-login .button.button-large {
+	display: block;
+	width: 100%;
+	text-align: center;
+}
+
+.wp2-shopify-login__or {
+	margin: 0.75rem 0 0;
+	text-align: center;
+	opacity: 0.7;
+}

@@ -125,6 +125,7 @@ final class Reconciler {
 
 			Mirror::set_tags( $user_id, $after );
 			Mirror::set_status( $user_id, $status );
+			Mirror::set_dates( $user_id, [ 'since' => $remote[ $id->numeric ]['since'] ?? null, 'renews' => $remote[ $id->numeric ]['renews'] ?? null ] );
 			Mirror::stamp( $user_id, $source );
 		}
 

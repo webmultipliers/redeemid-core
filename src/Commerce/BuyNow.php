@@ -6,6 +6,7 @@ use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\TokenVault;
 use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Support\Logger;
+use WP2_Shopify\Sync\PostCheckout;
 
 /**
  * Buy-now without JavaScript: a plain form POST creates a
@@ -86,6 +87,7 @@ final class BuyNow {
 		}
 
 		Logger::log( 'commerce.buy_now', [ 'user_id' => $user_id, 'signed_in' => (bool) $token ] );
+		PostCheckout::mark( $user_id, $back );
 
 		wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect -- checkoutUrl just returned by Shopify, https only.
 		exit;

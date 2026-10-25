@@ -21,6 +21,7 @@ use WP2_Shopify\Admin\Menu;
 use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
+use WP2_Shopify\Auth\SignInLinks;
 use WP2_Shopify\Blocks\Registration;
 use WP2_Shopify\Commerce\BuyNow;
 use WP2_Shopify\Commerce\CartBridge;
@@ -32,6 +33,7 @@ use WP2_Shopify\Support\Crypto;
 use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Sync\BulkResync;
 use WP2_Shopify\Sync\Cli as SyncCli;
+use WP2_Shopify\Sync\LevelHistory;
 use WP2_Shopify\Sync\PostCheckout;
 use WP2_Shopify\Webhooks\Endpoint;
 use WP2_Shopify\Webhooks\Monitor;
@@ -44,9 +46,11 @@ final class Plugin {
 	public static function boot(): void {
 		ShadowUsers::register();
 		Flow::register();
+		SignInLinks::register();
 		Status::register();
 		PostCheckout::register();
 		BulkResync::register();
+		LevelHistory::register();
 		Monitor::register();
 		Registration::register();
 		Gatekeeper::register();

@@ -1,18 +1,27 @@
 <?php
 /**
  * The locked-visitor panel, shared by the Membership Gate and the item
- * paywall (WP2_Shopify\Blocks\Gate::fallback_panel()). Everything here is
- * public: it is what people who cannot read the content see.
+ * paywall (WP2_Shopify\Blocks\Gate::fallback_panel()). It is what people who
+ * cannot read the content see, worded for why: a guest is asked to log in, a
+ * WordPress user to connect their Shopify account, a customer who just paid
+ * to refresh, a lapsed member to renew, another level's member to upgrade.
  *
- * Themes restyle it through .wp2-shopify-gate__panel, or replace this template
- * with a Blockstudio override ("override": true on wp2-shopify/locked-panel).
+ * The form (connect or refresh) is only ever rendered for a signed-in visitor,
+ * on a page the plugin marks uncacheable; guests get plain links.
  *
- * @var array $a Block attributes: message, reason, ctaLabel, ctaUrl, signInUrl.
+ * Themes restyle it through .wp2-shopify-gate__panel (data-wp2-kind tells the
+ * cases apart), or replace this template with a Blockstudio override
+ * ("override": true on wp2-shopify/locked-panel).
+ *
+ * @var array $a Block attributes: message, reason, kind, level, ctaLabel, ctaUrl,
+ *               signInUrl, hint, formAction, formLabel, formNonce, redirectTo.
  */
 
 defined( 'ABSPATH' ) || exit;
+
+$wp2_form = in_array( $a['formAction'] ?? '', [ 'wp2_shopify_connect', 'wp2_shopify_sync' ], true ) && ! empty( $a['formNonce'] );
 ?>
-<div class="wp2-shopify-gate__panel" role="region" aria-label="<?php esc_attr_e( 'Members only', 'wp2-shopify' ); ?>">
+<div class="wp2-shopify-gate__panel" role="region" aria-label="<?php esc_attr_e( 'Members only', 'wp2-shopify' ); ?>" data-wp2-kind="<?php echo esc_attr( (string) ( $a['kind'] ?? '' ) ); ?>" data-wp2-level="<?php echo esc_attr( (string) ( $a['level'] ?? '' ) ); ?>">
 	<p><?php echo esc_html( (string) ( $a['message'] ?? '' ) ); ?></p>
 	<?php if ( ! empty( $a['reason'] ) ) : ?>
 		<p class="wp2-shopify-gate__reason"><?php echo esc_html( (string) $a['reason'] ); ?></p>
@@ -24,5 +33,16 @@ defined( 'ABSPATH' ) || exit;
 		<?php if ( ! empty( $a['signInUrl'] ) ) : ?>
 			<a class="wp-element-button is-style-outline" href="<?php echo esc_url( (string) $a['signInUrl'] ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'wp2-shopify' ); ?></a>
 		<?php endif; ?>
+		<?php if ( $wp2_form ) : ?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="wp2-shopify-inline-form">
+				<input type="hidden" name="action" value="<?php echo esc_attr( (string) $a['formAction'] ); ?>">
+				<input type="hidden" name="redirect_to" value="<?php echo esc_attr( (string) ( $a['redirectTo'] ?? '' ) ); ?>">
+				<input type="hidden" name="_wpnonce" value="<?php echo esc_attr( (string) $a['formNonce'] ); ?>">
+				<button type="submit" class="wp-element-button<?php echo ! empty( $a['ctaLabel'] ) && ! empty( $a['ctaUrl'] ) ? ' is-style-outline' : ''; ?>"><?php echo esc_html( (string) ( $a['formLabel'] ?? '' ) ); ?></button>
+			</form>
+		<?php endif; ?>
 	</div>
+	<?php if ( ! empty( $a['hint'] ) ) : ?>
+		<p class="wp2-shopify-gate__hint"><?php echo esc_html( (string) $a['hint'] ); ?></p>
+	<?php endif; ?>
 </div>
