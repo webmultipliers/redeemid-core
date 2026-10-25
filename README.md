@@ -439,7 +439,7 @@ The plugin registers a personal data exporter and an eraser for the Shopify fiel
 
 ## Contributing
 
-Issues and pull requests are welcome. Work branches from `development`, and pull requests go back into it.
+Issues and pull requests are welcome. Work branches from `main`, and pull requests go back into it.
 
 ```sh
 composer install

@@ -138,7 +138,7 @@ final class Overview {
 		$steps = Setup::steps( Setup::facts() );
 		$left  = count( array_filter( $steps, static fn( $step ) => ! $step['done'] ) );
 		$names = [ 'sign_in' => __( 'sign-in', 'redeemid' ), 'admin' => __( 'Admin API', 'redeemid' ), 'storefront' => __( 'Storefront', 'redeemid' ) ];
-		$flow  = 'https://github.com/webmultipliers/redeemid/blob/development/docs/shopify-flow.md';
+		$flow  = 'https://github.com/webmultipliers/redeemid-core/blob/main/docs/shopify-flow.md';
 		$text  = [
 			'config'     => [ __( 'Connect your store', 'redeemid' ), __( 'Store domain, Customer Account API client ID and the Admin app credentials.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( SettingsPage::PAGE ) ), esc_html__( 'Settings', 'redeemid' ) ) ],
 			'test'       => [ __( 'Test the connection', 'redeemid' ), __( 'Asks each configured Shopify API once.', 'redeemid' ), Menu::action_button_html( Setup::ACTION, 'test', __( 'Test connection', 'redeemid' ) ) ],
