@@ -61,7 +61,7 @@ Changing the WordPress salts or `WP2_SHOPIFY_ENCRYPTION_KEY` makes secrets saved
 | `WP2_SHOPIFY_STORE_DOMAIN` | yes | `your-store.myshopify.com` |
 | `WP2_SHOPIFY_CLIENT_ID` | yes | Customer Account API client ID. Powers sign-in. |
 | `WP2_SHOPIFY_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client. |
-| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers reconciliation, resync, tag editing and webhook registration. |
+| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers resync, tag editing and webhook registration. |
 | `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | yes | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
 | `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | for plan cards | Storefront API public token from the Headless channel. Powers plan cards and buy-now. Public by design. |
 | `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same Headless channel. When set it replaces the public token for every Storefront call, and buy-now and cart calls send the buyer's IP (`Shopify-Storefront-Buyer-IP`), as Shopify asks of server-side callers. Without it every visitor looks like your server's one IP, so Shopify may throttle checkout creation. |
@@ -81,17 +81,17 @@ These constants are no longer read. If one is still defined, every admin screen 
 Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
 
 - **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours.
-- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (freshness window, stale behaviour, shared devices).
-- **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
+- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (shared devices).
+- **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk disconnect. Resync is one customer at a time. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
-- **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
+- **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
-- **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
+- **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token, and the dry-run entitlement check.
 
 Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
 
 - `wp2_shopify_customer_badges` (`array $badges, int $user_id`): labels shown next to a customer's name.
-- `wp2_shopify_customer_is_fixture` (`bool $is_fixture, int $user_id`): return true for seeded users whose customer does not exist in Shopify. Reconciliation and resync keep their tags and only mark them fresh, tag edits stay in WordPress, and no Shopify admin link is shown.
+- `wp2_shopify_customer_is_fixture` (`bool $is_fixture, int $user_id`): return true for seeded users whose customer does not exist in Shopify. Resync keeps their tags and only mark them fresh, tag edits stay in WordPress, and no Shopify admin link is shown.
 
 Signed-in customers can resync themselves from the front end with `POST /wp-json/wp2-shopify/v1/account/sync` (REST nonce, once a minute).
 
@@ -134,7 +134,7 @@ Each delivery is checked and stored, then processed:
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
 - Failures retry, then are dead-lettered. Shopify → Webhooks lists every delivery and its outcome.
 
-A twice-daily reconciliation also re-reads linked customers from the Admin API, so a missed webhook heals itself.
+There is no scheduled bulk sync. A customer's record is refreshed by these webhooks, at sign-in, by the member's own **Refresh Membership**, or by a staff resync on Shopify → Customers. Until then the last tags Shopify sent stay in force.
 
 ## How sign-in works
 
@@ -178,7 +178,7 @@ Gate settings (the sidebar only shows the ones that apply):
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed. If the tag data is older than the freshness window (Shopify → Settings, default 7 days), it is either still honored or treated as no access, as configured. Shopify → Debug has a dry run that shows the decision for any user.
+Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. Synced tags never expire on their own: they apply until Shopify changes them. Shopify → Debug has a dry run that shows the decision for any user.
 
 A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
 
@@ -392,7 +392,7 @@ composer test   # PHPUnit; no WordPress install needed
 
 - **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
 - **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.
-- **Fail closed.** When data is missing, stale or unreadable, the visitor gets less access, not more.
+- **Fail closed.** When data is missing or unreadable, the visitor gets less access, not more.
 - **Never log or return secrets or tokens**, and keep personal data and nonces out of cacheable HTML.
 
 The test theme in [webmultipliers/shopify-for-wp-theme](https://github.com/webmultipliers/shopify-for-wp-theme) seeds a demo news site, test pages and test accounts that exercise every feature, which makes it a good companion for manual testing.

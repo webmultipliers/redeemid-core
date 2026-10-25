@@ -34,7 +34,7 @@ final class FeaturesTest extends TestCase {
 	}
 
 	private static function resolver( array $tests = [] ): Resolver {
-		return new Resolver( self::levels(), new Evaluator( 7 * 86400 ), $tests );
+		return new Resolver( self::levels(), new Evaluator(), $tests );
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class FeaturesTest extends TestCase {
 			'gold'                        => [ self::member( [ 'gold' ] ), true, true, true ],
 			'gold + add-on'               => [ self::member( [ 'gold', 'download-addon' ] ), true, true, true ],
 			'disabled gold'               => [ self::member( [ 'gold', 'download-addon' ], 'disabled' ), false, false, false ],
-			'stale gold'                  => [ self::member( [ 'gold', 'download-addon' ], 'enabled', self::NOW - 8 * 86400 ), false, false, false ],
+			'gold synced long ago'        => [ self::member( [ 'gold', 'download-addon' ], 'enabled', self::NOW - 400 * 86400 ), true, true, true ],
 			'linked but never synced'     => [ self::member( [ 'gold' ], 'enabled', null ), false, false, false ],
 		];
 	}
@@ -114,14 +114,10 @@ final class FeaturesTest extends TestCase {
 		$this->assertSame( [ 'Add-on purchase' ], $resolver->decide( $feature, self::member( [ 'silver', 'download-addon' ] ), self::NOW )->routes );
 	}
 
-	public function test_stale_mirror_withholds_and_a_resync_restores(): void {
-		$resolver = self::resolver();
-		$feature  = self::features()['gold-only'];
-		$stale    = $resolver->decide( $feature, self::member( [ 'gold' ], 'enabled', self::NOW - 8 * 86400 ), self::NOW );
+	public function test_an_old_mirror_keeps_its_features(): void {
+		$feature = self::features()['gold-only'];
 
-		$this->assertFalse( $stale->granted );
-		$this->assertSame( 'stale', $stale->reason );
-		$this->assertTrue( $resolver->decide( $feature, self::member( [ 'gold' ], 'enabled', self::NOW ), self::NOW )->granted );
+		$this->assertTrue( self::resolver()->decide( $feature, self::member( [ 'gold' ], 'enabled', self::NOW - 400 * 86400 ), self::NOW )->granted );
 	}
 
 	public function test_inclusion_is_expanded_before_the_feature_condition(): void {

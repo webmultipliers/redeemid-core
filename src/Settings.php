@@ -12,8 +12,6 @@ final class Settings {
 	public const OPTION = 'wp2_shopify_settings';
 
 	private const DEFAULTS = [
-		'freshness_days'       => 7,
-		'stale_behavior'       => Evaluator::STALE_HONOR,
 		'clear_cart_on_logout' => false,
 		'cache_ttl_minutes'    => 10,
 	];
@@ -32,14 +30,12 @@ final class Settings {
 		$input = is_array( $input ) ? $input : [];
 
 		return [
-			'freshness_days'       => max( 0, min( 365, (int) ( $input['freshness_days'] ?? self::DEFAULTS['freshness_days'] ) ) ),
-			'stale_behavior'       => Evaluator::STALE_FAIL_CLOSED === ( $input['stale_behavior'] ?? '' ) ? Evaluator::STALE_FAIL_CLOSED : Evaluator::STALE_HONOR,
 			'clear_cart_on_logout' => ! empty( $input['clear_cart_on_logout'] ),
 			'cache_ttl_minutes'    => max( 1, min( 1440, (int) ( $input['cache_ttl_minutes'] ?? self::DEFAULTS['cache_ttl_minutes'] ) ) ),
 		];
 	}
 
 	public static function evaluator(): Evaluator {
-		return new Evaluator( (int) self::get( 'freshness_days' ) * DAY_IN_SECONDS, (string) self::get( 'stale_behavior' ) );
+		return new Evaluator();
 	}
 }

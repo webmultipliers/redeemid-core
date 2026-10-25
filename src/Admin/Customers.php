@@ -59,7 +59,8 @@ final class Customers {
 		$do    = sanitize_key( wp_unslash( '-1' !== ( $_POST['action'] ?? '-1' ) ? $_POST['action'] : ( $_POST['action2'] ?? '' ) ) );
 		$users = array_filter( array_map( 'intval', (array) wp_unslash( $_POST['users'] ) ) );
 
-		self::finish( self::apply( $do, $users ), count( $users ) );
+		// Resync is one customer at a time (row action or the customer's page), never in bulk.
+		self::finish( 'unlink' === $do ? self::apply( $do, $users ) : 'none', count( $users ) );
 	}
 
 	public static function action(): void {
@@ -68,11 +69,6 @@ final class Customers {
 
 		$user_id = absint( $_REQUEST['user'] ?? 0 );
 		$do      = sanitize_key( wp_unslash( $_REQUEST['do'] ?? '' ) );
-
-		if ( 'sync_all' === $do ) {
-			$stats = Reconciler::run();
-			self::finish( $stats['error'] ? 'sync_failed' : 'synced_all', (int) $stats['checked'] );
-		}
 
 		if ( 'tags' === $do ) {
 			self::finish( self::edit_tags( $user_id ), 1, $user_id );
@@ -187,7 +183,6 @@ final class Customers {
 				/* translators: %d: number of customers */
 				'synced'      => [ 'success', __( 'Resynced %d customer(s) from Shopify.', 'wp2-shopify' ) ],
 				/* translators: %d: number of customers */
-				'synced_all'  => [ 'success', __( 'Reconciliation checked %d customer(s).', 'wp2-shopify' ) ],
 				'sync_failed' => [ 'error', __( 'Shopify could not be reached. See App events for the failed call.', 'wp2-shopify' ) ],
 				'no_admin'    => [ 'error', __( 'The Admin API is not configured, so the plugin cannot read from or write to Shopify. See Debug.', 'wp2-shopify' ) ],
 				/* translators: %d: number of users */
@@ -200,10 +195,10 @@ final class Customers {
 
 	private static function list(): void {
 		$table   = new CustomersTable();
-		$actions = sprintf( '<a class="page-title-action" href="%s">%s</a>', esc_url( self::action_url( 'sync_all', 0 ) ), esc_html__( 'Resync everyone now', 'wp2-shopify' ) );
+		$actions = '';
 
 		if ( '' !== Config::admin_url() ) {
-			$actions .= sprintf( ' <a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'wp2-shopify' ) );
+			$actions .= sprintf( '<a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'wp2-shopify' ) );
 		}
 
 		$table->prepare_items();

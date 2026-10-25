@@ -258,17 +258,6 @@ final class SettingsPage {
 			<div class="wp2s-panel__body wp2s-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><label for="wp2s-fresh"><?php esc_html_e( 'Membership freshness window (days)', 'wp2-shopify' ); ?></label></th>
-					<td><input id="wp2s-fresh" type="number" min="0" max="365" name="<?php echo esc_attr( Settings::OPTION ); ?>[freshness_days]" value="<?php echo esc_attr( (string) $settings['freshness_days'] ); ?>"> <p class="description"><?php esc_html_e( 'Synced tags older than this no longer unlock content. 0 disables the limit.', 'wp2-shopify' ); ?></p></td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'When Shopify is unreachable', 'wp2-shopify' ); ?></th>
-					<td>
-						<label><input type="radio" name="<?php echo esc_attr( Settings::OPTION ); ?>[stale_behavior]" value="honor" <?php checked( 'honor', $settings['stale_behavior'] ); ?>> <?php esc_html_e( 'Honor synced tags within the window (default)', 'wp2-shopify' ); ?></label><br>
-						<label><input type="radio" name="<?php echo esc_attr( Settings::OPTION ); ?>[stale_behavior]" value="fail_closed" <?php checked( 'fail_closed', $settings['stale_behavior'] ); ?>> <?php esc_html_e( 'Lock immediately after a failed sync', 'wp2-shopify' ); ?></label>
-					</td>
-				</tr>
-				<tr>
 					<th scope="row"><?php esc_html_e( 'Membership tags', 'wp2-shopify' ); ?></th>
 					<td>
 						<p class="description"><?php esc_html_e( 'Customers get their tags in Shopify, from Shopify Flow or a subscription or membership app. This plugin only reads them. See docs/shopify-flow.md for recipes.', 'wp2-shopify' ); ?></p>

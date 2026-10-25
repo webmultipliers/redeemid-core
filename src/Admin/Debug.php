@@ -16,7 +16,6 @@ use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Support\ConfigValues;
 use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\Reconciler;
 
 /**
  * Shopify → Debug: where each config value comes from, platform checks, the Shopify
@@ -39,10 +38,6 @@ final class Debug {
 		$result = '';
 
 		switch ( $do ) {
-			case 'reconcile':
-				$stats  = Reconciler::run();
-				$result = $stats['error'] ? 'reconcile_error' : 'reconcile_ok';
-				break;
 			case 'token':
 				AdminToken::forget();
 				delete_option( 'wp2_shopify_admin_token_error' );
@@ -72,7 +67,6 @@ final class Debug {
 	}
 
 	public static function render(): void {
-		$recon     = get_option( Reconciler::STATS );
 		$blocks    = get_option( Registration::STATUS_OPTION );
 		$problems  = Requirements::problems();
 		$token_err = get_option( 'wp2_shopify_admin_token_error' );
@@ -82,8 +76,6 @@ final class Debug {
 		Menu::page_start( __( 'Debug', 'wp2-shopify' ), __( 'Shopify debug', 'wp2-shopify' ), '', __( 'Where each config value comes from, platform and connection checks, and maintenance tools. Secret values are never shown, only whether they are present.', 'wp2-shopify' ) );
 		Menu::result_notice(
 			[
-				'reconcile_ok'    => [ 'success', __( 'Reconciliation finished.', 'wp2-shopify' ) ],
-				'reconcile_error' => [ 'error', __( 'Reconciliation stopped with an error. See below and App events.', 'wp2-shopify' ) ],
 				'discovery_ok'    => [ 'success', __( 'Shopify discovery refreshed.', 'wp2-shopify' ) ],
 				'discovery_error' => [ 'error', __( 'Shopify discovery failed. Check the store domain.', 'wp2-shopify' ) ],
 				'token_ok'        => [ 'success', __( 'A fresh Admin token was issued.', 'wp2-shopify' ) ],
@@ -164,30 +156,6 @@ final class Debug {
 						</li>
 					</ul>
 				<?php Menu::panel_end(); ?>
-
-				<?php Menu::panel_start( __( 'Reconciliation', 'wp2-shopify' ), __( 'The scheduled job that re-reads every linked customer from Shopify.', 'wp2-shopify' ) ); ?>
-					<ul class="wp2s-checks">
-						<li>
-							<span class="wp2s-checks__label"><?php esc_html_e( 'Last run', 'wp2-shopify' ); ?></span>
-							<span class="wp2s-checks__detail">
-								<?php
-								if ( is_array( $recon ) ) {
-									echo esc_html( sprintf( /* translators: 1: checked 2: changed 3: missing */ __( 'Last run checked %1$d, changed %2$d, missing in Shopify %3$d.', 'wp2-shopify' ), $recon['checked'], $recon['changed'], $recon['missing'] ) ) . ' ' . $fmt_time( $recon['finished'] ?? 0 ) . ( $recon['error'] ? ' · ' . esc_html( $recon['error'] ) : '' ); // phpcs:ignore WordPress.Security.EscapeOutput
-								} else {
-									esc_html_e( 'Not run yet.', 'wp2-shopify' );
-								}
-								?>
-							</span>
-						</li>
-						<li>
-							<span class="wp2s-checks__label"><?php esc_html_e( 'Next run', 'wp2-shopify' ); ?></span>
-							<span class="wp2s-checks__detail"><?php echo $fmt_time( wp_next_scheduled( Reconciler::HOOK ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
-						</li>
-					</ul>
-					<div class="wp2s-panel__footer">
-						<?php Menu::action_button( self::ACTION, 'reconcile', __( 'Run reconciliation now', 'wp2-shopify' ) ); ?>
-					</div>
-				<?php Menu::panel_end(); ?>
 			</div>
 
 			<?php Menu::panel_start( __( 'Shopify connection', 'wp2-shopify' ) ); ?>
@@ -238,7 +206,7 @@ final class Debug {
 
 			<?php self::official_plugin(); ?>
 
-			<?php Menu::panel_start( __( 'Dry-run entitlement check', 'wp2-shopify' ), __( 'Would this linked customer pass a tag rule right now? Uses their synced record, so a stale record locks just as it does on the site.', 'wp2-shopify' ), '', 'dry-run' ); ?>
+			<?php Menu::panel_start( __( 'Dry-run entitlement check', 'wp2-shopify' ), __( 'Would this linked customer pass a tag rule right now? Uses their synced record, as the site does.', 'wp2-shopify' ), '', 'dry-run' ); ?>
 				<?php self::dry_run(); ?>
 			<?php Menu::panel_end(); ?>
 		<?php

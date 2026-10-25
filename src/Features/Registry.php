@@ -22,7 +22,7 @@ use WP2_Shopify\Sync\Mirror;
  * - Grants are derived, never stored: the mirror plus the condition,
  *   resolved once per request for every feature and memoized.
  * - Grant and revoke happen only through the mirror (webhooks,
- *   reconciliation, sign-in, the Customers tag editor, which writes to
+ *   resyncs, sign-in, the Customers tag editor, which writes to
  *   Shopify). wp2_shopify_features_changed fires when a mirror write changes
  *   a customer's set.
  */
@@ -88,7 +88,7 @@ final class Registry {
 		 * Register custom tests for feature conditions (test:<name> or
 		 * test:<name>=<arg>). The callback gets (Member $member, string $arg,
 		 * int $user_id, int $now) and grants only by returning true; anything
-		 * else, or an exception, fails the test. Guests and disabled or stale
+		 * else, or an exception, fails the test. Guests and disabled or never-synced
 		 * customers never reach it.
 		 */
 		$tests = apply_filters( 'wp2_shopify_feature_tests', [] );

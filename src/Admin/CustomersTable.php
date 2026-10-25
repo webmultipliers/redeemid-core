@@ -36,7 +36,6 @@ final class CustomersTable extends \WP_List_Table {
 
 	protected function get_bulk_actions(): array {
 		return [
-			'sync'   => __( 'Resync from Shopify', 'wp2-shopify' ),
 			'unlink' => __( 'Disconnect from Shopify', 'wp2-shopify' ),
 		];
 	}

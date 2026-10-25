@@ -8,7 +8,7 @@ use WP2_Shopify\Entitlement\Member;
 
 /**
  * Does this visitor pass an effective rule? Each level's groups go through
- * the existing Evaluator, so freshness, disabled accounts and guests fail
+ * the existing Evaluator, so unsynced or disabled accounts and guests fail
  * closed exactly as they do for a Gate block today. Pure.
  */
 final class Checker {
@@ -32,7 +32,7 @@ final class Checker {
 					continue 2;
 				}
 
-				// Keep the most useful reason: a guest, stale or disabled reason explains more than missing tags.
+				// Keep the most useful reason: a guest, unsynced or disabled reason explains more than missing tags.
 				$best ??= $decision;
 
 				if ( Decision::MISSING_TAGS === $best->reason && Decision::MISSING_TAGS !== $decision->reason ) {

@@ -15,8 +15,8 @@ final class EvaluatorTest extends TestCase {
 		return new Member( true, $linked, $tags, $status, $synced, $failed );
 	}
 
-	private function decide( Rule $rule, Member $member, string $stale = Evaluator::STALE_HONOR ): Decision {
-		return ( new Evaluator( 7 * 86400, $stale ) )->decide( $rule, $member, self::NOW );
+	private function decide( Rule $rule, Member $member ): Decision {
+		return ( new Evaluator() )->decide( $rule, $member, self::NOW );
 	}
 
 	public function test_guest_is_locked_out_of_tag_rules_and_login_rules(): void {
@@ -55,21 +55,12 @@ final class EvaluatorTest extends TestCase {
 		$this->assertSame( Decision::NO_MIRROR, $this->decide( new Rule( [ 'vip' ] ), $this->member( synced: null ) )->reason );
 	}
 
-	public function test_mirror_older_than_window_fails_closed(): void {
-		$this->assertSame( Decision::STALE, $this->decide( new Rule( [ 'vip' ] ), $this->member( synced: self::NOW - 8 * 86400 ) )->reason );
+	public function test_old_mirror_still_counts(): void {
+		$this->assertTrue( $this->decide( new Rule( [ 'vip' ] ), $this->member( synced: self::NOW - 400 * 86400 ) )->granted );
 	}
 
-	public function test_failed_sync_is_honored_or_locked_per_setting(): void {
-		$member = $this->member( failed: true );
-
-		$this->assertTrue( $this->decide( new Rule( [ 'vip' ] ), $member )->granted );
-		$this->assertSame( Decision::STALE, $this->decide( new Rule( [ 'vip' ] ), $member, Evaluator::STALE_FAIL_CLOSED )->reason );
-	}
-
-	public function test_window_zero_disables_age_limit(): void {
-		$decision = ( new Evaluator( 0 ) )->decide( new Rule( [ 'vip' ] ), $this->member( synced: 1 ), self::NOW );
-
-		$this->assertTrue( $decision->granted );
+	public function test_failed_last_sync_keeps_the_synced_tags(): void {
+		$this->assertTrue( $this->decide( new Rule( [ 'vip' ] ), $this->member( failed: true ) )->granted );
 	}
 
 	public function test_unknown_rule_source_fails_closed(): void {

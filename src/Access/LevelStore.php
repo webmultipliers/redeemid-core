@@ -84,7 +84,7 @@ final class LevelStore {
 
 	/**
 	 * Every tag carried by a synced customer, cached briefly. The mirror is
-	 * fed by sign-in, webhooks and reconciliation, so a tag renamed or deleted
+	 * fed by sign-in, webhooks and resyncs, so a tag renamed or deleted
 	 * in Shopify drops out of this list once customers resync.
 	 *
 	 * @return string[]
