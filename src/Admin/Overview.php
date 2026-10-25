@@ -8,7 +8,6 @@ use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\Reconciler;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
 /**
@@ -20,7 +19,6 @@ final class Overview {
 
 		$inbox    = new WpdbInboxStore();
 		$last     = $inbox->last_received();
-		$recon    = get_option( Reconciler::STATS );
 		$linked   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s", Mirror::NUMERIC ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin-only count.
 		$missing  = array_keys( array_filter( Config::definitions(), static fn( $def, $name ) => $def['required'] && ! Config::has( $name ), ARRAY_FILTER_USE_BOTH ) );
 		$failures = EventLog::count_since( 'shopify.http_failed', time() - DAY_IN_SECONDS ) + EventLog::count_since( 'webhook.rejected', time() - DAY_IN_SECONDS );
@@ -60,7 +58,7 @@ final class Overview {
 			[
 				true,
 				__( 'Linked customers', 'wp2-shopify' ),
-				is_array( $recon ) ? sprintf( /* translators: 1: count 2: time */ __( '%1$d linked. Last reconciliation %2$s ago.', 'wp2-shopify' ), $linked, human_time_diff( (int) ( $recon['finished'] ?? 0 ) ) ) : sprintf( /* translators: %d: count */ __( '%d linked.', 'wp2-shopify' ), $linked ),
+				sprintf( /* translators: %d: count */ __( '%d linked.', 'wp2-shopify' ), $linked ),
 				Menu::url( Customers::PAGE ),
 				'groups',
 				__( 'View customers', 'wp2-shopify' ),

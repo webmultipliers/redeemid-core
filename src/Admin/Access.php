@@ -277,7 +277,7 @@ final class Access {
 					<?php
 					printf(
 						/* translators: %d: number of distinct tags */
-						esc_html__( 'Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts ignore sync freshness, so they show who would match, not who is signed in now.', 'wp2-shopify' ),
+						esc_html__( 'Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts show who would match, not who is signed in now.', 'wp2-shopify' ),
 						count( $known )
 					);
 					?>

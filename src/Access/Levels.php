@@ -198,8 +198,8 @@ final class Levels {
 	}
 
 	/**
-	 * Would a customer with these tags hold $slug? Tags only: no freshness or
-	 * account checks. Used for the Levels screen's dry run, never for access.
+	 * Would a customer with these tags hold $slug? Tags only: no account
+	 * checks. Used for the Levels screen's dry run, never for access.
 	 *
 	 * @param string[] $tags
 	 */

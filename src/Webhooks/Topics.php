@@ -7,8 +7,8 @@ namespace WP2_Shopify\Webhooks;
  * (Admin REST "Webhook" resource topic list).
  *
  * Note: tags left the customers/* payloads in 2025-01; tag changes arrive only
- * on customer.tags_added / customer.tags_removed, so reconciliation is the
- * backstop. The POC's customers/add_tags and customers/remove_tags
+ * on customer.tags_added / customer.tags_removed, so those two must stay
+ * subscribed. The POC's customers/add_tags and customers/remove_tags
  * do not exist and are not mapped.
  */
 final class Topics {

@@ -231,7 +231,6 @@ final class Gate {
 			'message'   => (string) ( ( $a['fallbackMessage'] ?? '' ) ?: __( 'This content is for members.', 'wp2-shopify' ) ),
 			'reason'    => match ( $decision->reason ) {
 				Decision::DISABLED  => __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' ),
-				Decision::STALE     => __( 'We could not confirm your membership just now. Try again shortly.', 'wp2-shopify' ),
 				Decision::NO_MIRROR => __( 'Your membership details are syncing. Try again shortly.', 'wp2-shopify' ),
 				default             => '',
 			},

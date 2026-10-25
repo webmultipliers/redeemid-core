@@ -7,18 +7,6 @@ namespace WP2_Shopify\Entitlement;
  * truth table is unit tested. Every unknown fails closed.
  */
 final class Evaluator {
-	public const STALE_HONOR       = 'honor';
-	public const STALE_FAIL_CLOSED = 'fail_closed';
-
-	/**
-	 * @param int    $freshness_window Seconds a synced mirror stays trustworthy; 0 disables the limit.
-	 * @param string $stale_behavior   What to do when the last sync attempt failed (Shopify unreachable).
-	 */
-	public function __construct(
-		private readonly int $freshness_window = 7 * 86400,
-		private readonly string $stale_behavior = self::STALE_HONOR,
-	) {}
-
 	public function decide( Rule $rule, Member $member, int $now ): Decision {
 		if ( 'tags' !== $rule->source ) {
 			// Order / subscription sources don't exist yet, so they fail closed.
@@ -53,8 +41,9 @@ final class Evaluator {
 	}
 
 	/**
-	 * Why a signed-in visitor's synced record can't be trusted for a tag
-	 * check: not linked, disabled, never synced, or stale. Null when it can.
+	 * Why a signed-in visitor's synced record can't be used for a tag check:
+	 * not linked, disabled, or never synced. Null when it can. The mirror's age
+	 * doesn't matter: the last tags Shopify sent stay in force until it sends others.
 	 */
 	public function account_problem( Member $member, int $now ): ?Decision {
 		if ( ! $member->linked ) {
@@ -67,14 +56,6 @@ final class Evaluator {
 
 		if ( null === $member->last_sync ) {
 			return Decision::deny( Decision::NO_MIRROR );
-		}
-
-		if ( $this->freshness_window > 0 && $now - $member->last_sync > $this->freshness_window ) {
-			return Decision::deny( Decision::STALE );
-		}
-
-		if ( $member->last_sync_failed && self::STALE_FAIL_CLOSED === $this->stale_behavior ) {
-			return Decision::deny( Decision::STALE );
 		}
 
 		return null;

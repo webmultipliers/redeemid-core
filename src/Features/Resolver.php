@@ -19,13 +19,13 @@ use WP2_Shopify\Entitlement\Rule;
  * test is the Evaluator on a one-tag rule.
  *
  * Features fail closed one step further than content: a linked customer who
- * is disabled, never synced or stale holds no feature except a Public one,
+ * is disabled or never synced holds no feature except a Public one,
  * even through the built-in Signed in level or a custom test. A signed-in
  * visitor with no linked customer can still hold Signed in and custom-test
  * routes (staff, a role), never a tag or paid level.
  */
 final class Resolver {
-	private const EXPLAINS_MORE = [ Decision::GUEST, Decision::DISABLED, Decision::STALE, Decision::NO_MIRROR, Decision::NOT_LINKED ];
+	private const EXPLAINS_MORE = [ Decision::GUEST, Decision::DISABLED, Decision::NO_MIRROR, Decision::NOT_LINKED ];
 
 	private readonly Checker $checker;
 

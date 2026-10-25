@@ -252,10 +252,10 @@ final class ResolverTest extends TestCase {
 		$this->assertSame( Decision::BAD_RULE, $verdict->decision->reason );
 	}
 
-	public function test_checker_stale_mirror_fails_closed(): void {
-		$rule  = $this->resolve( new Context( type_levels: [ 'gold' ] ) );
-		$stale = new Member( true, true, [ 'gold-member' ], 'enabled', self::NOW - 30 * self::DAY );
+	public function test_checker_honors_an_old_mirror(): void {
+		$rule = $this->resolve( new Context( type_levels: [ 'gold' ] ) );
+		$old  = new Member( true, true, [ 'gold-member' ], 'enabled', self::NOW - 400 * self::DAY );
 
-		$this->assertSame( Decision::STALE, $this->checker()->check( $rule, $stale, self::NOW )->decision->reason );
+		$this->assertTrue( $this->checker()->check( $rule, $old, self::NOW )->granted() );
 	}
 }

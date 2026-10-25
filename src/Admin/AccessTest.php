@@ -77,7 +77,7 @@ final class AccessTest {
 							<label><?php esc_html_e( 'Tags', 'wp2-shopify' ); ?> <input type="text" name="tags" class="regular-text" placeholder="gold, vip" value="<?php echo esc_attr( $tags ); ?>"></label>
 							<label><?php esc_html_e( 'User ID', 'wp2-shopify' ); ?> <input name="user" type="number" min="0" class="small-text" value="<?php echo esc_attr( $user_id ? (string) $user_id : '' ); ?>"></label>
 						</p>
-						<p class="description"><?php esc_html_e( 'Tags are used with "A synced customer with these tags", the user ID with "A real user". Test members are always freshly synced; a real user\'s record may be stale, which locks just as it does on the site.', 'wp2-shopify' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Tags are used with "A synced customer with these tags", the user ID with "A real user". A real user is decided from their synced record, as on the site.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -199,9 +199,6 @@ final class AccessTest {
 						<strong><?php echo $t['granted'] ? esc_html__( 'Reads it', 'wp2-shopify' ) : esc_html__( 'Locked out', 'wp2-shopify' ); ?></strong>
 						<?php if ( ! $t['granted'] ) : ?>
 							(<code><?php echo esc_html( $t['reason'] ); ?></code><?php echo $t['offer'] ? esc_html( sprintf( /* translators: %s: level label */ __( '; the wall offers %s', 'wp2-shopify' ), $t['offer'] ) ) : ''; ?>)
-							<?php if ( Decision::STALE === $t['reason'] ) : ?>
-								<br><span class="description"><?php esc_html_e( 'The member\'s record is older than the freshness window, so it fails closed until the next sync.', 'wp2-shopify' ); ?></span>
-							<?php endif; ?>
 						<?php endif; ?>
 						<br><?php echo esc_html( $t['sees'] ); ?>
 					</td>

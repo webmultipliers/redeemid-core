@@ -55,7 +55,7 @@ A level's edit form has a **Features** box for each feature mapped in admin. Tic
 
 ### Granted and revoked only through the mirror
 
-There is no feature record to keep in sync. A grant is derived per request from the mirror plus the condition. A feature appears and disappears for the same reasons a content gate opens and closes: a webhook, reconciliation, sign-in, a resync, or a tag edit on Shopify → Customers (which writes the tag to Shopify).
+There is no feature record to keep in sync. A grant is derived per request from the mirror plus the condition. A feature appears and disappears for the same reasons a content gate opens and closes: a webhook, sign-in, a resync, or a tag edit on Shopify → Customers (which writes the tag to Shopify).
 
 - Any route grants the feature. It drops only when **every** route is lost: a Gold member who also bought the add-on keeps it after a downgrade to Silver, and keeps it after an add-on refund while still Gold. The Test tab and the account block show every granting route, so this case doesn't read as "the refund did not work".
 - There is no manual grant in WordPress. To give one customer a feature, give them the tag in Shopify.
@@ -67,11 +67,11 @@ There is no feature record to keep in sync. A grant is derived per request from 
 | Guest | Only Public features |
 | Signed in, no linked customer | Only Signed in and custom-test routes |
 | Linked, disabled in Shopify | Only Public features |
-| Linked, never synced or outside the freshness window (or the last sync failed with "fail closed") | Only Public features |
+| Linked, never synced | Only Public features |
 | A custom test that throws, returns anything but `true`, or isn't registered | That route fails; other features still resolve |
 | An unknown slug | Not granted, no error |
 
-This is one step stricter than content: the built-in Signed in level also withholds a feature from a linked customer who is disabled or stale.
+This is one step stricter than content: the built-in Signed in level also withholds a feature from a linked customer who is disabled or never synced.
 
 ## 3. Enforce
 
@@ -124,9 +124,9 @@ When a mapping changes, `wp2_shopify_features_mapping_changed` (`string[] $slugs
 ## Hooks
 
 - `wp2_shopify_features` (filter): registrations.
-- `wp2_shopify_feature_tests` (filter): `name => [ 'label' => ..., 'callback' => fn( Member $member, string $arg, int $user_id, int $now ): bool ]`. Guests and disabled or stale customers never reach a callback.
+- `wp2_shopify_feature_tests` (filter): `name => [ 'label' => ..., 'callback' => fn( Member $member, string $arg, int $user_id, int $now ): bool ]`. Guests and disabled or never-synced customers never reach a callback.
 - `wp2_shopify_feature_decision` (filter): `( bool $granted, string $slug, int $user_id, Grant $grant, Member $member )`. It can withhold any feature, but it can only grant to a signed-in, linked, enabled customer with a fresh mirror. A filter that throws or returns a non-boolean leaves the feature not granted. Each change is logged as `feature.decision_filtered`, once an hour per feature, user and change.
-- `wp2_shopify_features_changed` (action): `( int $user_id, string[] $added, string[] $removed )`, after a request whose mirror writes changed a customer's set. Use it for cache purging, logging or a downstream integration, never to re-decide the grant. Going stale is a matter of time passing, not a write, so it fires no event; the feature simply stops being granted.
+- `wp2_shopify_features_changed` (action): `( int $user_id, string[] $added, string[] $removed )`, after a request whose mirror writes changed a customer's set. Use it for cache purging, logging or a downstream integration, never to re-decide the grant.
 - `wp2_shopify_features_mapping_changed` (action): `( string[] $slugs )`.
 
 ## Not in v1

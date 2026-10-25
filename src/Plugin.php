@@ -31,7 +31,6 @@ use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
 use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Sync\PostCheckout;
-use WP2_Shopify\Sync\Reconciler;
 use WP2_Shopify\Webhooks\Endpoint;
 use WP2_Shopify\Webhooks\Processor;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
@@ -68,7 +67,7 @@ final class Plugin {
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );
 		add_action( Endpoint::HOOK, [ Processor::class, 'process' ] );
-		add_action( Reconciler::HOOK, [ Reconciler::class, 'run' ] );
+		add_action( 'admin_init', [ Lifecycle::class, 'retire_reconciliation' ] );
 		add_action( 'wp2_shopify_prune', [ WpdbInboxStore::class, 'prune' ] );
 		add_action( 'wp2_shopify_prune', [ EventLog::class, 'prune' ] );
 		add_action( 'admin_init', [ EventLog::class, 'maybe_install' ] );
