@@ -26,14 +26,15 @@ final class RegistrarTest extends TestCase {
 
 	public function test_only_missing_topics_for_our_uri_are_created(): void {
 		$existing = [
-			[ 'topic' => 'ORDERS_PAID', 'uri' => self::URI . '/' ],
+			[ 'topic' => 'CUSTOMERS_CREATE', 'uri' => self::URI . '/' ],
 			// Same topic, someone else's endpoint: does not count.
 			[ 'topic' => 'CUSTOMERS_UPDATE', 'uri' => 'https://elsewhere.test/hook' ],
 		];
 
 		$missing = Registrar::missing( $existing, self::URI );
 
-		$this->assertNotContains( 'orders/paid', $missing );
+		$this->assertNotContains( 'customers/create', $missing );
+		$this->assertNotContains( 'orders/paid', Registrar::topics() );
 		$this->assertContains( 'customers/update', $missing );
 		$this->assertCount( count( Registrar::topics() ) - 1, $missing );
 	}

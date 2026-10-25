@@ -2,10 +2,10 @@
 
 Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, and what they bought in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
 
-Shopify stays the single source of truth. A purchase adds a tag to the customer in Shopify, WordPress mirrors those tags, and every access decision is made on the server from that mirror. WordPress never grants access that Shopify doesn't know about.
+Shopify stays the single source of truth. A purchase adds a tag to the customer in Shopify (through Shopify Flow or a subscription or membership app), WordPress mirrors those tags, and every access decision is made on the server from that mirror. WordPress never grants access that Shopify doesn't know about.
 
 - **Sign in with Shopify.** OAuth with PKCE against the Customer Account API, shadow users for new customers, and optional linking of existing WordPress accounts.
-- **Memberships from purchases.** Map products to customer tags; paid, cancelled and refunded orders add or remove them in Shopify.
+- **Memberships from Shopify tags.** Shopify Flow or your subscription app tags customers and keeps that state; renewals, cancellations and fixed terms stay in Shopify. See [docs/shopify-flow.md](docs/shopify-flow.md).
 - **Gate content.** A Membership Gate block, access rules per item, term, post type and site, per-block visibility, a paywall break, and teasers that stay out of feeds, REST, search and SEO descriptions.
 - **Features.** Site behaviours such as ad-free reading or downloads, unlocked by the same tags.
 - **Sell memberships.** Plan cards with live Shopify prices and a no-JavaScript buy-now button that opens a Shopify checkout.
@@ -61,7 +61,7 @@ Changing the WordPress salts or `WP2_SHOPIFY_ENCRYPTION_KEY` makes secrets saved
 | `WP2_SHOPIFY_STORE_DOMAIN` | yes | `your-store.myshopify.com` |
 | `WP2_SHOPIFY_CLIENT_ID` | yes | Customer Account API client ID. Powers sign-in. |
 | `WP2_SHOPIFY_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client. |
-| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers purchase-to-tag, reconciliation, resync, tag editing and webhook registration. |
+| `WP2_SHOPIFY_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store. Powers reconciliation, resync, tag editing and webhook registration. |
 | `WP2_SHOPIFY_ADMIN_CLIENT_SECRET` | yes | That app's client secret. The plugin uses it to request 24-hour Admin tokens (client credentials grant) and to verify the app's webhooks. |
 | `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN` | for plan cards | Storefront API public token from the Headless channel. Powers plan cards and buy-now. Public by design. |
 | `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same Headless channel. When set it replaces the public token for every Storefront call, and buy-now and cart calls send the buyer's IP (`Shopify-Storefront-Buyer-IP`), as Shopify asks of server-side callers. Without it every visitor looks like your server's one IP, so Shopify may throttle checkout creation. |
@@ -81,10 +81,10 @@ These constants are no longer read. If one is still defined, every admin screen 
 Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
 
 - **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours.
-- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (freshness window, stale behaviour, membership products, shared devices).
+- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (freshness window, stale behaviour, shared devices).
 - **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk resync or disconnect. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
-- **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, purchase-to-tag, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
+- **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, reconciliation, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
 - **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token and run reconciliation, and the dry-run entitlement check.
 
@@ -107,8 +107,7 @@ Shopify → Debug prints the exact values for your site:
 
 New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopify admin no longer creates them. Create one in the same organization as the store, with:
 
-- **Admin API scopes:** `read_customers`, `write_customers` and `read_orders`.
-- **`read_all_orders`** is a protected scope. The Dev Dashboard rejects it as invalid until Shopify approves a request for it in the app's settings. Without it, Shopify shows only the last 60 days of orders. The plugin then still grants tags from any visible paid order, and removes a tag only for a refund or cancellation it can see, so older members keep their tags. The same rule applies to a customer with more than 100 orders, or an order with more than 100 line items, because the plugin reads one page of each. Request the scope if refunds of purchases older than 60 days must revoke access automatically.
+- **Admin API scopes:** `read_customers` and `write_customers`.
 - **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
 
 Install it on the store, then enter its client ID and secret in Shopify → Settings (or define `WP2_SHOPIFY_ADMIN_CLIENT_ID` and `WP2_SHOPIFY_ADMIN_CLIENT_SECRET`). Shopify → Debug shows the scopes Shopify granted.
@@ -122,7 +121,6 @@ The topics:
 - `customers/create`, `customers/update`, `customers/delete`, `customers/enable`, `customers/disable` and `customers/merge`
 - `customer.tags_added` and `customer.tags_removed`
 - `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customer_purchasing_summary/create`
-- `orders/paid`, `orders/cancelled` and `refunds/create` (for memberships)
 - `app/uninstalled`
 - the compliance topics `customers/data_request`, `customers/redact` and `shop/redact`. Shopify doesn't allow these through the API; they come only to apps that declare them in their app configuration.
 
@@ -250,21 +248,11 @@ It needs `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` (recommended) or `WP2_SHOPIFY_PU
 
 All four are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
 
-### Memberships from purchases
+### Membership tags
 
-Under Shopify → Settings, map products to tags, one product per line. A product can grant several tags, separated by commas:
+The plugin doesn't tag customers. Shopify Flow, or a subscription or membership app, adds a tag when a membership starts and removes it when it ends; levels under Shopify → Access point at those tags. [docs/shopify-flow.md](docs/shopify-flow.md) has workflows for one-time purchases, fixed terms, subscriptions and complimentary access.
 
-```
-1234567890: gold-member
-gid://shopify/Product/987: silver-member, newsletter
-```
-
-When an order is paid, cancelled or refunded, the plugin:
-
-1. recomputes that customer's mapped tags from their orders;
-2. adds or removes those tags in Shopify.
-
-Only tags in the map are touched. Access arrives when Shopify's webhook does, usually within seconds. A customer who is already signed in can pull it sooner with the **Refresh Membership** block.
+Access arrives when Shopify's tag webhook does, usually within seconds. A customer who is already signed in can pull it sooner with the **Refresh Membership** block.
 
 ## Caching
 
@@ -357,7 +345,7 @@ Rules that follow from it:
   - `wp2_shopify_features_changed` (`int $user_id, string[] $added, string[] $removed`) and `wp2_shopify_features_mapping_changed` (`string[] $slugs`); see [docs/features.md](docs/features.md#hooks)
 - Filters:
   - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
-  - `wp2_shopify_membership_map` and `wp2_shopify_setting_{key}`
+  - `wp2_shopify_setting_{key}`
   - `wp2_shopify_official_state`, which overrides the detected state of Shopify's own plugin
   - `wp2_shopify_reassign_user`, which picks who receives content when a Shopify redaction deletes a shadow user
   - `wp2_shopify_access_levels` and `wp2_shopify_access_rules`, which set levels and content rules from code (the admin screens then show them read-only)

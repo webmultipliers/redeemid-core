@@ -60,10 +60,6 @@ final class Extractor {
 			case Topics::COMPLIANCE:
 				$data['shop'] = self::str( $payload['shop_domain'] ?? null );
 				break;
-
-			case Topics::MEMBERSHIP:
-				$data['order'] = self::str( (string) ( $payload['order_id'] ?? $payload['id'] ?? '' ) );
-				break;
 		}
 
 		return array_filter( $data, static fn( $v ) => null !== $v );

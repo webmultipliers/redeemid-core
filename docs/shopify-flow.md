@@ -1,0 +1,43 @@
+# Tagging customers with Shopify Flow
+
+WP2 Shopify reads customer tags; it never decides who should have them. Something in Shopify adds a tag when a customer buys a membership and removes it when the membership ends. That is usually [Shopify Flow](https://apps.shopify.com/flow), or a subscription or membership app that tags customers itself. WordPress then mirrors the tags, and access levels (Shopify → Access → Levels) point at them.
+
+Because the state lives in Shopify, renewals, cancellations, failed payments, pauses and fixed terms are all handled where the billing happens, and WordPress follows within seconds through the `customer.tags_added` and `customer.tags_removed` webhooks.
+
+## One-time purchase
+
+Workflow 1, grant:
+
+1. Trigger: **Order paid**.
+2. Condition: any line item's product is your membership product (match on product ID, or on a product tag such as `membership-gold` so new products join without editing the workflow).
+3. Action: **Add customer tags**: `gold`.
+
+Workflow 2, revoke:
+
+1. Trigger: **Order cancelled**, and a second workflow on **Refund created** if refunds should end access.
+2. Same condition as above.
+3. Action: **Remove customer tags**: `gold`.
+
+If more than one product grants the same tag, check before removing it that the customer has no other paid order for one of them, or give each product its own tag and let the level match any of them.
+
+## Fixed term (for example 12 months)
+
+Add a **Wait** step to the grant workflow, after the tag is added, then **Remove customer tags**. A renewal purchase starts its own run, so give a renewal its own tag or check for a newer paid order before removing.
+
+## Subscriptions
+
+Subscription apps (Shopify Subscriptions, Recharge, Appstle and others) know when a contract is active, paused, failed or cancelled; WP2's app can't read another app's contracts. Use the app's own customer tagging if it has one, or its Flow triggers, to add a tag while a subscription is active and remove it when it ends. Point the level at that tag.
+
+## Complimentary and manual access
+
+Add the tag by hand in Shopify, or from Shopify → Customers → a customer in WordPress (which writes to Shopify). Use a separate tag such as `gold-comp`, and let the Gold level match either tag, so no purchase workflow ever removes it.
+
+## Checking it works
+
+- Shopify → Customers in WordPress shows each linked customer's synced tags and the webhook that last changed them.
+- Shopify → Access → Test shows what a given tag set or user gets on any item.
+- A signed-in customer who has just paid can use the **Refresh Membership** block instead of waiting for the webhook.
+
+## Upgrading from a version with "Membership products"
+
+Earlier versions added and removed tags themselves from a product map in Shopify → Settings. That is gone. Tags it already added stay on the customers in Shopify. Shopify → Settings shows the old map until you next save the membership settings, so you can rebuild it as workflows before new orders arrive. Existing `orders/paid`, `orders/cancelled` and `refunds/create` webhook subscriptions are acknowledged and ignored, and you can delete them from the app. The `read_orders` scope is no longer needed.

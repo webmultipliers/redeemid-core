@@ -4,7 +4,6 @@ namespace WP2_Shopify\Webhooks;
 
 use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Membership\MembershipSync;
 use WP2_Shopify\Shopify\Admin;
 use WP2_Shopify\Support\CustomerId;
 use WP2_Shopify\Support\Logger;
@@ -62,17 +61,6 @@ final class Processor {
 		$user = $id ? Mirror::find_user( $id ) : null;
 
 		switch ( $kind ) {
-			case Topics::MEMBERSHIP:
-				$id = $id ?? Admin::order_customer( (string) ( $data['order'] ?? '' ) );
-
-				if ( ! $id ) {
-					return InboxStore::UNMATCHED;
-				}
-
-				$result = MembershipSync::recompute( $id );
-
-				return is_wp_error( $result ) ? $result : InboxStore::PROCESSED;
-
 			case Topics::COMPLIANCE:
 				return self::compliance( $topic, $user );
 
