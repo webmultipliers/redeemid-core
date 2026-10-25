@@ -205,7 +205,7 @@ Gate settings (the sidebar only shows the ones that apply):
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. Shopify → Debug has a dry run that shows the decision for any user.
+Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor, and a Shopify-only account is signed out of WordPress; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. Shopify → Debug has a dry run that shows the decision for any user.
 
 A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
 
