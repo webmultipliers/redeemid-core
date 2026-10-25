@@ -19,13 +19,15 @@ final class Events {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
-		if ( 'clear' === ( $_REQUEST['do'] ?? '' ) ) {
+		if ( 'clear' === sanitize_key( wp_unslash( $_REQUEST['do'] ?? '' ) ) ) {
 			EventLog::clear();
 		}
 
 		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => 'cleared' ] ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	public static function render(): void {

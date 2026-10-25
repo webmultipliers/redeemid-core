@@ -139,6 +139,7 @@ final class LevelStore {
 		$offset = 0;
 
 		do {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- batched scan to rebuild the cached tag list.
 			$rows = $wpdb->get_col( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s ORDER BY umeta_id LIMIT 500 OFFSET %d", Mirror::TAGS, $offset ) );
 
 			foreach ( $rows as $raw ) {

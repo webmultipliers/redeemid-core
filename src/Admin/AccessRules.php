@@ -24,6 +24,7 @@ final class AccessRules {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
 		if ( RuleStore::managed_in_code() ) {
 			wp_safe_redirect( Menu::url( Access::PAGE, [ 'tab' => 'rules', 'result' => 'managed' ] ) );
@@ -66,10 +67,11 @@ final class AccessRules {
 				]
 			)
 		);
-		// phpcs:enable
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput
 
 		wp_safe_redirect( Menu::url( Access::PAGE, [ 'tab' => 'rules', 'result' => 'rules_saved' ] ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	/**

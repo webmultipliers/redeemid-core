@@ -29,6 +29,7 @@ final class Access {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
 		$do     = sanitize_key( wp_unslash( $_POST['do'] ?? '' ) );
 		$slug   = Level::slug( sanitize_text_field( wp_unslash( $_POST['slug'] ?? '' ) ) );
@@ -79,6 +80,7 @@ final class Access {
 
 		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	/**

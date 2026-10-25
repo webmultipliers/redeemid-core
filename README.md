@@ -398,6 +398,7 @@ Issues and pull requests are welcome. Work branches from `development`, and pull
 ```sh
 composer install
 composer lint   # php -l on every PHP file
+composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
 

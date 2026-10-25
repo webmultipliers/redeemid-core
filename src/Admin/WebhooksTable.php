@@ -52,7 +52,7 @@ final class WebhooksTable extends \WP_List_Table {
 		return [
 			'status'   => sanitize_key( $_GET['status'] ?? '' ),
 			'topic'    => sanitize_text_field( wp_unslash( $_GET['topic'] ?? '' ) ),
-			'customer' => preg_replace( '/\D/', '', (string) ( $_GET['customer'] ?? '' ) ),
+			'customer' => preg_replace( '/\D/', '', sanitize_text_field( wp_unslash( $_GET['customer'] ?? '' ) ) ),
 		];
 		// phpcs:enable
 	}

@@ -48,7 +48,7 @@ final class Menu {
 		Debug::register();
 	}
 
-	public static function menu(): void {
+	public static function menu(): void { // phpcs:ignore Generic.NamingConventions.ConstructorName -- not a constructor in a namespaced class.
 		add_menu_page( __( 'Shopify', 'wp2-shopify' ), __( 'Shopify', 'wp2-shopify' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'dashicons-cart', 58 );
 		add_submenu_page( self::SLUG, __( 'Shopify overview', 'wp2-shopify' ), __( 'Overview', 'wp2-shopify' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Shopify settings', 'wp2-shopify' ), __( 'Settings', 'wp2-shopify' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
@@ -102,7 +102,7 @@ final class Menu {
 	public static function redirect_old_page(): void {
 		global $pagenow;
 
-		if ( 'options-general.php' === $pagenow && self::SLUG === ( $_GET['page'] ?? '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( 'options-general.php' === $pagenow && self::SLUG === sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			wp_safe_redirect( self::url() );
 			exit;
 		}
@@ -215,7 +215,7 @@ final class Menu {
 		?>
 		<div class="wp2s-topbar">
 			<a class="wp2s-topbar__brand" href="<?php echo esc_url( self::url() ); ?>"><span class="dashicons dashicons-cart" aria-hidden="true"></span><?php esc_html_e( 'Shopify', 'wp2-shopify' ); ?></a>
-			<?php if ( self::SLUG !== ( $_GET['page'] ?? '' ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
+			<?php if ( self::SLUG !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
 				<span class="wp2s-topbar__sep" aria-hidden="true">/</span>
 				<span class="wp2s-topbar__page"><?php echo esc_html( $section ); ?></span>
 			<?php endif; ?>

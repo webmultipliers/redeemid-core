@@ -26,6 +26,7 @@ final class AccessFeatures {
 
 	public static function action(): void {
 		Menu::guard( self::ACTION );
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
 
 		$do     = sanitize_key( wp_unslash( $_POST['do'] ?? '' ) );
 		$slug   = Feature::slug( sanitize_text_field( wp_unslash( $_POST['slug'] ?? '' ) ) );
@@ -43,6 +44,7 @@ final class AccessFeatures {
 
 		wp_safe_redirect( Menu::url( Access::PAGE, [ 'tab' => 'features', 'result' => $result ] ) );
 		exit;
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	public static function render(): void {

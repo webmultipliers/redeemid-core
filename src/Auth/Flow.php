@@ -515,9 +515,9 @@ final class Flow {
 		nocache_headers();
 
 		if ( $external ) {
-			wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect -- Shopify endpoints from discovery.
+			wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect, WordPressVIPMinimum.Security.ExitAfterRedirect -- Shopify endpoints from discovery; exits below.
 		} else {
-			wp_safe_redirect( $url );
+			wp_safe_redirect( $url ); // phpcs:ignore WordPressVIPMinimum.Security.ExitAfterRedirect -- exits below.
 		}
 
 		exit;

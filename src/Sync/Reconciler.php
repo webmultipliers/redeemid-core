@@ -176,6 +176,7 @@ final class Reconciler {
 
 		return array_map(
 			'intval',
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- cron paging over linked users.
 			$wpdb->get_col(
 				$wpdb->prepare(
 					"SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND user_id > %d ORDER BY user_id ASC LIMIT %d",
