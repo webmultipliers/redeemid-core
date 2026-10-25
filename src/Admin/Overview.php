@@ -8,6 +8,7 @@ use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Shopify\Discovery;
 use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Sync\Mirror;
+use WP2_Shopify\Webhooks\Monitor;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
 /**
@@ -19,6 +20,7 @@ final class Overview {
 
 		$inbox    = new WpdbInboxStore();
 		$last     = $inbox->last_received();
+		$health   = Monitor::messages();
 		$linked   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s", Mirror::NUMERIC ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin-only count.
 		$missing  = array_keys( array_filter( Config::definitions(), static fn( $def, $name ) => $def['required'] && ! Config::has( $name ), ARRAY_FILTER_USE_BOTH ) );
 		$failures = EventLog::count_since( 'shopify.http_failed', time() - DAY_IN_SECONDS ) + EventLog::count_since( 'webhook.rejected', time() - DAY_IN_SECONDS );
@@ -48,10 +50,10 @@ final class Overview {
 				__( 'View app events', 'wp2-shopify' ),
 			],
 			[
-				(bool) $last,
+				$last && ! $health,
 				__( 'Webhooks', 'wp2-shopify' ),
-				$last ? sprintf( /* translators: 1: topic 2: time */ __( 'Last: %1$s, %2$s ago', 'wp2-shopify' ), $last['topic'], human_time_diff( (int) $last['received_at'] ) ) : __( 'Nothing received yet.', 'wp2-shopify' ),
-				Menu::url( Webhooks::PAGE ),
+				$health ? $health[0] : ( $last ? sprintf( /* translators: 1: topic 2: time */ __( 'Last: %1$s, %2$s ago', 'wp2-shopify' ), $last['topic'], human_time_diff( (int) $last['received_at'] ) ) : __( 'Nothing received yet.', 'wp2-shopify' ) ),
+				Menu::url( Webhooks::PAGE ) . '#health',
 				'controls-repeat',
 				__( 'View webhooks', 'wp2-shopify' ),
 			],

@@ -30,8 +30,11 @@ use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
 use WP2_Shopify\Support\EventLog;
+use WP2_Shopify\Sync\BulkResync;
+use WP2_Shopify\Sync\Cli as SyncCli;
 use WP2_Shopify\Sync\PostCheckout;
 use WP2_Shopify\Webhooks\Endpoint;
+use WP2_Shopify\Webhooks\Monitor;
 use WP2_Shopify\Webhooks\Processor;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
@@ -43,6 +46,8 @@ final class Plugin {
 		Flow::register();
 		Status::register();
 		PostCheckout::register();
+		BulkResync::register();
+		Monitor::register();
 		Registration::register();
 		Gatekeeper::register();
 		ItemRule::register();
@@ -55,6 +60,7 @@ final class Plugin {
 		FeatureSurfaces::register();
 		Badges::register();
 		Cli::register();
+		SyncCli::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		OfficialCartToggle::register();

@@ -119,6 +119,21 @@ final class WpdbInboxStore implements InboxStore {
 	}
 
 	/**
+	 * When the oldest delivery still waiting to be processed arrived, or 0.
+	 */
+	public function oldest_queued(): int {
+		global $wpdb;
+
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MIN(received_at) FROM ' . self::table() . ' WHERE status = %s', self::QUEUED ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	public function count_since( string $status, int $since ): int {
+		global $wpdb;
+
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::table() . ' WHERE status = %s AND received_at >= %d', $status, $since ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
 	 * Rows for the Webhooks page, newest first.
 	 *
 	 * @param array{status?: string, topic?: string, customer?: string} $filters

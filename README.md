@@ -80,10 +80,10 @@ These constants are no longer read. If one is still defined, every admin screen 
 
 Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
 
-- **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours.
-- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (shared devices).
-- **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk disconnect. Resync is one customer at a time. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
-- **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
+- **Overview:** status cards for configuration, sign-in, the Admin API, webhook delivery health, linked customers and failures in the last 24 hours.
+- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked), the membership settings (shared devices) and webhook alerts (the silence warning and the alert email).
+- **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk disconnect. **Resync all customers** starts a paced background resync of everyone (see [Resyncing customers](#resyncing-customers)). Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
+- **Webhooks:** the **Delivery health** panel (see [Delivery health](#delivery-health)) with a **Check now** button, the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
 - **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token, and the dry-run entitlement check.
@@ -134,7 +134,27 @@ Each delivery is checked and stored, then processed:
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
 - Failures retry, then are dead-lettered. Shopify → Webhooks lists every delivery and its outcome.
 
-There is no scheduled bulk sync. A customer's record is refreshed by these webhooks, at sign-in, by the member's own **Refresh Membership**, or by a staff resync on Shopify → Customers. Until then the last tags Shopify sent stay in force.
+A customer's record is refreshed by these webhooks, at sign-in, by the member's own **Refresh Membership**, or by a staff resync on Shopify → Customers. Until then the last tags Shopify sent stay in force.
+
+### Delivery health
+
+Because access changes only when a webhook lands, the plugin watches the chain:
+
+- **Once a day** it lists the app's webhook subscriptions in Shopify (one Admin API call, no customer data) and re-creates any that are missing. Shopify removes a subscription after its deliveries fail for several hours, so a re-created one is reported.
+- **On every admin screen** it checks, without calling Shopify: deliveries rejected in the last day (wrong signing secret), deliveries waiting more than 10 minutes (WP-Cron or Action Scheduler not running), dead-lettered deliveries, WP-Cron running late, and no delivery at all for the number of days set in Settings (7 by default, 0 to turn off) while customers are linked.
+
+Problems appear in an admin notice (failures on the Dashboard and Plugins screens too), in Tools → Site Health, in the Shopify Health block and on Shopify → Webhooks. With **Alerts** ticked in Settings, the site admin gets an email: at once when something new breaks, then at most daily while it lasts.
+
+### Resyncing customers
+
+There is no scheduled bulk sync. To re-read everyone (after webhooks were down, say), staff press **Resync all customers** on Shopify → Customers:
+
+- It runs in the background, 50 customers per Admin API call, in user ID order, and can be paused, resumed or cancelled. Progress and an estimate show on the page.
+- It reads Shopify's query cost report after every call and only spends the spare half of the store's API budget, so sign-ins, member refreshes and webhook syncs are never starved. When Shopify throttles anyway it waits as long as the cost report says.
+- If Shopify is unreachable or erroring, it retries with a growing wait (30 seconds up to 15 minutes) and stops after 6 failures in a row; a missing or revoked app stops it at once. **Resume** carries on from where it stopped.
+- WP-Cron or Action Scheduler carries it. While the Customers page is open it also moves it along when WP-Cron is late.
+
+From the command line: `wp wp2-shopify resync user <id>...`, `wp wp2-shopify resync all [--foreground]`, and `wp wp2-shopify resync status|pause|resume|cancel`.
 
 ## How sign-in works
 

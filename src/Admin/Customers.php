@@ -7,6 +7,8 @@ use WP2_Shopify\Config;
 use WP2_Shopify\Shopify\Admin as AdminApi;
 use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Support\Logger;
+use WP2_Shopify\Sync\BulkJob;
+use WP2_Shopify\Sync\BulkResync;
 use WP2_Shopify\Sync\Mirror;
 use WP2_Shopify\Sync\Reconciler;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
@@ -14,7 +16,9 @@ use WP2_Shopify\Webhooks\WpdbInboxStore;
 /**
  * Shopify → Customers: the linked customers, one customer's details, and the
  * controls an admin needs while testing: resync, edit tags, disconnect, and a
- * link to the customer in the Shopify admin.
+ * link to the customer in the Shopify admin. "Resync all" starts a paced
+ * background resync of everyone (BulkResync), which staff can pause, resume
+ * or cancel; it never starts by itself.
  *
  * Tag edits go to Shopify (tagsAdd / tagsRemove) and are then read back, so the
  * mirror never holds a tag Shopify does not. Test fixtures (see
@@ -26,6 +30,7 @@ final class Customers {
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'action' ] );
+		add_action( 'wp_ajax_' . self::ACTION, [ self::class, 'progress' ] );
 	}
 
 	/**
@@ -74,6 +79,10 @@ final class Customers {
 			self::finish( self::edit_tags( $user_id ), 1, $user_id );
 		}
 
+		if ( str_starts_with( $do, 'bulk_' ) ) {
+			self::finish( self::bulk( $do ), 0 );
+		}
+
 		$detail = 'detail' === sanitize_key( wp_unslash( $_REQUEST['back'] ?? '' ) ) && 'unlink' !== $do;
 
 		self::finish( self::apply( $do, [ $user_id ] ), 1, $detail ? $user_id : 0 );
@@ -109,6 +118,169 @@ final class Customers {
 		}
 
 		return 'none';
+	}
+
+	private static function bulk( string $do ): string {
+		switch ( $do ) {
+			case 'bulk_start':
+				$started = BulkResync::start( get_current_user_id() );
+
+				if ( is_wp_error( $started ) ) {
+					return 'bulk_running' === $started->get_error_code() ? 'bulk_running' : 'no_admin';
+				}
+
+				return 'bulk_started';
+			case 'bulk_pause':
+				BulkResync::pause();
+				return 'bulk_paused';
+			case 'bulk_resume':
+				BulkResync::resume();
+				return 'bulk_resumed';
+			case 'bulk_cancel':
+				BulkResync::cancel();
+				return 'bulk_cancelled';
+		}
+
+		return 'none';
+	}
+
+	/**
+	 * The progress poll from the Resync all panel. It also moves the resync
+	 * along when WP-Cron is late, so it finishes while the page is open.
+	 */
+	public static function progress(): void {
+		if ( ! current_user_can( Menu::CAP ) || ! check_ajax_referer( self::ACTION, 'nonce', false ) ) {
+			wp_send_json_error( null, 403 );
+		}
+
+		$job = BulkResync::nudge();
+
+		wp_send_json_success( $job ? self::bulk_view( $job ) : null );
+	}
+
+	/**
+	 * What the panel shows for a job, also sent to the progress poll.
+	 *
+	 * @return array{status: string, percent: int, line: string, error: string}
+	 */
+	private static function bulk_view( array $job ): array {
+		$eta  = BulkJob::eta( $job );
+		$line = sprintf(
+			/* translators: 1: customers done 2: customers in total 3: customers whose tags or status changed 4: customers no longer in Shopify */
+			__( '%1$d of %2$d customers re-read. %3$d changed, %4$d no longer in Shopify.', 'wp2-shopify' ),
+			$job['done'],
+			$job['total'],
+			$job['changed'],
+			$job['missing']
+		);
+
+		if ( null !== $eta && $eta > 0 ) {
+			/* translators: %s: human time difference, such as "5 mins" */
+			$line .= ' ' . sprintf( __( 'About %s left.', 'wp2-shopify' ), human_time_diff( time(), time() + $eta ) );
+		}
+
+		if ( BulkJob::RUNNING === $job['status'] && (int) $job['next_at'] > time() + 5 ) {
+			/* translators: %s: human time difference */
+			$line .= ' ' . sprintf( __( 'Waiting %s for Shopify before the next batch.', 'wp2-shopify' ), human_time_diff( time(), (int) $job['next_at'] ) );
+		}
+
+		return [
+			'status'  => (string) $job['status'],
+			'percent' => BulkJob::percent( $job ),
+			'line'    => $line,
+			'error'   => (string) $job['error'],
+		];
+	}
+
+	private static function bulk_panel(): void {
+		$job      = BulkResync::job();
+		$open     = $job && BulkJob::is_open( $job );
+		$view     = $job ? self::bulk_view( $job ) : null;
+		$statuses = [
+			BulkJob::RUNNING   => [ 'warn', __( 'Running', 'wp2-shopify' ) ],
+			BulkJob::PAUSED    => [ 'neutral', __( 'Paused', 'wp2-shopify' ) ],
+			BulkJob::DONE      => [ 'ok', __( 'Finished', 'wp2-shopify' ) ],
+			BulkJob::CANCELLED => [ 'neutral', __( 'Cancelled', 'wp2-shopify' ) ],
+			BulkJob::FAILED    => [ 'error', __( 'Stopped', 'wp2-shopify' ) ],
+		];
+		$buttons  = '';
+
+		if ( ! $open ) {
+			$buttons .= self::bulk_button( 'bulk_start', $job ? __( 'Resync all again', 'wp2-shopify' ) : __( 'Resync all customers', 'wp2-shopify' ), 'primary', __( 'Re-read every linked customer from Shopify? It runs in the background and can be paused.', 'wp2-shopify' ) );
+		}
+
+		if ( $job && BulkJob::RUNNING === $job['status'] ) {
+			$buttons .= self::bulk_button( 'bulk_pause', __( 'Pause', 'wp2-shopify' ) );
+		}
+
+		if ( $job && in_array( $job['status'], [ BulkJob::PAUSED, BulkJob::FAILED ], true ) ) {
+			$buttons .= self::bulk_button( 'bulk_resume', __( 'Resume', 'wp2-shopify' ), 'primary' );
+		}
+
+		if ( $job && ( $open || BulkJob::FAILED === $job['status'] ) ) {
+			$buttons .= self::bulk_button( 'bulk_cancel', __( 'Cancel', 'wp2-shopify' ) );
+		}
+
+		Menu::panel_start(
+			__( 'Resync all customers', 'wp2-shopify' ),
+			__( 'Re-reads every linked customer\'s tags and status from Shopify, 50 per request, using only the spare half of the store\'s API budget so sign-ins and webhooks are never slowed. It runs in the background: you can leave this page. Nothing starts it on a schedule.', 'wp2-shopify' ),
+			$buttons,
+			'wp2s-bulk'
+		);
+
+		if ( $job ) :
+			[ $state, $label ] = $statuses[ $job['status'] ] ?? [ 'neutral', $job['status'] ];
+			?>
+			<div class="wp2s-panel__body" data-wp2s-bulk="<?php echo esc_attr( $job['status'] ); ?>">
+				<p>
+					<?php echo Menu::status( $state, $label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+					<?php
+					/* translators: %s: date and time */
+					echo esc_html( sprintf( __( 'Started %s', 'wp2-shopify' ), wp_date( 'Y-m-d H:i', (int) $job['started_at'] ) ) );
+					?>
+				</p>
+				<progress class="wp2s-progress" max="100" value="<?php echo (int) $view['percent']; ?>"><?php echo (int) $view['percent']; ?>%</progress>
+				<p class="wp2s-bulk__line"><?php echo esc_html( $view['line'] ); ?></p>
+				<p class="wp2s-bulk__error"<?php echo '' === $view['error'] ? ' hidden' : ''; ?>><strong><?php esc_html_e( 'Last error:', 'wp2-shopify' ); ?></strong> <span><?php echo esc_html( $view['error'] ); ?></span></p>
+			</div>
+			<?php if ( BulkJob::RUNNING === $job['status'] ) : ?>
+				<script>
+				( function () {
+					var box = document.querySelector( '[data-wp2s-bulk]' );
+					var body = new URLSearchParams( { action: <?php echo wp_json_encode( self::ACTION ); ?>, nonce: <?php echo wp_json_encode( wp_create_nonce( self::ACTION ) ); ?> } );
+					var poll = function () {
+						fetch( <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>, { method: 'POST', credentials: 'same-origin', body: body } )
+							.then( function ( r ) { return r.json(); } )
+							.then( function ( r ) {
+								if ( ! r || ! r.success || ! r.data ) { return; }
+								if ( r.data.status !== 'running' ) { window.location.reload(); return; }
+								box.querySelector( 'progress' ).value = r.data.percent;
+								box.querySelector( '.wp2s-bulk__line' ).textContent = r.data.line;
+								var err = box.querySelector( '.wp2s-bulk__error' );
+								err.hidden = ! r.data.error;
+								err.querySelector( 'span' ).textContent = r.data.error;
+								setTimeout( poll, 5000 );
+							} )
+							.catch( function () { setTimeout( poll, 15000 ); } );
+					};
+					setTimeout( poll, 3000 );
+				}() );
+				</script>
+			<?php endif; ?>
+			<?php
+		endif;
+
+		Menu::panel_end();
+	}
+
+	private static function bulk_button( string $do, string $label, string $class = 'secondary', string $confirm = '' ): string {
+		return sprintf(
+			'<a class="button button-%s" href="%s"%s>%s</a>',
+			esc_attr( $class ),
+			esc_url( wp_nonce_url( add_query_arg( [ 'action' => self::ACTION, 'do' => $do ], admin_url( 'admin-post.php' ) ), self::ACTION ) ),
+			'' !== $confirm ? ' onclick="return confirm(\'' . esc_js( $confirm ) . '\')"' : '',
+			esc_html( $label )
+		);
 	}
 
 	private static function edit_tags( int $user_id ): string {
@@ -189,6 +361,11 @@ final class Customers {
 				'unlinked'    => [ 'success', __( 'Disconnected %d user(s) from Shopify. Their WordPress accounts were kept.', 'wp2-shopify' ) ],
 				'tags_saved'  => [ 'success', __( 'Tags saved.', 'wp2-shopify' ) ],
 				'tags_failed' => [ 'error', __( 'Shopify rejected the tag change. The tags below are what Shopify holds now.', 'wp2-shopify' ) ],
+				'bulk_started'   => [ 'success', __( 'Resync started. It runs in the background; progress is below.', 'wp2-shopify' ) ],
+				'bulk_running'   => [ 'warning', __( 'A resync is already in progress.', 'wp2-shopify' ) ],
+				'bulk_paused'    => [ 'success', __( 'Resync paused. It stops after the batch in progress.', 'wp2-shopify' ) ],
+				'bulk_resumed'   => [ 'success', __( 'Resync resumed from where it stopped.', 'wp2-shopify' ) ],
+				'bulk_cancelled' => [ 'success', __( 'Resync cancelled. Customers already re-read keep their new data.', 'wp2-shopify' ) ],
 			]
 		);
 	}
@@ -204,6 +381,7 @@ final class Customers {
 		$table->prepare_items();
 		Menu::page_start( __( 'Customers', 'wp2-shopify' ), __( 'Shopify customers', 'wp2-shopify' ), $actions, __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'wp2-shopify' ) );
 		self::notices();
+		self::bulk_panel();
 		?>
 		<?php $table->views(); ?>
 		<form method="get">

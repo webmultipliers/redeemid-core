@@ -9,6 +9,20 @@ use WP2_Shopify\Support\Logger;
  * timeouts and logs outcomes without request or response bodies.
  */
 final class Http {
+	/**
+	 * Shopify's cost report for the last GraphQL call, or null when it sent none.
+	 *
+	 * @var array{requested: int, actual: int, available: float, maximum: float, restore: float}|null
+	 */
+	private static ?array $cost = null;
+
+	/**
+	 * @return array{requested: int, actual: int, available: float, maximum: float, restore: float}|null
+	 */
+	public static function last_cost(): ?array {
+		return self::$cost;
+	}
+
 	public static function graphql( string $url, array $headers, string $query, array $variables = [], string $label = 'graphql' ): array|\WP_Error {
 		$body = [ 'query' => $query ];
 
@@ -16,20 +30,44 @@ final class Http {
 			$body['variables'] = $variables;
 		}
 
-		$response = self::request( 'POST', $url, $headers + [ 'Content-Type' => 'application/json' ], wp_json_encode( $body ), $label );
+		self::$cost = null;
+		$response   = self::request( 'POST', $url, $headers + [ 'Content-Type' => 'application/json' ], wp_json_encode( $body ), $label );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
+		self::$cost = self::cost( $response['extensions']['cost'] ?? null );
+
 		if ( ! empty( $response['errors'] ) ) {
 			$first = is_array( $response['errors'] ) ? ( $response['errors'][0]['message'] ?? 'GraphQL error' ) : 'GraphQL error';
+			$code  = is_array( $response['errors'] ) ? (string) ( $response['errors'][0]['extensions']['code'] ?? '' ) : '';
 			Logger::log( 'shopify.graphql_error', [ 'label' => $label, 'message' => substr( is_string( $first ) ? $first : '', 0, 190 ) ] );
 
-			return new \WP_Error( 'shopify_graphql', is_string( $first ) ? $first : 'GraphQL error' );
+			// Over the cost budget: the call did nothing and is safe to repeat later.
+			return new \WP_Error( 'THROTTLED' === $code ? 'shopify_throttled' : 'shopify_graphql', is_string( $first ) ? $first : 'GraphQL error' );
 		}
 
 		return is_array( $response['data'] ?? null ) ? $response['data'] : new \WP_Error( 'shopify_graphql', 'Empty GraphQL response.' );
+	}
+
+	/**
+	 * extensions.cost from a GraphQL response, in the shape last_cost() returns.
+	 */
+	public static function cost( mixed $cost ): ?array {
+		$throttle = is_array( $cost ) ? ( $cost['throttleStatus'] ?? null ) : null;
+
+		if ( ! is_array( $throttle ) || ! isset( $throttle['currentlyAvailable'], $throttle['maximumAvailable'], $throttle['restoreRate'] ) ) {
+			return null;
+		}
+
+		return [
+			'requested' => (int) ( $cost['requestedQueryCost'] ?? 0 ),
+			'actual'    => (int) ( $cost['actualQueryCost'] ?? 0 ),
+			'available' => (float) $throttle['currentlyAvailable'],
+			'maximum'   => (float) $throttle['maximumAvailable'],
+			'restore'   => (float) $throttle['restoreRate'],
+		];
 	}
 
 	/**

@@ -254,7 +254,7 @@ final class SettingsPage {
 		<?php endif; ?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'wp2_shopify' ); ?>
-			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How synced Shopify tags unlock content, and what happens on sign-out.', 'wp2-shopify' ) ); ?>
+			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How synced Shopify tags unlock content, what happens on sign-out, and when to warn you about webhooks.', 'wp2-shopify' ) ); ?>
 			<div class="wp2s-panel__body wp2s-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
@@ -268,6 +268,20 @@ final class SettingsPage {
 					<td>
 						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'wp2-shopify' ); ?></label>
 						<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'wp2-shopify' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="wp2s-quiet-days"><?php esc_html_e( 'Webhook silence warning', 'wp2-shopify' ); ?></label></th>
+					<td>
+						<input type="number" min="0" max="90" id="wp2s-quiet-days" class="small-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[quiet_days]" value="<?php echo (int) $settings['quiet_days']; ?>"> <?php esc_html_e( 'days', 'wp2-shopify' ); ?>
+						<p class="description"><?php esc_html_e( 'Warn when no webhook has arrived for this long while customers are linked. Quiet stores can raise it; 0 turns the warning off. Access never expires: this only tells you deliveries may have stopped.', 'wp2-shopify' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Alerts', 'wp2-shopify' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[alert_email]" value="1" <?php checked( ! empty( $settings['alert_email'] ) ); ?>> <?php echo esc_html( sprintf( /* translators: %s: email address */ __( 'Email %s when webhook delivery has a problem', 'wp2-shopify' ), (string) get_option( 'admin_email' ) ) ); ?></label>
+						<p class="description"><?php esc_html_e( 'Sent by the daily check: at once for a new problem, then at most once a day while it lasts.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 			</table>

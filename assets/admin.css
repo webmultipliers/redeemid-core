@@ -713,3 +713,10 @@ ul.wp2s-trace-list {
 		border-top: 0;
 	}
 }
+
+/* Bulk resync progress on Customers. */
+.wp2s-progress {
+	width: 100%;
+	height: 10px;
+	accent-color: var(--wp-admin-theme-color, #2271b1);
+}

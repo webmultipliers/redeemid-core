@@ -25,6 +25,7 @@ $wp2_options = [
 	'wp2_shopify_events_db_version', 'wp2_shopify_cart_bridge', 'wp2_shopify_access_levels',
 	'wp2_shopify_access_rules', 'wp2_shopify_access_rules_version',
 	'wp2_shopify_access_reindex_cursor', 'wp2_shopify_access_index_version', 'wp2_shopify_feature_conditions',
+	'wp2_shopify_bulk_resync', 'wp2_shopify_monitor',
 ];
 
 foreach ( $wp2_options as $wp2_option ) {
@@ -39,6 +40,8 @@ $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ( '_wp2_access_ef
 
 wp_clear_scheduled_hook( 'wp2_shopify_reconcile' );
 wp_clear_scheduled_hook( 'wp2_shopify_prune' );
+wp_clear_scheduled_hook( 'wp2_shopify_monitor' );
+wp_clear_scheduled_hook( 'wp2_shopify_bulk_resync' );
 wp_clear_scheduled_hook( 'wp2_shopify_access_reindex' );
 wp_clear_scheduled_hook( 'wp2_shopify_access_timed' );
 // Queued webhook processing carries a row ID per event, so clear every instance.
