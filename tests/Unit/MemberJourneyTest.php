@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use WP2_Shopify\Access\Drip;
 use WP2_Shopify\Access\Levels;
 use WP2_Shopify\Access\Membership;
 use WP2_Shopify\Blocks\PanelKind;
@@ -75,5 +76,33 @@ final class MemberJourneyTest extends TestCase {
 		$this->assertSame( '', Mirror::date( '2026-02-30' ) );
 		$this->assertSame( '', Mirror::date( 'next week' ) );
 		$this->assertSame( '', Mirror::date( null ) );
+	}
+
+	public function test_member_home_is_the_first_top_level_with_one(): void {
+		$levels = Levels::from_config(
+			[
+				'silver' => [ 'label' => 'Silver', 'groups' => [ [ 'tags' => [ 'silver' ] ] ], 'home_url' => '/silver/' ],
+				'gold'   => [ 'label' => 'Gold', 'groups' => [ [ 'tags' => [ 'gold' ] ] ] ],
+				'vip'    => [ 'label' => 'VIP', 'groups' => [ [ 'tags' => [ 'vip' ] ] ], 'home_url' => '/vip/' ],
+			]
+		);
+
+		$this->assertSame( '/vip/', Membership::home( $levels, [ 'gold', 'vip' ] ) );
+		$this->assertSame( '/silver/', Membership::home( $levels, [ 'silver' ] ) );
+		$this->assertSame( '', Membership::home( $levels, [ 'gold' ] ) );
+	}
+
+	public function test_drip_start_prefers_shopify_then_history_then_link(): void {
+		$history = [ 'gold' => [ 'since' => 500, 'until' => 0 ], 'silver' => [ 'since' => 100, 'until' => 300 ], 'vip' => [ 'since' => 700, 'until' => 0 ] ];
+
+		$this->assertSame( gmmktime( 0, 0, 0, 1, 2, 2026 ), Drip::joined( '2026-01-02', $history, [ 'gold' ], 50, self::NOW ) );
+		$this->assertSame( 500, Drip::joined( '', $history, [ 'gold', 'vip' ], 50, self::NOW ), 'earliest open stint of a held level' );
+		$this->assertSame( 50, Drip::joined( '', $history, [ 'silver' ], 50, self::NOW ), 'an ended stint does not count' );
+		$this->assertSame( self::NOW, Drip::joined( '', [], [], 0, self::NOW ) );
+		$this->assertSame( 500 + 3 * 86400, Drip::unlocks_at( 500, 3 ) );
+	}
+
+	public function test_drip_shows_its_own_panel(): void {
+		$this->assertSame( PanelKind::DRIP, PanelKind::for( Decision::DRIP ) );
 	}
 }

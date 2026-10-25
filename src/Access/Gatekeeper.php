@@ -68,7 +68,7 @@ final class Gatekeeper {
 
 		if ( ! isset( self::$verdicts[ $key ] ) ) {
 			$checker                = new Checker( LevelStore::levels(), Settings::evaluator() );
-			self::$verdicts[ $key ] = $checker->check( self::rule( $post ), Viewer::member(), time() );
+			self::$verdicts[ $key ] = Drip::apply( $checker->check( self::rule( $post ), Viewer::member(), time() ), $post, self::rule( $post ) );
 		}
 
 		return self::$verdicts[ $key ];
@@ -130,6 +130,7 @@ final class Gatekeeper {
 			'fallbackCtaLabel' => $level->cta_label ?? '',
 			'fallbackCtaUrl'   => $level->cta_url ?? '',
 			'showSignIn'       => true,
+			'unlocksAt'        => Decision::DRIP === $verdict->decision->reason ? Drip::opens_for( $post, get_current_user_id() ) : 0,
 		];
 
 		return '<div class="wp2-shopify-paywall" data-wp2-level="' . esc_attr( (string) $verdict->next_level ) . '">'

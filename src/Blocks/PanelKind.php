@@ -15,6 +15,7 @@ use WP2_Shopify\Entitlement\Decision;
  * - upgrade:  holds another level, not this one.
  * - join:     linked, holds no level.
  * - disabled: the customer is disabled in Shopify.
+ * - drip:     a member, but the item opens later in their membership.
  * - none:     nothing to offer (a broken rule).
  */
 final class PanelKind {
@@ -25,6 +26,7 @@ final class PanelKind {
 	public const UPGRADE   = 'upgrade';
 	public const JOIN      = 'join';
 	public const DISABLED  = 'disabled';
+	public const DRIP      = 'drip';
 	public const NONE      = 'none';
 
 	/**
@@ -37,6 +39,7 @@ final class PanelKind {
 			Decision::GUEST        => self::SIGN_IN,
 			Decision::NOT_LINKED   => self::CONNECT,
 			Decision::DISABLED     => self::DISABLED,
+			Decision::DRIP         => self::DRIP,
 			Decision::NO_MIRROR    => self::FINISHING,
 			Decision::MISSING_TAGS => $checking_out ? self::FINISHING : ( $lapsed ? self::RENEW : ( $has_level ? self::UPGRADE : self::JOIN ) ),
 			default                => self::NONE,

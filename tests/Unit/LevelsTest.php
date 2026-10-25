@@ -80,7 +80,7 @@ final class LevelsTest extends TestCase {
 	}
 
 	public function test_round_trip_through_array(): void {
-		$config = [ 'label' => 'Gold', 'groups' => [ [ 'tags' => [ 'gold' ], 'match' => 'all' ] ], 'includes' => [ 'silver' ], 'badge' => '#c9a227', 'message' => 'For Gold', 'cta_label' => 'Join', 'cta_url' => '/join/' ];
+		$config = [ 'label' => 'Gold', 'groups' => [ [ 'tags' => [ 'gold' ], 'match' => 'all' ] ], 'includes' => [ 'silver' ], 'badge' => '#c9a227', 'message' => 'For Gold', 'cta_label' => 'Join', 'cta_url' => '/join/', 'home_url' => '/members/gold/' ];
 
 		$this->assertSame( $config, Level::from_array( 'gold', $config )->to_array() );
 	}

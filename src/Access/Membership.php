@@ -49,4 +49,22 @@ final class Membership {
 			)
 		);
 	}
+
+	/**
+	 * The landing page for a member: the first held top level, in level order,
+	 * that has one. '' when none does.
+	 *
+	 * @param string[] $top From top().
+	 */
+	public static function home( Levels $levels, array $top ): string {
+		foreach ( $top as $slug ) {
+			$url = $levels->get( $slug )?->home_url ?? '';
+
+			if ( '' !== $url ) {
+				return $url;
+			}
+		}
+
+		return '';
+	}
 }

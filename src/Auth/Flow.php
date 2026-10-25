@@ -2,6 +2,8 @@
 
 namespace WP2_Shopify\Auth;
 
+use WP2_Shopify\Access\LevelStore;
+use WP2_Shopify\Access\Membership;
 use WP2_Shopify\Config;
 use WP2_Shopify\Plugin;
 use WP2_Shopify\Shopify\Admin;
@@ -270,7 +272,32 @@ final class Flow {
 		Logger::log( 'auth.signed_in', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
 		do_action( 'wp2_shopify_signed_in', $user->ID, $id );
 
-		return $redirect_to;
+		return self::landing( $user->ID, $redirect_to );
+	}
+
+	/**
+	 * Where a member goes after signing in: back to the page they started
+	 * from, unless that was the home page (or nowhere in particular) and one of
+	 * their levels has a members' home.
+	 */
+	private static function landing( int $user_id, string $redirect_to ): string {
+		$home   = untrailingslashit( self::safe_redirect( '' ) );
+		$target = $redirect_to;
+
+		if ( '' === $redirect_to || untrailingslashit( $redirect_to ) === $home ) {
+			$levels = LevelStore::levels();
+			$level  = Membership::home( $levels, Membership::top( $levels, Membership::held( $levels, Mirror::member( $user_id ), time() ) ) );
+			$target = '' !== $level ? self::safe_redirect( $level ) : $redirect_to;
+		}
+
+		/**
+		 * Where a customer lands after Shopify sign-in.
+		 *
+		 * @param string $target      The page chosen.
+		 * @param int    $user_id
+		 * @param string $redirect_to Where sign-in started.
+		 */
+		return self::safe_redirect( (string) apply_filters( 'wp2_shopify_sign_in_redirect', $target, $user_id, $redirect_to ) );
 	}
 
 	private static function complete_link( int $user_id, string $link_token, CustomerId $id, array $identity, array $claims, array $tokens, string $redirect_to ): string {

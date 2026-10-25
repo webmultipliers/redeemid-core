@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T04:16:28+00:00\n"
+"POT-Creation-Date: 2026-10-25T04:20:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp2-shopify\n"
@@ -203,7 +203,7 @@ msgid "Your account here isn't connected to a Shopify customer yet."
 msgstr ""
 
 #: blocks/member-account/index.php:45
-#: src/Auth/Flow.php:555
+#: src/Auth/Flow.php:582
 #: src/Blocks/Gate.php:275
 msgid "Connect your Shopify account"
 msgstr ""
@@ -255,8 +255,8 @@ msgid "Renews"
 msgstr ""
 
 #: blocks/member-account/index.php:91
-#: src/Admin/Access.php:209
-#: src/Admin/Access.php:323
+#: src/Admin/Access.php:210
+#: src/Admin/Access.php:324
 msgid "Includes"
 msgstr ""
 
@@ -461,7 +461,7 @@ msgid "or"
 msgstr ""
 
 #: src/Access/Badges.php:198
-#: src/Admin/Access.php:151
+#: src/Admin/Access.php:152
 #: src/Admin/AccessColumn.php:38
 #: src/Admin/AccessColumn.php:88
 #: src/Admin/AccessMetaBox.php:29
@@ -561,150 +561,150 @@ msgstr ""
 msgid "View as %s"
 msgstr ""
 
-#: src/Admin/Access.php:145
+#: src/Admin/Access.php:146
 msgid "A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too."
 msgstr ""
 
-#: src/Admin/Access.php:146
+#: src/Admin/Access.php:147
 msgid "The rule an item gets, from strongest to weakest: the item's own setting, then its terms, then its post type, then the site default. Leave every level unticked for \"no rule here\". Blocks inside an item can only narrow its rule."
 msgstr ""
 
-#: src/Admin/Access.php:147
+#: src/Admin/Access.php:148
 msgid "A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost."
 msgstr ""
 
-#: src/Admin/Access.php:148
+#: src/Admin/Access.php:149
 msgid "Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get."
 msgstr ""
 
-#: src/Admin/Access.php:153
+#: src/Admin/Access.php:154
 msgid "Access sections"
 msgstr ""
 
-#: src/Admin/Access.php:154
-#: src/Admin/Access.php:202
+#: src/Admin/Access.php:155
+#: src/Admin/Access.php:203
 #: src/Admin/CustomersTable.php:28
 #: src/Admin/Overview.php:149
 #: assets/block-access.js:109
 msgid "Levels"
 msgstr ""
 
-#: src/Admin/Access.php:155
+#: src/Admin/Access.php:156
 msgid "Content rules"
 msgstr ""
 
-#: src/Admin/Access.php:156
-#: src/Admin/Access.php:212
-#: src/Admin/Access.php:350
+#: src/Admin/Access.php:157
+#: src/Admin/Access.php:213
+#: src/Admin/Access.php:358
 #: src/Admin/AccessFeatures.php:94
 msgid "Features"
 msgstr ""
 
-#: src/Admin/Access.php:157
+#: src/Admin/Access.php:158
 msgid "Test"
 msgstr ""
 
-#: src/Admin/Access.php:164
+#: src/Admin/Access.php:165
 msgid "Level saved."
 msgstr ""
 
-#: src/Admin/Access.php:165
+#: src/Admin/Access.php:166
 msgid "Level deleted. Content that still names it now fails closed."
 msgstr ""
 
-#: src/Admin/Access.php:166
+#: src/Admin/Access.php:167
 msgid "Tag list refreshed from synced customers."
 msgstr ""
 
-#: src/Admin/Access.php:167
+#: src/Admin/Access.php:168
 msgid "Give the level a slug other than public or signed-in."
 msgstr ""
 
-#: src/Admin/Access.php:168
+#: src/Admin/Access.php:169
 msgid "These settings are managed in code, so nothing was changed."
 msgstr ""
 
-#: src/Admin/Access.php:169
+#: src/Admin/Access.php:170
 msgid "Content rules saved. Every item picks them up on its next view."
 msgstr ""
 
-#: src/Admin/Access.php:170
+#: src/Admin/Access.php:171
 msgid "Feature mapping saved. It applies on every page from the next request."
 msgstr ""
 
-#: src/Admin/Access.php:171
+#: src/Admin/Access.php:172
 msgid "Stored condition removed."
 msgstr ""
 
-#: src/Admin/Access.php:193
+#: src/Admin/Access.php:194
 msgid "No tags, so it grants nobody."
 msgstr ""
 
-#: src/Admin/Access.php:194
+#: src/Admin/Access.php:195
 msgid "Some tags are not on any synced customer. Was a tag renamed or deleted in Shopify?"
 msgstr ""
 
-#: src/Admin/Access.php:195
+#: src/Admin/Access.php:196
 msgid "Includes a level that does not exist."
 msgstr ""
 
-#: src/Admin/Access.php:199
+#: src/Admin/Access.php:200
 msgid "Managed in code: the wp2_shopify_access_levels filter sets these levels, so they are read-only here."
 msgstr ""
 
 #. translators: %s: level label
-#: src/Admin/Access.php:202
-#: src/Admin/Access.php:296
+#: src/Admin/Access.php:203
+#: src/Admin/Access.php:297
 msgid "Add a level"
 msgstr ""
 
-#: src/Admin/Access.php:207
+#: src/Admin/Access.php:208
 #: src/Admin/Customers.php:297
 #: src/Admin/Reports.php:65
 msgid "Level"
 msgstr ""
 
-#: src/Admin/Access.php:208
-#: src/Admin/Access.php:316
+#: src/Admin/Access.php:209
+#: src/Admin/Access.php:317
 msgid "Customer tags"
 msgstr ""
 
-#: src/Admin/Access.php:210
+#: src/Admin/Access.php:211
 #: src/Admin/AccessFeatures.php:102
 msgid "Health"
 msgstr ""
 
-#: src/Admin/Access.php:211
+#: src/Admin/Access.php:212
 msgid "Would match today"
 msgstr ""
 
-#: src/Admin/Access.php:213
+#: src/Admin/Access.php:214
 msgid "Actions"
 msgstr ""
 
-#: src/Admin/Access.php:234
+#: src/Admin/Access.php:235
 #: src/Admin/AccessRules.php:209
 msgid "Everyone"
 msgstr ""
 
-#: src/Admin/Access.php:236
+#: src/Admin/Access.php:237
 msgid "Any signed-in visitor"
 msgstr ""
 
-#: src/Admin/Access.php:239
+#: src/Admin/Access.php:240
 #: src/Admin/AccessFeatures.php:146
 msgid "or "
 msgstr ""
 
-#: src/Admin/Access.php:240
+#: src/Admin/Access.php:241
 msgid "all of "
 msgstr ""
 
-#: src/Admin/Access.php:240
+#: src/Admin/Access.php:241
 msgid "any of "
 msgstr ""
 
-#: src/Admin/Access.php:249
+#: src/Admin/Access.php:250
 #: src/Admin/AccessFeatures.php:156
 #: src/Admin/Menu.php:194
 #: src/Admin/Overview.php:123
@@ -712,102 +712,110 @@ msgid "OK"
 msgstr ""
 
 #. translators: %d: number of customers
-#: src/Admin/Access.php:261
+#: src/Admin/Access.php:262
 #, php-format
 msgid "%d customer"
 msgid_plural "%d customers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Access.php:265
+#: src/Admin/Access.php:266
 msgid "Edit"
 msgstr ""
 
-#: src/Admin/Access.php:266
+#: src/Admin/Access.php:267
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/Access.php:275
+#: src/Admin/Access.php:276
 msgid "Refresh tag list now"
 msgstr ""
 
 #. translators: %d: number of distinct tags
-#: src/Admin/Access.php:280
+#: src/Admin/Access.php:281
 #, php-format
 msgid "Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts show who would match, not who is signed in now."
 msgstr ""
 
 #. translators: %s: level label
-#: src/Admin/Access.php:296
+#: src/Admin/Access.php:297
 #, php-format
 msgid "Edit %s"
 msgstr ""
 
-#: src/Admin/Access.php:297
+#: src/Admin/Access.php:298
 msgid "Name the level, say which customer tags grant it, and what locked visitors see."
 msgstr ""
 
 #. translators: %s: feature label
-#: src/Admin/Access.php:298
+#: src/Admin/Access.php:299
 #: src/Admin/AccessFeatures.php:214
 #: src/Admin/Customers.php:352
-#: src/Auth/Flow.php:587
+#: src/Auth/Flow.php:614
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/Access.php:305
+#: src/Admin/Access.php:306
 msgid "Slug"
 msgstr ""
 
-#: src/Admin/Access.php:308
+#: src/Admin/Access.php:309
 msgid "Rules store the slug, so it never changes after saving."
 msgstr ""
 
-#: src/Admin/Access.php:312
+#: src/Admin/Access.php:313
 msgid "Label"
 msgstr ""
 
-#: src/Admin/Access.php:319
+#: src/Admin/Access.php:320
 msgid "One group per line, tags separated by commas. Any one tag in a line passes; start the line with \"all:\" to need every tag. Any one line passing grants the level."
 msgstr ""
 
-#: src/Admin/Access.php:326
+#: src/Admin/Access.php:327
 msgid "Slugs of levels this one also opens, separated by commas. Gold including silver means Gold members read Silver content."
 msgstr ""
 
-#: src/Admin/Access.php:330
+#: src/Admin/Access.php:331
 msgid "Badge colour"
 msgstr ""
 
-#: src/Admin/Access.php:333
+#: src/Admin/Access.php:334
 msgid "Badges always show the label too, never colour alone."
 msgstr ""
 
-#: src/Admin/Access.php:337
+#: src/Admin/Access.php:338
 msgid "Wall message"
 msgstr ""
 
-#: src/Admin/Access.php:341
+#: src/Admin/Access.php:342
 msgid "Call to action"
 msgstr ""
 
-#: src/Admin/Access.php:343
+#: src/Admin/Access.php:344
 msgid "Become a Gold member"
 msgstr ""
 
-#: src/Admin/Access.php:344
+#: src/Admin/Access.php:345
 msgid "Call to action URL"
 msgstr ""
 
-#: src/Admin/Access.php:359
+#: src/Admin/Access.php:349
+msgid "Members' home"
+msgstr ""
+
+#: src/Admin/Access.php:352
+msgid "Where members of this level land after logging in with Shopify from the home page or a plain login link. Logging in from an article returns them to it."
+msgstr ""
+
+#: src/Admin/Access.php:367
 msgid "Holders of this level get these features. The same mapping as Access → Features: a box here adds or removes the route \"this level\" there, and leaves other routes alone. Features managed in code are not listed."
 msgstr ""
 
-#: src/Admin/Access.php:366
+#: src/Admin/Access.php:374
 msgid "Save level"
 msgstr ""
 
-#: src/Admin/Access.php:366
+#: src/Admin/Access.php:374
 msgid "Add level"
 msgstr ""
 
@@ -1057,14 +1065,26 @@ msgid "Free until, then locked"
 msgstr ""
 
 #: src/Admin/AccessMetaBox.php:95
-msgid "Dates are publish-date embargoes, not membership drip. Site time zone."
+msgid "Dates are publish-date embargoes, the same for everyone. Site time zone."
 msgstr ""
 
 #: src/Admin/AccessMetaBox.php:98
-msgid "Never count toward a meter"
+msgid "Drip: members can read it after"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:99
+msgid "days of membership"
 msgstr ""
 
 #: src/Admin/AccessMetaBox.php:100
+msgid "Counted from when each member joined. 0 for no drip."
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:103
+msgid "Never count toward a meter"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:105
 msgid "Gating protects this item's text. Files linked from it, such as PDFs and images, keep public URLs."
 msgstr ""
 
@@ -3111,131 +3131,131 @@ msgstr ""
 msgid "Retry"
 msgstr ""
 
-#: src/Auth/Flow.php:119
+#: src/Auth/Flow.php:121
 msgid "Nothing to do here."
 msgstr ""
 
-#: src/Auth/Flow.php:120
+#: src/Auth/Flow.php:122
 msgid "Sign in"
 msgstr ""
 
-#: src/Auth/Flow.php:491
+#: src/Auth/Flow.php:518
 msgid "Your sign-in link expired or was opened in a different browser. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:492
+#: src/Auth/Flow.php:519
 msgid "Sign-in was cancelled at Shopify."
 msgstr ""
 
-#: src/Auth/Flow.php:493
+#: src/Auth/Flow.php:520
 msgid "Shopify sign-in could not be completed. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:494
+#: src/Auth/Flow.php:521
 msgid "Your Shopify profile could not be loaded. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:495
+#: src/Auth/Flow.php:522
 msgid "Sign-in is temporarily unavailable."
 msgstr ""
 
-#: src/Auth/Flow.php:496
+#: src/Auth/Flow.php:523
 msgid "Shopify sign-in could not be verified. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:497
+#: src/Auth/Flow.php:524
 msgid "That connect request is no longer valid. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:498
+#: src/Auth/Flow.php:525
 msgid "That connect request expired. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:499
+#: src/Auth/Flow.php:526
 msgid "That connect request belongs to a different session. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:500
+#: src/Auth/Flow.php:527
 msgid "Please sign in to the WordPress account you want to connect, then try again."
 msgstr ""
 
-#: src/Auth/Flow.php:501
+#: src/Auth/Flow.php:528
 msgid "Administrator accounts cannot be connected to a Shopify customer."
 msgstr ""
 
-#: src/Auth/Flow.php:502
+#: src/Auth/Flow.php:529
 msgid "Administrator accounts cannot sign in with Shopify. Use the WordPress login instead."
 msgstr ""
 
-#: src/Auth/Flow.php:503
+#: src/Auth/Flow.php:530
 msgid "This account already signs in with Shopify."
 msgstr ""
 
-#: src/Auth/Flow.php:504
+#: src/Auth/Flow.php:531
 msgid "Shopify did not confirm that email address, so the accounts were not connected."
 msgstr ""
 
-#: src/Auth/Flow.php:505
+#: src/Auth/Flow.php:532
 msgid "Your Shopify email does not match this account's email, so the accounts were not connected."
 msgstr ""
 
-#: src/Auth/Flow.php:506
+#: src/Auth/Flow.php:533
 msgid "That Shopify customer is already connected to another account."
 msgstr ""
 
-#: src/Auth/Flow.php:507
+#: src/Auth/Flow.php:534
 msgid "The accounts were not connected."
 msgstr ""
 
-#: src/Auth/Flow.php:508
+#: src/Auth/Flow.php:535
 msgid "Your Shopify account is now connected."
 msgstr ""
 
-#: src/Auth/Flow.php:509
+#: src/Auth/Flow.php:536
 msgid "Your Shopify account was disconnected."
 msgstr ""
 
-#: src/Auth/Flow.php:510
+#: src/Auth/Flow.php:537
 msgid "Your membership details were refreshed."
 msgstr ""
 
-#: src/Auth/Flow.php:511
+#: src/Auth/Flow.php:538
 msgid "Your details could not be refreshed right now. Please try again later."
 msgstr ""
 
-#: src/Auth/Flow.php:512
+#: src/Auth/Flow.php:539
 msgid "Your details were refreshed a moment ago."
 msgstr ""
 
-#: src/Auth/Flow.php:513
+#: src/Auth/Flow.php:540
 msgid "That sign-in expired. Please log in with Shopify again."
 msgstr ""
 
-#: src/Auth/Flow.php:551
+#: src/Auth/Flow.php:578
 msgid "You're signed in. Connect your Shopify account to this one so your membership works here."
 msgstr ""
 
 #. translators: 1: Shopify email, 2: WordPress username
-#: src/Auth/Flow.php:577
+#: src/Auth/Flow.php:604
 #, php-format
 msgid "Connect the Shopify customer %1$s to your account %2$s?"
 msgstr ""
 
-#: src/Auth/Flow.php:586
+#: src/Auth/Flow.php:613
 msgid "Connect accounts"
 msgstr ""
 
 #. translators: %s: email address
-#: src/Auth/Flow.php:624
+#: src/Auth/Flow.php:651
 #, php-format
 msgid "You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place."
 msgstr ""
 
-#: src/Auth/Flow.php:630
+#: src/Auth/Flow.php:657
 msgid "Sign in to my account"
 msgstr ""
 
-#: src/Auth/Flow.php:635
+#: src/Auth/Flow.php:662
 msgid "No thanks, use a separate account"
 msgstr ""
 
@@ -3316,6 +3336,16 @@ msgstr ""
 
 #: src/Blocks/Gate.php:300
 msgid "Already bought it? Refresh"
+msgstr ""
+
+#: src/Blocks/Gate.php:307
+msgid "This is part of your membership and opens soon."
+msgstr ""
+
+#. translators: %s: a date
+#: src/Blocks/Gate.php:310
+#, php-format
+msgid "It opens for you on %s."
 msgstr ""
 
 #: src/Commerce/BuyNow.php:27

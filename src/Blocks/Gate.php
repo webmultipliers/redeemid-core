@@ -303,6 +303,18 @@ final class Gate {
 				$data['reason']   = __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' );
 				$data['ctaLabel'] = '';
 				break;
+			case PanelKind::DRIP:
+				$data['message']  = __( 'This is part of your membership and opens soon.', 'wp2-shopify' );
+				$data['reason']   = (int) ( $a['unlocksAt'] ?? 0 ) > 0
+					/* translators: %s: a date */
+					? sprintf( __( 'It opens for you on %s.', 'wp2-shopify' ), wp_date( (string) get_option( 'date_format' ), (int) $a['unlocksAt'] ) )
+					: '';
+				$data['ctaLabel'] = '';
+				// Personal: the date is this member's own.
+				if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+					define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+				}
+				break;
 		}
 
 		if ( '' !== $data['formAction'] ) {

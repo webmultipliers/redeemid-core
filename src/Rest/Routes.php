@@ -3,6 +3,7 @@
 namespace WP2_Shopify\Rest;
 
 use WP2_Shopify\Auth\Flow;
+use WP2_Shopify\Blocks\Account;
 use WP2_Shopify\Auth\TokenVault;
 use WP2_Shopify\Commerce\CartBridge;
 use WP2_Shopify\Shopify\Storefront;
@@ -69,6 +70,16 @@ final class Routes {
 				'methods'             => 'POST',
 				'callback'            => [ self::class, 'disconnect' ],
 				'permission_callback' => 'is_user_logged_in',
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			'/account',
+			[
+				'methods'             => 'GET',
+				'callback'            => static fn() => self::no_cache( Account::view( get_current_user_id() ) ),
+				'permission_callback' => '__return_true', // The caller's own membership only; guests get the guest shape.
 			]
 		);
 

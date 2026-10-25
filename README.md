@@ -94,7 +94,7 @@ Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_ME
 - `wp2_shopify_customer_badges` (`array $badges, int $user_id`): labels shown next to a customer's name.
 - `wp2_shopify_customer_is_fixture` (`bool $is_fixture, int $user_id`): return true for seeded users whose customer does not exist in Shopify. Resync keeps their tags and only mark them fresh, tag edits stay in WordPress, and no Shopify admin link is shown.
 
-Signed-in customers can resync themselves from the front end with `POST /wp-json/wp2-shopify/v1/account/sync` (REST nonce, once a minute).
+Signed-in customers can resync themselves from the front end with `POST /wp-json/wp2-shopify/v1/account/sync` (REST nonce, once a minute), and read their own membership (the Member Account block's data: levels, dates, features, account links) from `GET /wp-json/wp2-shopify/v1/account`.
 
 ### Shopify app settings
 
@@ -288,6 +288,10 @@ Access arrives when Shopify's tag webhook does, usually within seconds. A custom
 
 The locked panel a gate shows reads the visitor's situation: sign in, connect a Shopify account, "finishing up" after checkout, renew a level that lapsed, upgrade from a lower level, or join. Each has its own wording and button, which the `wp2_shopify_locked_panel` filter can change.
 
+**Drip.** The Access box on an item has "Drip: members can read it after N days of membership". A member who passes the item's rule but joined more recently sees when it opens for them instead. A member's start is the `membership.member_since` metafield when Shopify keeps one, otherwise when they first held a level they hold now (as WordPress saw it), otherwise when they linked. Search listings don't apply drip.
+
+**Members' home.** A level can name a members' home page (Access → Levels). A member who logs in with Shopify from the home page or a plain login link lands there; logging in from an article returns them to the article. The `wp2_shopify_sign_in_redirect` filter can change either.
+
 The plugin records when each level started and ended for each member (`level.changed` in the event log, and the `wp2_shopify_levels_changed` action). That history is for display; access always comes from the current tags.
 
 ## Caching
@@ -389,6 +393,7 @@ Rules that follow from it:
   - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
   - `wp2_shopify_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
   - `wp2_shopify_features`, `wp2_shopify_feature_tests` and `wp2_shopify_feature_decision`, which register features and custom tests and can alter one decision (see [docs/features.md](docs/features.md))
+  - `wp2_shopify_sign_in_redirect` (`string $target, int $user_id, string $redirect_to`) and `wp2_shopify_drip_days` (`int $days, WP_Post $post`)
   - `wp2_shopify_context_country` (`string $country`), an ISO code that prices plan cards and checkout in that country's currency
   - `wp2_shopify_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `wp2_shopify_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `wp2_shopify_checkout_banner` (`bool`); `wp2_shopify_offer_existing_account` (`bool`)
