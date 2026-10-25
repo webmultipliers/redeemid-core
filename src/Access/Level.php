@@ -29,6 +29,7 @@ final class Level {
 		public readonly string $message = '',
 		public readonly string $cta_label = '',
 		public readonly string $cta_url = '',
+		public readonly string $home_url = '',
 	) {}
 
 	public static function public(): self {
@@ -101,6 +102,7 @@ final class Level {
 			trim( (string) ( $a['message'] ?? '' ) ),
 			trim( (string) ( $a['cta_label'] ?? '' ) ),
 			trim( (string) ( $a['cta_url'] ?? '' ) ),
+			trim( (string) ( $a['home_url'] ?? '' ) ),
 		);
 	}
 
@@ -113,6 +115,7 @@ final class Level {
 			'message'   => $this->message,
 			'cta_label' => $this->cta_label,
 			'cta_url'   => $this->cta_url,
+			'home_url'  => $this->home_url,
 		];
 	}
 

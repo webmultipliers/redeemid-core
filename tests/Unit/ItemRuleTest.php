@@ -9,7 +9,7 @@ use WP2_Shopify\Access\ItemRule;
 final class ItemRuleTest extends TestCase {
 	public function test_garbage_becomes_inherit(): void {
 		$this->assertSame(
-			[ 'mode' => Context::ITEM_INHERIT, 'levels' => [], 'locked_until' => null, 'public_until' => null, 'meter_exempt' => false ],
+			[ 'mode' => Context::ITEM_INHERIT, 'levels' => [], 'locked_until' => null, 'public_until' => null, 'meter_exempt' => false, 'drip_days' => 0 ],
 			ItemRule::sanitize( 'nonsense' )
 		);
 	}
@@ -22,6 +22,12 @@ final class ItemRuleTest extends TestCase {
 		$this->assertSame( 1800000000, $rule['locked_until'] );
 		$this->assertNull( $rule['public_until'] );
 		$this->assertTrue( $rule['meter_exempt'] );
+	}
+
+	public function test_drip_days_are_clamped(): void {
+		$this->assertSame( 30, ItemRule::sanitize( [ 'drip_days' => '30' ] )['drip_days'] );
+		$this->assertSame( 0, ItemRule::sanitize( [ 'drip_days' => -4 ] )['drip_days'] );
+		$this->assertSame( 3650, ItemRule::sanitize( [ 'drip_days' => 99999 ] )['drip_days'] );
 	}
 
 	public function test_unknown_mode_is_inherit(): void {

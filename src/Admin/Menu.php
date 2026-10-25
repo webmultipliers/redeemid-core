@@ -41,6 +41,7 @@ final class Menu {
 		SettingsPage::register();
 		Customers::register();
 		Webhooks::register();
+		Setup::register();
 		Events::register();
 		Access::register();
 		AccessRules::register();
@@ -56,6 +57,7 @@ final class Menu {
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'wp2-shopify' ), __( 'Customers', 'wp2-shopify' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
 		$webhooks  = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'wp2-shopify' ), __( 'Webhooks', 'wp2-shopify' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
 		$events    = add_submenu_page( self::SLUG, __( 'Shopify app events', 'wp2-shopify' ), __( 'App events', 'wp2-shopify' ), self::CAP, Events::PAGE, [ Events::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Membership reports', 'wp2-shopify' ), __( 'Reports', 'wp2-shopify' ), self::CAP, Reports::PAGE, [ Reports::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Shopify access', 'wp2-shopify' ), __( 'Access', 'wp2-shopify' ), self::CAP, Access::PAGE, [ Access::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Shopify debug', 'wp2-shopify' ), __( 'Debug', 'wp2-shopify' ), self::CAP, Debug::PAGE, [ Debug::class, 'render' ] );
 
@@ -77,7 +79,7 @@ final class Menu {
 	 * @return string[]
 	 */
 	public static function pages(): array {
-		return [ self::SLUG, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Access::PAGE, Debug::PAGE ];
+		return [ self::SLUG, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
 	}
 
 	public static function enqueue(): void {

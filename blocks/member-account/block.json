@@ -1,0 +1,21 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "wp2-shopify/member-account",
+	"title": "Member Account",
+	"category": "widgets",
+	"icon": "id-alt",
+	"description": "A customer's own membership: their levels, when they joined and renew, what they get, when it last synced (with a refresh), and links to manage their Shopify account and subscription. Guests get a sign-in link. A Blockstudio dynamic island: the cached page carries a placeholder and each visitor's fragment fills it in.",
+	"keywords": [ "shopify", "account", "membership", "profile", "subscription" ],
+	"textdomain": "wp2-shopify",
+	"supports": { "align": [ "wide" ], "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "title", "type": "text", "label": "Title", "default": "Your membership" },
+			{ "id": "showFeatures", "type": "toggle", "label": "List what the membership includes", "default": true },
+			{ "id": "joinUrl", "type": "link", "label": "Join page, for customers without a membership" }
+		],
+		"island": { "mode": "dynamic" }
+	}
+}

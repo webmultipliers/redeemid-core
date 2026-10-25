@@ -10,6 +10,7 @@ use WP2_Shopify\Settings;
 use WP2_Shopify\Shopify\Storefront;
 use WP2_Shopify\Support\Logger;
 use WP2_Shopify\Sync\Mirror;
+use WP2_Shopify\Sync\PostCheckout;
 
 /**
  * Signs the official plugin's cart in. Its cart component keeps the cart ID in
@@ -99,6 +100,8 @@ final class CartBridge {
 
 		self::record( true );
 		Logger::log( 'commerce.cart_identity', [ 'user_id' => $user_id ] );
+		// The cart is the customer's, so the next stop may be checkout.
+		PostCheckout::mark( $user_id, (string) $request->get_header( 'referer' ) );
 
 		$response = new \WP_REST_Response( [ 'attached' => true ] );
 		$response->header( 'Cache-Control', 'no-store, private' );

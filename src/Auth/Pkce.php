@@ -48,7 +48,10 @@ final class Pkce {
 	 * @return string|null Null when valid, otherwise a short error code.
 	 */
 	public static function check_id_token_claims( array $claims, string $issuer, string $client_id, string $nonce, int $now, int $leeway = 120 ): ?string {
-		if ( '' !== $issuer && ( $claims['iss'] ?? '' ) !== $issuer ) {
+		$iss = is_string( $claims['iss'] ?? null ) ? $claims['iss'] : '';
+
+		// Without a discovered issuer, still insist the token comes from Shopify's identity service.
+		if ( '' !== $issuer ? $iss !== $issuer : ! str_starts_with( $iss, 'https://shopify.com/' ) ) {
 			return 'id_token_issuer';
 		}
 

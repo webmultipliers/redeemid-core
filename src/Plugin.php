@@ -21,6 +21,7 @@ use WP2_Shopify\Admin\Menu;
 use WP2_Shopify\Admin\UserProfile;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
+use WP2_Shopify\Auth\SignInLinks;
 use WP2_Shopify\Blocks\Registration;
 use WP2_Shopify\Commerce\BuyNow;
 use WP2_Shopify\Commerce\CartBridge;
@@ -30,8 +31,13 @@ use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
 use WP2_Shopify\Support\EventLog;
+use WP2_Shopify\Support\Stats;
+use WP2_Shopify\Sync\BulkResync;
+use WP2_Shopify\Sync\Cli as SyncCli;
+use WP2_Shopify\Sync\LevelHistory;
 use WP2_Shopify\Sync\PostCheckout;
 use WP2_Shopify\Webhooks\Endpoint;
+use WP2_Shopify\Webhooks\Monitor;
 use WP2_Shopify\Webhooks\Processor;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
@@ -41,8 +47,12 @@ final class Plugin {
 	public static function boot(): void {
 		ShadowUsers::register();
 		Flow::register();
+		SignInLinks::register();
 		Status::register();
 		PostCheckout::register();
+		BulkResync::register();
+		LevelHistory::register();
+		Monitor::register();
 		Registration::register();
 		Gatekeeper::register();
 		ItemRule::register();
@@ -55,6 +65,7 @@ final class Plugin {
 		FeatureSurfaces::register();
 		Badges::register();
 		Cli::register();
+		SyncCli::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		OfficialCartToggle::register();
@@ -63,8 +74,11 @@ final class Plugin {
 		Privacy::register();
 		Compat::register();
 		EventLog::register();
+		Stats::register();
 
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
+		// Translations installed in wp-content/languages win; the bundled .pot is the template.
+		add_action( 'init', static fn() => load_plugin_textdomain( 'wp2-shopify', false, dirname( plugin_basename( WP2_SHOPIFY_FILE ) ) . '/languages' ) );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );
 		add_action( Endpoint::HOOK, [ Processor::class, 'process' ] );
 		add_action( 'admin_init', [ Lifecycle::class, 'retire_reconciliation' ] );

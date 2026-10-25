@@ -6,7 +6,9 @@ use WP2_Shopify\Access\Index;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Support\EventLog;
+use WP2_Shopify\Sync\BulkResync;
 use WP2_Shopify\Sync\Reconciler;
+use WP2_Shopify\Webhooks\Monitor;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
 
 final class Lifecycle {
@@ -20,6 +22,8 @@ final class Lifecycle {
 		if ( ! wp_next_scheduled( 'wp2_shopify_prune' ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wp2_shopify_prune' );
 		}
+
+		Monitor::ensure_scheduled();
 
 		Migration::maybe_run();
 	}
@@ -41,6 +45,8 @@ final class Lifecycle {
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( Reconciler::RETIRED_HOOK );
 		wp_clear_scheduled_hook( 'wp2_shopify_prune' );
+		Monitor::unschedule();
+		BulkResync::unschedule();
 		wp_clear_scheduled_hook( Index::REINDEX );
 		wp_clear_scheduled_hook( Index::TIMED );
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules -- deactivation hook only.

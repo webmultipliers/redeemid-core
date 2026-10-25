@@ -6,6 +6,8 @@ use WP2_Shopify\Config;
 use WP2_Shopify\Support\EventLog;
 use WP2_Shopify\Support\Logger;
 use WP2_Shopify\Webhooks\Endpoint;
+use WP2_Shopify\Webhooks\Monitor;
+use WP2_Shopify\Webhooks\Watchdog;
 use WP2_Shopify\Webhooks\Registrar;
 use WP2_Shopify\Webhooks\Topics;
 use WP2_Shopify\Webhooks\WpdbInboxStore;
@@ -64,9 +66,38 @@ final class Webhooks {
 				'registered'      => [ 'success', __( 'Webhook subscriptions are in place.', 'wp2-shopify' ) ],
 				'register_failed' => [ 'error', __( 'Some webhook subscriptions could not be created. Details below.', 'wp2-shopify' ) ],
 				'requeued'        => [ 'success', __( 'The webhook was queued again.', 'wp2-shopify' ) ],
+				'checked_ok'       => [ 'success', __( 'Checked with Shopify: subscriptions are in place and deliveries look healthy.', 'wp2-shopify' ) ],
+				'checked_problems' => [ 'warning', __( 'Checked with Shopify. Some problems need attention; see Delivery health.', 'wp2-shopify' ) ],
 			]
 		);
+		$monitor  = Monitor::state();
+		$messages = Monitor::messages();
 		?>
+
+			<?php
+			Menu::panel_start(
+				__( 'Delivery health', 'wp2-shopify' ),
+				__( 'Members gain and lose access only when Shopify sends tag changes, so the plugin checks once a day that the subscriptions still exist (re-creating any Shopify removed) and keeps watch on the processing queue and WP-Cron.', 'wp2-shopify' ),
+				Menu::action_button_html( Monitor::ACTION, 'check', __( 'Check now', 'wp2-shopify' ) ),
+				'health'
+			);
+			?>
+				<ul class="wp2s-checks">
+					<?php foreach ( Monitor::problems() as $code => $problem ) : ?>
+						<li>
+							<span class="wp2s-checks__label"><?php echo Menu::status( Watchdog::FAIL === $problem['state'] ? 'error' : 'warn', Watchdog::FAIL === $problem['state'] ? __( 'Problem', 'wp2-shopify' ) : __( 'Warning', 'wp2-shopify' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+							<span class="wp2s-checks__detail"><?php echo esc_html( Monitor::message( $code, $problem['n'] ) ); ?></span>
+						</li>
+					<?php endforeach; ?>
+					<?php if ( ! $messages ) : ?>
+						<li><span class="wp2s-checks__label"><?php echo Menu::dot( true ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Healthy', 'wp2-shopify' ); ?></span><span class="wp2s-checks__detail"><?php esc_html_e( 'Subscriptions, the processing queue and WP-Cron all look fine.', 'wp2-shopify' ); ?></span></li>
+					<?php endif; ?>
+					<li>
+						<span class="wp2s-checks__label"><?php esc_html_e( 'Last check with Shopify', 'wp2-shopify' ); ?></span>
+						<span class="wp2s-checks__detail"><?php echo Menu::ago( $monitor['checked_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+					</li>
+				</ul>
+			<?php Menu::panel_end(); ?>
 
 			<?php Menu::panel_start( __( 'Delivery setup', 'wp2-shopify' ) ); ?>
 				<ul class="wp2s-checks">

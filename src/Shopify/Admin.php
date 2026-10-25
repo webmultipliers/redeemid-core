@@ -47,11 +47,14 @@ final class Admin {
 	 * Gating fields for up to 50 customers in one call.
 	 *
 	 * @param CustomerId[] $ids
-	 * @return array<string, array{tags: string[], state: string}>|\WP_Error Keyed by numeric ID; missing keys were not found.
+	 * Also reads the optional membership.member_since and membership.renews_on
+	 * customer metafields, for the member's account card.
+	 *
+	 * @return array<string, array{tags: string[], state: string, since: ?string, renews: ?string}>|\WP_Error Keyed by numeric ID; missing keys were not found.
 	 */
 	public static function customers( array $ids ): array|\WP_Error {
 		$data = self::query(
-			'query WP2Reconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state } } }',
+			'query WP2Reconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }',
 			[ 'ids' => array_map( static fn( CustomerId $id ) => $id->gid(), array_slice( $ids, 0, 50 ) ) ],
 			'admin.customers'
 		);
@@ -67,13 +70,70 @@ final class Admin {
 
 			if ( $id ) {
 				$out[ $id->numeric ] = [
-					'tags'  => array_values( array_filter( (array) ( $node['tags'] ?? [] ), 'is_string' ) ),
-					'state' => (string) ( $node['state'] ?? '' ),
+					'tags'   => array_values( array_filter( (array) ( $node['tags'] ?? [] ), 'is_string' ) ),
+					'state'  => (string) ( $node['state'] ?? '' ),
+					'since'  => isset( $node['since']['value'] ) ? (string) $node['since']['value'] : null,
+					'renews' => isset( $node['renews']['value'] ) ? (string) $node['renews']['value'] : null,
 				];
 			}
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Customer counts for several searches in one call ('' counts everyone).
+	 * Shopify stops counting at 10,000; a capped count is returned as that.
+	 *
+	 * @param array<string, string> $queries Keyed by any label.
+	 * @return array<string, int>|\WP_Error Keyed like $queries.
+	 */
+	public static function count_customers( array $queries ): array|\WP_Error {
+		$fields = [];
+		$vars   = [];
+		$keys   = array_keys( $queries );
+
+		foreach ( $keys as $i => $key ) {
+			$fields[]       = "c{$i}: customersCount(query: \$q{$i}) { count }";
+			$vars[ "q{$i}" ] = (string) $queries[ $key ];
+		}
+
+		if ( ! $fields ) {
+			return [];
+		}
+
+		$params = implode( ', ', array_map( static fn( string $v ): string => "\${$v}: String", array_keys( $vars ) ) );
+		$data   = self::query( "query WP2Counts({$params}) { " . implode( ' ', $fields ) . ' }', $vars, 'admin.customersCount' );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$out = [];
+
+		foreach ( $keys as $i => $key ) {
+			if ( isset( $data[ "c{$i}" ]['count'] ) ) {
+				$out[ $key ] = (int) $data[ "c{$i}" ]['count'];
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Tags in use on the store's customers, up to 250, for checking that a
+	 * level's tags exist in Shopify.
+	 *
+	 * @return string[]|\WP_Error
+	 */
+	public static function customer_tags(): array|\WP_Error {
+		$data = self::query( 'query WP2CustomerTags { shop { customerTags(first: 250) { nodes } } }', [], 'admin.customerTags' );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		return array_values( array_filter( (array) ( $data['shop']['customerTags']['nodes'] ?? [] ), 'is_string' ) );
 	}
 
 	/**

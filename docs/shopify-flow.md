@@ -32,6 +32,19 @@ Subscription apps (Shopify Subscriptions, Recharge, Appstle and others) know whe
 
 Add the tag by hand in Shopify, or from Shopify → Customers → a customer in WordPress (which writes to Shopify). Use a separate tag such as `gold-comp`, and let the Gold level match either tag, so no purchase workflow ever removes it.
 
+## Start and renewal dates
+
+The **Member Account** block shows when a membership started and when it renews. To show Shopify's dates rather than the date WordPress first saw the tag, have the workflow set customer metafields in the `membership` namespace, as dates (`YYYY-MM-DD`):
+
+- `membership.member_since`, set with **Update customer metafield** when the tag is added;
+- `membership.renews_on`, set by the subscription app's renewal trigger, or by the fixed-term workflow before its **Wait** step.
+
+They are read on every sync.
+
+## Bringing customers back after checkout
+
+In Shopify, Settings → Checkout → Order status page → Additional scripts, or in the order confirmation email template, add a link to the return link shown under Shopify → Settings in WordPress (it ends in `/?wp2s_return=1`). A customer who bought while signed in goes back to the page they bought from, and sees "Your membership is ready" as soon as the tag lands. A guest is asked to log in with Shopify using the email from their order.
+
 ## Checking it works
 
 - Shopify → Customers in WordPress shows each linked customer's synced tags and the webhook that last changed them.

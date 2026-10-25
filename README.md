@@ -80,11 +80,12 @@ These constants are no longer read. If one is still defined, every admin screen 
 
 Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
 
-- **Overview:** status cards for configuration, sign-in, the Admin API, webhooks, linked customers and failures in the last 24 hours.
-- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked) and the membership settings (shared devices).
-- **Customers:** every WordPress user linked to a Shopify customer, with search, filters for disabled customers and failed syncs, and bulk disconnect. Resync is one customer at a time. Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
-- **Webhooks:** the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
+- **Overview:** a setup checklist (connect the store, **Test connection**, permalinks, **Create the page** for the sign-in callback, register webhooks, define levels, tag members with Flow), folded away once everything is done, then status cards for configuration, sign-in, the Admin API, webhook delivery health, linked customers and failures in the last 24 hours. The levels step compares each level's tags with the tags Shopify's customers actually have and lists any no customer has, which is usually a typo.
+- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked), the membership settings (shared devices) and webhook alerts (the silence warning and the alert email).
+- **Customers:** every WordPress user linked to a Shopify customer, with their levels, search (WordPress name and email, the Shopify email and name, or a customer ID), filters for level, disabled customers and failed syncs, **Export CSV** of the filtered list, and bulk disconnect. The **Activation** panel compares, per level, the customers Shopify tags for it with those who have signed in here (Shopify's `customersCount`, cached for an hour). **Resync all customers** starts a paced background resync of everyone (see [Resyncing customers](#resyncing-customers)). Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
+- **Webhooks:** the **Delivery health** panel (see [Delivery health](#delivery-health)) with a **Check now** button, the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
+- **Reports:** levels joined and left, purchases that unlocked access, plan card checkouts and sign-ins for the last 30 days; joined and left by week for 12 weeks; and per level, members now and joined and left over 30 days and 12 months. The plugin counts these by day from when this version is installed and keeps 400 days; no user IDs are kept with the counts.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
 - **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token, and the dry-run entitlement check.
 
@@ -93,7 +94,7 @@ Other code can add pages under the menu: `add_submenu_page( WP2_SHOPIFY_ADMIN_ME
 - `wp2_shopify_customer_badges` (`array $badges, int $user_id`): labels shown next to a customer's name.
 - `wp2_shopify_customer_is_fixture` (`bool $is_fixture, int $user_id`): return true for seeded users whose customer does not exist in Shopify. Resync keeps their tags and only mark them fresh, tag edits stay in WordPress, and no Shopify admin link is shown.
 
-Signed-in customers can resync themselves from the front end with `POST /wp-json/wp2-shopify/v1/account/sync` (REST nonce, once a minute).
+Signed-in customers can resync themselves from the front end with `POST /wp-json/wp2-shopify/v1/account/sync` (REST nonce, once a minute), and read their own membership (the Member Account block's data: levels, dates, features, account links) from `GET /wp-json/wp2-shopify/v1/account`.
 
 ### Shopify app settings
 
@@ -134,7 +135,27 @@ Each delivery is checked and stored, then processed:
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
 - Failures retry, then are dead-lettered. Shopify → Webhooks lists every delivery and its outcome.
 
-There is no scheduled bulk sync. A customer's record is refreshed by these webhooks, at sign-in, by the member's own **Refresh Membership**, or by a staff resync on Shopify → Customers. Until then the last tags Shopify sent stay in force.
+A customer's record is refreshed by these webhooks, at sign-in, by the member's own **Refresh Membership**, or by a staff resync on Shopify → Customers. Until then the last tags Shopify sent stay in force.
+
+### Delivery health
+
+Because access changes only when a webhook lands, the plugin watches the chain:
+
+- **Once a day** it lists the app's webhook subscriptions in Shopify (one Admin API call, no customer data) and re-creates any that are missing. Shopify removes a subscription after its deliveries fail for several hours, so a re-created one is reported.
+- **On every admin screen** it checks, without calling Shopify: deliveries rejected in the last day (wrong signing secret), deliveries waiting more than 10 minutes (WP-Cron or Action Scheduler not running), dead-lettered deliveries, WP-Cron running late, and no delivery at all for the number of days set in Settings (7 by default, 0 to turn off) while customers are linked.
+
+Problems appear in an admin notice (failures on the Dashboard and Plugins screens too), in Tools → Site Health, in the Shopify Health block and on Shopify → Webhooks. With **Alerts** ticked in Settings, the site admin gets an email: at once when something new breaks, then at most daily while it lasts.
+
+### Resyncing customers
+
+There is no scheduled bulk sync. To re-read everyone (after webhooks were down, say), staff press **Resync all customers** on Shopify → Customers:
+
+- It runs in the background, 50 customers per Admin API call, in user ID order, and can be paused, resumed or cancelled. Progress and an estimate show on the page.
+- It reads Shopify's query cost report after every call and only spends the spare half of the store's API budget, so sign-ins, member refreshes and webhook syncs are never starved. When Shopify throttles anyway it waits as long as the cost report says.
+- If Shopify is unreachable or erroring, it retries with a growing wait (30 seconds up to 15 minutes) and stops after 6 failures in a row; a missing or revoked app stops it at once. **Resume** carries on from where it stopped.
+- WP-Cron or Action Scheduler carries it. While the Customers page is open it also moves it along when WP-Cron is late.
+
+From the command line: `wp wp2-shopify resync user <id>...`, `wp wp2-shopify resync all [--foreground]`, and `wp wp2-shopify resync status|pause|resume|cancel`.
 
 ## How sign-in works
 
@@ -145,7 +166,7 @@ There is no scheduled bulk sync. A customer's record is refreshed by these webho
    - no wp-admin, admin bar, password reset or author archive;
    - hidden from the user list;
    - mail goes to the Shopify email.
-   Accounts are never matched by email at sign-in.
+   If Shopify's verified email belongs to an existing, unlinked WordPress account that isn't an administrator, the visitor is asked first: **Sign in to my account** (they sign in to WordPress, and the accounts are linked) or **No thanks, use a separate account**. Nothing is linked on email alone. Return false from `wp2_shopify_offer_existing_account` to skip the question.
 5. Tokens are stored encrypted inside the WordPress session, and refresh on demand. No endpoint returns a token.
 6. **Sign out** goes through Shopify's end-session endpoint, so both sessions end. WordPress's own logout link ends only the WordPress session.
 
@@ -163,6 +184,12 @@ A signed-in WordPress user can choose **Connect to Shopify**. After the Shopify 
 
 Administrators can't be linked, and a linked account that later becomes an administrator can't sign in with Shopify. A mismatched or unverified email is refused with a plain message.
 
+### Sign-in links
+
+- The WordPress login page shows a **Log in with Shopify** button above the form (Shopify → Settings → Sign-in links). Another setting points WordPress's own login links at Shopify sign-in; wp-admin and reauthentication keep the WordPress form.
+- Appearance → Menus has **Log in with Shopify** and **Log out** items, which show only to guests and signed-in visitors respectively.
+- The `[wp2_shopify_login]` shortcode renders the sign-in block for classic themes and page builders. Attributes: `show` (`auto`, `login`, `logout`), `login_label`, `logout_label` and `redirect`.
+
 ## Gating content
 
 Add **Membership gate** (`wp2-shopify/membership-gate`). It always contains two areas:
@@ -178,7 +205,7 @@ Gate settings (the sidebar only shows the ones that apply):
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. Synced tags never expire on their own: they apply until Shopify changes them. Shopify → Debug has a dry run that shows the decision for any user.
+Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor, and a Shopify-only account is signed out of WordPress; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. Shopify → Debug has a dry run that shows the decision for any user.
 
 A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
 
@@ -235,24 +262,37 @@ Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and pick a product: the side
 
 - **Buy-now is a plain form.** It posts to `admin-post.php?action=wp2_shopify_buy_now`, so it works without JavaScript. The server creates a one-line cart, attaches the visitor's identity if they're signed in with Shopify, and redirects to a fresh checkout URL. If Shopify refuses the customer token, it retries as a guest checkout rather than block the purchase.
 - **Cache-safe.** The card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per IP per minute.
+- **Subscriptions.** A product with selling plans (Shopify Subscriptions, Recharge, Appstle and others) shows the plan's price and name, such as "Billed yearly". Put a selling plan ID in the block to sell on that plan; the editor lists the variant's plans and IDs. A subscription-only product sells on its first plan.
+- **Prices by country.** Return an ISO country code from the `wp2_shopify_context_country` filter (for example from your CDN's country header) and plan cards and checkout use that country's price and currency through Shopify Markets. Pages with plan cards then differ by country, so the page cache must vary on that header.
 - **Independent of Shopify's plugin.** It works the same whether that plugin is installed or not, and never touches its cart.
+
+After checkout, the plugin finishes the job for a signed-in customer: for 30 minutes it re-reads their tags at most once a minute while Shopify Flow tags them, shows a "finishing up" banner, then "Your membership is ready" once. Link Shopify's order status page and confirmation email to the return link shown under Shopify → Settings (`/?wp2s_return=1`): it takes the customer back to the page they bought from, or asks a guest to log in with the email from their order. Turn the banner off with the `wp2_shopify_checkout_banner` filter.
 
 It needs `WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN` (recommended) or `WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN`, and the product must be published to the Headless channel that issued the token. Behind a proxy or CDN, the buyer IP the plugin sends is the proxy's unless the `wp2_shopify_buyer_ip` filter returns the visitor's from a header your proxy sets.
 
 ### Account blocks
 
+- **Member Account** (`wp2-shopify/member-account`): the "my membership" card. It shows the member's levels and when each started, the renewal date, past levels, their features, when it last synced, and links to their Shopify account and subscription management (Shopify → Settings → Subscription management). Guests get a sign-in button, unlinked accounts a connect button, and a lapsed member a join link. Start and renewal dates come from the `membership.member_since` and `membership.renews_on` customer metafields when Flow or an app sets them, otherwise from the level history the plugin keeps.
 - **Refresh Membership** (`wp2-shopify/membership-refresh`): a button for signed-in, linked customers that re-syncs their membership from Shopify through `POST /account/sync` and reloads the page, so gates open as soon as a new tag lands. Guests and unlinked accounts see nothing. Put it in a paywall's teaser or the header.
 - **Shopify Account Status** (`wp2-shopify/account-status`): tells the visitor whether they are signed in, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. "Show the raw status response" adds the `GET /auth/status` payload, nonces redacted, for troubleshooting.
 - **Membership Features** (`wp2-shopify/member-features`): the visitor's granted features and where each comes from ("Download access, from Add-on purchase"), for the account page. A menu mode shows only the features registered as primary, at most three, for a header.
 - **Shopify Health** (`wp2-shopify/health`): the at-a-glance version of Shopify → Debug (Blockstudio, the plugin's blocks, permalinks, the callback page, sign-in, which configuration values are set but never the values themselves, Shopify's own plugin). Administrators only; everyone else sees a one-line note. Add rows with the `wp2_shopify_health_checks` filter.
 
-All four are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
+All five are dynamic islands (see [Caching](#caching)), so they never put personal data or nonces in a cached page.
 
 ### Membership tags
 
 The plugin doesn't tag customers. Shopify Flow, or a subscription or membership app, adds a tag when a membership starts and removes it when it ends; levels under Shopify → Access point at those tags. [docs/shopify-flow.md](docs/shopify-flow.md) has workflows for one-time purchases, fixed terms, subscriptions and complimentary access.
 
 Access arrives when Shopify's tag webhook does, usually within seconds. A customer who is already signed in can pull it sooner with the **Refresh Membership** block.
+
+The locked panel a gate shows reads the visitor's situation: sign in, connect a Shopify account, "finishing up" after checkout, renew a level that lapsed, upgrade from a lower level, or join. Each has its own wording and button, which the `wp2_shopify_locked_panel` filter can change.
+
+**Drip.** The Access box on an item has "Drip: members can read it after N days of membership". A member who passes the item's rule but joined more recently sees when it opens for them instead. A member's start is the `membership.member_since` metafield when Shopify keeps one, otherwise when they first held a level they hold now (as WordPress saw it), otherwise when they linked. Search listings don't apply drip.
+
+**Members' home.** A level can name a members' home page (Access → Levels). A member who logs in with Shopify from the home page or a plain login link lands there; logging in from an article returns them to the article. The `wp2_shopify_sign_in_redirect` filter can change either.
+
+The plugin records when each level started and ended for each member (`level.changed` in the event log, and the `wp2_shopify_levels_changed` action). That history is for display; access always comes from the current tags.
 
 ## Caching
 
@@ -342,6 +382,7 @@ Rules that follow from it:
   - `wp2_shopify_signed_in`, `wp2_shopify_linked`, `wp2_shopify_disconnected` and `wp2_shopify_before_logout`
   - `wp2_shopify_log`, which receives redacted log events
   - `wp2_shopify_access_changed` (`int[] $post_ids`), `wp2_shopify_access_levels_changed` and `wp2_shopify_access_locked_changed` (`int $post_id, bool $locked`)
+  - `wp2_shopify_levels_changed` (`int $user_id, string[] $added, string[] $removed`), level slugs, after a sync
   - `wp2_shopify_features_changed` (`int $user_id, string[] $added, string[] $removed`) and `wp2_shopify_features_mapping_changed` (`string[] $slugs`); see [docs/features.md](docs/features.md#hooks)
 - Filters:
   - `wp2_shopify_auth_callback_slug`, `wp2_shopify_default_redirect` and `wp2_shopify_customer_admin_redirect`
@@ -352,7 +393,10 @@ Rules that follow from it:
   - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
   - `wp2_shopify_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
   - `wp2_shopify_features`, `wp2_shopify_feature_tests` and `wp2_shopify_feature_decision`, which register features and custom tests and can alter one decision (see [docs/features.md](docs/features.md))
+  - `wp2_shopify_sign_in_redirect` (`string $target, int $user_id, string $redirect_to`) and `wp2_shopify_drip_days` (`int $days, WP_Post $post`)
+  - `wp2_shopify_context_country` (`string $country`), an ISO code that prices plan cards and checkout in that country's currency
   - `wp2_shopify_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
+  - `wp2_shopify_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `wp2_shopify_checkout_banner` (`bool`); `wp2_shopify_offer_existing_account` (`bool`)
   - `wp2_shopify_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
 
 ## Upgrading from 1.x
@@ -389,6 +433,8 @@ composer lint   # php -l on every PHP file
 composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
+
+GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings. The translation template is `languages/wp2-shopify.pot`; regenerate it with `wp i18n make-pot . languages/wp2-shopify.pot --exclude=vendor,tests` when strings change.
 
 - **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
 - **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.

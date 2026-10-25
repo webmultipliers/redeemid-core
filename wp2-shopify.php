@@ -9,6 +9,7 @@
  * Author:            Web Multipliers
  * License:           GPL-2.0-or-later
  * Text Domain:       wp2-shopify
+ * Domain Path:       /languages
  *
  * Shopify API version: 2026-10 (see WP2_Shopify\Config::API_VERSION).
  */

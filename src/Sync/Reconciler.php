@@ -9,7 +9,8 @@ use WP2_Shopify\Support\Logger;
  * On-demand resync of one linked customer's tags and status from the Admin
  * API: a member's own refresh, a staff resync on Shopify → Customers, a tag
  * webhook, or the post-checkout check. There is no scheduled sweep; webhooks
- * keep the mirror current.
+ * keep the mirror current, and staff can start a paced bulk resync
+ * (BulkResync) when they need everyone re-read.
  */
 final class Reconciler {
 	/** Retired scheduled sweep: its cron hook and options are cleared on upgrade. */
@@ -55,6 +56,17 @@ final class Reconciler {
 		Logger::log( 'sync.done', [ 'source' => $source, 'users' => count( $user_ids ), 'changed' => $result['changed'], 'missing' => $result['missing'], 'status' => 'ok' ] + ( 1 === count( $user_ids ) ? [ 'user' => (int) reset( $user_ids ) ] : [] ) );
 
 		return $result;
+	}
+
+	/**
+	 * One Admin API batch of up to 50 users, for BulkResync. A failure leaves
+	 * the users' sync state alone, because the batch is retried.
+	 *
+	 * @param int[] $user_ids
+	 * @return array{changed: int, missing: int}|\WP_Error
+	 */
+	public static function batch( array $user_ids, string $source ): array|\WP_Error {
+		return self::reconcile_users( array_slice( array_map( 'intval', $user_ids ), 0, self::BATCH ), $source );
 	}
 
 	/**
@@ -113,6 +125,7 @@ final class Reconciler {
 
 			Mirror::set_tags( $user_id, $after );
 			Mirror::set_status( $user_id, $status );
+			Mirror::set_dates( $user_id, [ 'since' => $remote[ $id->numeric ]['since'] ?? null, 'renews' => $remote[ $id->numeric ]['renews'] ?? null ] );
 			Mirror::stamp( $user_id, $source );
 		}
 

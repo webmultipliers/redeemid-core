@@ -10,6 +10,7 @@ final class Decision {
 	public const DISABLED     = 'disabled';
 	public const NO_MIRROR    = 'no_mirror';
 	public const BAD_RULE     = 'bad_rule';
+	public const DRIP         = 'drip';
 
 	private function __construct(
 		public readonly bool $granted,

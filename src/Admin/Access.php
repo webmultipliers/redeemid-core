@@ -57,6 +57,7 @@ final class Access {
 						'message'   => sanitize_textarea_field( wp_unslash( $_POST['message'] ?? '' ) ),
 						'cta_label' => sanitize_text_field( wp_unslash( $_POST['cta_label'] ?? '' ) ),
 						'cta_url'   => esc_url_raw( wp_unslash( $_POST['cta_url'] ?? '' ) ),
+						'home_url'  => esc_url_raw( wp_unslash( $_POST['home_url'] ?? '' ) ),
 					]
 				);
 				LevelStore::known_tags( true );
@@ -342,6 +343,13 @@ final class Access {
 							<td>
 								<input type="text" id="wp2-level-cta-label" name="cta_label" class="regular-text" placeholder="<?php esc_attr_e( 'Become a Gold member', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( $edit->cta_label ?? '' ); ?>">
 								<br><input type="text" name="cta_url" class="regular-text wp2s-stack" aria-label="<?php esc_attr_e( 'Call to action URL', 'wp2-shopify' ); ?>" placeholder="/join/gold/" value="<?php echo esc_attr( $edit->cta_url ?? '' ); ?>">
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="wp2-level-home"><?php esc_html_e( 'Members\' home', 'wp2-shopify' ); ?></label></th>
+							<td>
+								<input type="text" id="wp2-level-home" name="home_url" class="regular-text" placeholder="/members/gold/" value="<?php echo esc_attr( $edit->home_url ?? '' ); ?>">
+								<p class="description"><?php esc_html_e( 'Where members of this level land after logging in with Shopify from the home page or a plain login link. Logging in from an article returns them to it.', 'wp2-shopify' ); ?></p>
 							</td>
 						</tr>
 						<?php $wp2_features = array_filter( Registry::features(), static fn( Feature $f ) => ! $f->managed ); ?>

@@ -1,0 +1,4066 @@
+# Copyright (C) 2026 Web Multipliers
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP2 Shopify 2.0.0-alpha.1\n"
+"Report-Msgid-Bugs-To: https://github.com/webmultipliers/shopify-for-wp/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-25T04:20:51+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: wp2-shopify\n"
+
+#. Plugin Name of the plugin
+#: wp2-shopify.php
+msgid "WP2 Shopify"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: wp2-shopify.php
+msgid "https://github.com/webmultipliers/shopify-for-wp"
+msgstr ""
+
+#. Description of the plugin
+#: wp2-shopify.php
+msgid "Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7."
+msgstr ""
+
+#. Author of the plugin
+#: wp2-shopify.php
+msgid "Web Multipliers"
+msgstr ""
+
+#: blocks/access-badge/index.php:31
+#: src/Access/Badges.php:120
+#: src/Admin/Debug.php:295
+msgid "Locked"
+msgstr ""
+
+#: blocks/access-badge/index.php:31
+#: src/Access/Badges.php:120
+msgid "Included with your membership"
+msgstr ""
+
+#: blocks/access-badge/index.php:34
+#: src/Admin/Reports.php:66
+msgid "Members"
+msgstr ""
+
+#: blocks/access-badge/index.php:43
+msgid "Locked:"
+msgstr ""
+
+#: blocks/access-badge/index.php:50
+msgid "Access badge: shows on gated items"
+msgstr ""
+
+#: blocks/account-status/index.php:18
+msgid "Your Shopify account"
+msgstr ""
+
+#: blocks/account-status/index.php:20
+msgid "Signed in"
+msgstr ""
+
+#: blocks/account-status/index.php:21
+msgid "Display name"
+msgstr ""
+
+#: blocks/account-status/index.php:22
+msgid "Linked to a Shopify customer"
+msgstr ""
+
+#: blocks/account-status/index.php:23
+msgid "Account created by Shopify sign-in"
+msgstr ""
+
+#: blocks/account-status/index.php:24
+msgid "Membership last synced"
+msgstr ""
+
+#: blocks/account-status/index.php:25
+#: src/Support/Health.php:60
+msgid "Shopify sign-in available"
+msgstr ""
+
+#: blocks/account-status/index.php:26
+msgid "Session ready for account actions"
+msgstr ""
+
+#: blocks/account-status/index.php:30
+msgid "Checking who you are…"
+msgstr ""
+
+#: blocks/account-status/index.php:33
+msgid "Fills in on the live page for each visitor."
+msgstr ""
+
+#: blocks/account-status/index.php:37
+#: src/Admin/UserProfile.php:62
+msgid "Yes"
+msgstr ""
+
+#: blocks/account-status/index.php:37
+#: src/Admin/UserProfile.php:62
+msgid "No"
+msgstr ""
+
+#. translators: 1: date and time, 2: how long ago, such as "5 mins"
+#: blocks/account-status/index.php:52
+#, php-format
+msgid "%1$s (%2$s ago)"
+msgstr ""
+
+#: blocks/account-status/index.php:53
+msgid "Never"
+msgstr ""
+
+#: blocks/account-status/index.php:55
+msgid "Not for guests"
+msgstr ""
+
+#: blocks/account-status/index.php:59
+msgid "Shopify sign-in is not available right now."
+msgstr ""
+
+#: blocks/account-status/index.php:61
+msgid "You are not signed in. Log in with Shopify to see your membership."
+msgstr ""
+
+#: blocks/account-status/index.php:63
+msgid "You are signed in, but your account is not connected to Shopify yet."
+msgstr ""
+
+#: blocks/account-status/index.php:65
+msgid "Signed in and connected to Shopify."
+msgstr ""
+
+#: blocks/account-status/index.php:94
+msgid "Raw status response"
+msgstr ""
+
+#: blocks/auth-action/index.php:25
+#: blocks/locked-panel/index.php:34
+#: blocks/member-account/index.php:42
+#: src/Auth/SignInLinks.php:63
+#: src/Auth/SignInLinks.php:127
+#: src/Sync/PostCheckout.php:171
+msgid "Log in with Shopify"
+msgstr ""
+
+#: blocks/auth-action/index.php:26
+#: blocks/member-account/index.php:116
+#: src/Auth/SignInLinks.php:128
+msgid "Log out"
+msgstr ""
+
+#: blocks/auth-action/index.php:27
+msgid "Connect Shopify account"
+msgstr ""
+
+#: blocks/auth-action/index.php:35
+msgid "Preview. Each visitor sees the action for their own state."
+msgstr ""
+
+#: blocks/auth-action/index.php:65
+msgid "Sign-in is temporarily unavailable"
+msgstr ""
+
+#: blocks/health/index.php:16
+msgid "Shopify health"
+msgstr ""
+
+#: blocks/health/index.php:34
+msgid "Visible to administrators only."
+msgstr ""
+
+#: blocks/locked-panel/index.php:24
+msgid "Members only"
+msgstr ""
+
+#: blocks/member-account/index.php:17
+msgid "Your membership"
+msgstr ""
+
+#: blocks/member-account/index.php:37
+msgid "Each customer sees their own levels, dates, features and account links here."
+msgstr ""
+
+#: blocks/member-account/index.php:39
+msgid "Loading your membership…"
+msgstr ""
+
+#: blocks/member-account/index.php:41
+msgid "Log in with Shopify to see your membership."
+msgstr ""
+
+#: blocks/member-account/index.php:44
+msgid "Your account here isn't connected to a Shopify customer yet."
+msgstr ""
+
+#: blocks/member-account/index.php:45
+#: src/Auth/Flow.php:582
+#: src/Blocks/Gate.php:275
+msgid "Connect your Shopify account"
+msgstr ""
+
+#: blocks/member-account/index.php:47
+msgid "Your membership details are on their way from Shopify."
+msgstr ""
+
+#: blocks/member-account/index.php:50
+#: src/Blocks/Gate.php:303
+msgid "Your account is disabled. Contact the store for help."
+msgstr ""
+
+#: blocks/member-account/index.php:54
+msgid "Signed in as"
+msgstr ""
+
+#: blocks/member-account/index.php:57
+#: src/Admin/SettingsPage.php:257
+msgid "Membership"
+msgstr ""
+
+#. translators: %s: date
+#: blocks/member-account/index.php:66
+#, php-format
+msgid "since %s"
+msgstr ""
+
+#: blocks/member-account/index.php:72
+msgid "Finishing setting up your membership…"
+msgstr ""
+
+#: blocks/member-account/index.php:74
+msgid "No membership yet."
+msgstr ""
+
+#: blocks/member-account/index.php:76
+msgid "See the plans"
+msgstr ""
+
+#. translators: 1: access level label 2: date
+#: blocks/member-account/index.php:81
+#, php-format
+msgid "Your %1$s membership ended on %2$s."
+msgstr ""
+
+#: blocks/member-account/index.php:86
+msgid "Renews"
+msgstr ""
+
+#: blocks/member-account/index.php:91
+#: src/Admin/Access.php:210
+#: src/Admin/Access.php:324
+msgid "Includes"
+msgstr ""
+
+#: blocks/member-account/index.php:95
+msgid "Last updated from Shopify"
+msgstr ""
+
+#. translators: %s: human time difference
+#: blocks/member-account/index.php:101
+#: src/Admin/Menu.php:291
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: blocks/member-account/index.php:102
+msgid "Not yet"
+msgstr ""
+
+#: blocks/member-account/index.php:109
+#: blocks/membership-refresh/index.php:18
+msgid "Refresh membership"
+msgstr ""
+
+#: blocks/member-account/index.php:111
+msgid "Manage subscription"
+msgstr ""
+
+#: blocks/member-account/index.php:114
+msgid "Orders and account in Shopify"
+msgstr ""
+
+#: blocks/member-features/index.php:17
+msgid "Your membership features"
+msgstr ""
+
+#: blocks/member-features/index.php:21
+msgid "No membership features yet."
+msgstr ""
+
+#: blocks/member-features/index.php:23
+msgid "Checking your membership…"
+msgstr ""
+
+#: blocks/member-features/index.php:26
+msgid "Fills in on the live page with each visitor's own features."
+msgstr ""
+
+#. translators: %s: route labels
+#: blocks/member-features/index.php:36
+#, php-format
+msgid "from %s"
+msgstr ""
+
+#. translators: %s: route labels
+#: blocks/member-features/index.php:36
+#: src/Admin/AccessFeatures.php:170
+#: src/Admin/AccessTest.php:123
+msgid " and "
+msgstr ""
+
+#: blocks/member-features/index.php:44
+msgid "not included"
+msgstr ""
+
+#: blocks/member-features/index.php:50
+msgid "Sign in to see your membership features."
+msgstr ""
+
+#: blocks/membership-gate-content/index.php:17
+msgid "Members only — never sent to non-members"
+msgstr ""
+
+#: blocks/membership-gate-fallback/index.php:14
+msgid "Public teaser — visible to everyone"
+msgstr ""
+
+#: blocks/membership-gate-fallback/index.php:15
+msgid "Shown only when “Non-members see” is set to the Public teaser area."
+msgstr ""
+
+#. translators: %s: the item's rule and where it comes from
+#: blocks/membership-gate/index.php:38
+#, php-format
+msgid "Members only: this item's rule, %s."
+msgstr ""
+
+#: blocks/membership-gate/index.php:39
+msgid "This item's rule is open now, so everyone will see the Members only area. Set a rule in the Access box."
+msgstr ""
+
+#. translators: %s: access level label, such as Gold
+#: blocks/membership-gate/index.php:45
+#, php-format
+msgid "Members only: visitors with the %s level."
+msgstr ""
+
+#: blocks/membership-gate/index.php:46
+msgid "Choose an access level. Until then nobody sees the Members only area."
+msgstr ""
+
+#. translators: 1: "any" or "all", 2: tag list
+#: blocks/membership-gate/index.php:51
+#, php-format
+msgid "Members only: needs %1$s of: %2$s"
+msgstr ""
+
+#: blocks/membership-gate/index.php:52
+#: src/Admin/Debug.php:271
+msgid "all"
+msgstr ""
+
+#: blocks/membership-gate/index.php:52
+#: src/Admin/Debug.php:271
+msgid "any"
+msgstr ""
+
+#: blocks/membership-gate/index.php:56
+msgid "Members only: any signed-in visitor."
+msgstr ""
+
+#: blocks/membership-gate/index.php:58
+msgid "No rule set: everyone will see the Members only area."
+msgstr ""
+
+#. translators: %s: how long ago, such as "5 mins"
+#: blocks/membership-refresh/index.php:26
+#, php-format
+msgid "Synced from Shopify %s ago."
+msgstr ""
+
+#: blocks/membership-refresh/index.php:27
+msgid "Not synced yet."
+msgstr ""
+
+#: blocks/membership-refresh/index.php:34
+msgid "Shows to signed-in, linked customers only."
+msgstr ""
+
+#: blocks/paywall-break/index.php:20
+msgid "Paywall: locked visitors stop here"
+msgstr ""
+
+#: blocks/paywall-break/index.php:21
+msgid "The break beats the post type teaser setting, which beats the excerpt. Keep it at the top level: inside a group, the whole group counts as locked."
+msgstr ""
+
+#: blocks/plan-card/index.php:20
+msgid "Join now"
+msgstr ""
+
+#: blocks/plan-card/index.php:41
+msgid "Choose a Shopify product in the block settings."
+msgstr ""
+
+#. translators: %s: product handle
+#: blocks/plan-card/index.php:41
+#: blocks/plan-card/index.php:43
+#: blocks/plan-card/index.php:50
+msgid "This plan is not available right now."
+msgstr ""
+
+#: blocks/plan-card/index.php:43
+msgid "Add a Storefront private (or public) access token in Shopify → Settings, or as WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN in wp-config.php, to show live prices and checkout."
+msgstr ""
+
+#: blocks/plan-card/index.php:48
+msgid "Plans are temporarily unavailable. Please try again shortly."
+msgstr ""
+
+#. translators: %s: product handle
+#: blocks/plan-card/index.php:50
+#, php-format
+msgid "No Shopify product with the handle \"%s\" is published to this sales channel."
+msgstr ""
+
+#: blocks/plan-card/index.php:58
+msgid "Gold membership"
+msgstr ""
+
+#: blocks/plan-card/index.php:60
+msgid "Every story, the archive and the weekly briefing."
+msgstr ""
+
+#: blocks/plan-card/index.php:103
+msgid "Selling plans for this variant (put an ID in the block settings to sell on that plan):"
+msgstr ""
+
+#: blocks/plan-card/index.php:121
+msgid "Sold out"
+msgstr ""
+
+#: src/Access/Badges.php:120
+msgid "Free to read"
+msgstr ""
+
+#: src/Access/Badges.php:136
+msgid "and"
+msgstr ""
+
+#: src/Access/Badges.php:137
+msgid "or"
+msgstr ""
+
+#: src/Access/Badges.php:198
+#: src/Admin/Access.php:152
+#: src/Admin/AccessColumn.php:38
+#: src/Admin/AccessColumn.php:88
+#: src/Admin/AccessMetaBox.php:29
+#: src/Admin/AccessTermFields.php:44
+#: src/Admin/AccessTermFields.php:56
+#: src/Admin/AccessTermFields.php:120
+#: src/Admin/Menu.php:61
+#: assets/block-access.js:96
+#: assets/block-access.js:195
+#: assets/block-access.js:200
+msgid "Access"
+msgstr ""
+
+#: src/Access/Explain.php:77
+msgid "The whole item."
+msgstr ""
+
+#: src/Access/Explain.php:82
+msgid "The content above the paywall break, then the wall."
+msgstr ""
+
+#: src/Access/Explain.php:83
+msgid "The post type's teaser, then the wall."
+msgstr ""
+
+#: src/Access/Explain.php:84
+msgid "The hand-written excerpt, then the wall."
+msgstr ""
+
+#: src/Access/Explain.php:85
+msgid "Only the wall: no teaser."
+msgstr ""
+
+#: src/Access/Explain.php:110
+msgid "Search matches its public text only: title, excerpt, teaser and blocks shown to locked visitors."
+msgstr ""
+
+#: src/Access/Explain.php:111
+msgid "Search matches its full text: nothing in it is restricted."
+msgstr ""
+
+#: src/Access/Explain.php:113
+msgid "Comments: shown to everyone."
+msgstr ""
+
+#: src/Access/Explain.php:114
+msgid "Comments: on a locked item, shown only to visitors who can read it."
+msgstr ""
+
+#: src/Access/Explain.php:116
+msgid "Search engines: noindex, and left out of sitemaps."
+msgstr ""
+
+#: src/Access/Explain.php:117
+msgid "Search engines: indexed and in sitemaps. Locked items show crawlers the teaser only."
+msgstr ""
+
+#. translators: %s: access level label, such as Gold
+#: src/Access/Gatekeeper.php:129
+#, php-format
+msgid "This content is for %s members."
+msgstr ""
+
+#. translators: %s: access level label, such as Gold
+#: src/Access/Gatekeeper.php:129
+#: src/Blocks/Gate.php:251
+msgid "This content is for members."
+msgstr ""
+
+#: src/Access/Viewer.php:127
+msgid "Access: full view (bypass)"
+msgstr ""
+
+#. translators: %s: a level label, or "a locked visitor"
+#: src/Access/Viewer.php:129
+#, php-format
+msgid "Access: viewing as %s"
+msgstr ""
+
+#. translators: %s: a level label, or "a locked visitor"
+#: src/Access/Viewer.php:129
+msgid "a locked visitor"
+msgstr ""
+
+#: src/Access/Viewer.php:134
+msgid "Exit preview"
+msgstr ""
+
+#: src/Access/Viewer.php:137
+#: src/Admin/AccessTest.php:167
+msgid "View as a locked visitor"
+msgstr ""
+
+#. translators: %s: level label
+#: src/Access/Viewer.php:142
+#, php-format
+msgid "View as %s"
+msgstr ""
+
+#: src/Admin/Access.php:146
+msgid "A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too."
+msgstr ""
+
+#: src/Admin/Access.php:147
+msgid "The rule an item gets, from strongest to weakest: the item's own setting, then its terms, then its post type, then the site default. Leave every level unticked for \"no rule here\". Blocks inside an item can only narrow its rule."
+msgstr ""
+
+#: src/Admin/Access.php:148
+msgid "A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost."
+msgstr ""
+
+#: src/Admin/Access.php:149
+msgid "Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get."
+msgstr ""
+
+#: src/Admin/Access.php:154
+msgid "Access sections"
+msgstr ""
+
+#: src/Admin/Access.php:155
+#: src/Admin/Access.php:203
+#: src/Admin/CustomersTable.php:28
+#: src/Admin/Overview.php:149
+#: assets/block-access.js:109
+msgid "Levels"
+msgstr ""
+
+#: src/Admin/Access.php:156
+msgid "Content rules"
+msgstr ""
+
+#: src/Admin/Access.php:157
+#: src/Admin/Access.php:213
+#: src/Admin/Access.php:358
+#: src/Admin/AccessFeatures.php:94
+msgid "Features"
+msgstr ""
+
+#: src/Admin/Access.php:158
+msgid "Test"
+msgstr ""
+
+#: src/Admin/Access.php:165
+msgid "Level saved."
+msgstr ""
+
+#: src/Admin/Access.php:166
+msgid "Level deleted. Content that still names it now fails closed."
+msgstr ""
+
+#: src/Admin/Access.php:167
+msgid "Tag list refreshed from synced customers."
+msgstr ""
+
+#: src/Admin/Access.php:168
+msgid "Give the level a slug other than public or signed-in."
+msgstr ""
+
+#: src/Admin/Access.php:169
+msgid "These settings are managed in code, so nothing was changed."
+msgstr ""
+
+#: src/Admin/Access.php:170
+msgid "Content rules saved. Every item picks them up on its next view."
+msgstr ""
+
+#: src/Admin/Access.php:171
+msgid "Feature mapping saved. It applies on every page from the next request."
+msgstr ""
+
+#: src/Admin/Access.php:172
+msgid "Stored condition removed."
+msgstr ""
+
+#: src/Admin/Access.php:194
+msgid "No tags, so it grants nobody."
+msgstr ""
+
+#: src/Admin/Access.php:195
+msgid "Some tags are not on any synced customer. Was a tag renamed or deleted in Shopify?"
+msgstr ""
+
+#: src/Admin/Access.php:196
+msgid "Includes a level that does not exist."
+msgstr ""
+
+#: src/Admin/Access.php:200
+msgid "Managed in code: the wp2_shopify_access_levels filter sets these levels, so they are read-only here."
+msgstr ""
+
+#. translators: %s: level label
+#: src/Admin/Access.php:203
+#: src/Admin/Access.php:297
+msgid "Add a level"
+msgstr ""
+
+#: src/Admin/Access.php:208
+#: src/Admin/Customers.php:297
+#: src/Admin/Reports.php:65
+msgid "Level"
+msgstr ""
+
+#: src/Admin/Access.php:209
+#: src/Admin/Access.php:317
+msgid "Customer tags"
+msgstr ""
+
+#: src/Admin/Access.php:211
+#: src/Admin/AccessFeatures.php:102
+msgid "Health"
+msgstr ""
+
+#: src/Admin/Access.php:212
+msgid "Would match today"
+msgstr ""
+
+#: src/Admin/Access.php:214
+msgid "Actions"
+msgstr ""
+
+#: src/Admin/Access.php:235
+#: src/Admin/AccessRules.php:209
+msgid "Everyone"
+msgstr ""
+
+#: src/Admin/Access.php:237
+msgid "Any signed-in visitor"
+msgstr ""
+
+#: src/Admin/Access.php:240
+#: src/Admin/AccessFeatures.php:146
+msgid "or "
+msgstr ""
+
+#: src/Admin/Access.php:241
+msgid "all of "
+msgstr ""
+
+#: src/Admin/Access.php:241
+msgid "any of "
+msgstr ""
+
+#: src/Admin/Access.php:250
+#: src/Admin/AccessFeatures.php:156
+#: src/Admin/Menu.php:194
+#: src/Admin/Overview.php:123
+msgid "OK"
+msgstr ""
+
+#. translators: %d: number of customers
+#: src/Admin/Access.php:262
+#, php-format
+msgid "%d customer"
+msgid_plural "%d customers"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Access.php:266
+msgid "Edit"
+msgstr ""
+
+#: src/Admin/Access.php:267
+msgid "Delete"
+msgstr ""
+
+#: src/Admin/Access.php:276
+msgid "Refresh tag list now"
+msgstr ""
+
+#. translators: %d: number of distinct tags
+#: src/Admin/Access.php:281
+#, php-format
+msgid "Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts show who would match, not who is signed in now."
+msgstr ""
+
+#. translators: %s: level label
+#: src/Admin/Access.php:297
+#, php-format
+msgid "Edit %s"
+msgstr ""
+
+#: src/Admin/Access.php:298
+msgid "Name the level, say which customer tags grant it, and what locked visitors see."
+msgstr ""
+
+#. translators: %s: feature label
+#: src/Admin/Access.php:299
+#: src/Admin/AccessFeatures.php:214
+#: src/Admin/Customers.php:352
+#: src/Auth/Flow.php:614
+msgid "Cancel"
+msgstr ""
+
+#: src/Admin/Access.php:306
+msgid "Slug"
+msgstr ""
+
+#: src/Admin/Access.php:309
+msgid "Rules store the slug, so it never changes after saving."
+msgstr ""
+
+#: src/Admin/Access.php:313
+msgid "Label"
+msgstr ""
+
+#: src/Admin/Access.php:320
+msgid "One group per line, tags separated by commas. Any one tag in a line passes; start the line with \"all:\" to need every tag. Any one line passing grants the level."
+msgstr ""
+
+#: src/Admin/Access.php:327
+msgid "Slugs of levels this one also opens, separated by commas. Gold including silver means Gold members read Silver content."
+msgstr ""
+
+#: src/Admin/Access.php:331
+msgid "Badge colour"
+msgstr ""
+
+#: src/Admin/Access.php:334
+msgid "Badges always show the label too, never colour alone."
+msgstr ""
+
+#: src/Admin/Access.php:338
+msgid "Wall message"
+msgstr ""
+
+#: src/Admin/Access.php:342
+msgid "Call to action"
+msgstr ""
+
+#: src/Admin/Access.php:344
+msgid "Become a Gold member"
+msgstr ""
+
+#: src/Admin/Access.php:345
+msgid "Call to action URL"
+msgstr ""
+
+#: src/Admin/Access.php:349
+msgid "Members' home"
+msgstr ""
+
+#: src/Admin/Access.php:352
+msgid "Where members of this level land after logging in with Shopify from the home page or a plain login link. Logging in from an article returns them to it."
+msgstr ""
+
+#: src/Admin/Access.php:367
+msgid "Holders of this level get these features. The same mapping as Access → Features: a box here adds or removes the route \"this level\" there, and leaves other routes alone. Features managed in code are not listed."
+msgstr ""
+
+#: src/Admin/Access.php:374
+msgid "Save level"
+msgstr ""
+
+#: src/Admin/Access.php:374
+msgid "Add level"
+msgstr ""
+
+#: src/Admin/AccessColumn.php:75
+msgid "Inherit"
+msgstr ""
+
+#: src/Admin/AccessColumn.php:76
+msgid "Public"
+msgstr ""
+
+#: src/Admin/AccessColumn.php:77
+msgid "These levels instead"
+msgstr ""
+
+#: src/Admin/AccessColumn.php:78
+msgid "Inherited, plus these levels"
+msgstr ""
+
+#: src/Admin/AccessColumn.php:91
+msgid "— No change —"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:59
+msgid "No caching option declared, so pages that use it are treated as private."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:60
+msgid "No known enforcement point declared; treated as a PHP check."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:61
+msgid "Names a level that does not exist, so that route grants nobody."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:62
+msgid "Names a custom test nobody registered, so that route grants nobody."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:63
+msgid "Has a test of an unknown type, so that route grants nobody."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:66
+msgid "PHP check"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:67
+msgid "block visibility"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:68
+msgid "body class"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:69
+msgid "REST field"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:70
+msgid "shortcode"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:73
+msgid "private: pages that use it are not shared-cached"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:74
+msgid "vary: cache varies on the granted-set cookie"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:75
+msgid "fragment: only a per-visitor fragment varies"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:86
+msgid "Features are granted by Shopify entitlement, never by hand in WordPress: the next sync would undo it. To give one customer a feature, give them the level's tag or the add-on tag in Shopify."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:87
+msgid "Shopify → Customers edits tags in Shopify."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:92
+msgid "No features are registered yet."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:92
+msgid "A theme or plugin registers them with the wp2_shopify_features filter; see docs/features.md."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:94
+msgid "Every feature registered by the theme or plugins, who gets it, and how it is enforced."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:99
+#: assets/block-access.js:141
+msgid "Feature"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:100
+msgid "Who gets it"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:101
+msgid "Enforcement and caching"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:104
+#: src/Admin/AccessFeatures.php:200
+#: src/Admin/AccessFeatures.php:206
+msgid "Preview"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:131
+msgid "managed in code"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:132
+msgid "sensitive"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:133
+msgid "in member menu"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:134
+msgid "JS signal"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:143
+msgid "Nobody yet: no condition mapped."
+msgstr ""
+
+#. translators: %s: route labels
+#: src/Admin/AccessFeatures.php:170
+#: src/Admin/AccessTest.php:123
+#, php-format
+msgid "Granted, from %s"
+msgstr ""
+
+#. translators: %s: reason code
+#: src/Admin/AccessFeatures.php:172
+#, php-format
+msgid "Not granted (%s)"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:178
+msgid "Map"
+msgstr ""
+
+#. translators: %s: feature slug
+#: src/Admin/AccessFeatures.php:194
+#, php-format
+msgid "A condition is stored for %s, which is no longer registered. It grants nothing."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:196
+msgid "Forget it"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:200
+msgid "Shows which route grants each feature. The Test tab prints the full trace for any viewer."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:204
+#: src/Admin/AccessTest.php:47
+msgid "A synced customer with these tags"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:205
+msgid "or a real user ID"
+msgstr ""
+
+#. translators: %s: feature label
+#: src/Admin/AccessFeatures.php:214
+#, php-format
+msgid "Who gets %s"
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:223
+msgid "One route per line; every test in a line must pass, and any line grants the feature. A test is a level slug (gold), tag:<tag>, or test:<name> for a custom test. Start a line with \"Label = \" to name the route on the account card (\"Add-on purchase = tag:ad-free-addon\"); otherwise it is named after its level. public and signed-in are levels too. Empty: nobody gets it."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:225
+msgid "Features are site-wide: saving changes behaviour on every page that uses this feature, and caches are told to purge the whole site."
+msgstr ""
+
+#: src/Admin/AccessFeatures.php:228
+msgid "Save"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:38
+msgid "Inherit (terms, then post type)"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:39
+msgid "Public: open this item"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:40
+msgid "Require these levels instead"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:41
+msgid "Inherited rule, plus these levels"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:47
+msgid "Now:"
+msgstr ""
+
+#. translators: %s: date and time
+#: src/Admin/AccessMetaBox.php:53
+#, php-format
+msgid "A date changes this on %s."
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:58
+msgid "Test who can read it"
+msgstr ""
+
+#. translators: 1: term, such as "Category: Culture", 2: date
+#: src/Admin/AccessMetaBox.php:65
+#, php-format
+msgid "%1$s makes this item free to everyone until %2$s. To keep it locked, give it its own levels below."
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:72
+msgid "This item"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:81
+msgid "Levels (any one passes)"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:85
+msgid "Used by the last two choices. Blocks inside the item can only narrow its rule, never widen it."
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:89
+msgid "Embargo: locked until"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:93
+msgid "Free until, then locked"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:95
+msgid "Dates are publish-date embargoes, the same for everyone. Site time zone."
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:98
+msgid "Drip: members can read it after"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:99
+msgid "days of membership"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:100
+msgid "Counted from when each member joined. 0 for no drip."
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:103
+msgid "Never count toward a meter"
+msgstr ""
+
+#: src/Admin/AccessMetaBox.php:105
+msgid "Gating protects this item's text. Files linked from it, such as PDFs and images, keep public URLs."
+msgstr ""
+
+#: src/Admin/AccessRules.php:114
+msgid "First blocks"
+msgstr ""
+
+#: src/Admin/AccessRules.php:115
+msgid "First words"
+msgstr ""
+
+#: src/Admin/AccessRules.php:116
+msgid "Excerpt only"
+msgstr ""
+
+#: src/Admin/AccessRules.php:117
+msgid "Nothing"
+msgstr ""
+
+#: src/Admin/AccessRules.php:134
+msgid "Managed in code: the wp2_shopify_access_rules filter sets these rules, so they are read-only here."
+msgstr ""
+
+#: src/Admin/AccessRules.php:141
+msgid "Defaults"
+msgstr ""
+
+#: src/Admin/AccessRules.php:141
+msgid "The fallback rule, and how an item in several gated terms is decided."
+msgstr ""
+
+#: src/Admin/AccessRules.php:145
+msgid "Site default"
+msgstr ""
+
+#: src/Admin/AccessRules.php:148
+msgid "Applies to items in any gated post type with no rule from their terms or post type. Usually left empty."
+msgstr ""
+
+#: src/Admin/AccessRules.php:152
+msgid "When terms disagree"
+msgstr ""
+
+#: src/Admin/AccessRules.php:156
+msgid "Most restrictive: the visitor must pass every term's rule (recommended)"
+msgstr ""
+
+#: src/Admin/AccessRules.php:157
+msgid "Least restrictive: passing any one term's rule is enough"
+msgstr ""
+
+#: src/Admin/AccessRules.php:158
+msgid "Priority: the term with the highest priority decides"
+msgstr ""
+
+#: src/Admin/AccessRules.php:164
+msgid "Level inclusion counts first: an item in a Silver term and a Gold term needs Gold when Gold includes Silver. An unexpired \"open until\" term always wins."
+msgstr ""
+
+#: src/Admin/AccessRules.php:171
+msgid "Post types"
+msgstr ""
+
+#: src/Admin/AccessRules.php:171
+msgid "Which post types can be gated, what every item needs, and what locked visitors get."
+msgstr ""
+
+#: src/Admin/AccessRules.php:176
+msgid "Post type"
+msgstr ""
+
+#: src/Admin/AccessRules.php:177
+#: src/Admin/AccessRules.php:193
+msgid "Can be gated"
+msgstr ""
+
+#: src/Admin/AccessRules.php:178
+msgid "Every item needs"
+msgstr ""
+
+#: src/Admin/AccessRules.php:179
+msgid "Teaser for locked visitors"
+msgstr ""
+
+#: src/Admin/AccessRules.php:180
+msgid "Opens after (days)"
+msgstr ""
+
+#: src/Admin/AccessRules.php:181
+#: src/Admin/AccessRules.php:207
+msgid "Comments on locked items"
+msgstr ""
+
+#: src/Admin/AccessRules.php:182
+msgid "Search engines"
+msgstr ""
+
+#: src/Admin/AccessRules.php:196
+msgid "Teaser"
+msgstr ""
+
+#: src/Admin/AccessRules.php:201
+msgid "How many blocks or words"
+msgstr ""
+
+#: src/Admin/AccessRules.php:204
+msgid "Opens after days"
+msgstr ""
+
+#: src/Admin/AccessRules.php:208
+msgid "Readers only"
+msgstr ""
+
+#: src/Admin/AccessRules.php:213
+msgid "Keep locked items out"
+msgstr ""
+
+#: src/Admin/AccessRules.php:221
+msgid "A paywall break block in an item always sets its teaser. \"Opens after\" frees items that many days after they were published (0 for never), checked on every request. \"Readers only\" hides comments, the comment count and the form from visitors who cannot read the item. \"Keep locked items out\" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser."
+msgstr ""
+
+#: src/Admin/AccessRules.php:226
+msgid "Taxonomies"
+msgstr ""
+
+#: src/Admin/AccessRules.php:226
+msgid "Which taxonomies' term rules count. Rules are set on each term's edit screen."
+msgstr ""
+
+#: src/Admin/AccessRules.php:231
+msgid "Taxonomy"
+msgstr ""
+
+#: src/Admin/AccessRules.php:232
+#: src/Admin/AccessRules.php:247
+msgid "Term rules count"
+msgstr ""
+
+#: src/Admin/AccessRules.php:233
+#: src/Admin/AccessRules.php:250
+msgid "Child terms inherit"
+msgstr ""
+
+#: src/Admin/AccessRules.php:234
+#: src/Admin/AccessRules.php:255
+#: src/Admin/AccessTermFields.php:69
+msgid "Priority"
+msgstr ""
+
+#: src/Admin/AccessRules.php:235
+msgid "Terms with a rule"
+msgstr ""
+
+#: src/Admin/AccessRules.php:258
+msgid "Edit terms"
+msgstr ""
+
+#: src/Admin/AccessRules.php:266
+msgid "In the priority mode the taxonomy priority counts first, then the term's own."
+msgstr ""
+
+#: src/Admin/AccessRules.php:271
+msgid "Search index: updating in the background after a rule change. Until it finishes, search still checks every result against public text."
+msgstr ""
+
+#: src/Admin/AccessRules.php:272
+msgid "Search index: up to date. Search matches locked items on their public text only."
+msgstr ""
+
+#: src/Admin/AccessRules.php:280
+msgid "Save content rules"
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:57
+msgid "No rule of its own (a child term takes its parent's when the taxonomy inherits)"
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:58
+msgid "Items here need one of these levels:"
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:64
+msgid "Items here are free to everyone until:"
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:66
+msgid "Free until"
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:67
+msgid "This opens every item in this term to everyone, including items another term or the post type would lock. An end date is required, and the items lock again on it by themselves."
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:70
+msgid "Used only when the site resolves term conflicts by priority. Child terms with no rule of their own take this one when the taxonomy inherits. Site time zone."
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:111
+msgid "The term's access rule was not saved: tick at least one level."
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:112
+msgid "The term's access rule was not saved: \"free until\" needs an end date."
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:113
+msgid "The term's access rule was not saved: the \"free until\" date has already passed."
+msgstr ""
+
+#. translators: %s: date
+#: src/Admin/AccessTermFields.php:140
+#, php-format
+msgid "Free until %s"
+msgstr ""
+
+#: src/Admin/AccessTermFields.php:141
+msgid "Free window ended"
+msgstr ""
+
+#: src/Admin/AccessTest.php:38
+msgid "A guest"
+msgstr ""
+
+#: src/Admin/AccessTest.php:39
+msgid "A signed-in customer with no tags"
+msgstr ""
+
+#. translators: %s: level label
+#: src/Admin/AccessTest.php:44
+#, php-format
+msgid "A member holding %s"
+msgstr ""
+
+#: src/Admin/AccessTest.php:48
+msgid "A real user, from their synced record"
+msgstr ""
+
+#: src/Admin/AccessTest.php:53
+msgid "Explain access"
+msgstr ""
+
+#: src/Admin/AccessTest.php:57
+msgid "Item"
+msgstr ""
+
+#: src/Admin/AccessTest.php:60
+msgid "Choose a recently edited item"
+msgstr ""
+
+#: src/Admin/AccessTest.php:65
+msgid "Not listed? Add &post=<ID> to this page's address."
+msgstr ""
+
+#: src/Admin/AccessTest.php:69
+msgid "Viewer"
+msgstr ""
+
+#: src/Admin/AccessTest.php:77
+#: src/Admin/Customers.php:577
+#: src/Admin/CustomersTable.php:29
+#: src/Admin/UserProfile.php:56
+msgid "Tags"
+msgstr ""
+
+#: src/Admin/AccessTest.php:78
+msgid "User ID"
+msgstr ""
+
+#: src/Admin/AccessTest.php:80
+msgid "Tags are used with \"A synced customer with these tags\", the user ID with \"A real user\". A real user is decided from their synced record, as on the site."
+msgstr ""
+
+#: src/Admin/AccessTest.php:86
+msgid "Explain"
+msgstr ""
+
+#: src/Admin/AccessTest.php:110
+msgid "Features for this viewer"
+msgstr ""
+
+#: src/Admin/AccessTest.php:124
+msgid "Not granted"
+msgstr ""
+
+#: src/Admin/AccessTest.php:136
+msgid "passes"
+msgstr ""
+
+#: src/Admin/AccessTest.php:136
+msgid "does not pass"
+msgstr ""
+
+#: src/Admin/AccessTest.php:154
+msgid "everyone"
+msgstr ""
+
+#: src/Admin/AccessTest.php:155
+msgid "readers"
+msgstr ""
+
+#: src/Admin/AccessTest.php:156
+msgid "readers holding"
+msgstr ""
+
+#: src/Admin/AccessTest.php:157
+msgid "locked visitors"
+msgstr ""
+
+#: src/Admin/AccessTest.php:158
+msgid "visitors without"
+msgstr ""
+
+#. translators: 1: item title, 2: post type, 3: status
+#: src/Admin/AccessTest.php:164
+#, php-format
+msgid "%1$s (%2$s, %3$s)"
+msgstr ""
+
+#: src/Admin/AccessTest.php:166
+msgid "Edit item"
+msgstr ""
+
+#: src/Admin/AccessTest.php:172
+msgid "This post type is not gated, so rules on it are ignored and it is always open."
+msgstr ""
+
+#: src/Admin/AccessTest.php:179
+msgid "Layers"
+msgstr ""
+
+#: src/Admin/AccessTest.php:183
+msgid "Effective rule"
+msgstr ""
+
+#: src/Admin/AccessTest.php:187
+msgid "Meter-eligible: a future meter could open it."
+msgstr ""
+
+#: src/Admin/AccessTest.php:192
+msgid "Next change"
+msgstr ""
+
+#: src/Admin/AccessTest.php:193
+msgid "No date changes this rule."
+msgstr ""
+
+#: src/Admin/AccessTest.php:196
+msgid "This viewer"
+msgstr ""
+
+#: src/Admin/AccessTest.php:199
+msgid "Reads it"
+msgstr ""
+
+#: src/Admin/AccessTest.php:199
+msgid "Locked out"
+msgstr ""
+
+#. translators: %s: level label
+#: src/Admin/AccessTest.php:201
+#, php-format
+msgid "; the wall offers %s"
+msgstr ""
+
+#: src/Admin/AccessTest.php:207
+msgid "Blocks with their own Access"
+msgstr ""
+
+#: src/Admin/AccessTest.php:210
+msgid "None."
+msgstr ""
+
+#. translators: 1: holding / not holding, 2: feature label
+#: src/Admin/AccessTest.php:217
+#, php-format
+msgid ", %1$s %2$s"
+msgstr ""
+
+#. translators: 1: holding / not holding, 2: feature label
+#: src/Admin/AccessTest.php:217
+msgid "not holding"
+msgstr ""
+
+#. translators: 1: holding / not holding, 2: feature label
+#: src/Admin/AccessTest.php:217
+msgid "holding"
+msgstr ""
+
+#. translators: 1: holding / not holding, 2: feature label
+#: src/Admin/AccessTest.php:218
+msgid "shown"
+msgstr ""
+
+#. translators: 1: holding / not holding, 2: feature label
+#: src/Admin/AccessTest.php:218
+msgid "hidden"
+msgstr ""
+
+#: src/Admin/AccessTest.php:222
+msgid "Only blocks the visitor reaches render at all: for a locked visitor, blocks after the teaser are cut first."
+msgstr ""
+
+#: src/Admin/AccessTest.php:227
+msgid "Other surfaces"
+msgstr ""
+
+#: src/Admin/Customers.php:63
+#: src/Admin/Menu.php:172
+msgid "Not allowed."
+msgstr ""
+
+#. translators: 1: customers done 2: customers in total 3: customers whose tags or status changed 4: customers no longer in Shopify
+#: src/Admin/Customers.php:181
+#, php-format
+msgid "%1$d of %2$d customers re-read. %3$d changed, %4$d no longer in Shopify."
+msgstr ""
+
+#. translators: %s: human time difference, such as "5 mins"
+#: src/Admin/Customers.php:190
+#, php-format
+msgid "About %s left."
+msgstr ""
+
+#. translators: %s: human time difference
+#: src/Admin/Customers.php:195
+#, php-format
+msgid "Waiting %s for Shopify before the next batch."
+msgstr ""
+
+#: src/Admin/Customers.php:290
+msgid "Activation"
+msgstr ""
+
+#: src/Admin/Customers.php:291
+msgid "Customers Shopify tags for each level, and how many of them have signed in to this site. Members who haven't can be pointed at the sign-in page. Counted once an hour."
+msgstr ""
+
+#: src/Admin/Customers.php:292
+msgid "Count again"
+msgstr ""
+
+#: src/Admin/Customers.php:297
+msgid "In Shopify"
+msgstr ""
+
+#: src/Admin/Customers.php:297
+msgid "Signed in here"
+msgstr ""
+
+#: src/Admin/Customers.php:297
+msgid "Activated"
+msgstr ""
+
+#: src/Admin/Customers.php:300
+#: src/Admin/Customers.php:551
+msgid "All customers"
+msgstr ""
+
+#: src/Admin/Customers.php:320
+msgid "Shopify could not be asked for its counts; the WordPress side is shown."
+msgstr ""
+
+#: src/Admin/Customers.php:331
+msgid "Running"
+msgstr ""
+
+#: src/Admin/Customers.php:332
+msgid "Paused"
+msgstr ""
+
+#: src/Admin/Customers.php:333
+msgid "Finished"
+msgstr ""
+
+#: src/Admin/Customers.php:334
+msgid "Cancelled"
+msgstr ""
+
+#: src/Admin/Customers.php:335
+msgid "Stopped"
+msgstr ""
+
+#: src/Admin/Customers.php:340
+msgid "Resync all again"
+msgstr ""
+
+#: src/Admin/Customers.php:340
+#: src/Admin/Customers.php:356
+msgid "Resync all customers"
+msgstr ""
+
+#: src/Admin/Customers.php:340
+msgid "Re-read every linked customer from Shopify? It runs in the background and can be paused."
+msgstr ""
+
+#: src/Admin/Customers.php:344
+msgid "Pause"
+msgstr ""
+
+#: src/Admin/Customers.php:348
+msgid "Resume"
+msgstr ""
+
+#: src/Admin/Customers.php:357
+msgid "Re-reads every linked customer's tags and status from Shopify, 50 per request, using only the spare half of the store's API budget so sign-ins and webhooks are never slowed. It runs in the background: you can leave this page. Nothing starts it on a schedule."
+msgstr ""
+
+#. translators: %s: date and time
+#: src/Admin/Customers.php:370
+#, php-format
+msgid "Started %s"
+msgstr ""
+
+#: src/Admin/Customers.php:375
+msgid "Last error:"
+msgstr ""
+
+#. translators: %d: number of customers
+#: src/Admin/Customers.php:487
+#, php-format
+msgid "Resynced %d customer(s) from Shopify."
+msgstr ""
+
+#. translators: %d: number of customers
+#: src/Admin/Customers.php:489
+msgid "Shopify could not be reached. See App events for the failed call."
+msgstr ""
+
+#: src/Admin/Customers.php:490
+msgid "The Admin API is not configured, so the plugin cannot read from or write to Shopify. See Debug."
+msgstr ""
+
+#. translators: %d: number of users
+#: src/Admin/Customers.php:492
+#, php-format
+msgid "Disconnected %d user(s) from Shopify. Their WordPress accounts were kept."
+msgstr ""
+
+#: src/Admin/Customers.php:493
+msgid "Tags saved."
+msgstr ""
+
+#: src/Admin/Customers.php:494
+msgid "Shopify rejected the tag change. The tags below are what Shopify holds now."
+msgstr ""
+
+#: src/Admin/Customers.php:495
+msgid "Resync started. It runs in the background; progress is below."
+msgstr ""
+
+#: src/Admin/Customers.php:496
+msgid "A resync is already in progress."
+msgstr ""
+
+#: src/Admin/Customers.php:497
+msgid "Resync paused. It stops after the batch in progress."
+msgstr ""
+
+#: src/Admin/Customers.php:498
+msgid "Resync resumed from where it stopped."
+msgstr ""
+
+#: src/Admin/Customers.php:499
+msgid "Resync cancelled. Customers already re-read keep their new data."
+msgstr ""
+
+#: src/Admin/Customers.php:509
+msgid "Customers in Shopify"
+msgstr ""
+
+#: src/Admin/Customers.php:514
+#: src/Admin/Customers.php:549
+#: src/Admin/Menu.php:57
+msgid "Customers"
+msgstr ""
+
+#: src/Admin/Customers.php:514
+#: src/Admin/Menu.php:57
+msgid "Shopify customers"
+msgstr ""
+
+#: src/Admin/Customers.php:514
+msgid "WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress."
+msgstr ""
+
+#: src/Admin/Customers.php:525
+msgid "Search name, email or customer ID"
+msgstr ""
+
+#: src/Admin/Customers.php:539
+msgid "Edit WordPress user"
+msgstr ""
+
+#: src/Admin/Customers.php:542
+msgid "Open in Shopify admin"
+msgstr ""
+
+#: src/Admin/Customers.php:545
+msgid "Disconnect this user from Shopify? Their WordPress account stays."
+msgstr ""
+
+#: src/Admin/Customers.php:545
+msgid "Disconnect"
+msgstr ""
+
+#: src/Admin/Customers.php:546
+msgid "Resync from Shopify"
+msgstr ""
+
+#: src/Admin/Customers.php:558
+msgid "Test fixture: this customer does not exist in Shopify. Tag edits and resyncs stay in WordPress."
+msgstr ""
+
+#: src/Admin/Customers.php:562
+msgid "Synced data"
+msgstr ""
+
+#: src/Admin/Customers.php:562
+msgid "What WordPress last read from Shopify for this customer."
+msgstr ""
+
+#: src/Admin/Customers.php:577
+msgid "Saved in WordPress only, because this is a test fixture."
+msgstr ""
+
+#: src/Admin/Customers.php:577
+msgid "Saved to Shopify, then read back."
+msgstr ""
+
+#: src/Admin/Customers.php:580
+msgid "Tick a tag to remove it."
+msgstr ""
+
+#: src/Admin/Customers.php:587
+msgid "No tags."
+msgstr ""
+
+#: src/Admin/Customers.php:590
+msgid "Add tags (comma separated)"
+msgstr ""
+
+#: src/Admin/Customers.php:595
+msgid "Save tags"
+msgstr ""
+
+#: src/Admin/Customers.php:595
+msgid "Save tags to Shopify"
+msgstr ""
+
+#: src/Admin/Customers.php:602
+msgid "Recent app events"
+msgstr ""
+
+#: src/Admin/Customers.php:602
+#: src/Admin/Customers.php:614
+msgid "View all"
+msgstr ""
+
+#: src/Admin/Customers.php:609
+msgid "Nothing logged yet."
+msgstr ""
+
+#: src/Admin/Customers.php:614
+msgid "Recent webhooks"
+msgstr ""
+
+#: src/Admin/Customers.php:621
+msgid "No webhooks for this customer."
+msgstr ""
+
+#: src/Admin/CustomersTable.php:26
+#: src/Admin/WebhooksTable.php:30
+msgid "Customer"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:27
+#: src/Auth/ShadowUsers.php:51
+msgid "Shopify customer"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:30
+msgid "State"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:31
+#: src/Admin/Debug.php:294
+#: src/Admin/UserProfile.php:60
+msgid "Last sync"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:32
+#: src/Admin/UserProfile.php:51
+msgid "Linked"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:42
+msgid "Disconnect from Shopify"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:65
+#: src/Admin/EventsTable.php:81
+#: src/Admin/WebhooksTable.php:63
+msgid "All"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:65
+msgid "Disabled in Shopify"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:65
+msgid "Last sync failed"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:85
+msgid "Filter by level"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:87
+msgid "All levels"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:92
+#: src/Admin/EventsTable.php:104
+#: src/Admin/WebhooksTable.php:87
+msgid "Filter"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:94
+msgid "Export CSV"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:100
+msgid "No WordPress users are linked to a Shopify customer yet. Customers appear here after they sign in with Shopify or connect their account."
+msgstr ""
+
+#: src/Admin/CustomersTable.php:114
+msgid "Shopify-only account"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:118
+msgid "Details & tags"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:119
+msgid "Edit user"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:123
+msgid "Open in Shopify"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:126
+msgid "Resync"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:132
+msgid "Switch to"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:175
+msgid "unknown"
+msgstr ""
+
+#: src/Admin/CustomersTable.php:183
+msgid "Last attempt failed"
+msgstr ""
+
+#: src/Admin/Debug.php:76
+#: src/Admin/Menu.php:62
+msgid "Debug"
+msgstr ""
+
+#: src/Admin/Debug.php:76
+#: src/Admin/Menu.php:62
+msgid "Shopify debug"
+msgstr ""
+
+#: src/Admin/Debug.php:76
+msgid "Where each config value comes from, platform and connection checks, and maintenance tools. Secret values are never shown, only whether they are present."
+msgstr ""
+
+#: src/Admin/Debug.php:79
+msgid "Shopify discovery refreshed."
+msgstr ""
+
+#: src/Admin/Debug.php:80
+msgid "Shopify discovery failed. Check the store domain."
+msgstr ""
+
+#: src/Admin/Debug.php:81
+msgid "A fresh Admin token was issued."
+msgstr ""
+
+#: src/Admin/Debug.php:82
+msgid "Shopify refused the Admin token request. See below and App events."
+msgstr ""
+
+#: src/Admin/Debug.php:89
+#: src/Admin/Overview.php:30
+msgid "Configuration"
+msgstr ""
+
+#: src/Admin/Debug.php:90
+msgid "These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from Shopify → Settings."
+msgstr ""
+
+#: src/Admin/Debug.php:91
+msgid "Edit settings"
+msgstr ""
+
+#: src/Admin/Debug.php:98
+msgid "Constant"
+msgstr ""
+
+#: src/Admin/Debug.php:99
+msgid "Value"
+msgstr ""
+
+#: src/Admin/Debug.php:100
+msgid "Source"
+msgstr ""
+
+#: src/Admin/Debug.php:101
+msgid "What it is for"
+msgstr ""
+
+#: src/Admin/Debug.php:120
+msgid "Defined but ignored"
+msgstr ""
+
+#: src/Admin/Debug.php:120
+msgid "Remove these from wp-config.php."
+msgstr ""
+
+#: src/Admin/Debug.php:130
+msgid "Platform"
+msgstr ""
+
+#: src/Admin/Debug.php:133
+msgid "PHP and WordPress"
+msgstr ""
+
+#: src/Admin/Debug.php:138
+msgid "not loaded"
+msgstr ""
+
+#: src/Admin/Debug.php:141
+msgid "Plugin blocks"
+msgstr ""
+
+#: src/Admin/Debug.php:143
+msgid "not checked yet"
+msgstr ""
+
+#. translators: 1: yes/no 2: yes/no
+#: src/Admin/Debug.php:145
+#, php-format
+msgid "Theme has Blockstudio blocks: %1$s. Theme block path untouched: %2$s."
+msgstr ""
+
+#: src/Admin/Debug.php:150
+#: src/Support/Health.php:52
+msgid "Pretty permalinks"
+msgstr ""
+
+#: src/Admin/Debug.php:151
+msgid "The sign-in callback needs them."
+msgstr ""
+
+#: src/Admin/Debug.php:154
+msgid "Shopify API version"
+msgstr ""
+
+#: src/Admin/Debug.php:161
+#: src/Admin/SettingsPage.php:96
+msgid "Shopify connection"
+msgstr ""
+
+#: src/Admin/Debug.php:164
+msgid "Customer Account API"
+msgstr ""
+
+#: src/Admin/Debug.php:165
+msgid "Discovery, last fetched"
+msgstr ""
+
+#: src/Admin/Debug.php:168
+#: src/Admin/Overview.php:46
+#: src/Admin/Overview.php:140
+#: src/Admin/SettingsPage.php:129
+msgid "Admin API"
+msgstr ""
+
+#: src/Admin/Debug.php:170
+msgid "Dev Dashboard app, 24-hour tokens renewed automatically:"
+msgstr ""
+
+#: src/Admin/Debug.php:174
+msgid "granted scopes"
+msgstr ""
+
+#: src/Admin/Debug.php:174
+msgid "no token requested yet."
+msgstr ""
+
+#: src/Admin/Debug.php:176
+msgid "not configured."
+msgstr ""
+
+#: src/Admin/Debug.php:179
+msgid "Last token request failed:"
+msgstr ""
+
+#: src/Admin/Debug.php:185
+#: src/Admin/SettingsPage.php:130
+msgid "Storefront API"
+msgstr ""
+
+#: src/Admin/Debug.php:186
+msgid "Plan cards and buy-now:"
+msgstr ""
+
+#: src/Admin/Debug.php:186
+msgid "private access token present; buy-now and cart calls send the buyer's IP."
+msgstr ""
+
+#: src/Admin/Debug.php:186
+msgid "public access token present. Add the Storefront private access token so Shopify doesn't throttle checkout as if every visitor were one IP."
+msgstr ""
+
+#: src/Admin/Debug.php:186
+msgid "no Storefront private or public access token is set, so plan cards show as unavailable."
+msgstr ""
+
+#: src/Admin/Debug.php:189
+msgid "Shopify app settings"
+msgstr ""
+
+#: src/Admin/Debug.php:191
+msgid "Callback URI"
+msgstr ""
+
+#: src/Admin/Debug.php:192
+msgid "JavaScript origin"
+msgstr ""
+
+#: src/Admin/Debug.php:193
+msgid "Logout URI"
+msgstr ""
+
+#: src/Admin/Debug.php:197
+#: src/Admin/EventsTable.php:29
+#: src/Admin/Menu.php:58
+#: src/Admin/Overview.php:54
+#: src/Admin/Webhooks.php:63
+msgid "Webhooks"
+msgstr ""
+
+#: src/Admin/Debug.php:198
+msgid "Shopify → Webhooks"
+msgstr ""
+
+#: src/Admin/Debug.php:202
+msgid "Refresh Shopify discovery"
+msgstr ""
+
+#: src/Admin/Debug.php:203
+msgid "Request a fresh Admin token"
+msgstr ""
+
+#: src/Admin/Debug.php:209
+msgid "Dry-run entitlement check"
+msgstr ""
+
+#: src/Admin/Debug.php:209
+msgid "Would this linked customer pass a tag rule right now? Uses their synced record, as the site does."
+msgstr ""
+
+#: src/Admin/Debug.php:221
+#: src/Admin/SettingsPage.php:160
+msgid "wp-config.php"
+msgstr ""
+
+#: src/Admin/Debug.php:222
+msgid "Settings (database)"
+msgstr ""
+
+#: src/Admin/Debug.php:223
+#: src/Admin/SettingsPage.php:162
+msgid "Unreadable"
+msgstr ""
+
+#: src/Admin/Debug.php:223
+msgid "Saved in Settings but unreadable: the encryption key changed. Enter it again."
+msgstr ""
+
+#: src/Admin/Debug.php:224
+msgid "Missing (required)"
+msgstr ""
+
+#: src/Admin/Debug.php:224
+msgid "Not set (optional)"
+msgstr ""
+
+#: src/Admin/Debug.php:237
+#: src/Admin/Overview.php:70
+msgid "Shopify's WordPress plugin"
+msgstr ""
+
+#: src/Admin/Debug.php:237
+msgid "WP2 runs with or without it. When it is active, it owns the anonymous storefront and WP2 owns sign-in and access. WP2 never reads its access token."
+msgstr ""
+
+#: src/Admin/Debug.php:239
+#: src/Admin/Debug.php:293
+#: src/Admin/UserProfile.php:51
+msgid "Status"
+msgstr ""
+
+#: src/Admin/Debug.php:241
+msgid "Owns /cart"
+msgstr ""
+
+#: src/Admin/Debug.php:241
+msgid "yes. Its rewrite rule wins over any page at /cart."
+msgstr ""
+
+#: src/Admin/Debug.php:241
+msgid "no (rewrite rules not flushed yet, or removed)."
+msgstr ""
+
+#: src/Admin/Debug.php:242
+msgid "Serves /products/{handle}"
+msgstr ""
+
+#: src/Admin/Debug.php:242
+msgid "yes. Product SEO is the official plugin's."
+msgstr ""
+
+#: src/Admin/Debug.php:242
+msgid "no."
+msgstr ""
+
+#: src/Admin/Debug.php:243
+#: src/Support/Health.php:97
+msgid "Cart sign-in bridge"
+msgstr ""
+
+#: src/Admin/Debug.php:245
+msgid "active. Signed-in customers check out from its cart as themselves."
+msgstr ""
+
+#: src/Admin/Debug.php:245
+msgid "off. It needs the same store and a Storefront token."
+msgstr ""
+
+#: src/Admin/Debug.php:246
+msgid "Last attached:"
+msgstr ""
+
+#: src/Admin/Debug.php:248
+msgid "Last failure:"
+msgstr ""
+
+#: src/Admin/Debug.php:269
+#: src/Privacy.php:53
+msgid "Shopify customer ID"
+msgstr ""
+
+#: src/Admin/Debug.php:270
+msgid "Required tags"
+msgstr ""
+
+#: src/Admin/Debug.php:270
+msgid "Required tags, comma separated"
+msgstr ""
+
+#: src/Admin/Debug.php:271
+msgid "Match"
+msgstr ""
+
+#: src/Admin/Debug.php:272
+msgid "Check"
+msgstr ""
+
+#: src/Admin/Debug.php:283
+msgid "No WordPress user is linked to that customer."
+msgstr ""
+
+#: src/Admin/Debug.php:291
+msgid "WordPress user"
+msgstr ""
+
+#: src/Admin/Debug.php:292
+msgid "Synced tags"
+msgstr ""
+
+#: src/Admin/Debug.php:295
+msgid "Decision"
+msgstr ""
+
+#: src/Admin/Debug.php:295
+msgid "Unlocked"
+msgstr ""
+
+#: src/Admin/Events.php:38
+#: src/Admin/Menu.php:59
+msgid "App events"
+msgstr ""
+
+#: src/Admin/Events.php:39
+#: src/Admin/Menu.php:59
+msgid "Shopify app events"
+msgstr ""
+
+#: src/Admin/Events.php:40
+msgid "Delete every logged event?"
+msgstr ""
+
+#: src/Admin/Events.php:40
+msgid "Clear log"
+msgstr ""
+
+#. translators: %d: days
+#: src/Admin/Events.php:41
+#, php-format
+msgid "Every call the plugin made to Shopify, and what it did with the answer. Kept for %d days. No request or response bodies, tokens or secrets are recorded."
+msgstr ""
+
+#: src/Admin/Events.php:43
+msgid "Event log cleared."
+msgstr ""
+
+#: src/Admin/Events.php:53
+msgid "Search events"
+msgstr ""
+
+#: src/Admin/EventsTable.php:23
+msgid "Calls to Shopify"
+msgstr ""
+
+#: src/Admin/EventsTable.php:24
+msgid "Resyncs"
+msgstr ""
+
+#: src/Admin/EventsTable.php:25
+msgid "Bulk resync"
+msgstr ""
+
+#: src/Admin/EventsTable.php:26
+msgid "Reconciliation"
+msgstr ""
+
+#: src/Admin/EventsTable.php:27
+msgid "Membership levels"
+msgstr ""
+
+#: src/Admin/EventsTable.php:28
+msgid "Checkout"
+msgstr ""
+
+#: src/Admin/EventsTable.php:30
+msgid "Sign-in"
+msgstr ""
+
+#: src/Admin/EventsTable.php:31
+msgid "Account linking"
+msgstr ""
+
+#: src/Admin/EventsTable.php:32
+msgid "Admin actions"
+msgstr ""
+
+#: src/Admin/EventsTable.php:42
+msgid "Time"
+msgstr ""
+
+#: src/Admin/EventsTable.php:43
+msgid "Event"
+msgstr ""
+
+#: src/Admin/EventsTable.php:44
+msgid "What"
+msgstr ""
+
+#: src/Admin/EventsTable.php:45
+msgid "Result"
+msgstr ""
+
+#: src/Admin/EventsTable.php:46
+msgid "Duration"
+msgstr ""
+
+#: src/Admin/EventsTable.php:47
+msgid "User"
+msgstr ""
+
+#: src/Admin/EventsTable.php:48
+msgid "From"
+msgstr ""
+
+#: src/Admin/EventsTable.php:49
+#: src/Admin/Overview.php:74
+msgid "Details"
+msgstr ""
+
+#: src/Admin/EventsTable.php:99
+msgid "All events"
+msgstr ""
+
+#: src/Admin/EventsTable.php:110
+msgid "No events logged yet."
+msgstr ""
+
+#: src/Admin/Menu.php:53
+#: src/Admin/Menu.php:219
+#: src/Admin/Overview.php:87
+#: src/Admin/UserProfile.php:25
+#: src/Auth/SignInLinks.php:122
+#: src/Privacy.php:81
+#: src/Webhooks/Monitor.php:211
+msgid "Shopify"
+msgstr ""
+
+#: src/Admin/Menu.php:54
+msgid "Shopify overview"
+msgstr ""
+
+#: src/Admin/Menu.php:54
+#: src/Admin/Overview.php:87
+msgid "Overview"
+msgstr ""
+
+#: src/Admin/Menu.php:55
+#: src/Admin/SettingsPage.php:82
+msgid "Shopify settings"
+msgstr ""
+
+#: src/Admin/Menu.php:55
+#: src/Admin/Overview.php:112
+#: src/Admin/Overview.php:143
+#: src/Admin/SettingsPage.php:82
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/Menu.php:58
+#: src/Admin/Webhooks.php:63
+msgid "Shopify webhooks"
+msgstr ""
+
+#: src/Admin/Menu.php:60
+#: src/Admin/Reports.php:37
+msgid "Membership reports"
+msgstr ""
+
+#: src/Admin/Menu.php:60
+#: src/Admin/Reports.php:36
+msgid "Reports"
+msgstr ""
+
+#: src/Admin/Menu.php:61
+msgid "Shopify access"
+msgstr ""
+
+#: src/Admin/Menu.php:119
+msgid "WP2 Shopify: WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN is deprecated. Rename it to WP2_SHOPIFY_CLIENT_SECRET in wp-config.php."
+msgstr ""
+
+#. translators: %s: constant names
+#: src/Admin/Menu.php:127
+#, php-format
+msgid "WP2 Shopify no longer reads %s from wp-config.php."
+msgstr ""
+
+#: src/Admin/Menu.php:129
+msgid "See Debug."
+msgstr ""
+
+#. translators: %d: number of linked users
+#: src/Admin/Menu.php:142
+#, php-format
+msgid "WP2 Shopify 2.0 upgrade: stored Shopify sessions were discarded for security, so linked customers sign in once more. Re-register your Shopify webhooks from Shopify → Webhooks (the old /iwebhooks path is gone). %d linked users were updated."
+msgstr ""
+
+#: src/Admin/Menu.php:147
+msgid "Dismiss"
+msgstr ""
+
+#: src/Admin/Menu.php:195
+#: src/Admin/Webhooks.php:88
+msgid "Problem"
+msgstr ""
+
+#: src/Admin/Menu.php:231
+msgid "Setup incomplete"
+msgstr ""
+
+#: src/Admin/Menu.php:231
+msgid "Configured"
+msgstr ""
+
+#. translators: %s: setting names
+#: src/Admin/Overview.php:31
+#, php-format
+msgid "Missing: %s. Add them in Settings or wp-config.php."
+msgstr ""
+
+#. translators: %s: store domain
+#: src/Admin/Overview.php:31
+#, php-format
+msgid "Store %s"
+msgstr ""
+
+#: src/Admin/Overview.php:34
+msgid "Open settings"
+msgstr ""
+
+#: src/Admin/Overview.php:38
+#: src/Admin/SettingsPage.php:128
+msgid "Customer sign-in"
+msgstr ""
+
+#: src/Admin/Overview.php:39
+msgid "Customer Account API reachable."
+msgstr ""
+
+#: src/Admin/Overview.php:39
+msgid "Shopify discovery failed, so sign-in is off."
+msgstr ""
+
+#: src/Admin/Overview.php:42
+msgid "Check in Debug"
+msgstr ""
+
+#: src/Admin/Overview.php:47
+msgid "The last token request failed."
+msgstr ""
+
+#: src/Admin/Overview.php:47
+msgid "Dev Dashboard app, tokens renewed automatically."
+msgstr ""
+
+#: src/Admin/Overview.php:47
+msgid "Not configured."
+msgstr ""
+
+#: src/Admin/Overview.php:50
+#: src/Admin/Overview.php:82
+msgid "View app events"
+msgstr ""
+
+#. translators: 1: topic 2: time
+#: src/Admin/Overview.php:55
+#, php-format
+msgid "Last: %1$s, %2$s ago"
+msgstr ""
+
+#. translators: 1: topic 2: time
+#: src/Admin/Overview.php:55
+msgid "Nothing received yet."
+msgstr ""
+
+#: src/Admin/Overview.php:58
+msgid "View webhooks"
+msgstr ""
+
+#: src/Admin/Overview.php:62
+msgid "Linked customers"
+msgstr ""
+
+#. translators: %d: count
+#: src/Admin/Overview.php:63
+#, php-format
+msgid "%d linked."
+msgstr ""
+
+#: src/Admin/Overview.php:66
+msgid "View customers"
+msgstr ""
+
+#: src/Admin/Overview.php:78
+msgid "Last 24 hours"
+msgstr ""
+
+#. translators: %d: count
+#: src/Admin/Overview.php:79
+#, php-format
+msgid "%d failed Shopify calls or rejected webhooks."
+msgstr ""
+
+#: src/Admin/Overview.php:90
+msgid "Connection test passed: every configured Shopify API answered."
+msgstr ""
+
+#: src/Admin/Overview.php:91
+msgid "Connection test failed for at least one API. See the setup checklist and App events."
+msgstr ""
+
+#: src/Admin/Overview.php:92
+msgid "The callback page is published."
+msgstr ""
+
+#: src/Admin/Overview.php:93
+msgid "The callback page could not be created."
+msgstr ""
+
+#: src/Admin/Overview.php:94
+msgid "Level tags checked against Shopify again."
+msgstr ""
+
+#. translators: %d: number of checks that need attention
+#: src/Admin/Overview.php:106
+#, php-format
+msgid "%d check needs attention"
+msgid_plural "%d checks need attention"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Overview.php:107
+msgid "Everything is connected"
+msgstr ""
+
+#: src/Admin/Overview.php:110
+msgid "Sign-in, memberships and webhooks at a glance. Select a card for the details."
+msgstr ""
+
+#: src/Admin/Overview.php:123
+msgid "Attention"
+msgstr ""
+
+#: src/Admin/Overview.php:140
+msgid "sign-in"
+msgstr ""
+
+#: src/Admin/Overview.php:140
+msgid "Storefront"
+msgstr ""
+
+#: src/Admin/Overview.php:143
+msgid "Connect your store"
+msgstr ""
+
+#: src/Admin/Overview.php:143
+msgid "Store domain, Customer Account API client ID and the Admin app credentials."
+msgstr ""
+
+#: src/Admin/Overview.php:144
+msgid "Test the connection"
+msgstr ""
+
+#: src/Admin/Overview.php:144
+msgid "Asks each configured Shopify API once."
+msgstr ""
+
+#: src/Admin/Overview.php:144
+msgid "Test connection"
+msgstr ""
+
+#: src/Admin/Overview.php:145
+msgid "Turn on pretty permalinks"
+msgstr ""
+
+#: src/Admin/Overview.php:145
+msgid "Sign-in returns to a pretty URL."
+msgstr ""
+
+#: src/Admin/Overview.php:145
+msgid "Permalinks"
+msgstr ""
+
+#. translators: %s: callback path
+#: src/Admin/Overview.php:147
+msgid "Publish the callback page"
+msgstr ""
+
+#. translators: %s: callback path
+#: src/Admin/Overview.php:147
+#, php-format
+msgid "Sign-in results show on %s, inside your theme."
+msgstr ""
+
+#. translators: %s: callback path
+#: src/Admin/Overview.php:147
+msgid "Create the page"
+msgstr ""
+
+#: src/Admin/Overview.php:148
+msgid "Register webhooks"
+msgstr ""
+
+#: src/Admin/Overview.php:148
+msgid "Shopify tells WordPress when a customer's tags change."
+msgstr ""
+
+#: src/Admin/Overview.php:148
+msgid "Register"
+msgstr ""
+
+#: src/Admin/Overview.php:149
+msgid "Define membership levels"
+msgstr ""
+
+#: src/Admin/Overview.php:149
+msgid "Each level names the Shopify customer tags that grant it. They are checked against the tags your customers have."
+msgstr ""
+
+#: src/Admin/Overview.php:149
+msgid "Check tags again"
+msgstr ""
+
+#: src/Admin/Overview.php:150
+msgid "Tag members in Shopify"
+msgstr ""
+
+#: src/Admin/Overview.php:150
+msgid "A Shopify Flow workflow or a subscription app adds the level tag when someone buys and removes it when the membership ends. Done once a linked customer holds a level."
+msgstr ""
+
+#: src/Admin/Overview.php:150
+msgid "Flow recipes"
+msgstr ""
+
+#. translators: %d: steps left
+#: src/Admin/Overview.php:159
+#, php-format
+msgid "Setup: %d step left"
+msgid_plural "Setup: %d steps left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Overview.php:160
+msgid "Setup: done"
+msgstr ""
+
+#. translators: %s: API names
+#: src/Admin/Overview.php:175
+#, php-format
+msgid "Failed: %s"
+msgstr ""
+
+#. translators: %s: tags
+#: src/Admin/Overview.php:182
+#, php-format
+msgid "No customer in Shopify has these tags yet: %s. Check the spelling."
+msgstr ""
+
+#: src/Admin/Reports.php:25
+msgid "Joined a level"
+msgstr ""
+
+#: src/Admin/Reports.php:26
+msgid "Left a level"
+msgstr ""
+
+#: src/Admin/Reports.php:27
+msgid "Purchases that unlocked access"
+msgstr ""
+
+#: src/Admin/Reports.php:28
+msgid "Plan card checkouts"
+msgstr ""
+
+#: src/Admin/Reports.php:29
+msgid "Shopify sign-ins"
+msgstr ""
+
+#. translators: %s: date
+#: src/Admin/Reports.php:41
+#, php-format
+msgid "Counted since %s. A level is joined or left when Shopify adds or removes its tag; \"unlocked access\" is a purchase whose tag reached WordPress while the buyer was signed in."
+msgstr ""
+
+#: src/Admin/Reports.php:42
+msgid "Nothing counted yet. Counting starts now: levels joined and left, sign-ins and purchases."
+msgstr ""
+
+#: src/Admin/Reports.php:45
+msgid "Last 30 days"
+msgstr ""
+
+#: src/Admin/Reports.php:55
+msgid "Joined and left, by week"
+msgstr ""
+
+#: src/Admin/Reports.php:55
+msgid "All levels together, for the last 12 weeks. Each week ends on the date shown."
+msgstr ""
+
+#: src/Admin/Reports.php:61
+msgid "By level"
+msgstr ""
+
+#: src/Admin/Reports.php:61
+msgid "Members are linked customers holding the level, counted once a day."
+msgstr ""
+
+#: src/Admin/Reports.php:67
+msgid "Joined, 30 days"
+msgstr ""
+
+#: src/Admin/Reports.php:68
+msgid "Left, 30 days"
+msgstr ""
+
+#: src/Admin/Reports.php:69
+msgid "Joined, 12 months"
+msgstr ""
+
+#: src/Admin/Reports.php:70
+msgid "Left, 12 months"
+msgstr ""
+
+#: src/Admin/Reports.php:140
+msgid "Joined"
+msgstr ""
+
+#: src/Admin/Reports.php:141
+msgid "Left"
+msgstr ""
+
+#: src/Admin/Reports.php:147
+msgid "Members who joined and left a level each week"
+msgstr ""
+
+#: src/Admin/Reports.php:168
+msgid "Show as a table"
+msgstr ""
+
+#: src/Admin/Reports.php:170
+msgid "Week ending"
+msgstr ""
+
+#. translators: %d: number of values changed
+#: src/Admin/SettingsPage.php:86
+#, php-format
+msgid "Connection saved. %d values changed."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:87
+msgid "Some values were not saved. They are marked below."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:96
+msgid "Enter the store's credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or WP2_SHOPIFY_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:110
+msgid "Save connection"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:127
+msgid "Store"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:131
+msgid "Encryption"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:149
+msgid "Other"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:161
+msgid "Saved"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:163
+#: src/Admin/SettingsPage.php:183
+msgid "Required"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:163
+msgid "Optional"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:190
+msgid "(empty)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:190
+#: src/Admin/SettingsPage.php:205
+msgid "Not set"
+msgstr ""
+
+#. translators: %s: constant name
+#: src/Admin/SettingsPage.php:196
+#, php-format
+msgid "Set in wp-config.php by %s, which always wins. Remove the constant to edit it here."
+msgstr ""
+
+#. translators: %s: constant name
+#: src/Admin/SettingsPage.php:199
+#, php-format
+msgid "Only read from wp-config.php: define %s there."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:205
+msgid "Saved. Leave blank to keep it."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:208
+msgid "Remove the saved value"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:211
+msgid "A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or WP2_SHOPIFY_ENCRYPTION_KEY changed since it was saved. Enter it again."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:219
+msgid "Not saved:"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:233
+msgid "use the store's your-store.myshopify.com domain, not a custom domain."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:234
+msgid "that is longer than any Shopify credential."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:235
+msgid "no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or WP2_SHOPIFY_ENCRYPTION_KEY."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:236
+msgid "paste the value without spaces or line breaks."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:251
+msgid "This plugin no longer adds or removes tags when an order is paid, cancelled or refunded. Tags it already added stay in Shopify. Set up the same rules in Shopify Flow (see docs/shopify-flow.md) before new orders arrive. Your old product map, for reference:"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:257
+msgid "How members sign in and come back from checkout, what happens on sign-out, and when to warn you about webhooks."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:261
+msgid "Membership tags"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:263
+msgid "Customers get their tags in Shopify, from Shopify Flow or a subscription or membership app. This plugin only reads them. See docs/shopify-flow.md for recipes."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:267
+msgid "Shared devices"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:269
+msgid "Clear the cart on sign-out"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:270
+msgid "With Shopify's plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:274
+msgid "Sign-in links"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:276
+msgid "Show \"Log in with Shopify\" on the WordPress login screen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:277
+msgid "Send visitors to Shopify sign-in from the site's login links (comment forms, themes, other plugins)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:278
+msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Log in and Log out under Appearance → Menus → Shopify, and classic themes can use the [wp2_shopify_login] shortcode."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:282
+msgid "Subscription management"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:285
+msgid "Where members manage or cancel a subscription, such as your subscription app's customer portal. Shown on the Member Account block; leave empty to hide the link."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:289
+msgid "Return link for Shopify"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:292
+msgid "Add this as a \"Return to the site\" link on Shopify's order status page and in the order confirmation email. Signed-in buyers go back to the page they bought from; guests are asked to log in with the email from their order."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:296
+msgid "Webhook silence warning"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:298
+msgid "days"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:299
+msgid "Warn when no webhook has arrived for this long while customers are linked. Quiet stores can raise it; 0 turns the warning off. Access never expires: this only tells you deliveries may have stopped."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:303
+msgid "Alerts"
+msgstr ""
+
+#. translators: %s: email address
+#: src/Admin/SettingsPage.php:305
+#, php-format
+msgid "Email %s when webhook delivery has a problem"
+msgstr ""
+
+#. translators: %s: email address
+#: src/Admin/SettingsPage.php:306
+msgid "Sent by the daily check: at once for a new problem, then at most once a day while it lasts."
+msgstr ""
+
+#: src/Admin/Setup.php:106
+msgid "Signing in"
+msgstr ""
+
+#: src/Admin/Setup.php:107
+msgid "You can close this page or carry on browsing."
+msgstr ""
+
+#: src/Admin/UserProfile.php:33
+msgid "Manage in Shopify → Customers"
+msgstr ""
+
+#: src/Admin/UserProfile.php:34
+msgid "Sync now"
+msgstr ""
+
+#: src/Admin/UserProfile.php:51
+msgid "Not linked"
+msgstr ""
+
+#: src/Admin/UserProfile.php:52
+msgid "Customer GID"
+msgstr ""
+
+#: src/Admin/UserProfile.php:53
+#: src/Admin/WebhooksTable.php:86
+msgid "Customer ID"
+msgstr ""
+
+#: src/Admin/UserProfile.php:54
+#: src/Privacy.php:55
+msgid "Shopify email"
+msgstr ""
+
+#: src/Admin/UserProfile.php:55
+msgid "Account state"
+msgstr ""
+
+#: src/Admin/UserProfile.php:57
+msgid "Email consent"
+msgstr ""
+
+#: src/Admin/UserProfile.php:58
+msgid "SMS consent"
+msgstr ""
+
+#: src/Admin/UserProfile.php:59
+msgid "Orders / spent"
+msgstr ""
+
+#: src/Admin/UserProfile.php:61
+msgid "Last webhook"
+msgstr ""
+
+#: src/Admin/UserProfile.php:62
+msgid "Active Shopify session"
+msgstr ""
+
+#: src/Admin/Webhooks.php:63
+msgid "What Shopify sent, what became of it, and the app's webhook subscriptions."
+msgstr ""
+
+#: src/Admin/Webhooks.php:66
+msgid "Webhook subscriptions are in place."
+msgstr ""
+
+#: src/Admin/Webhooks.php:67
+msgid "Some webhook subscriptions could not be created. Details below."
+msgstr ""
+
+#: src/Admin/Webhooks.php:68
+msgid "The webhook was queued again."
+msgstr ""
+
+#: src/Admin/Webhooks.php:69
+msgid "Checked with Shopify: subscriptions are in place and deliveries look healthy."
+msgstr ""
+
+#: src/Admin/Webhooks.php:70
+msgid "Checked with Shopify. Some problems need attention; see Delivery health."
+msgstr ""
+
+#: src/Admin/Webhooks.php:79
+msgid "Delivery health"
+msgstr ""
+
+#: src/Admin/Webhooks.php:80
+msgid "Members gain and lose access only when Shopify sends tag changes, so the plugin checks once a day that the subscriptions still exist (re-creating any Shopify removed) and keeps watch on the processing queue and WP-Cron."
+msgstr ""
+
+#: src/Admin/Webhooks.php:81
+msgid "Check now"
+msgstr ""
+
+#: src/Admin/Webhooks.php:88
+msgid "Warning"
+msgstr ""
+
+#: src/Admin/Webhooks.php:93
+msgid "Healthy"
+msgstr ""
+
+#: src/Admin/Webhooks.php:93
+msgid "Subscriptions, the processing queue and WP-Cron all look fine."
+msgstr ""
+
+#: src/Admin/Webhooks.php:96
+msgid "Last check with Shopify"
+msgstr ""
+
+#: src/Admin/Webhooks.php:102
+msgid "Delivery setup"
+msgstr ""
+
+#: src/Admin/Webhooks.php:105
+msgid "Endpoint"
+msgstr ""
+
+#: src/Admin/Webhooks.php:109
+msgid "Signatures"
+msgstr ""
+
+#: src/Admin/Webhooks.php:110
+msgid "Signatures are checked with the Admin app client secret."
+msgstr ""
+
+#: src/Admin/Webhooks.php:110
+msgid "The Admin app client secret is missing, so every delivery is rejected. Add it in Settings."
+msgstr ""
+
+#: src/Admin/Webhooks.php:113
+msgid "Subscriptions through the app"
+msgstr ""
+
+#. translators: 1: already present 2: created
+#: src/Admin/Webhooks.php:117
+#, php-format
+msgid "%1$d already present, %2$d created"
+msgstr ""
+
+#: src/Admin/Webhooks.php:123
+msgid "Not registered yet."
+msgstr ""
+
+#: src/Admin/Webhooks.php:129
+msgid "Topics"
+msgstr ""
+
+#. translators: %d: number of topics
+#: src/Admin/Webhooks.php:135
+#, php-format
+msgid "%d topics registered by the plugin"
+msgstr ""
+
+#: src/Admin/Webhooks.php:141
+msgid "Compliance topics are declared in the app configuration, not registered here:"
+msgstr ""
+
+#: src/Admin/Webhooks.php:150
+msgid "App"
+msgstr ""
+
+#: src/Admin/Webhooks.php:151
+msgid "Shopify reported the app as uninstalled on"
+msgstr ""
+
+#: src/Admin/Webhooks.php:156
+msgid "Register webhooks with Shopify"
+msgstr ""
+
+#: src/Admin/Webhooks.php:157
+msgid "Creates any subscription that is missing. Safe to run again."
+msgstr ""
+
+#: src/Admin/Webhooks.php:164
+msgid "Rejected deliveries"
+msgstr ""
+
+#: src/Admin/Webhooks.php:165
+msgid "Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored."
+msgstr ""
+
+#. translators: %d: count
+#: src/Admin/Webhooks.php:166
+#, php-format
+msgid "All %d"
+msgstr ""
+
+#: src/Admin/Webhooks.php:179
+#: src/Admin/WebhooksTable.php:27
+msgid "Received"
+msgstr ""
+
+#. translators: %d: days
+#: src/Admin/Webhooks.php:180
+#, php-format
+msgid "Kept for %d days. Payloads are not stored; only the fields the plugin acts on, until the delivery is processed."
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:28
+msgid "Topic"
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:29
+msgid "Outcome"
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:31
+msgid "Attempts"
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:32
+msgid "Processed"
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:33
+msgid "Shopify webhook ID"
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:81
+msgid "All topics"
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:93
+msgid "No webhooks received yet."
+msgstr ""
+
+#: src/Admin/WebhooksTable.php:121
+msgid "Retry"
+msgstr ""
+
+#: src/Auth/Flow.php:121
+msgid "Nothing to do here."
+msgstr ""
+
+#: src/Auth/Flow.php:122
+msgid "Sign in"
+msgstr ""
+
+#: src/Auth/Flow.php:518
+msgid "Your sign-in link expired or was opened in a different browser. Please try again."
+msgstr ""
+
+#: src/Auth/Flow.php:519
+msgid "Sign-in was cancelled at Shopify."
+msgstr ""
+
+#: src/Auth/Flow.php:520
+msgid "Shopify sign-in could not be completed. Please try again."
+msgstr ""
+
+#: src/Auth/Flow.php:521
+msgid "Your Shopify profile could not be loaded. Please try again."
+msgstr ""
+
+#: src/Auth/Flow.php:522
+msgid "Sign-in is temporarily unavailable."
+msgstr ""
+
+#: src/Auth/Flow.php:523
+msgid "Shopify sign-in could not be verified. Please try again."
+msgstr ""
+
+#: src/Auth/Flow.php:524
+msgid "That connect request is no longer valid. Start again from your account."
+msgstr ""
+
+#: src/Auth/Flow.php:525
+msgid "That connect request expired. Start again from your account."
+msgstr ""
+
+#: src/Auth/Flow.php:526
+msgid "That connect request belongs to a different session. Start again from your account."
+msgstr ""
+
+#: src/Auth/Flow.php:527
+msgid "Please sign in to the WordPress account you want to connect, then try again."
+msgstr ""
+
+#: src/Auth/Flow.php:528
+msgid "Administrator accounts cannot be connected to a Shopify customer."
+msgstr ""
+
+#: src/Auth/Flow.php:529
+msgid "Administrator accounts cannot sign in with Shopify. Use the WordPress login instead."
+msgstr ""
+
+#: src/Auth/Flow.php:530
+msgid "This account already signs in with Shopify."
+msgstr ""
+
+#: src/Auth/Flow.php:531
+msgid "Shopify did not confirm that email address, so the accounts were not connected."
+msgstr ""
+
+#: src/Auth/Flow.php:532
+msgid "Your Shopify email does not match this account's email, so the accounts were not connected."
+msgstr ""
+
+#: src/Auth/Flow.php:533
+msgid "That Shopify customer is already connected to another account."
+msgstr ""
+
+#: src/Auth/Flow.php:534
+msgid "The accounts were not connected."
+msgstr ""
+
+#: src/Auth/Flow.php:535
+msgid "Your Shopify account is now connected."
+msgstr ""
+
+#: src/Auth/Flow.php:536
+msgid "Your Shopify account was disconnected."
+msgstr ""
+
+#: src/Auth/Flow.php:537
+msgid "Your membership details were refreshed."
+msgstr ""
+
+#: src/Auth/Flow.php:538
+msgid "Your details could not be refreshed right now. Please try again later."
+msgstr ""
+
+#: src/Auth/Flow.php:539
+msgid "Your details were refreshed a moment ago."
+msgstr ""
+
+#: src/Auth/Flow.php:540
+msgid "That sign-in expired. Please log in with Shopify again."
+msgstr ""
+
+#: src/Auth/Flow.php:578
+msgid "You're signed in. Connect your Shopify account to this one so your membership works here."
+msgstr ""
+
+#. translators: 1: Shopify email, 2: WordPress username
+#: src/Auth/Flow.php:604
+#, php-format
+msgid "Connect the Shopify customer %1$s to your account %2$s?"
+msgstr ""
+
+#: src/Auth/Flow.php:613
+msgid "Connect accounts"
+msgstr ""
+
+#. translators: %s: email address
+#: src/Auth/Flow.php:651
+#, php-format
+msgid "You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place."
+msgstr ""
+
+#: src/Auth/Flow.php:657
+msgid "Sign in to my account"
+msgstr ""
+
+#: src/Auth/Flow.php:662
+msgid "No thanks, use a separate account"
+msgstr ""
+
+#: src/Auth/ShadowUsers.php:30
+msgid "Shopify Customer"
+msgstr ""
+
+#: src/Auth/ShadowUsers.php:70
+msgid "This account signs in with Shopify. Manage your sign-in from your Shopify account."
+msgstr ""
+
+#: src/Auth/SignInLinks.php:64
+msgid "or with your username and password"
+msgstr ""
+
+#: src/Auth/SignInLinks.php:133
+msgid "Log in shows to guests only and returns them to the page they were on; Log out shows to signed-in visitors only."
+msgstr ""
+
+#: src/Auth/SignInLinks.php:149
+msgid "Add to Menu"
+msgstr ""
+
+#: src/Blocks/Gate.php:269
+msgid "Already a member, or just bought a membership? Log in with Shopify using the email address you checked out with."
+msgstr ""
+
+#: src/Blocks/Gate.php:273
+msgid "Your account here isn't connected to a Shopify customer yet. Connect it to use a membership you have."
+msgstr ""
+
+#: src/Blocks/Gate.php:278
+msgid "We're finishing setting up your membership. This usually takes under a minute after checkout."
+msgstr ""
+
+#: src/Blocks/Gate.php:280
+#: src/Sync/PostCheckout.php:176
+msgid "Check again"
+msgstr ""
+
+#. translators: %s: access level label, such as Gold
+#: src/Blocks/Gate.php:285
+#, php-format
+msgid "Your %s membership has ended."
+msgstr ""
+
+#. translators: %s: access level label, such as Gold
+#: src/Blocks/Gate.php:285
+msgid "Your membership has ended."
+msgstr ""
+
+#. translators: %s: access level label
+#: src/Blocks/Gate.php:287
+#, php-format
+msgid "Renew %s"
+msgstr ""
+
+#. translators: %s: access level label
+#: src/Blocks/Gate.php:287
+msgid "Renew"
+msgstr ""
+
+#: src/Blocks/Gate.php:289
+msgid "Already renewed? Refresh"
+msgstr ""
+
+#. translators: %s: access level label
+#: src/Blocks/Gate.php:296
+#, php-format
+msgid "Upgrade to %s"
+msgstr ""
+
+#. translators: %s: access level label
+#: src/Blocks/Gate.php:298
+#, php-format
+msgid "Join %s"
+msgstr ""
+
+#: src/Blocks/Gate.php:300
+msgid "Already bought it? Refresh"
+msgstr ""
+
+#: src/Blocks/Gate.php:307
+msgid "This is part of your membership and opens soon."
+msgstr ""
+
+#. translators: %s: a date
+#: src/Blocks/Gate.php:310
+#, php-format
+msgid "It opens for you on %s."
+msgstr ""
+
+#: src/Commerce/BuyNow.php:27
+msgid "That option could not be found. Please choose again."
+msgstr ""
+
+#: src/Commerce/BuyNow.php:28
+msgid "Too many checkout attempts. Please wait a minute and try again."
+msgstr ""
+
+#: src/Commerce/BuyNow.php:29
+msgid "Checkout is temporarily unavailable. Please try again shortly."
+msgstr ""
+
+#: src/Features/Surfaces.php:144
+msgid "Feature slugs the current user holds. Present on your own user only."
+msgstr ""
+
+#: src/Integrations/OfficialPlugin.php:120
+msgid "Not installed. WP2 runs on its own; add it for a full storefront."
+msgstr ""
+
+#. translators: %s: version
+#: src/Integrations/OfficialPlugin.php:121
+#, php-format
+msgid "Version %s is active but not connected to a store yet."
+msgstr ""
+
+#. translators: 1: version 2: store domain
+#: src/Integrations/OfficialPlugin.php:122
+#, php-format
+msgid "Version %1$s, connected to %2$s, the same store as WP2."
+msgstr ""
+
+#. translators: 1: version 2: their store 3: our store
+#: src/Integrations/OfficialPlugin.php:123
+#, php-format
+msgid "Version %1$s is connected to %2$s, but WP2 is set up for %3$s. Purchases there will not unlock content here."
+msgstr ""
+
+#: src/Privacy.php:19
+#: src/Privacy.php:28
+msgid "Shopify link and synced data"
+msgstr ""
+
+#: src/Privacy.php:54
+msgid "Shopify customer number"
+msgstr ""
+
+#: src/Privacy.php:56
+msgid "First name (Shopify)"
+msgstr ""
+
+#: src/Privacy.php:57
+msgid "Last name (Shopify)"
+msgstr ""
+
+#: src/Privacy.php:58
+msgid "Shopify tags"
+msgstr ""
+
+#: src/Privacy.php:59
+msgid "Account status"
+msgstr ""
+
+#: src/Privacy.php:60
+msgid "Email marketing consent"
+msgstr ""
+
+#: src/Privacy.php:61
+msgid "SMS marketing consent"
+msgstr ""
+
+#: src/Privacy.php:62
+msgid "Purchasing summary"
+msgstr ""
+
+#: src/Privacy.php:63
+msgid "Last synced"
+msgstr ""
+
+#: src/Privacy.php:97
+msgid "The Shopify link and synced data were removed. The Shopify customer record itself is managed in Shopify."
+msgstr ""
+
+#: src/Support/Health.php:36
+msgid "WP2 Shopify plugin"
+msgstr ""
+
+#: src/Support/Health.php:38
+msgid "Blockstudio"
+msgstr ""
+
+#: src/Support/Health.php:40
+msgid "not loaded (the plugin bundles it)"
+msgstr ""
+
+#: src/Support/Health.php:45
+msgid "Plugin blocks registered"
+msgstr ""
+
+#. translators: %s: block names
+#: src/Support/Health.php:48
+#, php-format
+msgid "missing: %s"
+msgstr ""
+
+#. translators: %s: block names
+#: src/Support/Health.php:48
+msgid "all registered"
+msgstr ""
+
+#: src/Support/Health.php:52
+msgid "required for the sign-in callback"
+msgstr ""
+
+#: src/Support/Health.php:57
+msgid "Callback page"
+msgstr ""
+
+#: src/Support/Health.php:57
+msgid "not published; the plugin falls back to a bare result page"
+msgstr ""
+
+#: src/Support/Health.php:60
+msgid "OIDC discovery answered"
+msgstr ""
+
+#: src/Support/Health.php:60
+msgid "no discovery: check the store domain and client ID"
+msgstr ""
+
+#: src/Support/Health.php:67
+msgid "saved in Settings but unreadable: the encryption key changed"
+msgstr ""
+
+#: src/Support/Health.php:74
+msgid "set in wp-config.php"
+msgstr ""
+
+#: src/Support/Health.php:74
+msgid "set in Settings"
+msgstr ""
+
+#: src/Support/Health.php:74
+msgid "missing (required)"
+msgstr ""
+
+#: src/Support/Health.php:74
+msgid "not set (optional)"
+msgstr ""
+
+#: src/Support/Health.php:79
+msgid "defined but ignored: remove it from wp-config.php"
+msgstr ""
+
+#: src/Support/Health.php:89
+msgid "Shopify’s WordPress plugin"
+msgstr ""
+
+#: src/Support/Health.php:92
+msgid "/cart owner"
+msgstr ""
+
+#: src/Support/Health.php:92
+msgid "Shopify’s plugin (its rewrite rule wins over pages)"
+msgstr ""
+
+#: src/Support/Health.php:92
+msgid "nobody yet: flush permalinks"
+msgstr ""
+
+#. translators: %s: date and time, or "never"
+#: src/Support/Health.php:101
+#, php-format
+msgid "active, last attached %s"
+msgstr ""
+
+#. translators: %s: date and time, or "never"
+#: src/Support/Health.php:101
+msgid "never"
+msgstr ""
+
+#: src/Support/Health.php:102
+msgid "off: needs the same store and a Storefront token"
+msgstr ""
+
+#: src/Sync/PostCheckout.php:170
+msgid "Thanks for your order. To use a membership you bought, log in with Shopify using the email address from your order."
+msgstr ""
+
+#: src/Sync/PostCheckout.php:173
+msgid "Your membership is ready. Thanks for joining!"
+msgstr ""
+
+#: src/Sync/PostCheckout.php:175
+msgid "Thanks for your order. We're finishing setting up your membership; this usually takes under a minute."
+msgstr ""
+
+#: src/Webhooks/Monitor.php:132
+msgid "The daily check could not list webhook subscriptions in Shopify. See App events for the failed call."
+msgstr ""
+
+#. translators: %d: number of topics
+#: src/Webhooks/Monitor.php:134
+#, php-format
+msgid "%d webhook subscription could not be created in Shopify."
+msgid_plural "%d webhook subscriptions could not be created in Shopify."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Webhooks/Monitor.php:135
+msgid "Webhook deliveries were rejected in the last day because their signature did not match. Check the Admin app client secret in Settings."
+msgstr ""
+
+#. translators: %d: minutes
+#: src/Webhooks/Monitor.php:137
+#, php-format
+msgid "Webhooks have waited %d minutes to be processed. WP-Cron or Action Scheduler is not running, so tag changes are not reaching WordPress."
+msgstr ""
+
+#. translators: %d: hours
+#: src/Webhooks/Monitor.php:139
+#, php-format
+msgid "WP-Cron looks stopped: a daily task is %d hours late. Queued webhooks and checks depend on it; set up a real cron job for wp-cron.php."
+msgstr ""
+
+#. translators: %d: number of topics
+#: src/Webhooks/Monitor.php:141
+#, php-format
+msgid "Shopify had removed %d webhook subscription, so it was created again. Shopify does this after deliveries fail for several hours: check that nothing blocks the webhook endpoint, then consider a bulk resync on Customers."
+msgid_plural "Shopify had removed %d webhook subscriptions, so they were created again. Shopify does this after deliveries fail for several hours: check that nothing blocks the webhook endpoint, then consider a bulk resync on Customers."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of deliveries
+#: src/Webhooks/Monitor.php:143
+#, php-format
+msgid "%d webhook failed in the last day and was set aside. Retry it from Shopify → Webhooks."
+msgid_plural "%d webhooks failed in the last day and were set aside. Retry them from Shopify → Webhooks."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: days
+#: src/Webhooks/Monitor.php:146
+#, php-format
+msgid "No webhook has arrived for %d days although customers are linked. If tags changed in Shopify since, deliveries are not getting through."
+msgstr ""
+
+#: src/Webhooks/Monitor.php:147
+msgid "No webhook has arrived yet although customers are linked. If webhooks are registered, check that Shopify can reach the endpoint."
+msgstr ""
+
+#: src/Webhooks/Monitor.php:186
+#: src/Webhooks/Monitor.php:209
+msgid "Shopify tag updates may not be reaching WordPress"
+msgstr ""
+
+#: src/Webhooks/Monitor.php:189
+#: src/Webhooks/Monitor.php:215
+msgid "Open Shopify → Webhooks"
+msgstr ""
+
+#: src/Webhooks/Monitor.php:198
+#: src/Webhooks/Monitor.php:209
+msgid "Shopify webhooks are arriving"
+msgstr ""
+
+#: src/Webhooks/Monitor.php:214
+msgid "Members gain and lose access when Shopify sends tag changes. Subscriptions, the processing queue and WP-Cron all look healthy."
+msgstr ""
+
+#: src/Webhooks/Monitor.php:229
+msgid "Webhook delivery"
+msgstr ""
+
+#: src/Webhooks/Monitor.php:231
+msgid "subscriptions, queue and cron healthy"
+msgstr ""
+
+#. translators: %s: site name
+#: src/Webhooks/Monitor.php:266
+#, php-format
+msgid "[%s] Shopify tag updates may not be reaching WordPress"
+msgstr ""
+
+#: assets/block-access.js:23
+msgid "Everyone who sees this part of the item"
+msgstr ""
+
+#: assets/block-access.js:24
+msgid "Readers: visitors who can read this item"
+msgstr ""
+
+#: assets/block-access.js:25
+msgid "Readers who hold one of these levels"
+msgstr ""
+
+#: assets/block-access.js:26
+msgid "Locked visitors only (upgrade prompts)"
+msgstr ""
+
+#: assets/block-access.js:27
+msgid "Visitors without these levels"
+msgstr ""
+
+#: assets/block-access.js:31
+msgid "No condition of its own. The item's rule and the paywall break still apply."
+msgstr ""
+
+#: assets/block-access.js:32
+msgid "Hidden from anyone this item locks out. Never used in search, excerpts or SEO descriptions."
+msgstr ""
+
+#: assets/block-access.js:33
+msgid "Narrows the item's rule: a reader also needs one of these levels. Never public text."
+msgstr ""
+
+#: assets/block-access.js:34
+msgid "Shown only to visitors who can't read this item. Counts as public text."
+msgstr ""
+
+#: assets/block-access.js:35
+msgid "Shown to anyone holding none of these levels, readers included. Counts as public text."
+msgstr ""
+
+#: assets/block-access.js:98
+msgid "Show this block to"
+msgstr ""
+
+#: assets/block-access.js:130
+msgid "Pick at least one level. Until then nobody sees this block."
+msgstr ""
+
+#: assets/block-access.js:137
+msgid "This block is after the paywall break, so locked visitors never reach it. Move it above the break."
+msgstr ""
+
+#: assets/block-access.js:143
+msgid "No feature rule"
+msgstr ""
+
+#: assets/block-access.js:145
+msgid "(not registered)"
+msgstr ""
+
+#: assets/block-access.js:146
+msgid "Features are site-wide behaviours from Shopify → Access → Features. Decided on the server: a hidden block is never sent."
+msgstr ""
+
+#: assets/block-access.js:152
+msgid "Show when the visitor"
+msgstr ""
+
+#: assets/block-access.js:155
+msgid "holds this feature"
+msgstr ""
+
+#: assets/block-access.js:156
+msgid "does not hold it (upgrade prompts)"
+msgstr ""
+
+#: assets/block-access.js:166
+msgid "This feature is not registered for blocks, so nobody holds it here."
+msgstr ""
+
+#: blocks/access-badge/block.json
+msgctxt "block title"
+msgid "Access Badge"
+msgstr ""
+
+#: blocks/access-badge/block.json
+msgctxt "block description"
+msgid "Names the level an item needs, in the level's badge colour, with a lock for visitors it locks out. Reads the item's access rule, or a Membership Gate in its content set to an access level. Inside a query loop it describes each post. Shows nothing on open items, unless a free label is set."
+msgstr ""
+
+#: blocks/access-badge/block.json
+msgctxt "block keyword"
+msgid "badge"
+msgstr ""
+
+#: blocks/access-badge/block.json
+msgctxt "block keyword"
+msgid "level"
+msgstr ""
+
+#: blocks/access-badge/block.json
+#: blocks/membership-gate/block.json
+#: blocks/paywall-break/block.json
+msgctxt "block keyword"
+msgid "members"
+msgstr ""
+
+#: blocks/access-badge/block.json
+msgctxt "block keyword"
+msgid "locked"
+msgstr ""
+
+#: blocks/access-badge/block.json
+#: blocks/membership-gate/block.json
+#: blocks/paywall-break/block.json
+msgctxt "block keyword"
+msgid "paywall"
+msgstr ""
+
+#: blocks/account-status/block.json
+msgctxt "block title"
+msgid "Shopify Account Status"
+msgstr ""
+
+#: blocks/account-status/block.json
+msgctxt "block description"
+msgid "Tells the visitor where they stand: signed in or not, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. A Blockstudio dynamic island: the cached page carries a neutral placeholder and each visitor's own fragment fills it in."
+msgstr ""
+
+#: blocks/account-status/block.json
+#: blocks/auth-action/block.json
+#: blocks/health/block.json
+#: blocks/member-account/block.json
+#: blocks/member-features/block.json
+#: blocks/membership-gate/block.json
+#: blocks/membership-refresh/block.json
+#: blocks/plan-card/block.json
+msgctxt "block keyword"
+msgid "shopify"
+msgstr ""
+
+#: blocks/account-status/block.json
+msgctxt "block keyword"
+msgid "status"
+msgstr ""
+
+#: blocks/account-status/block.json
+#: blocks/auth-action/block.json
+#: blocks/member-account/block.json
+#: blocks/member-features/block.json
+msgctxt "block keyword"
+msgid "account"
+msgstr ""
+
+#: blocks/account-status/block.json
+#: blocks/health/block.json
+msgctxt "block keyword"
+msgid "debug"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block title"
+msgid "Shopify Sign-in"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block description"
+msgid "Log in with Shopify, log out, or connect an existing account. Works without JavaScript: the page carries the guest link, and a Blockstudio island swaps in the visitor's own action after load, so cached pages stay cacheable."
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block keyword"
+msgid "login"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block keyword"
+msgid "logout"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block variation title"
+msgid "Shopify Log In"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block variation description"
+msgid "A log in link for guests, hidden once the visitor is signed in."
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block variation title"
+msgid "Shopify Log Out"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block variation description"
+msgid "A log out button for signed-in customers, hidden for guests."
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block variation title"
+msgid "Connect Shopify Account"
+msgstr ""
+
+#: blocks/auth-action/block.json
+msgctxt "block variation description"
+msgid "Lets a signed-in WordPress user link their Shopify customer account."
+msgstr ""
+
+#: blocks/health/block.json
+msgctxt "block title"
+msgid "Shopify Health"
+msgstr ""
+
+#: blocks/health/block.json
+msgctxt "block description"
+msgid "An at-a-glance checklist of what WP2 Shopify needs: Blockstudio, its blocks, permalinks, the callback page, Shopify sign-in, which wp-config constants are set (never their values) and Shopify's own plugin. Shown to administrators only, in a Blockstudio dynamic island, so a cached page never carries it. Themes add rows with the wp2_shopify_health_checks filter."
+msgstr ""
+
+#: blocks/health/block.json
+msgctxt "block keyword"
+msgid "health"
+msgstr ""
+
+#: blocks/health/block.json
+msgctxt "block keyword"
+msgid "diagnostics"
+msgstr ""
+
+#: blocks/locked-panel/block.json
+msgctxt "block title"
+msgid "Locked Content Panel"
+msgstr ""
+
+#: blocks/locked-panel/block.json
+msgctxt "block description"
+msgid "The panel locked-out visitors see in place of gated content: a message, why they can't read it, and what to do next (log in, connect their Shopify account, refresh after a purchase, upgrade, renew). A Blockstudio component rendered by the plugin, not inserted by editors; a theme can restyle it or replace its template with a Blockstudio override."
+msgstr ""
+
+#: blocks/member-account/block.json
+msgctxt "block title"
+msgid "Member Account"
+msgstr ""
+
+#: blocks/member-account/block.json
+msgctxt "block description"
+msgid "A customer's own membership: their levels, when they joined and renew, what they get, when it last synced (with a refresh), and links to manage their Shopify account and subscription. Guests get a sign-in link. A Blockstudio dynamic island: the cached page carries a placeholder and each visitor's fragment fills it in."
+msgstr ""
+
+#: blocks/member-account/block.json
+#: blocks/member-features/block.json
+#: blocks/membership-refresh/block.json
+#: blocks/plan-card/block.json
+msgctxt "block keyword"
+msgid "membership"
+msgstr ""
+
+#: blocks/member-account/block.json
+msgctxt "block keyword"
+msgid "profile"
+msgstr ""
+
+#: blocks/member-account/block.json
+msgctxt "block keyword"
+msgid "subscription"
+msgstr ""
+
+#: blocks/member-features/block.json
+msgctxt "block title"
+msgid "Membership Features"
+msgstr ""
+
+#: blocks/member-features/block.json
+msgctxt "block description"
+msgid "Lists the features the visitor holds and where each comes from (\"Ad-free reading, from Gold\"), for the account page; a menu mode shows only primary features, at most three, for a header. A Blockstudio dynamic island: the cached page carries a neutral placeholder and each visitor's own list fills it in."
+msgstr ""
+
+#: blocks/member-features/block.json
+msgctxt "block keyword"
+msgid "features"
+msgstr ""
+
+#: blocks/member-features/block.json
+msgctxt "block keyword"
+msgid "perks"
+msgstr ""
+
+#: blocks/member-features/block.json
+msgctxt "block keyword"
+msgid "menu"
+msgstr ""
+
+#: blocks/membership-gate-content/block.json
+msgctxt "block title"
+msgid "Members Only Area"
+msgstr ""
+
+#: blocks/membership-gate-content/block.json
+msgctxt "block description"
+msgid "Content released only to entitled members. Never sent to anyone else."
+msgstr ""
+
+#: blocks/membership-gate-fallback/block.json
+msgctxt "block title"
+msgid "Public Teaser Area"
+msgstr ""
+
+#: blocks/membership-gate-fallback/block.json
+msgctxt "block description"
+msgid "Shown to visitors who are not entitled, when the gate uses the teaser area. Public by definition."
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block title"
+msgid "Membership Gate"
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block description"
+msgid "Releases its Members only area to entitled members. The decision is made on the server; locked content is never sent to anyone else."
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block keyword"
+msgid "gate"
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block keyword"
+msgid "tags"
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block variation title"
+msgid "Membership Gate: access level"
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block variation description"
+msgid "Releases its Members only area to visitors who hold an access level."
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block variation title"
+msgid "Membership Gate: this item's rule"
+msgstr ""
+
+#: blocks/membership-gate/block.json
+msgctxt "block variation description"
+msgid "Releases its Members only area to whoever the post's Access box lets in."
+msgstr ""
+
+#: blocks/membership-refresh/block.json
+msgctxt "block title"
+msgid "Refresh Membership"
+msgstr ""
+
+#: blocks/membership-refresh/block.json
+msgctxt "block description"
+msgid "Lets a signed-in, linked customer pull their membership from Shopify again (POST /wp2-shopify/v1/account/sync) and reloads the page when it changes. A Blockstudio dynamic island: the cached page carries an empty placeholder and guests see nothing."
+msgstr ""
+
+#: blocks/membership-refresh/block.json
+msgctxt "block keyword"
+msgid "sync"
+msgstr ""
+
+#: blocks/membership-refresh/block.json
+msgctxt "block keyword"
+msgid "resync"
+msgstr ""
+
+#: blocks/membership-refresh/block.json
+msgctxt "block keyword"
+msgid "refresh"
+msgstr ""
+
+#: blocks/paywall-break/block.json
+msgctxt "block title"
+msgid "Paywall Break"
+msgstr ""
+
+#: blocks/paywall-break/block.json
+msgctxt "block description"
+msgid "Everything after this block is withheld from visitors this item's access rule locks out. They see the content above it, then the level's sign-in and join panel."
+msgstr ""
+
+#: blocks/paywall-break/block.json
+msgctxt "block keyword"
+msgid "teaser"
+msgstr ""
+
+#: blocks/paywall-break/block.json
+msgctxt "block keyword"
+msgid "break"
+msgstr ""
+
+#: blocks/paywall-break/block.json
+msgctxt "block keyword"
+msgid "more"
+msgstr ""
+
+#: blocks/plan-card/block.json
+msgctxt "block title"
+msgid "Shopify Plan Card"
+msgstr ""
+
+#: blocks/plan-card/block.json
+msgctxt "block description"
+msgid "A membership plan or product with its live Shopify price and a buy button that goes straight to Shopify checkout. Works without JavaScript and without Shopify's own plugin; signed-in customers arrive at checkout already signed in."
+msgstr ""
+
+#: blocks/plan-card/block.json
+msgctxt "block keyword"
+msgid "plan"
+msgstr ""
+
+#: blocks/plan-card/block.json
+msgctxt "block keyword"
+msgid "pricing"
+msgstr ""
+
+#: blocks/plan-card/block.json
+msgctxt "block keyword"
+msgid "buy"
+msgstr ""
+
+#: blocks/plan-card/block.json
+msgctxt "block keyword"
+msgid "checkout"
+msgstr ""

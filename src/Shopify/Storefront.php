@@ -27,6 +27,7 @@ query WP2PlanProduct($handle: String!) {
     handle
     title
     description
+    requiresSellingPlan
     featuredImage { url altText width height }
     variants(first: 25) {
       nodes {
@@ -35,6 +36,12 @@ query WP2PlanProduct($handle: String!) {
         availableForSale
         price { amount currencyCode }
         compareAtPrice { amount currencyCode }
+        sellingPlanAllocations(first: 10) {
+          nodes {
+            sellingPlan { id name recurringDeliveries }
+            priceAdjustments { price { amount currencyCode } compareAtPrice { amount currencyCode } }
+          }
+        }
       }
     }
   }
@@ -136,7 +143,8 @@ GRAPHQL;
 			return null;
 		}
 
-		$key    = 'wp2_shopify_sf_product_' . md5( Config::store_domain() . '|' . $handle );
+		$country = self::country();
+		$key     = 'wp2_shopify_sf_product_' . md5( Config::store_domain() . '|' . $handle . '|' . $country );
 		$cached = get_transient( $key );
 
 		if ( is_array( $cached ) ) {
@@ -147,7 +155,7 @@ GRAPHQL;
 			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
 		}
 
-		$data = Http::graphql( self::endpoint(), self::headers(), self::PRODUCT_QUERY, [ 'handle' => $handle ], 'storefront.product' );
+		$data = Http::graphql( self::endpoint(), self::headers(), self::in_context( self::PRODUCT_QUERY, $country ), [ 'handle' => $handle ], 'storefront.product' );
 
 		if ( is_wp_error( $data ) ) {
 			// Back off briefly so an outage doesn't cost every page view a timeout.
@@ -178,21 +186,99 @@ GRAPHQL;
 				'id'        => (string) $node['id'],
 				'title'     => (string) ( $node['title'] ?? '' ),
 				'available' => ! empty( $node['availableForSale'] ),
-				'price'     => is_array( $node['price'] ?? null ) ? [ 'amount' => (string) $node['price']['amount'], 'currency' => (string) $node['price']['currencyCode'] ] : null,
-				'compareAt' => is_array( $node['compareAtPrice'] ?? null ) ? [ 'amount' => (string) $node['compareAtPrice']['amount'], 'currency' => (string) $node['compareAtPrice']['currencyCode'] ] : null,
+				'price'     => self::money( $node['price'] ?? null ),
+				'compareAt' => self::money( $node['compareAtPrice'] ?? null ),
+				'plans'     => self::shape_plans( $node['sellingPlanAllocations']['nodes'] ?? [] ),
 			];
 		}
 
 		$image = is_array( $raw['featuredImage'] ?? null ) ? $raw['featuredImage'] : null;
 
 		return [
-			'id'          => (string) ( $raw['id'] ?? '' ),
-			'handle'      => (string) ( $raw['handle'] ?? '' ),
-			'title'       => (string) ( $raw['title'] ?? '' ),
-			'description' => (string) ( $raw['description'] ?? '' ),
-			'image'       => $image ? [ 'url' => (string) $image['url'], 'alt' => (string) ( $image['altText'] ?? '' ), 'width' => (int) ( $image['width'] ?? 0 ), 'height' => (int) ( $image['height'] ?? 0 ) ] : null,
-			'variants'    => $variants,
+			'id'            => (string) ( $raw['id'] ?? '' ),
+			'handle'        => (string) ( $raw['handle'] ?? '' ),
+			'title'         => (string) ( $raw['title'] ?? '' ),
+			'description'   => (string) ( $raw['description'] ?? '' ),
+			'requires_plan' => ! empty( $raw['requiresSellingPlan'] ),
+			'image'         => $image ? [ 'url' => (string) $image['url'], 'alt' => (string) ( $image['altText'] ?? '' ), 'width' => (int) ( $image['width'] ?? 0 ), 'height' => (int) ( $image['height'] ?? 0 ) ] : null,
+			'variants'      => $variants,
 		];
+	}
+
+	/**
+	 * @return array{amount: string, currency: string}|null
+	 */
+	private static function money( mixed $raw ): ?array {
+		return is_array( $raw ) && isset( $raw['amount'], $raw['currencyCode'] ) ? [ 'amount' => (string) $raw['amount'], 'currency' => (string) $raw['currencyCode'] ] : null;
+	}
+
+	/**
+	 * A variant's selling plans (subscriptions, pre-orders) with the price
+	 * each one charges.
+	 *
+	 * @return array<int, array{id: string, name: string, recurring: bool, price: ?array, compareAt: ?array}>
+	 */
+	private static function shape_plans( mixed $nodes ): array {
+		$plans = [];
+
+		foreach ( is_array( $nodes ) ? $nodes : [] as $node ) {
+			$plan = is_array( $node ) ? ( $node['sellingPlan'] ?? null ) : null;
+
+			if ( ! is_array( $plan ) || empty( $plan['id'] ) ) {
+				continue;
+			}
+
+			$adjust  = $node['priceAdjustments'][0] ?? [];
+			$plans[] = [
+				'id'        => (string) $plan['id'],
+				'name'      => (string) ( $plan['name'] ?? '' ),
+				'recurring' => ! empty( $plan['recurringDeliveries'] ),
+				'price'     => self::money( $adjust['price'] ?? null ),
+				'compareAt' => self::money( $adjust['compareAtPrice'] ?? null ),
+			];
+		}
+
+		return $plans;
+	}
+
+	/**
+	 * The selling plan a plan card sells: the one asked for if the variant has
+	 * it; otherwise the first, when the product can only be bought on a plan;
+	 * otherwise none (a one-time purchase).
+	 */
+	public static function pick_plan( array $product, array $variant, string $plan_id = '' ): ?array {
+		$plans = $variant['plans'] ?? [];
+
+		foreach ( $plans as $plan ) {
+			if ( '' !== $plan_id && ( $plan['id'] === $plan_id || str_ends_with( $plan['id'], '/' . $plan_id ) ) ) {
+				return $plan;
+			}
+		}
+
+		return ! empty( $product['requires_plan'] ) ? ( $plans[0] ?? null ) : null;
+	}
+
+	/**
+	 * The country whose prices and currency to show, as an ISO code, or '' for
+	 * the store's default. Off unless a filter returns one, for example from a
+	 * CDN's country header. A page cache must then vary by that header, since
+	 * plan card prices differ by country.
+	 */
+	public static function country(): string {
+		$country = strtoupper( (string) apply_filters( 'wp2_shopify_context_country', '' ) );
+
+		return preg_match( '/^[A-Z]{2}$/', $country ) ? $country : '';
+	}
+
+	/**
+	 * Add Shopify's @inContext directive for $country to a query's operation. Pure.
+	 */
+	public static function in_context( string $query, string $country ): string {
+		if ( '' === $country ) {
+			return $query;
+		}
+
+		return (string) preg_replace( '/^(\s*(?:query|mutation)\s+\w+(?:\([^)]*\))?)/', '$1 @inContext(country: ' . $country . ')', $query, 1 );
 	}
 
 	/**
@@ -220,20 +306,24 @@ GRAPHQL;
 	/**
 	 * Create a one-line cart and return its checkout URL, requested fresh
 	 * for buy-now. A signed-in customer's token attaches buyer
-	 * identity so checkout opens signed in.
+	 * identity so checkout opens signed in. $selling_plan buys the line on a
+	 * subscription or other selling plan.
 	 */
-	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null ): string|\WP_Error {
+	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null, string $selling_plan = '' ): string|\WP_Error {
 		if ( ! self::available() ) {
 			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
 		}
 
-		$input = [ 'lines' => [ [ 'merchandiseId' => $variant_gid, 'quantity' => max( 1, min( 10, $quantity ) ) ] ] ];
+		$line    = [ 'merchandiseId' => $variant_gid, 'quantity' => max( 1, min( 10, $quantity ) ) ] + ( '' !== $selling_plan ? [ 'sellingPlanId' => $selling_plan ] : [] );
+		$input   = [ 'lines' => [ $line ] ];
+		$country = self::country();
+		$buyer   = ( $customer_token ? [ 'customerAccessToken' => $customer_token ] : [] ) + ( '' !== $country ? [ 'countryCode' => $country ] : [] );
 
-		if ( $customer_token ) {
-			$input['buyerIdentity'] = [ 'customerAccessToken' => $customer_token ];
+		if ( $buyer ) {
+			$input['buyerIdentity'] = $buyer;
 		}
 
-		$data = Http::graphql( self::endpoint(), self::headers( true ), self::CART_CREATE, [ 'input' => $input ], 'storefront.cart_create' );
+		$data = Http::graphql( self::endpoint(), self::headers( true ), self::in_context( self::CART_CREATE, $country ), [ 'input' => $input ], 'storefront.cart_create' );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;

@@ -51,6 +51,11 @@ final class EvaluatorTest extends TestCase {
 		$this->assertSame( Decision::DISABLED, $this->decide( new Rule( [ 'vip' ] ), $this->member( status: 'disabled' ) )->reason );
 	}
 
+	public function test_disabled_customer_is_locked_out_of_signed_in_content(): void {
+		$this->assertSame( Decision::DISABLED, $this->decide( new Rule(), $this->member( status: 'disabled' ) )->reason );
+		$this->assertTrue( $this->decide( new Rule(), $this->member( linked: false, status: 'disabled' ) )->granted );
+	}
+
 	public function test_never_synced_mirror_fails_closed(): void {
 		$this->assertSame( Decision::NO_MIRROR, $this->decide( new Rule( [ 'vip' ] ), $this->member( synced: null ) )->reason );
 	}

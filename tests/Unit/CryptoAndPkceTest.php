@@ -63,6 +63,14 @@ final class CryptoAndPkceTest extends TestCase {
 		$this->assertSame( 'id_token_nonce', Pkce::check_id_token_claims( [ 'nonce' => null ] + $claims, 'https://issuer', 'client', 'n1', 1000 ) );
 	}
 
+	public function test_issuer_must_be_shopify_without_discovery(): void {
+		$claims = [ 'iss' => 'https://shopify.com/authentication/1', 'aud' => 'client', 'exp' => 2000, 'nonce' => 'n1' ];
+
+		$this->assertNull( Pkce::check_id_token_claims( $claims, '', 'client', 'n1', 1000 ) );
+		$this->assertSame( 'id_token_issuer', Pkce::check_id_token_claims( [ 'iss' => 'https://evil.example/' ] + $claims, '', 'client', 'n1', 1000 ) );
+		$this->assertSame( 'id_token_issuer', Pkce::check_id_token_claims( [ 'iss' => null ] + $claims, '', 'client', 'n1', 1000 ) );
+	}
+
 	public function test_jwt_claims_decodes_payload(): void {
 		$payload = rtrim( strtr( base64_encode( '{"sub":"1","nonce":"n"}' ), '+/', '-_' ), '=' );
 

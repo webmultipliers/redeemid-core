@@ -31,6 +31,12 @@
 				"label": "Variant ID (optional)",
 				"help": "Leave empty to sell the first available variant."
 			},
+			{
+				"id": "sellingPlanId",
+				"type": "text",
+				"label": "Selling plan ID (optional)",
+				"help": "Sell on a subscription or other selling plan. The card lists the product's plans in the editor. Left empty, the card sells a one-time purchase, or the first plan when the product is subscription-only."
+			},
 			{ "id": "heading", "type": "text", "label": "Heading", "help": "Leave empty to use the product title from Shopify." },
 			{
 				"id": "description",

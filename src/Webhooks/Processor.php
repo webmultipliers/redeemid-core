@@ -93,6 +93,11 @@ final class Processor {
 
 				if ( 'disabled' === $data['status'] ) {
 					TokenVault::forget_all( $user->ID );
+
+					// A Shopify-only account has no other way in: end its WordPress sessions too.
+					if ( ShadowUsers::is_shadow( $user->ID ) ) {
+						\WP_Session_Tokens::get_instance( $user->ID )->destroy_all();
+					}
 				}
 				break;
 

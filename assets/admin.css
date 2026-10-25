@@ -504,6 +504,138 @@ a.wp2s-card:focus {
 	overflow-wrap: anywhere;
 }
 
+/* Reports: stat tiles and the weekly chart. Series colours are the first two
+   slots of a colour-blind-checked categorical palette. */
+.wp2s-tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 12px;
+	margin: 0 0 20px;
+}
+
+.wp2s-tile {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 16px 20px;
+	background: var(--wp2s-surface);
+	border: 1px solid var(--wp2s-border);
+	border-radius: var(--wp2s-radius);
+}
+
+.wp2s-tile__value {
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+}
+
+.wp2s-tile__label {
+	color: var(--wp2s-muted);
+}
+
+.wp2s-legend {
+	display: flex;
+	gap: 16px;
+	margin: 0 0 8px;
+	color: #50575e;
+}
+
+.wp2s-legend__swatch {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 6px;
+	border-radius: 2px;
+}
+
+.wp2s-series-1 {
+	fill: #2a78d6;
+	background: #2a78d6;
+}
+
+.wp2s-series-2 {
+	fill: #eb6834;
+	background: #eb6834;
+}
+
+.wp2s-chart {
+	display: block;
+	width: 100%;
+	max-width: 900px;
+	height: auto;
+}
+
+.wp2s-chart__grid {
+	stroke: #f0f0f1;
+	stroke-width: 1;
+}
+
+.wp2s-chart__grid.is-base {
+	stroke: #c3c4c7;
+}
+
+.wp2s-chart__tick {
+	fill: #646970;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+}
+
+.wp2s-chart__hit {
+	fill: transparent;
+}
+
+.wp2s-chart__week:hover .wp2s-chart__hit {
+	fill: rgba(0, 0, 0, 0.04);
+}
+
+.wp2s-chart__table {
+	margin-top: 12px;
+}
+
+.wp2s-chart__table table {
+	max-width: 480px;
+	margin-top: 8px;
+}
+
+.wp2s-panel .num,
+.wp2s-chart__table .num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Setup checklist on Overview. */
+.wp2s-setup > summary {
+	cursor: pointer;
+	list-style: none;
+}
+
+.wp2s-setup > summary::-webkit-details-marker {
+	display: none;
+}
+
+.wp2s-setup > summary h2::after {
+	content: " \25BE";
+	color: var(--wp2s-muted);
+}
+
+.wp2s-setup:not([open]) > summary {
+	border-bottom: 0;
+}
+
+.wp2s-setup__steps > li {
+	grid-template-columns: minmax(200px, 260px) 1fr auto;
+	align-items: center;
+}
+
+.wp2s-setup__steps > li.is-done .wp2s-setup__action {
+	opacity: 0.6;
+}
+
+.wp2s-setup__action form {
+	display: inline;
+}
+
 /* Key/value rows (customer details, trace). */
 .wp2s-kv th {
 	width: 25%;
@@ -694,7 +826,8 @@ ul.wp2s-trace-list {
 		margin-top: 4px;
 	}
 
-	.wp2s-checks > li {
+	.wp2s-checks > li,
+	.wp2s-setup__steps > li {
 		grid-template-columns: 1fr;
 	}
 
@@ -712,4 +845,11 @@ ul.wp2s-trace-list {
 	.wp2s-panel .form-table tr + tr > td {
 		border-top: 0;
 	}
+}
+
+/* Bulk resync progress on Customers. */
+.wp2s-progress {
+	width: 100%;
+	height: 10px;
+	accent-color: var(--wp-admin-theme-color, #2271b1);
 }

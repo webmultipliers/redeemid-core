@@ -6,11 +6,14 @@ use WP2_Shopify\Access\Checker;
 use WP2_Shopify\Access\Gatekeeper;
 use WP2_Shopify\Access\Level;
 use WP2_Shopify\Access\LevelStore;
+use WP2_Shopify\Access\Membership;
 use WP2_Shopify\Access\Viewer;
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Entitlement\Decision;
 use WP2_Shopify\Entitlement\Rule;
 use WP2_Shopify\Settings;
+use WP2_Shopify\Sync\LevelHistory;
+use WP2_Shopify\Sync\PostCheckout;
 
 /**
  * Server-side gating for wp2-shopify/membership-gate.
@@ -223,23 +226,131 @@ final class Gate {
 
 	/**
 	 * The locked-visitor panel, rendered by the wp2-shopify/locked-panel
-	 * Blockstudio component so themes can restyle or override it.
+	 * Blockstudio component so themes can restyle or override it. What it
+	 * offers depends on why the visitor was turned away (PanelKind).
+	 *
+	 * @param string $level The level the content needs, when known: the item's
+	 *                      next level, or a level gate's level.
 	 */
-	public static function fallback_panel( array $a, Decision $decision ): string {
-		$guest = Decision::GUEST === $decision->reason && false !== ( $a['showSignIn'] ?? true );
-		$data  = [
-			'message'   => (string) ( ( $a['fallbackMessage'] ?? '' ) ?: __( 'This content is for members.', 'wp2-shopify' ) ),
-			'reason'    => match ( $decision->reason ) {
-				Decision::DISABLED  => __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' ),
-				Decision::NO_MIRROR => __( 'Your membership details are syncing. Try again shortly.', 'wp2-shopify' ),
-				default             => '',
-			},
-			'ctaLabel'  => (string) ( $a['fallbackCtaLabel'] ?? '' ),
-			'ctaUrl'    => self::url( $a['fallbackCtaUrl'] ?? '' ),
-			'signInUrl' => $guest ? Flow::login_url( (string) get_permalink() ) : '',
+	public static function fallback_panel( array $a, Decision $decision, string $level = '' ): string {
+		$user_id = get_current_user_id();
+		$levels  = LevelStore::levels();
+		$level   = '' !== $level ? $level : self::wanted_level( $a );
+		$wanted  = '' !== $level ? $levels->get( $level ) : null;
+		$label   = $wanted && ! $wanted->builtin() ? $wanted->label : '';
+		$held    = $user_id ? Membership::held( $levels, Viewer::member(), time() ) : [];
+		$kind    = PanelKind::for(
+			$decision->reason,
+			PostCheckout::active( $user_id ),
+			'' !== $level && $user_id && LevelHistory::lapsed( $user_id, $level ),
+			(bool) $held
+		);
+		$here    = (string) get_permalink() ?: self::current_url();
+		$cta     = (string) ( $a['fallbackCtaLabel'] ?? '' );
+		$data    = [
+			'message'    => (string) ( ( $a['fallbackMessage'] ?? '' ) ?: __( 'This content is for members.', 'wp2-shopify' ) ),
+			'reason'     => '',
+			'kind'       => $kind,
+			'level'      => $level,
+			'ctaLabel'   => $cta,
+			'ctaUrl'     => self::url( $a['fallbackCtaUrl'] ?? '' ),
+			'signInUrl'  => '',
+			'hint'       => '',
+			'formAction' => '',
+			'formLabel'  => '',
+			'formNonce'  => '',
+			'redirectTo' => $here,
 		];
 
+		switch ( $kind ) {
+			case PanelKind::SIGN_IN:
+				if ( false !== ( $a['showSignIn'] ?? true ) ) {
+					$data['signInUrl'] = Flow::login_url( $here );
+					$data['hint']      = __( 'Already a member, or just bought a membership? Log in with Shopify using the email address you checked out with.', 'wp2-shopify' );
+				}
+				break;
+			case PanelKind::CONNECT:
+				$data['reason']     = __( 'Your account here isn\'t connected to a Shopify customer yet. Connect it to use a membership you have.', 'wp2-shopify' );
+				$data['formAction'] = 'wp2_shopify_connect';
+				$data['formLabel']  = __( 'Connect your Shopify account', 'wp2-shopify' );
+				break;
+			case PanelKind::FINISHING:
+				$data['reason']     = __( 'We\'re finishing setting up your membership. This usually takes under a minute after checkout.', 'wp2-shopify' );
+				$data['formAction'] = 'wp2_shopify_sync';
+				$data['formLabel']  = __( 'Check again', 'wp2-shopify' );
+				$data['ctaLabel']   = '';
+				break;
+			case PanelKind::RENEW:
+				/* translators: %s: access level label, such as Gold */
+				$data['reason']     = $label ? sprintf( __( 'Your %s membership has ended.', 'wp2-shopify' ), $label ) : __( 'Your membership has ended.', 'wp2-shopify' );
+				/* translators: %s: access level label */
+				$data['ctaLabel']   = $label ? sprintf( __( 'Renew %s', 'wp2-shopify' ), $label ) : ( $cta ?: __( 'Renew', 'wp2-shopify' ) );
+				$data['formAction'] = 'wp2_shopify_sync';
+				$data['formLabel']  = __( 'Already renewed? Refresh', 'wp2-shopify' );
+				break;
+			case PanelKind::UPGRADE:
+			case PanelKind::JOIN:
+				// The level's own button label is written for newcomers; an existing member is upgrading.
+				$data['ctaLabel']   = PanelKind::UPGRADE === $kind && $label
+					/* translators: %s: access level label */
+					? sprintf( __( 'Upgrade to %s', 'wp2-shopify' ), $label )
+					/* translators: %s: access level label */
+					: ( $cta ?: ( $label ? sprintf( __( 'Join %s', 'wp2-shopify' ), $label ) : '' ) );
+				$data['formAction'] = 'wp2_shopify_sync';
+				$data['formLabel']  = __( 'Already bought it? Refresh', 'wp2-shopify' );
+				break;
+			case PanelKind::DISABLED:
+				$data['reason']   = __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' );
+				$data['ctaLabel'] = '';
+				break;
+			case PanelKind::DRIP:
+				$data['message']  = __( 'This is part of your membership and opens soon.', 'wp2-shopify' );
+				$data['reason']   = (int) ( $a['unlocksAt'] ?? 0 ) > 0
+					/* translators: %s: a date */
+					? sprintf( __( 'It opens for you on %s.', 'wp2-shopify' ), wp_date( (string) get_option( 'date_format' ), (int) $a['unlocksAt'] ) )
+					: '';
+				$data['ctaLabel'] = '';
+				// Personal: the date is this member's own.
+				if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+					define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+				}
+				break;
+		}
+
+		if ( '' !== $data['formAction'] ) {
+			$data['formNonce'] = wp_create_nonce( $data['formAction'] );
+
+			// A nonce is per visitor: this page must not be cached.
+			if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+				define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+			}
+		}
+
+		/**
+		 * The locked panel's content before it renders: message, reason, kind,
+		 * level, ctaLabel, ctaUrl, signInUrl, hint, formAction, formLabel.
+		 *
+		 * @param array<string, string> $data
+		 * @param Decision              $decision
+		 */
+		$data = (array) apply_filters( 'wp2_shopify_locked_panel', $data, $decision );
+
 		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'name' => self::PANEL, 'data' => $data ] ) : '';
+	}
+
+	/**
+	 * The level a gate asks for: its own for a level gate, the item's next
+	 * level for an item gate, none for custom tags.
+	 */
+	private static function wanted_level( array $a ): string {
+		$source = self::option( $a['ruleSource'] ?? '', self::RULE_CUSTOM );
+		$post   = get_post();
+
+		if ( self::RULE_LEVEL === $source ) {
+			return self::option( $a['level'] ?? '', '' );
+		}
+
+		return self::RULE_ITEM === $source && $post instanceof \WP_Post ? (string) Gatekeeper::verdict( $post )->next_level : '';
 	}
 
 	/**

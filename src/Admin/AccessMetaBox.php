@@ -92,7 +92,12 @@ final class AccessMetaBox {
 		<p>
 			<label for="wp2-access-public-until"><?php esc_html_e( 'Free until, then locked', 'wp2-shopify' ); ?></label>
 			<input id="wp2-access-public-until" type="datetime-local" name="wp2_access[public_until]" value="<?php echo esc_attr( $local( $rule['public_until'] ) ); ?>" style="width:100%">
-			<span class="description"><?php esc_html_e( 'Dates are publish-date embargoes, not membership drip. Site time zone.', 'wp2-shopify' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Dates are publish-date embargoes, the same for everyone. Site time zone.', 'wp2-shopify' ); ?></span>
+		</p>
+		<p>
+			<label for="wp2-access-drip"><?php esc_html_e( 'Drip: members can read it after', 'wp2-shopify' ); ?></label>
+			<input id="wp2-access-drip" type="number" min="0" max="3650" step="1" name="wp2_access[drip_days]" value="<?php echo (int) $rule['drip_days']; ?>" style="width:6em"> <?php esc_html_e( 'days of membership', 'wp2-shopify' ); ?>
+			<span class="description"><?php esc_html_e( 'Counted from when each member joined. 0 for no drip.', 'wp2-shopify' ); ?></span>
 		</p>
 		<p>
 			<label><input type="checkbox" name="wp2_access[meter_exempt]" value="1" <?php checked( $rule['meter_exempt'] ); ?>> <?php esc_html_e( 'Never count toward a meter', 'wp2-shopify' ); ?></label>
@@ -131,6 +136,7 @@ final class AccessMetaBox {
 				'locked_until' => $time( $raw['locked_until'] ?? '' ),
 				'public_until' => $time( $raw['public_until'] ?? '' ),
 				'meter_exempt' => ! empty( $raw['meter_exempt'] ),
+				'drip_days'    => absint( $raw['drip_days'] ?? 0 ),
 			]
 		);
 	}

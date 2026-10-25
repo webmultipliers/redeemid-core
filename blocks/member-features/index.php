@@ -32,7 +32,7 @@ if ( $isEditor ) {
 		$wp2_items[] = [
 			'slug'  => $wp2_slug,
 			'label' => $wp2_feature['label'],
-			/* translators: %s: where the feature comes from, such as "Gold" or "Add-on purchase" */
+			/* translators: %s: route labels */
 			'from'  => $wp2_feature['provenance'] ? sprintf( __( 'from %s', 'wp2-shopify' ), implode( __( ' and ', 'wp2-shopify' ), $wp2_feature['routes'] ) ) : '',
 			'held'  => true,
 		];

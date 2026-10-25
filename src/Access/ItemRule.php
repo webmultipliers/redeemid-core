@@ -53,7 +53,7 @@ final class ItemRule {
 	}
 
 	/**
-	 * @return array{mode: string, levels: string[], locked_until: ?int, public_until: ?int, meter_exempt: bool}
+	 * @return array{mode: string, levels: string[], locked_until: ?int, public_until: ?int, meter_exempt: bool, drip_days: int}
 	 */
 	public static function sanitize( mixed $value ): array {
 		$value  = is_array( $value ) ? $value : [];
@@ -67,6 +67,7 @@ final class ItemRule {
 			'locked_until' => $time( $value['locked_until'] ?? null ),
 			'public_until' => $time( $value['public_until'] ?? null ),
 			'meter_exempt' => ! empty( $value['meter_exempt'] ),
+			'drip_days'    => max( 0, min( 3650, (int) ( $value['drip_days'] ?? 0 ) ) ),
 		];
 	}
 
@@ -77,7 +78,7 @@ final class ItemRule {
 	public static function save( int $post_id, array $rule ): void {
 		$rule = self::sanitize( $rule );
 
-		if ( Context::ITEM_INHERIT === $rule['mode'] && ! $rule['locked_until'] && ! $rule['public_until'] && ! $rule['meter_exempt'] ) {
+		if ( Context::ITEM_INHERIT === $rule['mode'] && ! $rule['locked_until'] && ! $rule['public_until'] && ! $rule['meter_exempt'] && ! $rule['drip_days'] ) {
 			delete_post_meta( $post_id, self::META );
 		} else {
 			update_post_meta( $post_id, self::META, $rule );

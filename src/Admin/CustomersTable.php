@@ -2,6 +2,8 @@
 
 namespace WP2_Shopify\Admin;
 
+use WP2_Shopify\Access\LevelStore;
+use WP2_Shopify\Access\Membership;
 use WP2_Shopify\Auth\ShadowUsers;
 use WP2_Shopify\Config;
 use WP2_Shopify\Sync\Mirror;
@@ -23,6 +25,7 @@ final class CustomersTable extends \WP_List_Table {
 			'cb'        => '<input type="checkbox">',
 			'name'      => __( 'Customer', 'wp2-shopify' ),
 			'shopify'   => __( 'Shopify customer', 'wp2-shopify' ),
+			'levels'    => __( 'Levels', 'wp2-shopify' ),
 			'tags'      => __( 'Tags', 'wp2-shopify' ),
 			'state'     => __( 'State', 'wp2-shopify' ),
 			'last_sync' => __( 'Last sync', 'wp2-shopify' ),
@@ -43,46 +46,10 @@ final class CustomersTable extends \WP_List_Table {
 	public function prepare_items(): void {
 		$this->_column_headers = [ $this->get_columns(), [], $this->get_sortable_columns(), 'name' ];
 
-		$per_page = $this->get_items_per_page( 'wp2_shopify_per_page', 50 );
-		// phpcs:disable WordPress.Security.NonceVerification -- list display.
-		$search  = sanitize_text_field( wp_unslash( $_REQUEST['s'] ?? '' ) );
-		$orderby = sanitize_key( $_REQUEST['orderby'] ?? '' );
-		$order   = 'asc' === sanitize_key( wp_unslash( $_REQUEST['order'] ?? '' ) ) ? 'ASC' : 'DESC';
-		$filter  = sanitize_key( $_REQUEST['state'] ?? '' );
-		// phpcs:enable
-
-		$meta = [ [ 'key' => Mirror::NUMERIC, 'compare' => 'EXISTS' ] ];
-
-		if ( 'disabled' === $filter ) {
-			$meta[] = [ 'key' => Mirror::STATUS, 'value' => 'disabled' ];
-		} elseif ( 'failed' === $filter ) {
-			$meta[] = [ 'key' => Mirror::SYNC_FAILED, 'compare' => 'EXISTS' ];
-		}
-
-		$args = [
-			'number'     => $per_page,
-			'paged'      => $this->get_pagenum(),
-			'meta_query' => $meta, // phpcs:ignore WordPress.DB.SlowDBQuery
-			'orderby'    => 'ID',
-			'order'      => $order,
-		];
-
-		if ( 'display_name' === $orderby ) {
-			$args['orderby'] = 'display_name';
-		} elseif ( 'last_sync' === $orderby || 'linked' === $orderby ) {
-			$args['meta_key'] = 'last_sync' === $orderby ? Mirror::LAST_SYNC : Mirror::LINKED_AT; // phpcs:ignore WordPress.DB.SlowDBQuery
-			$args['orderby']  = 'meta_value_num';
-		}
-
-		if ( '' !== $search ) {
-			if ( ctype_digit( $search ) && strlen( $search ) > 6 ) {
-				// A Shopify customer ID.
-				$args['meta_query'][] = [ 'key' => Mirror::NUMERIC, 'value' => $search ];
-			} else {
-				$args['search']         = '*' . $search . '*';
-				$args['search_columns'] = [ 'user_login', 'user_email', 'display_name', 'user_nicename' ];
-			}
-		}
+		$per_page       = $this->get_items_per_page( 'wp2_shopify_per_page', 50 );
+		$args           = CustomerQuery::args( CustomerQuery::filters() );
+		$args['number'] = $per_page;
+		$args['paged']  = $this->get_pagenum();
 
 		$query       = new \WP_User_Query( $args );
 		$this->items = $query->get_results();
@@ -100,6 +67,33 @@ final class CustomersTable extends \WP_List_Table {
 		}
 
 		return $views;
+	}
+
+	/**
+	 * The level filter and the CSV export, above the table.
+	 */
+	protected function extra_tablenav( $which ): void {
+		if ( 'top' !== $which ) {
+			return;
+		}
+
+		$f      = CustomerQuery::filters();
+		$levels = array_filter( LevelStore::levels()->all(), static fn( $level ) => ! $level->builtin() );
+		?>
+		<div class="alignleft actions">
+			<?php if ( $levels ) : ?>
+				<label class="screen-reader-text" for="wp2s-level-filter"><?php esc_html_e( 'Filter by level', 'wp2-shopify' ); ?></label>
+				<select name="level" id="wp2s-level-filter" form="wp2s-customer-filters">
+					<option value=""><?php esc_html_e( 'All levels', 'wp2-shopify' ); ?></option>
+					<?php foreach ( $levels as $slug => $level ) : ?>
+						<option value="<?php echo esc_attr( (string) $slug ); ?>" <?php selected( $f['level'], (string) $slug ); ?>><?php echo esc_html( $level->label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<button type="submit" class="button" form="wp2s-customer-filters"><?php esc_html_e( 'Filter', 'wp2-shopify' ); ?></button>
+			<?php endif; ?>
+			<a class="button" href="<?php echo esc_url( Customers::export_url( $f ) ); ?>"><?php esc_html_e( 'Export CSV', 'wp2-shopify' ); ?></a>
+		</div>
+		<?php
 	}
 
 	public function no_items(): void {
@@ -160,6 +154,13 @@ final class CustomersTable extends \WP_List_Table {
 		$id = Mirror::customer_id( $user->ID );
 
 		return $id ? '<code>' . esc_html( $id->numeric ) . '</code>' : '—';
+	}
+
+	protected function column_levels( \WP_User $user ): string {
+		$levels = LevelStore::levels();
+		$top    = Membership::top( $levels, Membership::held( $levels, Mirror::member( $user->ID ), time() ) );
+
+		return $top ? esc_html( implode( ', ', array_map( static fn( string $slug ): string => $levels->get( $slug )?->label ?? $slug, $top ) ) ) : '—';
 	}
 
 	protected function column_tags( \WP_User $user ): string {
