@@ -13,16 +13,25 @@ if ( ! class_exists( \WP_List_Table::class ) ) {
  */
 final class EventsTable extends \WP_List_Table {
 	/** Event-name prefixes offered as views. */
-	public const GROUPS = [
-		'shopify.'    => 'Calls to Shopify',
-		'sync.'       => 'Resyncs',
-		'reconcile.'  => 'Reconciliation',
-		'membership.' => 'Purchase to tag',
-		'webhook.'    => 'Webhooks',
-		'auth.'       => 'Sign-in',
-		'link.'       => 'Account linking',
-		'admin.'      => 'Admin actions',
-	];
+	/**
+	 * Event name prefixes the list can be narrowed to, with their labels.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function groups(): array {
+		return [
+			'shopify.'     => __( 'Calls to Shopify', 'wp2-shopify' ),
+			'sync.'        => __( 'Resyncs', 'wp2-shopify' ),
+			'bulk_resync.' => __( 'Bulk resync', 'wp2-shopify' ),
+			'reconcile.'   => __( 'Reconciliation', 'wp2-shopify' ),
+			'level.'       => __( 'Membership levels', 'wp2-shopify' ),
+			'commerce.'    => __( 'Checkout', 'wp2-shopify' ),
+			'webhook.'     => __( 'Webhooks', 'wp2-shopify' ),
+			'auth.'        => __( 'Sign-in', 'wp2-shopify' ),
+			'link.'        => __( 'Account linking', 'wp2-shopify' ),
+			'admin.'       => __( 'Admin actions', 'wp2-shopify' ),
+		];
+	}
 
 	public function __construct() {
 		parent::__construct( [ 'singular' => 'event', 'plural' => 'events', 'ajax' => false ] );
@@ -50,7 +59,7 @@ final class EventsTable extends \WP_List_Table {
 
 		return [
 			'event'  => sanitize_text_field( wp_unslash( $_GET['event'] ?? '' ) ),
-			'prefix' => isset( self::GROUPS[ $prefix ] ) ? $prefix : '',
+			'prefix' => isset( self::groups()[ $prefix ] ) ? $prefix : '',
 			'user'   => absint( $_GET['user'] ?? 0 ),
 			'search' => sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) ),
 		];
@@ -71,8 +80,8 @@ final class EventsTable extends \WP_List_Table {
 		$current = self::filters()['prefix'];
 		$views   = [ 'all' => sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( Events::PAGE ) ), '' === $current ? ' class="current"' : '', esc_html__( 'All', 'wp2-shopify' ) ) ];
 
-		foreach ( self::GROUPS as $prefix => $label ) {
-			$views[ rtrim( $prefix, '.' ) ] = sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( Events::PAGE, [ 'group' => $prefix ] ) ), $current === $prefix ? ' class="current"' : '', esc_html( __( $label, 'wp2-shopify' ) ) ); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+		foreach ( self::groups() as $prefix => $label ) {
+			$views[ rtrim( $prefix, '.' ) ] = sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( Events::PAGE, [ 'group' => $prefix ] ) ), $current === $prefix ? ' class="current"' : '', esc_html( $label ) );
 		}
 
 		return $views;

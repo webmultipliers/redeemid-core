@@ -97,7 +97,7 @@ $wp2_form = static function ( string $action, string $label, string $class = 'wp
 				<?php
 				echo esc_html(
 					$wp2_view['synced']
-						/* translators: %s: how long ago, such as "5 mins" */
+						/* translators: %s: human time difference */
 						? sprintf( __( '%s ago', 'wp2-shopify' ), human_time_diff( $wp2_view['synced'] ) )
 						: __( 'Not yet', 'wp2-shopify' )
 				);

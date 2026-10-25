@@ -72,4 +72,51 @@ final class StorefrontTest extends TestCase {
 		);
 		$this->assertSame( 'https://example.test/other', Discovery::pin_version( 'https://example.test/other', '2026-10' ) );
 	}
+
+	private static function subscription(): array {
+		$raw = self::raw();
+
+		$raw['requiresSellingPlan'] = true;
+		$raw['variants']['nodes'][1]['sellingPlanAllocations']['nodes'] = [
+			[ 'sellingPlan' => [ 'id' => 'gid://shopify/SellingPlan/7', 'name' => 'Billed yearly', 'recurringDeliveries' => true ], 'priceAdjustments' => [ [ 'price' => [ 'amount' => '81.0', 'currencyCode' => 'USD' ], 'compareAtPrice' => [ 'amount' => '90.0', 'currencyCode' => 'USD' ] ] ] ],
+			[ 'sellingPlan' => [ 'id' => 'gid://shopify/SellingPlan/8', 'name' => 'Billed monthly', 'recurringDeliveries' => true ], 'priceAdjustments' => [] ],
+			[ 'sellingPlan' => null ],
+		];
+
+		return $raw;
+	}
+
+	public function test_shape_keeps_selling_plans_with_their_prices(): void {
+		$variant = Storefront::shape_product( self::subscription() )['variants'][1];
+
+		$this->assertCount( 2, $variant['plans'] );
+		$this->assertSame( [ 'amount' => '81.0', 'currency' => 'USD' ], $variant['plans'][0]['price'] );
+		$this->assertNull( $variant['plans'][1]['price'] );
+		$this->assertSame( [], Storefront::shape_product( self::raw() )['variants'][0]['plans'] );
+	}
+
+	public function test_pick_plan(): void {
+		$product = Storefront::shape_product( self::subscription() );
+		$variant = $product['variants'][1];
+
+		$this->assertSame( 'Billed monthly', Storefront::pick_plan( $product, $variant, '8' )['name'] );
+		$this->assertSame( 'Billed yearly', Storefront::pick_plan( $product, $variant )['name'], 'subscription-only: first plan' );
+
+		$product['requires_plan'] = false;
+		$this->assertNull( Storefront::pick_plan( $product, $variant ), 'one-time purchase unless asked' );
+		$this->assertNull( Storefront::pick_plan( $product, $variant, '999' ) );
+	}
+
+	public function test_buy_now_accepts_only_selling_plan_ids(): void {
+		$this->assertSame( 'gid://shopify/SellingPlan/7', BuyNow::selling_plan_gid( '7' ) );
+		$this->assertSame( 'gid://shopify/SellingPlan/7', BuyNow::selling_plan_gid( 'gid://shopify/SellingPlan/7' ) );
+		$this->assertSame( '', BuyNow::selling_plan_gid( 'gid://shopify/ProductVariant/7' ) );
+		$this->assertSame( '', BuyNow::selling_plan_gid( '' ) );
+	}
+
+	public function test_in_context_adds_the_country_directive(): void {
+		$this->assertSame( "query Q(\$h: String!) @inContext(country: CA) {\n x }", Storefront::in_context( "query Q(\$h: String!) {\n x }", 'CA' ) );
+		$this->assertSame( 'mutation M @inContext(country: GB) { y }', Storefront::in_context( 'mutation M { y }', 'GB' ) );
+		$this->assertSame( 'query Q { z }', Storefront::in_context( 'query Q { z }', '' ) );
+	}
 }

@@ -12,8 +12,14 @@
 
 	&__title,
 	&__description,
-	&__price {
+	&__price,
+	&__terms {
 		margin: 0;
+	}
+
+	&__terms {
+		font-size: var(--wp--preset--font-size--small, 0.8125rem);
+		opacity: 0.8;
 	}
 
 	&__price {

@@ -77,6 +77,8 @@ final class Plugin {
 		Stats::register();
 
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
+		// Translations installed in wp-content/languages win; the bundled .pot is the template.
+		add_action( 'init', static fn() => load_plugin_textdomain( 'wp2-shopify', false, dirname( plugin_basename( WP2_SHOPIFY_FILE ) ) . '/languages' ) );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );
 		add_action( Endpoint::HOOK, [ Processor::class, 'process' ] );
 		add_action( 'admin_init', [ Lifecycle::class, 'retire_reconciliation' ] );

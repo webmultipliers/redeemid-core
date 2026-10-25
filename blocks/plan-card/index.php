@@ -67,8 +67,11 @@ else :
 $wp2_variant     = \WP2_Shopify\Shopify\Storefront::pick_variant( $wp2_product, (string) ( $a['variantId'] ?? '' ) );
 $wp2_title       = (string) ( $a['heading'] ?? '' ) ?: $wp2_product['title'];
 $wp2_description = (string) ( $a['description'] ?? '' ) ?: $wp2_product['description'];
-$wp2_price       = \WP2_Shopify\Shopify\Storefront::format_money( $wp2_variant['price'] );
-$wp2_compare     = ! empty( $a['showCompareAt'] ) && $wp2_variant['compareAt'] && (float) $wp2_variant['compareAt']['amount'] > (float) ( $wp2_variant['price']['amount'] ?? 0 ) ? \WP2_Shopify\Shopify\Storefront::format_money( $wp2_variant['compareAt'] ) : '';
+$wp2_plan        = \WP2_Shopify\Shopify\Storefront::pick_plan( $wp2_product, $wp2_variant, (string) ( $a['sellingPlanId'] ?? '' ) );
+$wp2_charge      = $wp2_plan && $wp2_plan['price'] ? $wp2_plan : $wp2_variant;
+$wp2_price       = \WP2_Shopify\Shopify\Storefront::format_money( $wp2_charge['price'] );
+$wp2_compare_at  = $wp2_plan ? $wp2_plan['compareAt'] : $wp2_variant['compareAt'];
+$wp2_compare     = ! empty( $a['showCompareAt'] ) && $wp2_compare_at && (float) $wp2_compare_at['amount'] > (float) ( $wp2_charge['price']['amount'] ?? 0 ) ? \WP2_Shopify\Shopify\Storefront::format_money( $wp2_compare_at ) : '';
 $wp2_image       = ! empty( $a['showImage'] ) ? $wp2_product['image'] : null;
 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
@@ -91,6 +94,21 @@ $wp2_return = $isEditor ? '' : remove_query_arg( 'wp2s_notice', \WP2_Shopify\Blo
 		</p>
 	<?php endif; ?>
 
+	<?php if ( $wp2_plan && '' !== $wp2_plan['name'] ) : ?>
+		<p class="wp2-shopify-plan__terms"><?php echo esc_html( $wp2_plan['name'] ); ?></p>
+	<?php endif; ?>
+
+	<?php if ( $isEditor && $wp2_variant['plans'] ) : ?>
+		<div class="wp2-shopify-plan__notice">
+			<p><?php esc_html_e( 'Selling plans for this variant (put an ID in the block settings to sell on that plan):', 'wp2-shopify' ); ?></p>
+			<ul>
+				<?php foreach ( $wp2_variant['plans'] as $wp2_option ) : ?>
+					<li><code><?php echo esc_html( (string) preg_replace( '#^.*/#', '', $wp2_option['id'] ) ); ?></code> <?php echo esc_html( $wp2_option['name'] . ( $wp2_option['price'] ? ' · ' . \WP2_Shopify\Shopify\Storefront::format_money( $wp2_option['price'] ) : '' ) ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+	<?php endif; ?>
+
 	<?php if ( '' !== $wp2_description ) : ?>
 		<p class="wp2-shopify-plan__description"><?php echo esc_html( wp_trim_words( $wp2_description, 40 ) ); ?></p>
 	<?php endif; ?>
@@ -107,6 +125,9 @@ $wp2_return = $isEditor ? '' : remove_query_arg( 'wp2s_notice', \WP2_Shopify\Blo
 		<form class="wp2-shopify-plan__form" method="post" action="<?php echo esc_url( \WP2_Shopify\Commerce\BuyNow::form_url() ); ?>">
 			<input type="hidden" name="action" value="<?php echo esc_attr( \WP2_Shopify\Commerce\BuyNow::ACTION ); ?>">
 			<input type="hidden" name="variant" value="<?php echo esc_attr( $wp2_variant['id'] ); ?>">
+			<?php if ( $wp2_plan ) : ?>
+				<input type="hidden" name="selling_plan" value="<?php echo esc_attr( $wp2_plan['id'] ); ?>">
+			<?php endif; ?>
 			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $wp2_return ); ?>">
 			<button type="submit" class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></button>
 		</form>

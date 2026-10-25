@@ -22,14 +22,13 @@ final class BuyNow {
 	public const ACTION = 'wp2_shopify_buy_now';
 	private const PER_MINUTE = 10;
 
-	private const MESSAGES = [
-		'buy_invalid'     => 'That option could not be found. Please choose again.',
-		'buy_busy'        => 'Too many checkout attempts. Please wait a minute and try again.',
-		'buy_unavailable' => 'Checkout is temporarily unavailable. Please try again shortly.',
-	];
-
 	public static function message( string $code ): string {
-		return isset( self::MESSAGES[ $code ] ) ? __( self::MESSAGES[ $code ], 'wp2-shopify' ) : ''; // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+		return match ( $code ) {
+			'buy_invalid'     => __( 'That option could not be found. Please choose again.', 'wp2-shopify' ),
+			'buy_busy'        => __( 'Too many checkout attempts. Please wait a minute and try again.', 'wp2-shopify' ),
+			'buy_unavailable' => __( 'Checkout is temporarily unavailable. Please try again shortly.', 'wp2-shopify' ),
+			default           => '',
+		};
 	}
 
 	public static function register(): void {
@@ -54,10 +53,24 @@ final class BuyNow {
 		return '';
 	}
 
+	/**
+	 * Accepts a full SellingPlan GID or its numeric ID; '' for none.
+	 */
+	public static function selling_plan_gid( string $raw ): string {
+		$raw = trim( $raw );
+
+		if ( preg_match( '#^gid://shopify/SellingPlan/(\d+)$#', $raw, $m ) || preg_match( '#^(\d+)$#', $raw, $m ) ) {
+			return 'gid://shopify/SellingPlan/' . $m[1];
+		}
+
+		return '';
+	}
+
 	public static function handle(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- see class comment.
 		$variant  = self::variant_gid( isset( $_POST['variant'] ) ? sanitize_text_field( wp_unslash( $_POST['variant'] ) ) : '' );
 		$quantity = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
+		$plan     = self::selling_plan_gid( isset( $_POST['selling_plan'] ) ? sanitize_text_field( wp_unslash( $_POST['selling_plan'] ) ) : '' );
 		$back     = Flow::safe_redirect( isset( $_POST['redirect_to'] ) ? sanitize_text_field( wp_unslash( $_POST['redirect_to'] ) ) : (string) wp_get_referer() );
 		// phpcs:enable
 
@@ -73,12 +86,12 @@ final class BuyNow {
 
 		$user_id = get_current_user_id();
 		$token   = $user_id ? TokenVault::access_token( $user_id ) : null;
-		$url     = Storefront::checkout_url( $variant, $quantity, $token );
+		$url     = Storefront::checkout_url( $variant, $quantity, $token, $plan );
 
 		// A refused customer token must not block the purchase: retry as a guest.
 		if ( is_wp_error( $url ) && $token ) {
 			Logger::log( 'commerce.buyer_identity_refused', [ 'user_id' => $user_id, 'error' => $url->get_error_code() ] );
-			$url = Storefront::checkout_url( $variant, $quantity );
+			$url = Storefront::checkout_url( $variant, $quantity, null, $plan );
 		}
 
 		if ( is_wp_error( $url ) ) {
@@ -86,7 +99,7 @@ final class BuyNow {
 			self::back( $back, 'buy_unavailable' );
 		}
 
-		Logger::log( 'commerce.buy_now', [ 'user_id' => $user_id, 'signed_in' => (bool) $token ] );
+		Logger::log( 'commerce.buy_now', [ 'user_id' => $user_id, 'signed_in' => (bool) $token, 'selling_plan' => '' !== $plan ] );
 		PostCheckout::mark( $user_id, $back );
 
 		wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect -- checkoutUrl just returned by Shopify, https only.

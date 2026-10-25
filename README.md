@@ -262,6 +262,8 @@ Add **Shopify Plan Card** (`wp2-shopify/plan-card`) and pick a product: the side
 
 - **Buy-now is a plain form.** It posts to `admin-post.php?action=wp2_shopify_buy_now`, so it works without JavaScript. The server creates a one-line cart, attaches the visitor's identity if they're signed in with Shopify, and redirects to a fresh checkout URL. If Shopify refuses the customer token, it retries as a guest checkout rather than block the purchase.
 - **Cache-safe.** The card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per IP per minute.
+- **Subscriptions.** A product with selling plans (Shopify Subscriptions, Recharge, Appstle and others) shows the plan's price and name, such as "Billed yearly". Put a selling plan ID in the block to sell on that plan; the editor lists the variant's plans and IDs. A subscription-only product sells on its first plan.
+- **Prices by country.** Return an ISO country code from the `wp2_shopify_context_country` filter (for example from your CDN's country header) and plan cards and checkout use that country's price and currency through Shopify Markets. Pages with plan cards then differ by country, so the page cache must vary on that header.
 - **Independent of Shopify's plugin.** It works the same whether that plugin is installed or not, and never touches its cart.
 
 After checkout, the plugin finishes the job for a signed-in customer: for 30 minutes it re-reads their tags at most once a minute while Shopify Flow tags them, shows a "finishing up" banner, then "Your membership is ready" once. Link Shopify's order status page and confirmation email to the return link shown under Shopify → Settings (`/?wp2s_return=1`): it takes the customer back to the page they bought from, or asks a guest to log in with the email from their order. Turn the banner off with the `wp2_shopify_checkout_banner` filter.
@@ -387,6 +389,7 @@ Rules that follow from it:
   - `wp2_shopify_gated_post_types`, `wp2_shopify_access_context`, `wp2_shopify_effective_rule`, `wp2_shopify_teaser_settings` and `wp2_shopify_paywall_schema`
   - `wp2_shopify_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
   - `wp2_shopify_features`, `wp2_shopify_feature_tests` and `wp2_shopify_feature_decision`, which register features and custom tests and can alter one decision (see [docs/features.md](docs/features.md))
+  - `wp2_shopify_context_country` (`string $country`), an ISO code that prices plan cards and checkout in that country's currency
   - `wp2_shopify_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `wp2_shopify_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `wp2_shopify_checkout_banner` (`bool`); `wp2_shopify_offer_existing_account` (`bool`)
   - `wp2_shopify_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
@@ -425,6 +428,8 @@ composer lint   # php -l on every PHP file
 composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
+
+GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings. The translation template is `languages/wp2-shopify.pot`; regenerate it with `wp i18n make-pot . languages/wp2-shopify.pot --exclude=vendor,tests` when strings change.
 
 - **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
 - **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.

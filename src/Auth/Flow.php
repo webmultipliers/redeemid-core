@@ -22,37 +22,6 @@ use WP2_Shopify\Sync\Reconciler;
 final class Flow {
 	public const QUERY_VAR = 'wp2_shopify_callback';
 
-	private const MESSAGES = [
-		'state_invalid'           => 'Your sign-in link expired or was opened in a different browser. Please try again.',
-		'shopify_denied'          => 'Sign-in was cancelled at Shopify.',
-		'exchange_failed'         => 'Shopify sign-in could not be completed. Please try again.',
-		'profile_failed'          => 'Your Shopify profile could not be loaded. Please try again.',
-		'unavailable'             => 'Sign-in is temporarily unavailable.',
-		'id_token_missing'        => 'Shopify sign-in could not be verified. Please try again.',
-		'id_token_issuer'         => 'Shopify sign-in could not be verified. Please try again.',
-		'id_token_audience'       => 'Shopify sign-in could not be verified. Please try again.',
-		'id_token_expired'        => 'Shopify sign-in could not be verified. Please try again.',
-		'id_token_nonce'          => 'Shopify sign-in could not be verified. Please try again.',
-		'link_token_missing'      => 'That connect request is no longer valid. Start again from your account.',
-		'link_token_expired'      => 'That connect request expired. Start again from your account.',
-		'link_token_mismatch'     => 'That connect request is no longer valid. Start again from your account.',
-		'link_session_mismatch'   => 'That connect request belongs to a different session. Start again from your account.',
-		'link_user_mismatch'      => 'Please sign in to the WordPress account you want to connect, then try again.',
-		'admin_refused'           => 'Administrator accounts cannot be connected to a Shopify customer.',
-		'admin_sign_in_refused'   => 'Administrator accounts cannot sign in with Shopify. Use the WordPress login instead.',
-		'already_shadow'          => 'This account already signs in with Shopify.',
-		'email_unverified'        => 'Shopify did not confirm that email address, so the accounts were not connected.',
-		'email_mismatch'          => 'Your Shopify email does not match this account\'s email, so the accounts were not connected.',
-		'customer_already_linked' => 'That Shopify customer is already connected to another account.',
-		'link_cancelled'          => 'The accounts were not connected.',
-		'linked'                  => 'Your Shopify account is now connected.',
-		'disconnected'            => 'Your Shopify account was disconnected.',
-		'synced'                  => 'Your membership details were refreshed.',
-		'sync_failed'             => 'Your details could not be refreshed right now. Please try again later.',
-		'sync_wait'               => 'Your details were refreshed a moment ago.',
-		'existing_expired'        => 'That sign-in expired. Please log in with Shopify again.',
-	];
-
 	public static function register(): void {
 		add_action( 'init', [ self::class, 'add_rewrite' ] );
 		add_filter( 'query_vars', static fn( $vars ) => array_merge( $vars, [ self::QUERY_VAR ] ) );
@@ -98,7 +67,7 @@ final class Flow {
 	 */
 	public static function start( string $redirect_to, ?int $link_user = null ): string|\WP_Error {
 		if ( ! Config::has( 'WP2_SHOPIFY_CLIENT_ID' ) || ! Discovery::available() ) {
-			return new \WP_Error( 'unavailable', self::MESSAGES['unavailable'] );
+			return new \WP_Error( 'unavailable', self::message( 'unavailable' ) );
 		}
 
 		$verifier = Pkce::verifier();
@@ -423,7 +392,7 @@ final class Flow {
 
 	public static function disconnect( int $user_id ): string|\WP_Error {
 		if ( ShadowUsers::is_shadow( $user_id ) ) {
-			return new \WP_Error( 'already_shadow', self::MESSAGES['already_shadow'] );
+			return new \WP_Error( 'already_shadow', self::message( 'already_shadow' ) );
 		}
 
 		$tokens = TokenVault::get( $user_id );
@@ -518,7 +487,32 @@ final class Flow {
 	}
 
 	public static function message( string $code ): string {
-		return isset( self::MESSAGES[ $code ] ) ? __( self::MESSAGES[ $code ], 'wp2-shopify' ) : ''; // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+		return match ( $code ) {
+			'state_invalid'                                                                                  => __( 'Your sign-in link expired or was opened in a different browser. Please try again.', 'wp2-shopify' ),
+			'shopify_denied'                                                                                 => __( 'Sign-in was cancelled at Shopify.', 'wp2-shopify' ),
+			'exchange_failed'                                                                                => __( 'Shopify sign-in could not be completed. Please try again.', 'wp2-shopify' ),
+			'profile_failed'                                                                                 => __( 'Your Shopify profile could not be loaded. Please try again.', 'wp2-shopify' ),
+			'unavailable'                                                                                    => __( 'Sign-in is temporarily unavailable.', 'wp2-shopify' ),
+			'id_token_missing', 'id_token_issuer', 'id_token_audience', 'id_token_expired', 'id_token_nonce' => __( 'Shopify sign-in could not be verified. Please try again.', 'wp2-shopify' ),
+			'link_token_missing', 'link_token_mismatch'                                                      => __( 'That connect request is no longer valid. Start again from your account.', 'wp2-shopify' ),
+			'link_token_expired'                                                                             => __( 'That connect request expired. Start again from your account.', 'wp2-shopify' ),
+			'link_session_mismatch'                                                                          => __( 'That connect request belongs to a different session. Start again from your account.', 'wp2-shopify' ),
+			'link_user_mismatch'                                                                             => __( 'Please sign in to the WordPress account you want to connect, then try again.', 'wp2-shopify' ),
+			'admin_refused'                                                                                  => __( 'Administrator accounts cannot be connected to a Shopify customer.', 'wp2-shopify' ),
+			'admin_sign_in_refused'                                                                          => __( 'Administrator accounts cannot sign in with Shopify. Use the WordPress login instead.', 'wp2-shopify' ),
+			'already_shadow'                                                                                 => __( 'This account already signs in with Shopify.', 'wp2-shopify' ),
+			'email_unverified'                                                                               => __( 'Shopify did not confirm that email address, so the accounts were not connected.', 'wp2-shopify' ),
+			'email_mismatch'                                                                                 => __( 'Your Shopify email does not match this account\'s email, so the accounts were not connected.', 'wp2-shopify' ),
+			'customer_already_linked'                                                                        => __( 'That Shopify customer is already connected to another account.', 'wp2-shopify' ),
+			'link_cancelled'                                                                                 => __( 'The accounts were not connected.', 'wp2-shopify' ),
+			'linked'                                                                                         => __( 'Your Shopify account is now connected.', 'wp2-shopify' ),
+			'disconnected'                                                                                   => __( 'Your Shopify account was disconnected.', 'wp2-shopify' ),
+			'synced'                                                                                         => __( 'Your membership details were refreshed.', 'wp2-shopify' ),
+			'sync_failed'                                                                                    => __( 'Your details could not be refreshed right now. Please try again later.', 'wp2-shopify' ),
+			'sync_wait'                                                                                      => __( 'Your details were refreshed a moment ago.', 'wp2-shopify' ),
+			'existing_expired'                                                                               => __( 'That sign-in expired. Please log in with Shopify again.', 'wp2-shopify' ),
+			default                                                                                          => '',
+		};
 	}
 
 	public static function notice_url( string $code ): string {
