@@ -19,6 +19,12 @@ final class Evaluator {
 				: Decision::grant();
 		}
 
+		// A customer Shopify disabled is locked out of signed-in content too. An
+		// account that was never linked has no Shopify status and still passes.
+		if ( $member->linked && 'disabled' === $member->status ) {
+			return Decision::deny( Decision::DISABLED );
+		}
+
 		if ( ! $rule->required_tags ) {
 			return Decision::grant();
 		}

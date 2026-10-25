@@ -2,6 +2,8 @@
 
 namespace WP2_Shopify\Admin;
 
+use WP2_Shopify\Access\LevelStore;
+use WP2_Shopify\Access\Membership;
 use WP2_Shopify\Auth\TokenVault;
 use WP2_Shopify\Config;
 use WP2_Shopify\Shopify\Admin as AdminApi;
@@ -77,6 +79,15 @@ final class Customers {
 
 		if ( 'tags' === $do ) {
 			self::finish( self::edit_tags( $user_id ), 1, $user_id );
+		}
+
+		if ( 'export' === $do ) {
+			self::export();
+		}
+
+		if ( 'activation_refresh' === $do ) {
+			Activation::forget();
+			self::finish( '', 0 );
 		}
 
 		if ( str_starts_with( $do, 'bulk_' ) ) {
@@ -190,6 +201,126 @@ final class Customers {
 			'line'    => $line,
 			'error'   => (string) $job['error'],
 		];
+	}
+
+	/**
+	 * @param array<string, string> $filters From CustomerQuery::filters().
+	 */
+	public static function export_url( array $filters ): string {
+		$args = array_filter( [ 'action' => self::ACTION, 'do' => 'export' ] + array_intersect_key( $filters, array_flip( [ 's', 'state', 'level' ] ) ) );
+
+		return wp_nonce_url( add_query_arg( $args, admin_url( 'admin-post.php' ) ), self::ACTION );
+	}
+
+	/**
+	 * The filtered list as CSV, read from the mirror: no Shopify call.
+	 */
+	private static function export(): never {
+		$args           = CustomerQuery::args( CustomerQuery::filters() );
+		$args['number'] = 500;
+		$levels         = LevelStore::levels();
+		$now            = time();
+		$cell           = static fn( mixed $value ): string => preg_match( '/^[=+\-@\t\r]/', (string) $value ) ? "'" . $value : (string) $value;
+		$date           = static fn( mixed $stamp ): string => (int) $stamp > 0 ? gmdate( 'Y-m-d H:i:s', (int) $stamp ) : '';
+
+		Logger::log( 'admin.customers_exported', [ 'user' => get_current_user_id() ] );
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="shopify-customers-' . gmdate( 'Y-m-d' ) . '.csv"' );
+
+		// phpcs:disable WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fputcsv -- writes to php://output, not the file system.
+		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- streaming a download.
+		fputcsv( $out, [ 'user_id', 'login', 'wp_email', 'shopify_email', 'first_name', 'last_name', 'customer_id', 'state', 'levels', 'tags', 'member_since', 'renews_on', 'last_sync_utc', 'linked_utc' ] );
+
+		for ( $page = 1; ; $page++ ) {
+			$args['paged'] = $page;
+			$users         = ( new \WP_User_Query( $args + [ 'count_total' => false ] ) )->get_results();
+
+			foreach ( $users as $user ) {
+				$member = Mirror::member( $user->ID );
+				$top    = Membership::top( $levels, Membership::held( $levels, $member, $now ) );
+
+				fputcsv(
+					$out,
+					array_map(
+						$cell,
+						[
+							$user->ID,
+							$user->user_login,
+							$user->user_email,
+							get_user_meta( $user->ID, Mirror::EMAIL, true ),
+							get_user_meta( $user->ID, Mirror::FIRST_NAME, true ),
+							get_user_meta( $user->ID, Mirror::LAST_NAME, true ),
+							Mirror::customer_id( $user->ID )?->numeric,
+							$member->status,
+							implode( ', ', array_map( static fn( string $slug ): string => $levels->get( $slug )?->label ?? $slug, $top ) ),
+							implode( ', ', $member->tags ),
+							get_user_meta( $user->ID, Mirror::SINCE, true ),
+							get_user_meta( $user->ID, Mirror::RENEWS, true ),
+							$date( get_user_meta( $user->ID, Mirror::LAST_SYNC, true ) ),
+							$date( get_user_meta( $user->ID, Mirror::LINKED_AT, true ) ),
+						]
+					)
+				);
+			}
+
+			if ( count( $users ) < $args['number'] ) {
+				break;
+			}
+
+			wp_cache_flush_runtime();
+		}
+
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		// phpcs:enable WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fputcsv
+		exit;
+	}
+
+	/**
+	 * Members per level: tagged in Shopify against signed in here.
+	 */
+	private static function activation_panel(): void {
+		$stats = Activation::stats();
+
+		if ( ! $stats['levels'] && null === $stats['shopify_total'] ) {
+			return;
+		}
+
+		Menu::panel_start(
+			__( 'Activation', 'wp2-shopify' ),
+			__( 'Customers Shopify tags for each level, and how many of them have signed in to this site. Members who haven\'t can be pointed at the sign-in page. Counted once an hour.', 'wp2-shopify' ),
+			self::bulk_button( 'activation_refresh', __( 'Count again', 'wp2-shopify' ) )
+		);
+		?>
+		<div class="wp2s-panel__body wp2s-panel__body--flush">
+			<table class="widefat striped">
+				<thead><tr><th><?php esc_html_e( 'Level', 'wp2-shopify' ); ?></th><th><?php esc_html_e( 'In Shopify', 'wp2-shopify' ); ?></th><th><?php esc_html_e( 'Signed in here', 'wp2-shopify' ); ?></th><th><?php esc_html_e( 'Activated', 'wp2-shopify' ); ?></th></tr></thead>
+				<tbody>
+					<?php
+					$rows = [ [ __( 'All customers', 'wp2-shopify' ), $stats['shopify_total'], $stats['linked_total'], '' ] ];
+
+					foreach ( $stats['levels'] as $slug => $row ) {
+						$rows[] = [ $row['label'], $row['shopify'], $row['linked'], $slug ];
+					}
+
+					foreach ( $rows as [ $label, $shopify, $linked, $slug ] ) :
+						$percent = Activation::percent( (int) $linked, $shopify );
+						?>
+						<tr>
+							<td><?php echo '' === $slug ? esc_html( $label ) : sprintf( '<a href="%s">%s</a>', esc_url( Menu::url( self::PAGE, [ 'level' => $slug ] ) ), esc_html( $label ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
+							<td><?php echo null === $shopify ? '—' : esc_html( number_format_i18n( $shopify ) . ( $shopify >= 10000 ? '+' : '' ) ); ?></td>
+							<td><?php echo esc_html( number_format_i18n( (int) $linked ) ); ?></td>
+							<td><?php echo null === $percent ? '—' : esc_html( $percent . '%' ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php if ( $stats['error'] ) : ?>
+			<div class="wp2s-panel__footer"><span class="description"><?php esc_html_e( 'Shopify could not be asked for its counts; the WordPress side is shown.', 'wp2-shopify' ); ?></span></div>
+		<?php endif; ?>
+		<?php
+		Menu::panel_end();
 	}
 
 	private static function bulk_panel(): void {
@@ -378,14 +509,19 @@ final class Customers {
 			$actions .= sprintf( '<a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'wp2-shopify' ) );
 		}
 
+		$filters = CustomerQuery::filters();
 		$table->prepare_items();
 		Menu::page_start( __( 'Customers', 'wp2-shopify' ), __( 'Shopify customers', 'wp2-shopify' ), $actions, __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'wp2-shopify' ) );
 		self::notices();
+		self::activation_panel();
 		self::bulk_panel();
 		?>
 		<?php $table->views(); ?>
-		<form method="get">
+		<form method="get" id="wp2s-customer-filters">
 			<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
+			<?php foreach ( array_filter( [ 'state' => $filters['state'], 'orderby' => $filters['orderby'] ] ) as $key => $value ) : ?>
+				<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>">
+			<?php endforeach; ?>
 			<?php $table->search_box( __( 'Search name, email or customer ID', 'wp2-shopify' ), 'wp2s-customer' ); ?>
 		</form>
 		<form method="post">

@@ -31,6 +31,7 @@ use WP2_Shopify\Rest\Routes;
 use WP2_Shopify\Rest\Status;
 use WP2_Shopify\Support\Crypto;
 use WP2_Shopify\Support\EventLog;
+use WP2_Shopify\Support\Stats;
 use WP2_Shopify\Sync\BulkResync;
 use WP2_Shopify\Sync\Cli as SyncCli;
 use WP2_Shopify\Sync\LevelHistory;
@@ -73,6 +74,7 @@ final class Plugin {
 		Privacy::register();
 		Compat::register();
 		EventLog::register();
+		Stats::register();
 
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );

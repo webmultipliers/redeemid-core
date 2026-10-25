@@ -4,6 +4,7 @@ namespace WP2_Shopify\Sync;
 
 use WP2_Shopify\Auth\Flow;
 use WP2_Shopify\Shopify\Admin;
+use WP2_Shopify\Support\Logger;
 
 /**
  * Closes the gap between paying and access.
@@ -119,6 +120,7 @@ final class PostCheckout {
 			// Access changed: stop polling and say so once.
 			self::clear( $user_id );
 			update_user_meta( $user_id, self::READY, time() );
+			Logger::log( 'checkout.access_ready', [ 'user' => $user_id ] );
 		}
 	}
 
