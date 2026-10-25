@@ -1,20 +1,23 @@
 <?php
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
-use WP2_Shopify\Support\ConfigValues;
-use WP2_Shopify\Support\Crypto;
+use RedeemID\Support\ConfigValues;
+use RedeemID\Support\Crypto;
 
 /**
  * The plugin's configuration. Each value comes from a
  * wp-config.php constant when one is defined, and that always wins. Otherwise
- * it comes from Shopify → Settings, saved in the options table, with secrets
- * encrypted at rest (Support\Crypto, keyed from WP2_SHOPIFY_ENCRYPTION_KEY or
+ * it comes from RedeemID → Settings, saved in the options table, with secrets
+ * encrypted at rest (Support\Crypto, keyed from REDEEMID_ENCRYPTION_KEY or
  * the WordPress salts). Secret values are never shown back in the admin.
  */
 final class Config {
-	/** Values saved from Shopify → Settings. Secrets are stored as ciphertext. */
-	public const OPTION = 'wp2_shopify_config';
+	/** Values saved from RedeemID → Settings. Secrets are stored as ciphertext. */
+	public const OPTION = 'redeemid_config';
+
+	/** The 1.x name of the client secret, still read with an admin notice. */
+	public const DEPRECATED_SECRET = Legacy::CONSTANT_PREFIX . 'PRIVATE_ACCESS_TOKEN';
 
 	private static ?ConfigValues $values = null;
 
@@ -28,55 +31,55 @@ final class Config {
 	 * Every value the plugin reads, for Settings and Debug. This is the whole
 	 * configuration surface: anything not listed here is not read. Each can be
 	 * a wp-config.php constant of that name or, unless `editable` is false, a
-	 * value saved in Shopify → Settings.
+	 * value saved in RedeemID → Settings.
 	 *
 	 * @return array<string, array{label: string, secret: bool, required: bool, help: string, editable?: bool}>
 	 */
 	public static function definitions(): array {
 		return [
-			'WP2_SHOPIFY_STORE_DOMAIN'        => [
+			'REDEEMID_STORE_DOMAIN'        => [
 				'label'    => 'Store domain',
 				'secret'   => false,
 				'required' => true,
 				'help'     => 'The store\'s *.myshopify.com domain.',
 			],
-			'WP2_SHOPIFY_CLIENT_ID'           => [
+			'REDEEMID_CLIENT_ID'           => [
 				'label'    => 'Customer Account API client ID',
 				'secret'   => false,
 				'required' => true,
 				'help'     => 'From the Headless (or custom) sales channel\'s Customer Account API settings. Powers sign-in.',
 			],
-			'WP2_SHOPIFY_CLIENT_SECRET'       => [
+			'REDEEMID_CLIENT_SECRET'       => [
 				'label'    => 'Customer Account API client secret',
 				'secret'   => true,
 				'required' => false,
 				'help'     => 'Only for confidential clients; leave unset for a public client.',
 			],
-			'WP2_SHOPIFY_ADMIN_CLIENT_ID'     => [
+			'REDEEMID_ADMIN_CLIENT_ID'     => [
 				'label'    => 'Admin app client ID',
 				'secret'   => false,
 				'required' => true,
 				'help'     => 'The Dev Dashboard app installed on the store. The plugin requests 24-hour Admin tokens with the client credentials grant and renews them itself. Scopes: read_customers, write_customers. Powers reconciliation, resync, tag editing and webhook registration.',
 			],
-			'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' => [
+			'REDEEMID_ADMIN_CLIENT_SECRET' => [
 				'label'    => 'Admin app client secret',
 				'secret'   => true,
 				'required' => true,
 				'help'     => 'The Dev Dashboard app\'s client secret. Also verifies the webhooks the plugin registers.',
 			],
-			'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' => [
+			'REDEEMID_PUBLIC_ACCESS_TOKEN' => [
 				'label'    => 'Storefront public access token',
 				'secret'   => false,
 				'required' => false,
-				'help'     => 'From the Headless sales channel\'s Storefront API settings. Powers plan cards and buy-now: live prices and checkout. Public by design; WP2 never borrows the token Shopify\'s own plugin stores.',
+				'help'     => 'From the Headless sales channel\'s Storefront API settings. Powers plan cards and buy-now: live prices and checkout. Public by design; RedeemID never borrows the token Shopify\'s own plugin stores.',
 			],
-			'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' => [
+			'REDEEMID_STOREFRONT_PRIVATE_TOKEN' => [
 				'label'    => 'Storefront private access token',
 				'secret'   => true,
 				'required' => false,
 				'help'     => 'Recommended. From the same Headless channel. The plugin calls the Storefront API from the server, which Shopify wants done with the private token plus the buyer\'s IP, so checkout creation is not throttled as if every visitor were one IP. When set it replaces the public token for every server call.',
 			],
-			'WP2_SHOPIFY_ENCRYPTION_KEY'      => [
+			'REDEEMID_ENCRYPTION_KEY'      => [
 				'label'    => 'Token encryption key',
 				'secret'   => true,
 				'required' => false,
@@ -93,11 +96,13 @@ final class Config {
 	 * @return array<string, string>
 	 */
 	public static function retired(): array {
+		$old = Legacy::CONSTANT_PREFIX;
+
 		return [
-			'WP2_SHOPIFY_ADMIN_ACCESS_TOKEN'       => 'Legacy permanent Admin tokens are no longer used. Set WP2_SHOPIFY_ADMIN_CLIENT_ID and WP2_SHOPIFY_ADMIN_CLIENT_SECRET for a Dev Dashboard app.',
-			'WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET'   => 'Webhooks are registered by the plugin through the app and verified with WP2_SHOPIFY_ADMIN_CLIENT_SECRET. Delete webhooks created in Settings → Notifications.',
-			'WP2_SHOPIFY_API_VERSION'              => 'The API version is pinned to ' . self::API_VERSION . ' by the plugin.',
-			'WP2_SHOPIFY_COOKIE_DOMAIN'            => 'The plugin uses WordPress\' COOKIE_DOMAIN.',
+			$old . 'ADMIN_ACCESS_TOKEN'     => 'Legacy permanent Admin tokens are no longer used. Set REDEEMID_ADMIN_CLIENT_ID and REDEEMID_ADMIN_CLIENT_SECRET for a Dev Dashboard app.',
+			$old . 'WEBHOOK_SIGNING_SECRET' => 'Webhooks are registered by the plugin through the app and verified with REDEEMID_ADMIN_CLIENT_SECRET. Delete webhooks created in Settings → Notifications.',
+			$old . 'API_VERSION'            => 'The API version is pinned to ' . self::API_VERSION . ' by the plugin.',
+			$old . 'COOKIE_DOMAIN'          => 'The plugin uses WordPress\' COOKIE_DOMAIN.',
 		];
 	}
 
@@ -148,15 +153,18 @@ final class Config {
 	}
 
 	/**
-	 * The constant that sets a value, if one is defined (including the 1.x alias).
+	 * The constant that sets a value, if one is defined: its own name, then its
+	 * name from before the rename (Legacy), then the 1.x alias of the secret.
 	 */
 	public static function constant_name( string $name ): ?string {
-		if ( defined( $name ) ) {
-			return $name;
+		foreach ( [ $name, Legacy::constant_name( $name ) ] as $candidate ) {
+			if ( null !== $candidate && defined( $candidate ) ) {
+				return $candidate;
+			}
 		}
 
-		if ( 'WP2_SHOPIFY_CLIENT_SECRET' === $name && defined( 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN' ) ) {
-			return 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN';
+		if ( 'REDEEMID_CLIENT_SECRET' === $name && defined( self::DEPRECATED_SECRET ) ) {
+			return self::DEPRECATED_SECRET;
 		}
 
 		return null;
@@ -173,7 +181,7 @@ final class Config {
 	 * app are signed with that app's client secret.
 	 */
 	public static function webhook_secret(): string {
-		return self::get( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
+		return self::get( 'REDEEMID_ADMIN_CLIENT_SECRET' );
 	}
 
 	public static function has( string $name ): bool {
@@ -181,7 +189,7 @@ final class Config {
 	}
 
 	public static function uses_deprecated_secret_name(): bool {
-		return ! defined( 'WP2_SHOPIFY_CLIENT_SECRET' ) && defined( 'WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN' );
+		return self::DEPRECATED_SECRET === self::constant_name( 'REDEEMID_CLIENT_SECRET' );
 	}
 
 	public static function api_version(): string {
@@ -192,7 +200,7 @@ final class Config {
 	 * The store's myshopify host, normalised (no scheme, no path, lower case).
 	 */
 	public static function store_domain(): string {
-		$domain = strtolower( self::get( 'WP2_SHOPIFY_STORE_DOMAIN' ) );
+		$domain = strtolower( self::get( 'REDEEMID_STORE_DOMAIN' ) );
 		$domain = preg_replace( '#^https?://#', '', $domain );
 
 		return rtrim( (string) $domain, '/' );
@@ -216,7 +224,7 @@ final class Config {
 	}
 
 	public static function callback_slug(): string {
-		$slug = trim( (string) apply_filters( 'wp2_shopify_auth_callback_slug', 'auth-callback' ), '/' );
+		$slug = trim( (string) apply_filters( 'redeemid_auth_callback_slug', 'auth-callback' ), '/' );
 
 		return '' === $slug ? 'auth-callback' : $slug;
 	}

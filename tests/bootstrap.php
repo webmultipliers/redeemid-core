@@ -5,4 +5,4 @@
 
 require dirname( __DIR__ ) . '/vendor/autoload.php';
 
-define( 'WP2_SHOPIFY_TESTS', true );
+define( 'REDEEMID_TESTS', true );

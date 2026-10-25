@@ -1,13 +1,13 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * The access rule saved on one item: its mode, its levels, its windows.
  * Stored as one post meta array so a rule is always read and written whole.
  */
 final class ItemRule {
-	public const META = '_wp2_access';
+	public const META = '_redeemid_access';
 
 	public const MODES = [ Context::ITEM_INHERIT, Context::ITEM_PUBLIC, Context::ITEM_LEVEL, Context::ITEM_ADD ];
 
@@ -24,7 +24,7 @@ final class ItemRule {
 		/**
 		 * Filter which post types can be gated.
 		 */
-		return array_values( array_filter( (array) apply_filters( 'wp2_shopify_gated_post_types', $types ), 'is_string' ) );
+		return array_values( array_filter( (array) apply_filters( 'redeemid_gated_post_types', $types ), 'is_string' ) );
 	}
 
 	public static function gated( \WP_Post $post ): bool {
@@ -91,6 +91,6 @@ final class ItemRule {
 		 *
 		 * @param int[] $post_ids Affected items; an empty list means "possibly all".
 		 */
-		do_action( 'wp2_shopify_access_changed', [ $post_id ] );
+		do_action( 'redeemid_access_changed', [ $post_id ] );
 	}
 }

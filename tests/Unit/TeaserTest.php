@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Teaser;
+use RedeemID\Access\Teaser;
 
 final class TeaserTest extends TestCase {
 	private static function block( string $name, string $text = '', array $inner = [] ): array {

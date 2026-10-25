@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
 /**
  * Shopify webhook HMAC check: base64(HMAC-SHA256(raw body, secret)),

@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Cuts a locked item's parsed blocks down to its teaser. Pure: no WordPress
@@ -23,7 +23,7 @@ namespace WP2_Shopify\Access;
  *   excerpt becomes the teaser.
  */
 final class Teaser {
-	public const BREAK_BLOCK = 'wp2-shopify/paywall-break';
+	public const BREAK_BLOCK = 'redeemid/paywall-break';
 
 	public const MODE_BLOCKS  = 'blocks';
 	public const MODE_WORDS   = 'words';

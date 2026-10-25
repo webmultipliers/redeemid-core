@@ -1,21 +1,21 @@
 <?php
 
-namespace WP2_Shopify\Commerce;
+namespace RedeemID\Commerce;
 
-use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Integrations\OfficialPlugin;
-use WP2_Shopify\Rest\Routes;
-use WP2_Shopify\Rest\Status;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Shopify\Storefront;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\PostCheckout;
+use RedeemID\Auth\TokenVault;
+use RedeemID\Integrations\OfficialPlugin;
+use RedeemID\Rest\Routes;
+use RedeemID\Rest\Status;
+use RedeemID\Settings;
+use RedeemID\Shopify\Storefront;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\Mirror;
+use RedeemID\Sync\PostCheckout;
 
 /**
  * Signs the official plugin's cart in. Its cart component keeps the cart ID in
  * the browser; when a linked customer is signed in, a small script sends that
- * ID here and WP2 attaches the customer's identity with
+ * ID here and RedeemID attaches the customer's identity with
  * cartBuyerIdentityUpdate, so checkout opens signed in. The customer token
  * goes from this server to Shopify only, never to the browser.
  *
@@ -29,8 +29,8 @@ use WP2_Shopify\Sync\PostCheckout;
  */
 final class CartBridge {
 	public const ROUTE       = '/cart/identity';
-	public const STATE       = 'wp2_shopify_cart_bridge';
-	private const HANDLE     = 'wp2-shopify-cart-bridge';
+	public const STATE       = 'redeemid_cart_bridge';
+	private const HANDLE     = 'redeemid-cart-bridge';
 	private const PER_MINUTE = 6;
 
 	public static function register(): void {
@@ -46,7 +46,7 @@ final class CartBridge {
 			return;
 		}
 
-		wp_enqueue_script( self::HANDLE, WP2_SHOPIFY_URL . 'assets/cart-bridge.js', [], WP2_SHOPIFY_VERSION, [ 'in_footer' => true, 'strategy' => 'defer' ] );
+		wp_enqueue_script( self::HANDLE, REDEEMID_URL . 'assets/cart-bridge.js', [], REDEEMID_VERSION, [ 'in_footer' => true, 'strategy' => 'defer' ] );
 
 		// Static per site, so cached pages can carry it.
 		$config = [
@@ -55,7 +55,7 @@ final class CartBridge {
 			'clearOnLogout' => (bool) Settings::get( 'clear_cart_on_logout' ),
 		];
 
-		wp_add_inline_script( self::HANDLE, 'window.wp2ShopifyCartBridge = ' . wp_json_encode( $config ) . ';', 'before' );
+		wp_add_inline_script( self::HANDLE, 'window.redeemidCartBridge = ' . wp_json_encode( $config ) . ';', 'before' );
 	}
 
 	/**
@@ -132,7 +132,7 @@ final class CartBridge {
 	}
 
 	private static function within_rate_limit( int $user_id ): bool {
-		$key = 'wp2_shopify_cartid_' . $user_id;
+		$key = 'redeemid_cartid_' . $user_id;
 		$n   = (int) get_transient( $key );
 
 		if ( $n >= self::PER_MINUTE ) {

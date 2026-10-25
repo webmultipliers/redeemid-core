@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\Membership;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\Membership;
+use RedeemID\Support\Logger;
 
 /**
  * Notices when a customer joins or leaves a level, and keeps a short record
@@ -14,7 +14,7 @@ use WP2_Shopify\Support\Logger;
  *
  * Like feature changes, levels are noted before the first mirror write in a
  * request and compared at shutdown, so one sync that writes several keys
- * fires once. wp2_shopify_levels_changed is the hook for a welcome email, a
+ * fires once. redeemid_levels_changed is the hook for a welcome email, a
  * CRM update or an analytics event.
  */
 final class LevelHistory {
@@ -71,7 +71,7 @@ final class LevelHistory {
 			 * @param string[] $added   Level slugs now held.
 			 * @param string[] $removed Level slugs no longer held.
 			 */
-			do_action( 'wp2_shopify_levels_changed', $user_id, $added, $removed );
+			do_action( 'redeemid_levels_changed', $user_id, $added, $removed );
 		}
 
 		self::$before = [];

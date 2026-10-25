@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
 /**
  * Where each configuration value comes from, and how a save from Shopify →
@@ -105,7 +105,7 @@ final class ConfigValues {
 				$error = self::invalid( $name, $value );
 
 				if ( null === $error ) {
-					$value = 'WP2_SHOPIFY_STORE_DOMAIN' === $name ? self::normalise_domain( $value ) : $value;
+					$value = 'REDEEMID_STORE_DOMAIN' === $name ? self::normalise_domain( $value ) : $value;
 
 					if ( $secret && $value === $before['value'] && self::SETTINGS === $before['source'] ) {
 						continue;
@@ -144,7 +144,7 @@ final class ConfigValues {
 			return self::TOO_LONG;
 		}
 
-		if ( 'WP2_SHOPIFY_STORE_DOMAIN' === $name ) {
+		if ( 'REDEEMID_STORE_DOMAIN' === $name ) {
 			return preg_match( '/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/', self::normalise_domain( $value ) ) ? null : self::BAD_DOMAIN;
 		}
 

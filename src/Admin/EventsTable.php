@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Support\EventLog;
+use RedeemID\Support\EventLog;
 
 if ( ! class_exists( \WP_List_Table::class ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -20,16 +20,16 @@ final class EventsTable extends \WP_List_Table {
 	 */
 	public static function groups(): array {
 		return [
-			'shopify.'     => __( 'Calls to Shopify', 'wp2-shopify' ),
-			'sync.'        => __( 'Resyncs', 'wp2-shopify' ),
-			'bulk_resync.' => __( 'Bulk resync', 'wp2-shopify' ),
-			'reconcile.'   => __( 'Reconciliation', 'wp2-shopify' ),
-			'level.'       => __( 'Membership levels', 'wp2-shopify' ),
-			'commerce.'    => __( 'Checkout', 'wp2-shopify' ),
-			'webhook.'     => __( 'Webhooks', 'wp2-shopify' ),
-			'auth.'        => __( 'Sign-in', 'wp2-shopify' ),
-			'link.'        => __( 'Account linking', 'wp2-shopify' ),
-			'admin.'       => __( 'Admin actions', 'wp2-shopify' ),
+			'shopify.'     => __( 'Calls to Shopify', 'redeemid' ),
+			'sync.'        => __( 'Resyncs', 'redeemid' ),
+			'bulk_resync.' => __( 'Bulk resync', 'redeemid' ),
+			'reconcile.'   => __( 'Reconciliation', 'redeemid' ),
+			'level.'       => __( 'Membership levels', 'redeemid' ),
+			'commerce.'    => __( 'Checkout', 'redeemid' ),
+			'webhook.'     => __( 'Webhooks', 'redeemid' ),
+			'auth.'        => __( 'Sign-in', 'redeemid' ),
+			'link.'        => __( 'Account linking', 'redeemid' ),
+			'admin.'       => __( 'Admin actions', 'redeemid' ),
 		];
 	}
 
@@ -39,14 +39,14 @@ final class EventsTable extends \WP_List_Table {
 
 	public function get_columns(): array {
 		return [
-			'created_at' => __( 'Time', 'wp2-shopify' ),
-			'event'      => __( 'Event', 'wp2-shopify' ),
-			'label'      => __( 'What', 'wp2-shopify' ),
-			'status'     => __( 'Result', 'wp2-shopify' ),
-			'ms'         => __( 'Duration', 'wp2-shopify' ),
-			'user_id'    => __( 'User', 'wp2-shopify' ),
-			'origin'     => __( 'From', 'wp2-shopify' ),
-			'context'    => __( 'Details', 'wp2-shopify' ),
+			'created_at' => __( 'Time', 'redeemid' ),
+			'event'      => __( 'Event', 'redeemid' ),
+			'label'      => __( 'What', 'redeemid' ),
+			'status'     => __( 'Result', 'redeemid' ),
+			'ms'         => __( 'Duration', 'redeemid' ),
+			'user_id'    => __( 'User', 'redeemid' ),
+			'origin'     => __( 'From', 'redeemid' ),
+			'context'    => __( 'Details', 'redeemid' ),
 		];
 	}
 
@@ -69,7 +69,7 @@ final class EventsTable extends \WP_List_Table {
 	public function prepare_items(): void {
 		$this->_column_headers = [ $this->get_columns(), [], [], 'event' ];
 
-		$per_page = $this->get_items_per_page( 'wp2_shopify_per_page', 50 );
+		$per_page = $this->get_items_per_page( 'redeemid_per_page', 50 );
 		$result   = EventLog::query( self::filters(), $per_page, $this->get_pagenum() );
 
 		$this->items = $result['rows'];
@@ -78,7 +78,7 @@ final class EventsTable extends \WP_List_Table {
 
 	protected function get_views(): array {
 		$current = self::filters()['prefix'];
-		$views   = [ 'all' => sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( Events::PAGE ) ), '' === $current ? ' class="current"' : '', esc_html__( 'All', 'wp2-shopify' ) ) ];
+		$views   = [ 'all' => sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( Events::PAGE ) ), '' === $current ? ' class="current"' : '', esc_html__( 'All', 'redeemid' ) ) ];
 
 		foreach ( self::groups() as $prefix => $label ) {
 			$views[ rtrim( $prefix, '.' ) ] = sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( Events::PAGE, [ 'group' => $prefix ] ) ), $current === $prefix ? ' class="current"' : '', esc_html( $label ) );
@@ -96,18 +96,18 @@ final class EventsTable extends \WP_List_Table {
 		?>
 		<div class="alignleft actions">
 			<select name="event">
-				<option value=""><?php esc_html_e( 'All events', 'wp2-shopify' ); ?></option>
+				<option value=""><?php esc_html_e( 'All events', 'redeemid' ); ?></option>
 				<?php foreach ( EventLog::events() as $event ) : ?>
 					<option value="<?php echo esc_attr( $event ); ?>" <?php selected( $filters['event'], $event ); ?>><?php echo esc_html( $event ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<?php submit_button( __( 'Filter', 'wp2-shopify' ), '', 'filter_action', false ); ?>
+			<?php submit_button( __( 'Filter', 'redeemid' ), '', 'filter_action', false ); ?>
 		</div>
 		<?php
 	}
 
 	public function no_items(): void {
-		esc_html_e( 'No events logged yet.', 'wp2-shopify' );
+		esc_html_e( 'No events logged yet.', 'redeemid' );
 	}
 
 	protected function column_default( $item, $column_name ): string {
@@ -153,6 +153,6 @@ final class EventsTable extends \WP_List_Table {
 			$parts[] = esc_html( $key ) . '=<code>' . esc_html( is_scalar( $value ) || null === $value ? ( is_bool( $value ) ? ( $value ? 'true' : 'false' ) : (string) $value ) : '…' ) . '</code>';
 		}
 
-		return '<span class="wp2s-context">' . implode( ' ', $parts ) . '</span>';
+		return '<span class="redeemid-context">' . implode( ' ', $parts ) . '</span>';
 	}
 }

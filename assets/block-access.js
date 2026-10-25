@@ -1,7 +1,7 @@
 /**
  * The Access panel on every block: who the block is shown to. The decision
- * is made on the server (WP2_Shopify\Access\BlockAccess); this only edits
- * the wp2Access attribute and warns about settings that can't work.
+ * is made on the server (RedeemID\Access\BlockAccess); this only edits
+ * the redeemidAccess attribute and warns about settings that can't work.
  *
  * No build step: plain script on the editor's own globals.
  */
@@ -20,24 +20,24 @@
 	const ATTR = config.attr;
 
 	const SHOWS = [
-		{ value: 'everyone', label: __( 'Everyone who sees this part of the item', 'wp2-shopify' ) },
-		{ value: 'readers', label: __( 'Readers: visitors who can read this item', 'wp2-shopify' ) },
-		{ value: 'levels', label: __( 'Readers who hold one of these levels', 'wp2-shopify' ) },
-		{ value: 'locked', label: __( 'Locked visitors only (upgrade prompts)', 'wp2-shopify' ) },
-		{ value: 'without', label: __( 'Visitors without these levels', 'wp2-shopify' ) },
+		{ value: 'everyone', label: __( 'Everyone who sees this part of the item', 'redeemid' ) },
+		{ value: 'readers', label: __( 'Readers: visitors who can read this item', 'redeemid' ) },
+		{ value: 'levels', label: __( 'Readers who hold one of these levels', 'redeemid' ) },
+		{ value: 'locked', label: __( 'Locked visitors only (upgrade prompts)', 'redeemid' ) },
+		{ value: 'without', label: __( 'Visitors without these levels', 'redeemid' ) },
 	];
 
 	const HELP = {
-		everyone: __( 'No condition of its own. The item\'s rule and the paywall break still apply.', 'wp2-shopify' ),
-		readers: __( 'Hidden from anyone this item locks out. Never used in search, excerpts or SEO descriptions.', 'wp2-shopify' ),
-		levels: __( 'Narrows the item\'s rule: a reader also needs one of these levels. Never public text.', 'wp2-shopify' ),
-		locked: __( 'Shown only to visitors who can\'t read this item. Counts as public text.', 'wp2-shopify' ),
-		without: __( 'Shown to anyone holding none of these levels, readers included. Counts as public text.', 'wp2-shopify' ),
+		everyone: __( 'No condition of its own. The item\'s rule and the paywall break still apply.', 'redeemid' ),
+		readers: __( 'Hidden from anyone this item locks out. Never used in search, excerpts or SEO descriptions.', 'redeemid' ),
+		levels: __( 'Narrows the item\'s rule: a reader also needs one of these levels. Never public text.', 'redeemid' ),
+		locked: __( 'Shown only to visitors who can\'t read this item. Counts as public text.', 'redeemid' ),
+		without: __( 'Shown to anyone holding none of these levels, readers included. Counts as public text.', 'redeemid' ),
 	};
 
 	const skip = ( name ) => config.skip.indexOf( name ) !== -1;
 
-	addFilter( 'blocks.registerBlockType', 'wp2-shopify/block-access/attribute', ( settings, name ) => {
+	addFilter( 'blocks.registerBlockType', 'redeemid/block-access/attribute', ( settings, name ) => {
 		if ( skip( name ) || ( settings.attributes && settings.attributes[ ATTR ] ) ) {
 			return settings;
 		}
@@ -93,9 +93,9 @@
 
 		return el(
 			PanelBody,
-			{ title: __( 'Access', 'wp2-shopify' ), initialOpen: show !== 'everyone' || !! feature },
+			{ title: __( 'Access', 'redeemid' ), initialOpen: show !== 'everyone' || !! feature },
 			el( SelectControl, {
-				label: __( 'Show this block to', 'wp2-shopify' ),
+				label: __( 'Show this block to', 'redeemid' ),
 				value: show,
 				options: SHOWS,
 				help: HELP[ show ],
@@ -106,7 +106,7 @@
 				el(
 					'fieldset',
 					{ style: { marginTop: '12px' } },
-					el( 'legend', null, __( 'Levels', 'wp2-shopify' ) ),
+					el( 'legend', null, __( 'Levels', 'redeemid' ) ),
 					config.levels.map( ( level ) =>
 						el( CheckboxControl, {
 							key: level.slug,
@@ -127,33 +127,33 @@
 				el(
 					Notice,
 					{ status: 'warning', isDismissible: false },
-					__( 'Pick at least one level. Until then nobody sees this block.', 'wp2-shopify' )
+					__( 'Pick at least one level. Until then nobody sees this block.', 'redeemid' )
 				),
 			( show === 'locked' || show === 'without' ) &&
 				afterBreak &&
 				el(
 					Notice,
 					{ status: 'warning', isDismissible: false },
-					__( 'This block is after the paywall break, so locked visitors never reach it. Move it above the break.', 'wp2-shopify' )
+					__( 'This block is after the paywall break, so locked visitors never reach it. Move it above the break.', 'redeemid' )
 				),
 			( FEATURES.length > 0 || feature ) &&
 				el( SelectControl, {
-					label: __( 'Feature', 'wp2-shopify' ),
+					label: __( 'Feature', 'redeemid' ),
 					value: feature,
-					options: [ { value: '', label: __( 'No feature rule', 'wp2-shopify' ) } ]
+					options: [ { value: '', label: __( 'No feature rule', 'redeemid' ) } ]
 						.concat( FEATURES.map( ( f ) => ( { value: f.slug, label: f.label } ) ) )
-						.concat( feature && ! known ? [ { value: feature, label: feature + ' ' + __( '(not registered)', 'wp2-shopify' ) } ] : [] ),
-					help: __( 'Features are site-wide behaviours from Shopify → Access → Features. Decided on the server: a hidden block is never sent.', 'wp2-shopify' ),
+						.concat( feature && ! known ? [ { value: feature, label: feature + ' ' + __( '(not registered)', 'redeemid' ) } ] : [] ),
+					help: __( 'Features are site-wide behaviours from RedeemID → Access → Features. Decided on the server: a hidden block is never sent.', 'redeemid' ),
 					onChange: ( next ) => set( { feature: next } ),
 					__nextHasNoMarginBottom: true,
 				} ),
 			feature &&
 				el( SelectControl, {
-					label: __( 'Show when the visitor', 'wp2-shopify' ),
+					label: __( 'Show when the visitor', 'redeemid' ),
 					value: when,
 					options: [
-						{ value: 'has', label: __( 'holds this feature', 'wp2-shopify' ) },
-						{ value: 'lacks', label: __( 'does not hold it (upgrade prompts)', 'wp2-shopify' ) },
+						{ value: 'has', label: __( 'holds this feature', 'redeemid' ) },
+						{ value: 'lacks', label: __( 'does not hold it (upgrade prompts)', 'redeemid' ) },
 					],
 					onChange: ( next ) => set( { when: next } ),
 					__nextHasNoMarginBottom: true,
@@ -163,14 +163,14 @@
 				el(
 					Notice,
 					{ status: 'warning', isDismissible: false },
-					__( 'This feature is not registered for blocks, so nobody holds it here.', 'wp2-shopify' )
+					__( 'This feature is not registered for blocks, so nobody holds it here.', 'redeemid' )
 				)
 		);
 	};
 
 	addFilter(
 		'editor.BlockEdit',
-		'wp2-shopify/block-access/panel',
+		'redeemid/block-access/panel',
 		createHigherOrderComponent(
 			( BlockEdit ) => ( props ) => {
 				if ( skip( props.name ) || ! props.isSelected ) {
@@ -184,7 +184,7 @@
 					el( InspectorControls, null, el( Panel, props ) )
 				);
 			},
-			'withWp2Access'
+			'withRedeemidAccess'
 		)
 	);
 
@@ -192,12 +192,12 @@
 	if ( wp.blocks && wp.blocks.registerBlockBindingsSource ) {
 		wp.blocks.registerBlockBindingsSource( {
 			name: config.source,
-			label: __( 'Access', 'wp2-shopify' ),
+			label: __( 'Access', 'redeemid' ),
 			getValues: ( { bindings } ) => {
 				const values = {};
 
 				Object.keys( bindings ).forEach( ( attribute ) => {
-					values[ attribute ] = '[' + __( 'Access', 'wp2-shopify' ) + ': ' + ( ( bindings[ attribute ].args || {} ).key || 'level' ) + ']';
+					values[ attribute ] = '[' + __( 'Access', 'redeemid' ) + ': ' + ( ( bindings[ attribute ].args || {} ).key || 'level' ) + ']';
 				} );
 
 				return values;
@@ -208,7 +208,7 @@
 
 	addFilter(
 		'editor.BlockListBlock',
-		'wp2-shopify/block-access/outline',
+		'redeemid/block-access/outline',
 		createHigherOrderComponent(
 			( BlockListBlock ) => ( props ) => {
 				const value = props.attributes && props.attributes[ ATTR ];
@@ -219,10 +219,10 @@
 
 				return el( BlockListBlock, {
 					...props,
-					className: [ props.className, 'wp2-access-limited', 'wp2-access-' + ( value.show || 'everyone' ), value.feature ? 'wp2-access-feature' : '' ].filter( Boolean ).join( ' ' ),
+					className: [ props.className, 'redeemid-access-limited', 'redeemid-access-' + ( value.show || 'everyone' ), value.feature ? 'redeemid-access-feature' : '' ].filter( Boolean ).join( ' ' ),
 				} );
 			},
-			'withWp2AccessOutline'
+			'withRedeemidAccessOutline'
 		)
 	);
-} )( window.wp, window.wp2ShopifyBlockAccess );
+} )( window.wp, window.redeemidBlockAccess );

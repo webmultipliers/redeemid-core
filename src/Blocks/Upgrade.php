@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Blocks;
+namespace RedeemID\Blocks;
 
 /**
  * Keeps content saved before a field changed type rendering.
@@ -17,8 +17,8 @@ final class Upgrade {
 	/** Former text fields, per block, and the shape each became. */
 	public const FIELDS = [
 		Gate::PARENT              => [ 'fallbackCtaUrl' => 'link', 'redirectUrl' => 'link' ],
-		'wp2-shopify/auth-action' => [ 'redirectAfterLogin' => 'link', 'redirectAfterLogout' => 'link' ],
-		'wp2-shopify/plan-card'   => [ 'productHandle' => 'select' ],
+		'redeemid/auth-action' => [ 'redirectAfterLogin' => 'link', 'redirectAfterLogout' => 'link' ],
+		'redeemid/plan-card'   => [ 'productHandle' => 'select' ],
 	];
 
 	/**

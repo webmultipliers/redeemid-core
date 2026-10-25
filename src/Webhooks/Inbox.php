@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
 /**
  * Idempotent webhook ingest. The dedupe key is Shopify's webhook ID

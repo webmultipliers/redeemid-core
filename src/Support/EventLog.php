@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
 /**
  * Keeps every Logger event in a table so admins can read it on the App events
@@ -13,16 +13,16 @@ final class EventLog {
 	public const RETENTION  = 30 * DAY_IN_SECONDS;
 	public const MAX_ROWS   = 20000;
 
-	private const VERSION_OPTION = 'wp2_shopify_events_db_version';
+	private const VERSION_OPTION = 'redeemid_events_db_version';
 
 	public static function register(): void {
-		add_action( 'wp2_shopify_log', [ self::class, 'record' ], 10, 2 );
+		add_action( 'redeemid_log', [ self::class, 'record' ], 10, 2 );
 	}
 
 	public static function table(): string {
 		global $wpdb;
 
-		return $wpdb->prefix . 'wp2_shopify_events';
+		return $wpdb->prefix . 'redeemid_events';
 	}
 
 	public static function install(): void {

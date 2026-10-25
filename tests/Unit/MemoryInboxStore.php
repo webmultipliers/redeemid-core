@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
-use WP2_Shopify\Webhooks\InboxStore;
+use RedeemID\Webhooks\InboxStore;
 
 final class MemoryInboxStore implements InboxStore {
 	public array $rows = [];

@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Blocks;
+namespace RedeemID\Blocks;
 
 /**
  * Registers the plugin's Blockstudio blocks next to any theme blocks.
@@ -12,7 +12,7 @@ namespace WP2_Shopify\Blocks;
  * second discovery root and leaves the theme root alone.
  */
 final class Registration {
-	public const STATUS_OPTION = 'wp2_shopify_block_registration';
+	public const STATUS_OPTION = 'redeemid_block_registration';
 
 	public static function register(): void {
 		add_filter( 'blockstudio/blocks/attributes', [ self::class, 'product_picker_url' ], 10, 2 );
@@ -28,7 +28,7 @@ final class Registration {
 	 */
 	public static function product_picker_url( mixed $attribute, mixed $block ): mixed {
 		if ( is_array( $attribute ) && 'productHandle' === ( $attribute['id'] ?? '' ) && 'fetch' === ( $attribute['populate']['type'] ?? '' ) ) {
-			$url = rest_url( \WP2_Shopify\Rest\Routes::NS . '/editor/products' );
+			$url = rest_url( \RedeemID\Rest\Routes::NS . '/editor/products' );
 
 			// Blockstudio appends the search term to this URL as is.
 			$attribute['populate']['arguments']['urlSearch'] = $url . ( str_contains( $url, '?' ) ? '&' : '?' ) . 'search=';
@@ -38,7 +38,7 @@ final class Registration {
 	}
 
 	public static function directory(): string {
-		return WP2_SHOPIFY_DIR . 'blocks';
+		return REDEEMID_DIR . 'blocks';
 	}
 
 	public static function init_blocks(): void {

@@ -1,17 +1,17 @@
 <?php
 
-namespace WP2_Shopify\Rest;
+namespace RedeemID\Rest;
 
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Blocks\Account;
-use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Commerce\CartBridge;
-use WP2_Shopify\Shopify\Storefront;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Webhooks\Endpoint;
+use RedeemID\Auth\Flow;
+use RedeemID\Blocks\Account;
+use RedeemID\Auth\TokenVault;
+use RedeemID\Commerce\CartBridge;
+use RedeemID\Shopify\Storefront;
+use RedeemID\Sync\Mirror;
+use RedeemID\Webhooks\Endpoint;
 
 /**
- * REST surface, namespace wp2-shopify/v1. No endpoint returns an
+ * REST surface, namespace redeemid/v1. No endpoint returns an
  * access token, refresh token, client secret, webhook secret, or a Shopify
  * payload. Mutations require a logged-in user plus the wp_rest nonce; the
  * JavaScript path gets that nonce from the status call, never from cached HTML.
@@ -19,7 +19,7 @@ use WP2_Shopify\Webhooks\Endpoint;
  * Endpoint paths are the contract: add new ones here and in the README's REST API table.
  */
 final class Routes {
-	public const NS = 'wp2-shopify/v1';
+	public const NS = 'redeemid/v1';
 
 	public static function register(): void {
 		register_rest_route(

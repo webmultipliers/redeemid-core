@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Blocks\Gate;
-use WP2_Shopify\Settings;
+use RedeemID\Blocks\Gate;
+use RedeemID\Settings;
 
 /**
  * What a theme can show about an item's access, for the item itself and for
  * every card in a query loop (each card is decided for its own post):
  *
- * - post classes: wp2-gated, requires-{level} for each level the rule names
+ * - post classes: redeemid-gated, requires-{level} for each level the rule names
  *   (or the level of an inline level gate), and is-locked or is-unlocked for
  *   the current visitor;
- * - the wp2-shopify/access block binding source, so any paragraph, heading
+ * - the redeemid/access block binding source, so any paragraph, heading
  *   or button can show the level label, the visitor's state or the level's
  *   call to action;
  * - the Access Badge block (blocks/access-badge), built on the same data.
@@ -22,7 +22,7 @@ use WP2_Shopify\Settings;
  * that level too, through inline_gate().
  */
 final class Badges {
-	public const SOURCE = 'wp2-shopify/access';
+	public const SOURCE = 'redeemid/access';
 
 	/** Binding keys, with what each returns. */
 	public const KEYS = [ 'level', 'levels', 'state', 'message', 'cta_label', 'cta_url' ];
@@ -42,7 +42,7 @@ final class Badges {
 			return [];
 		}
 
-		$classes = [ 'wp2-gated', $locked ? 'is-locked' : 'is-unlocked' ];
+		$classes = [ 'redeemid-gated', $locked ? 'is-locked' : 'is-unlocked' ];
 
 		foreach ( $rule->levels() as $slug ) {
 			$classes[] = 'requires-' . $slug;
@@ -63,7 +63,7 @@ final class Badges {
 
 		if ( $inline ) {
 			// A body gated inline gets the same classes, so a theme can mark it in a list like a ruled item.
-			return array_merge( $classes, [ 'wp2-gated', $inline['locked'] ? 'is-locked' : 'is-unlocked', 'requires-' . $inline['level']->slug ] );
+			return array_merge( $classes, [ 'redeemid-gated', $inline['locked'] ? 'is-locked' : 'is-unlocked', 'requires-' . $inline['level']->slug ] );
 		}
 
 		return array_merge( $classes, self::classes( $rule, Gatekeeper::locked( $post ) ) );
@@ -117,7 +117,7 @@ final class Badges {
 		return match ( $key ) {
 			'level'     => $level?->label ?? '',
 			'levels'    => $open ? '' : ( $inline ? $inline['level']->label : self::need( $rule ) ),
-			'state'     => $open ? __( 'Free to read', 'wp2-shopify' ) : ( $locked ? __( 'Locked', 'wp2-shopify' ) : __( 'Included with your membership', 'wp2-shopify' ) ),
+			'state'     => $open ? __( 'Free to read', 'redeemid' ) : ( $locked ? __( 'Locked', 'redeemid' ) : __( 'Included with your membership', 'redeemid' ) ),
 			'message'   => $locked ? ( $level?->message ?? '' ) : '',
 			'cta_label' => $locked ? ( $level?->cta_label ?? '' ) : '',
 			'cta_url'   => $locked ? ( $level?->cta_url ?? '' ) : '',
@@ -133,8 +133,8 @@ final class Badges {
 		$label  = static fn( string $slug ) => $levels->get( $slug )?->label ?? $slug;
 
 		return implode(
-			' ' . __( 'and', 'wp2-shopify' ) . ' ',
-			array_map( static fn( array $c ) => implode( ' ' . __( 'or', 'wp2-shopify' ) . ' ', array_map( $label, $c ) ), $rule->clauses )
+			' ' . __( 'and', 'redeemid' ) . ' ',
+			array_map( static fn( array $c ) => implode( ' ' . __( 'or', 'redeemid' ) . ' ', array_map( $label, $c ) ), $rule->clauses )
 		);
 	}
 
@@ -195,7 +195,7 @@ final class Badges {
 		register_block_bindings_source(
 			self::SOURCE,
 			[
-				'label'              => __( 'Access', 'wp2-shopify' ),
+				'label'              => __( 'Access', 'redeemid' ),
 				'uses_context'       => [ 'postId', 'postType' ],
 				'get_value_callback' => [ self::class, 'binding' ],
 			]

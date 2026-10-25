@@ -1,12 +1,12 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Entitlement\Rule;
-use WP2_Shopify\Shopify\Admin as AdminApi;
-use WP2_Shopify\Sync\BulkResync;
+use RedeemID\Access\Levels;
+use RedeemID\Access\LevelStore;
+use RedeemID\Entitlement\Rule;
+use RedeemID\Shopify\Admin as AdminApi;
+use RedeemID\Sync\BulkResync;
 
 /**
  * How many members have activated their WordPress access: for each level, the
@@ -16,7 +16,7 @@ use WP2_Shopify\Sync\BulkResync;
  * cached for an hour. WordPress's side is counted from the mirror.
  */
 final class Activation {
-	private const CACHE = 'wp2_shopify_activation';
+	private const CACHE = 'redeemid_activation';
 	private const TTL   = 3600;
 
 	/**

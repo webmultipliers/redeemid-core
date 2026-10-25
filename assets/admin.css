@@ -3,26 +3,26 @@
  * Builds on core admin styles (.button, .widefat, .form-table, notices) and only adds
  * the page header, panels, status labels and a few layout helpers.
  */
-.wp2s,
-.wp2s-topbar {
-	--wp2s-accent: var(--wp-admin-theme-color, #2271b1);
-	--wp2s-border: #dcdcde;
-	--wp2s-muted: #646970;
-	--wp2s-surface: #fff;
-	--wp2s-subtle: #f6f7f7;
-	--wp2s-radius: 8px;
-	--wp2s-ok: #00a32a;
-	--wp2s-ok-bg: #edfaef;
-	--wp2s-ok-fg: #005c12;
-	--wp2s-warn: #dba617;
-	--wp2s-warn-bg: #fcf9e8;
-	--wp2s-warn-fg: #614200;
-	--wp2s-error: #d63638;
-	--wp2s-error-bg: #fcf0f1;
-	--wp2s-error-fg: #8a2424;
+.redeemid,
+.redeemid-topbar {
+	--redeemid-accent: var(--wp-admin-theme-color, #2271b1);
+	--redeemid-border: #dcdcde;
+	--redeemid-muted: #646970;
+	--redeemid-surface: #fff;
+	--redeemid-subtle: #f6f7f7;
+	--redeemid-radius: 8px;
+	--redeemid-ok: #00a32a;
+	--redeemid-ok-bg: #edfaef;
+	--redeemid-ok-fg: #005c12;
+	--redeemid-warn: #dba617;
+	--redeemid-warn-bg: #fcf9e8;
+	--redeemid-warn-fg: #614200;
+	--redeemid-error: #d63638;
+	--redeemid-error-bg: #fcf0f1;
+	--redeemid-error-fg: #8a2424;
 }
 
-.wp2s {
+.redeemid {
 	max-width: 1200px;
 }
 
@@ -32,7 +32,7 @@
  * the top right, and a flex box would shrink beside it instead of running
  * underneath. The store details float right, so they sit left of that tab.
  */
-.wp2s-topbar {
+.redeemid-topbar {
 	margin: 0 0 0 -20px;
 	padding: 12px 20px;
 	line-height: 24px;
@@ -40,17 +40,17 @@
 	border-bottom: 1px solid #dcdcde;
 }
 
-.wp2s-topbar::after {
+.redeemid-topbar::after {
 	content: "";
 	display: table;
 	clear: both;
 }
 
-.wp2s-topbar > * {
+.redeemid-topbar > * {
 	vertical-align: middle;
 }
 
-.wp2s-topbar__brand {
+.redeemid-topbar__brand {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
@@ -60,21 +60,21 @@
 	text-decoration: none;
 }
 
-.wp2s-topbar__brand .dashicons {
+.redeemid-topbar__brand .dashicons {
 	color: #008060;
 }
 
-.wp2s-topbar__sep {
+.redeemid-topbar__sep {
 	margin: 0 8px;
 	color: #c3c4c7;
 }
 
-.wp2s-topbar__page {
+.redeemid-topbar__page {
 	font-size: 14px;
 	color: #50575e;
 }
 
-.wp2s-topbar__store {
+.redeemid-topbar__store {
 	float: right;
 	display: flex;
 	align-items: center;
@@ -83,179 +83,179 @@
 	color: #50575e;
 }
 
-.wp2s-topbar__store a {
+.redeemid-topbar__store a {
 	color: inherit;
 }
 
-.wp2s-topbar__store a.wp2s-topbar__status {
+.redeemid-topbar__store a.redeemid-topbar__status {
 	text-decoration: none;
 }
 
-.wp2s h1.wp-heading-inline,
-.wp2s > h1 {
+.redeemid h1.wp-heading-inline,
+.redeemid > h1 {
 	font-size: 23px;
 	font-weight: 500;
 }
 
-.wp2s-intro {
+.redeemid-intro {
 	max-width: 760px;
 	margin: 4px 0 20px;
 	font-size: 14px;
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 }
 
 /* Panels: a titled white box. Forms, tables and checks all sit in one. */
-.wp2s-panel {
+.redeemid-panel {
 	margin: 0 0 20px;
-	background: var(--wp2s-surface);
-	border: 1px solid var(--wp2s-border);
-	border-radius: var(--wp2s-radius);
+	background: var(--redeemid-surface);
+	border: 1px solid var(--redeemid-border);
+	border-radius: var(--redeemid-radius);
 	overflow: hidden;
 }
 
-.wp2s-panel__header {
+.redeemid-panel__header {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 8px 16px;
 	padding: 16px 20px;
-	border-bottom: 1px solid var(--wp2s-border);
+	border-bottom: 1px solid var(--redeemid-border);
 }
 
-.wp2s-panel__header h2,
-.wp2s-panel__header h3 {
+.redeemid-panel__header h2,
+.redeemid-panel__header h3 {
 	margin: 0;
 	font-size: 15px;
 	line-height: 1.4;
 }
 
-.wp2s-panel__header p {
+.redeemid-panel__header p {
 	margin: 4px 0 0;
 	max-width: 760px;
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 }
 
-.wp2s-panel__actions {
+.redeemid-panel__actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
 }
 
-.wp2s-panel__body {
+.redeemid-panel__body {
 	padding: 16px 20px;
 }
 
-.wp2s-panel__body > :first-child {
+.redeemid-panel__body > :first-child {
 	margin-top: 0;
 }
 
-.wp2s-panel__body > :last-child {
+.redeemid-panel__body > :last-child {
 	margin-bottom: 0;
 }
 
-.wp2s-panel__body--flush {
+.redeemid-panel__body--flush {
 	padding: 0;
 }
 
-.wp2s-panel__footer {
+.redeemid-panel__footer {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
 	padding: 12px 20px;
-	background: var(--wp2s-subtle);
-	border-top: 1px solid var(--wp2s-border);
+	background: var(--redeemid-subtle);
+	border-top: 1px solid var(--redeemid-border);
 }
 
-.wp2s-panel__footer .description {
+.redeemid-panel__footer .description {
 	margin: 0;
 }
 
-.wp2s-panel__footer p.submit {
+.redeemid-panel__footer p.submit {
 	margin: 0;
 	padding: 0;
 }
 
 /* Tables inside a panel lose their own border. */
-.wp2s-panel .widefat {
+.redeemid-panel .widefat {
 	border: 0;
 	box-shadow: none;
 }
 
-.wp2s-panel .widefat thead th,
-.wp2s-panel .widefat thead td {
+.redeemid-panel .widefat thead th,
+.redeemid-panel .widefat thead td {
 	padding: 10px 12px;
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 	text-transform: uppercase;
 	letter-spacing: .02em;
 }
 
-.wp2s-panel .widefat td,
-.wp2s-panel .widefat tbody th {
+.redeemid-panel .widefat td,
+.redeemid-panel .widefat tbody th {
 	padding: 12px;
 	vertical-align: top;
 }
 
-.wp2s-panel .widefat tr > :first-child {
+.redeemid-panel .widefat tr > :first-child {
 	padding-left: 20px;
 }
 
-.wp2s-panel .widefat tr > :last-child {
+.redeemid-panel .widefat tr > :last-child {
 	padding-right: 20px;
 }
 
-.wp2s-table-scroll {
+.redeemid-table-scroll {
 	overflow-x: auto;
 }
 
 /* Settings rows inside a panel. */
-.wp2s-panel .form-table {
+.redeemid-panel .form-table {
 	margin: 0;
 }
 
-.wp2s-panel .form-table th {
+.redeemid-panel .form-table th {
 	width: 220px;
 	padding: 20px 10px 20px 20px;
 }
 
-.wp2s-panel .form-table td {
+.redeemid-panel .form-table td {
 	padding: 15px 20px 15px 10px;
 }
 
-.wp2s-panel .form-table tr + tr > * {
+.redeemid-panel .form-table tr + tr > * {
 	border-top: 1px solid #f0f0f1;
 }
 
-.wp2s-panel .form-table .wp2s-section-row th {
+.redeemid-panel .form-table .redeemid-section-row th {
 	width: auto;
 	padding: 10px 20px;
-	background: var(--wp2s-subtle);
+	background: var(--redeemid-subtle);
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 	text-transform: uppercase;
 	letter-spacing: .02em;
 }
 
-.wp2s-help {
+.redeemid-help {
 	max-width: 640px;
 }
 
-.wp2s-clear {
+.redeemid-clear {
 	margin-left: 8px;
 }
 
-.wp2s-icon-inline {
+.redeemid-icon-inline {
 	width: 16px;
 	height: 16px;
 	font-size: 16px;
 	vertical-align: text-bottom;
 }
 
-.wp2s-field-meta {
+.redeemid-field-meta {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -263,20 +263,20 @@
 	margin-top: 6px;
 }
 
-.wp2s-required {
-	color: var(--wp2s-error);
+.redeemid-required {
+	color: var(--redeemid-error);
 }
 
-.wp2s-invalid {
-	border-color: var(--wp2s-error) !important;
+.redeemid-invalid {
+	border-color: var(--redeemid-error) !important;
 }
 
-.wp2s-error-text {
-	color: var(--wp2s-error-fg);
+.redeemid-error-text {
+	color: var(--redeemid-error-fg);
 }
 
 /* Status labels: colour plus a word, never colour alone. */
-.wp2s-status {
+.redeemid-status {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -290,7 +290,7 @@
 	color: #3c434a;
 }
 
-.wp2s-status::before {
+.redeemid-status::before {
 	content: "";
 	width: 8px;
 	height: 8px;
@@ -299,50 +299,50 @@
 	flex: none;
 }
 
-.wp2s-status.is-ok {
-	background: var(--wp2s-ok-bg);
-	color: var(--wp2s-ok-fg);
+.redeemid-status.is-ok {
+	background: var(--redeemid-ok-bg);
+	color: var(--redeemid-ok-fg);
 }
 
-.wp2s-status.is-ok::before {
-	background: var(--wp2s-ok);
+.redeemid-status.is-ok::before {
+	background: var(--redeemid-ok);
 }
 
-.wp2s-status.is-warn {
-	background: var(--wp2s-warn-bg);
-	color: var(--wp2s-warn-fg);
+.redeemid-status.is-warn {
+	background: var(--redeemid-warn-bg);
+	color: var(--redeemid-warn-fg);
 }
 
-.wp2s-status.is-warn::before {
-	background: var(--wp2s-warn);
+.redeemid-status.is-warn::before {
+	background: var(--redeemid-warn);
 }
 
-.wp2s-status.is-error {
-	background: var(--wp2s-error-bg);
-	color: var(--wp2s-error-fg);
+.redeemid-status.is-error {
+	background: var(--redeemid-error-bg);
+	color: var(--redeemid-error-fg);
 }
 
-.wp2s-status.is-error::before {
-	background: var(--wp2s-error);
+.redeemid-status.is-error::before {
+	background: var(--redeemid-error);
 }
 
 /* The inline dot used in tables and lists (Menu::dot). */
-.wp2s-dot {
+.redeemid-dot {
 	display: inline-block;
 	width: 8px;
 	height: 8px;
 	margin: 0 6px 1px 0;
 	border-radius: 50%;
-	background: var(--wp2s-ok, #00a32a);
+	background: var(--redeemid-ok, #00a32a);
 	vertical-align: middle;
 }
 
-.wp2s-dot.is-error {
-	background: var(--wp2s-error, #d63638);
+.redeemid-dot.is-error {
+	background: var(--redeemid-error, #d63638);
 }
 
 /* Small grey labels: tags, slugs, flags. */
-.wp2s-chip {
+.redeemid-chip {
 	display: inline-block;
 	margin: 0 4px 4px 0;
 	padding: 0 8px;
@@ -353,24 +353,24 @@
 	line-height: 22px;
 }
 
-code.wp2s-chip {
+code.redeemid-chip {
 	font-size: 12px;
 }
 
-.wp2s-chip--solid {
+.redeemid-chip--solid {
 	color: #fff;
 }
 
-.wp2s-muted {
-	color: var(--wp2s-muted);
+.redeemid-muted {
+	color: var(--redeemid-muted);
 }
 
-.wp2s-code-small {
+.redeemid-code-small {
 	font-size: 11px;
 }
 
 /* Overview */
-.wp2s-hero {
+.redeemid-hero {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -378,79 +378,79 @@ code.wp2s-chip {
 	padding: 20px;
 }
 
-.wp2s-hero__icon {
+.redeemid-hero__icon {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;
-	background: var(--wp2s-ok-bg);
-	color: var(--wp2s-ok);
+	background: var(--redeemid-ok-bg);
+	color: var(--redeemid-ok);
 	flex: none;
 }
 
-.wp2s-hero.is-warn .wp2s-hero__icon {
-	background: var(--wp2s-warn-bg);
+.redeemid-hero.is-warn .redeemid-hero__icon {
+	background: var(--redeemid-warn-bg);
 	color: #996800;
 }
 
-.wp2s-hero__icon .dashicons {
+.redeemid-hero__icon .dashicons {
 	width: 28px;
 	height: 28px;
 	font-size: 28px;
 }
 
-.wp2s-hero__text {
+.redeemid-hero__text {
 	flex: 1 1 320px;
 }
 
-.wp2s-hero__text h2 {
+.redeemid-hero__text h2 {
 	margin: 0 0 4px;
 	font-size: 18px;
 }
 
-.wp2s-hero__text p {
+.redeemid-hero__text p {
 	margin: 0;
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 }
 
-.wp2s-cards {
+.redeemid-cards {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
 	gap: 16px;
 	margin: 0 0 20px;
 }
 
-.wp2s-card {
+.redeemid-card {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 	padding: 16px 20px;
-	background: var(--wp2s-surface);
-	border: 1px solid var(--wp2s-border);
-	border-radius: var(--wp2s-radius);
+	background: var(--redeemid-surface);
+	border: 1px solid var(--redeemid-border);
+	border-radius: var(--redeemid-radius);
 	color: inherit;
 	text-decoration: none;
 	transition: border-color .1s ease-in-out, box-shadow .1s ease-in-out;
 }
 
-a.wp2s-card:hover,
-a.wp2s-card:focus {
-	border-color: var(--wp2s-accent);
-	box-shadow: 0 0 0 1px var(--wp2s-accent);
+a.redeemid-card:hover,
+a.redeemid-card:focus {
+	border-color: var(--redeemid-accent);
+	box-shadow: 0 0 0 1px var(--redeemid-accent);
 	color: inherit;
 	outline: none;
 }
 
-.wp2s-card__head {
+.redeemid-card__head {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
 }
 
-.wp2s-card__title {
+.redeemid-card__title {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -459,30 +459,30 @@ a.wp2s-card:focus {
 	font-weight: 600;
 }
 
-.wp2s-card__title .dashicons {
-	color: var(--wp2s-muted);
+.redeemid-card__title .dashicons {
+	color: var(--redeemid-muted);
 }
 
-.wp2s-card__detail {
+.redeemid-card__detail {
 	flex: 1;
 	margin: 0;
 	color: #50575e;
 	overflow-wrap: anywhere;
 }
 
-.wp2s-card__link {
-	color: var(--wp2s-accent);
+.redeemid-card__link {
+	color: var(--redeemid-accent);
 	font-weight: 500;
 }
 
 /* Lists of checks: status, label, detail. */
-.wp2s-checks {
+.redeemid-checks {
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-.wp2s-checks > li {
+.redeemid-checks > li {
 	display: grid;
 	grid-template-columns: minmax(200px, 260px) 1fr;
 	gap: 4px 16px;
@@ -491,57 +491,57 @@ a.wp2s-card:focus {
 	border-top: 1px solid #f0f0f1;
 }
 
-.wp2s-checks > li:first-child {
+.redeemid-checks > li:first-child {
 	border-top: 0;
 }
 
-.wp2s-checks__label {
+.redeemid-checks__label {
 	font-weight: 600;
 }
 
-.wp2s-checks__detail {
+.redeemid-checks__detail {
 	color: #50575e;
 	overflow-wrap: anywhere;
 }
 
 /* Reports: stat tiles and the weekly chart. Series colours are the first two
    slots of a colour-blind-checked categorical palette. */
-.wp2s-tiles {
+.redeemid-tiles {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 	gap: 12px;
 	margin: 0 0 20px;
 }
 
-.wp2s-tile {
+.redeemid-tile {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 	padding: 16px 20px;
-	background: var(--wp2s-surface);
-	border: 1px solid var(--wp2s-border);
-	border-radius: var(--wp2s-radius);
+	background: var(--redeemid-surface);
+	border: 1px solid var(--redeemid-border);
+	border-radius: var(--redeemid-radius);
 }
 
-.wp2s-tile__value {
+.redeemid-tile__value {
 	font-size: 28px;
 	font-weight: 600;
 	line-height: 1.1;
 	font-variant-numeric: tabular-nums;
 }
 
-.wp2s-tile__label {
-	color: var(--wp2s-muted);
+.redeemid-tile__label {
+	color: var(--redeemid-muted);
 }
 
-.wp2s-legend {
+.redeemid-legend {
 	display: flex;
 	gap: 16px;
 	margin: 0 0 8px;
 	color: #50575e;
 }
 
-.wp2s-legend__swatch {
+.redeemid-legend__swatch {
 	display: inline-block;
 	width: 10px;
 	height: 10px;
@@ -549,306 +549,306 @@ a.wp2s-card:focus {
 	border-radius: 2px;
 }
 
-.wp2s-series-1 {
+.redeemid-series-1 {
 	fill: #2a78d6;
 	background: #2a78d6;
 }
 
-.wp2s-series-2 {
+.redeemid-series-2 {
 	fill: #eb6834;
 	background: #eb6834;
 }
 
-.wp2s-chart {
+.redeemid-chart {
 	display: block;
 	width: 100%;
 	max-width: 900px;
 	height: auto;
 }
 
-.wp2s-chart__grid {
+.redeemid-chart__grid {
 	stroke: #f0f0f1;
 	stroke-width: 1;
 }
 
-.wp2s-chart__grid.is-base {
+.redeemid-chart__grid.is-base {
 	stroke: #c3c4c7;
 }
 
-.wp2s-chart__tick {
+.redeemid-chart__tick {
 	fill: #646970;
 	font-size: 11px;
 	font-variant-numeric: tabular-nums;
 }
 
-.wp2s-chart__hit {
+.redeemid-chart__hit {
 	fill: transparent;
 }
 
-.wp2s-chart__week:hover .wp2s-chart__hit {
+.redeemid-chart__week:hover .redeemid-chart__hit {
 	fill: rgba(0, 0, 0, 0.04);
 }
 
-.wp2s-chart__table {
+.redeemid-chart__table {
 	margin-top: 12px;
 }
 
-.wp2s-chart__table table {
+.redeemid-chart__table table {
 	max-width: 480px;
 	margin-top: 8px;
 }
 
-.wp2s-panel .num,
-.wp2s-chart__table .num {
+.redeemid-panel .num,
+.redeemid-chart__table .num {
 	text-align: right;
 	font-variant-numeric: tabular-nums;
 }
 
 /* Setup checklist on Overview. */
-.wp2s-setup > summary {
+.redeemid-setup > summary {
 	cursor: pointer;
 	list-style: none;
 }
 
-.wp2s-setup > summary::-webkit-details-marker {
+.redeemid-setup > summary::-webkit-details-marker {
 	display: none;
 }
 
-.wp2s-setup > summary h2::after {
+.redeemid-setup > summary h2::after {
 	content: " \25BE";
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 }
 
-.wp2s-setup:not([open]) > summary {
+.redeemid-setup:not([open]) > summary {
 	border-bottom: 0;
 }
 
-.wp2s-setup__steps > li {
+.redeemid-setup__steps > li {
 	grid-template-columns: minmax(200px, 260px) 1fr auto;
 	align-items: center;
 }
 
-.wp2s-setup__steps > li.is-done .wp2s-setup__action {
+.redeemid-setup__steps > li.is-done .redeemid-setup__action {
 	opacity: 0.6;
 }
 
-.wp2s-setup__action form {
+.redeemid-setup__action form {
 	display: inline;
 }
 
 /* Key/value rows (customer details, trace). */
-.wp2s-kv th {
+.redeemid-kv th {
 	width: 25%;
 	font-weight: 500;
-	color: var(--wp2s-muted);
+	color: var(--redeemid-muted);
 }
 
 /* Side-by-side columns that stack on small screens. */
-.wp2s-columns {
+.redeemid-columns {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
 	gap: 20px;
 	align-items: start;
 }
 
-.wp2s-columns > .wp2s-panel {
+.redeemid-columns > .redeemid-panel {
 	margin-bottom: 0;
 }
 
-.wp2s-columns + * {
+.redeemid-columns + * {
 	margin-top: 20px;
 }
 
-.wp2s-tag-list label {
+.redeemid-tag-list label {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
 	margin: 0 6px 6px 0;
 	padding: 2px 8px 2px 4px;
-	border: 1px solid var(--wp2s-border);
+	border: 1px solid var(--redeemid-border);
 	border-radius: 4px;
 }
 
-.wp2s-tag-list input[type="checkbox"] {
+.redeemid-tag-list input[type="checkbox"] {
 	margin: 0;
 }
 
-.wp2s-inline-form {
+.redeemid-inline-form {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
 }
 
-.wp2s-inline-form label {
+.redeemid-inline-form label {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 }
 
-.wp2s-choice-list label {
+.redeemid-choice-list label {
 	display: block;
 	margin: 0 0 6px;
 }
 
-.wp2s-level-checks label {
+.redeemid-level-checks label {
 	display: inline-block;
 	margin: 0 12px 4px 0;
 	white-space: nowrap;
 }
 
-.wp2s-action-form {
+.redeemid-action-form {
 	display: inline-block;
 	margin: 0;
 }
 
-.wp2s details > summary {
+.redeemid details > summary {
 	cursor: pointer;
-	color: var(--wp2s-accent);
+	color: var(--redeemid-accent);
 }
 
-.wp2s details[open] > summary {
+.redeemid details[open] > summary {
 	margin-bottom: 8px;
 }
 
-.wp2s-copy-row {
+.redeemid-copy-row {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
 }
 
-.wp2s-copy-row code {
+.redeemid-copy-row code {
 	padding: 4px 8px;
 	border-radius: 4px;
 	overflow-wrap: anywhere;
 }
 
 /* Small helpers. */
-.wp2s-avatar {
+.redeemid-avatar {
 	float: left;
 	margin-right: 10px;
 	border-radius: 50%;
 }
 
-.wp2s-context {
+.redeemid-context {
 	font-size: 12px;
 }
 
-.wp2s-filter-customer {
+.redeemid-filter-customer {
 	width: 12em;
 }
 
-.wp2s-col-time {
+.redeemid-col-time {
 	width: 12em;
 }
 
-.wp2s-section-title {
+.redeemid-section-title {
 	margin: 28px 0 4px;
 	font-size: 15px;
 }
 
-.wp2s-input-short.regular-text {
+.redeemid-input-short.regular-text {
 	width: 10em;
 }
 
-.wp2s-stack {
+.redeemid-stack {
 	margin-top: 6px;
 }
 
-.wp2s-block-label {
+.redeemid-block-label {
 	display: block;
 	margin: 0 0 6px;
 }
 
-.wp2s-problem {
+.redeemid-problem {
 	margin: 0 0 4px;
 }
 
-.wp2s-row-actions {
+.redeemid-row-actions {
 	white-space: nowrap;
 	text-align: right;
 }
 
-.wp2s-row-actions .button,
-.wp2s-row-actions .wp2s-action-form {
+.redeemid-row-actions .button,
+.redeemid-row-actions .redeemid-action-form {
 	vertical-align: middle;
 }
 
-.wp2s-tight {
+.redeemid-tight {
 	margin: 4px 0 0;
 }
 
-.wp2s-trace-list {
+.redeemid-trace-list {
 	margin: 0 0 0 1.2em;
 }
 
-ul.wp2s-trace-list {
+ul.redeemid-trace-list {
 	margin-left: 0;
 }
 
-.wp2s-panel .wp2s-dry-result {
-	border-top: 1px solid var(--wp2s-border);
+.redeemid-panel .redeemid-dry-result {
+	border-top: 1px solid var(--redeemid-border);
 }
 
 /* The tab bar sits on the page background, under the title. */
-.wp2s .nav-tab-wrapper {
+.redeemid .nav-tab-wrapper {
 	margin-bottom: 20px;
 }
 
 /* Events list column widths. */
-.wp2s .wp-list-table.events .column-created_at {
+.redeemid .wp-list-table.events .column-created_at {
 	width: 10em;
 }
 
-.wp2s .wp-list-table.events .column-event {
+.redeemid .wp-list-table.events .column-event {
 	width: 13em;
 }
 
-.wp2s .wp-list-table.events .column-ms,
-.wp2s .wp-list-table.events .column-origin {
+.redeemid .wp-list-table.events .column-ms,
+.redeemid .wp-list-table.events .column-origin {
 	width: 6em;
 }
 
-.wp2s .wp-list-table.events .column-context {
+.redeemid .wp-list-table.events .column-context {
 	width: 28%;
 	word-break: break-all;
 }
 
 @media screen and (max-width: 782px) {
-	.wp2s-topbar {
+	.redeemid-topbar {
 		margin-left: -10px;
 		padding: 10px;
 	}
 
-	.wp2s-topbar__store {
+	.redeemid-topbar__store {
 		float: none;
 		margin-top: 4px;
 	}
 
-	.wp2s-checks > li,
-	.wp2s-setup__steps > li {
+	.redeemid-checks > li,
+	.redeemid-setup__steps > li {
 		grid-template-columns: 1fr;
 	}
 
-	.wp2s-columns {
+	.redeemid-columns {
 		grid-template-columns: 1fr;
 	}
 
-	.wp2s-panel .form-table th,
-	.wp2s-panel .form-table td {
+	.redeemid-panel .form-table th,
+	.redeemid-panel .form-table td {
 		width: auto;
 		padding-left: 16px;
 		padding-right: 16px;
 	}
 
-	.wp2s-panel .form-table tr + tr > td {
+	.redeemid-panel .form-table tr + tr > td {
 		border-top: 0;
 	}
 }
 
 /* Bulk resync progress on Customers. */
-.wp2s-progress {
+.redeemid-progress {
 	width: 100%;
 	height: 10px;
 	accent-color: var(--wp-admin-theme-color, #2271b1);

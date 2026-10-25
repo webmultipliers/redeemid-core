@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Turns the rule layers on one item into one effective rule (design doc,

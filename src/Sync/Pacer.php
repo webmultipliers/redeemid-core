@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
 /**
  * How fast a bulk resync may call the Admin API. Pure, so it is unit tested.

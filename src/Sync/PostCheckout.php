@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Shopify\Admin;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Auth\Flow;
+use RedeemID\Shopify\Admin;
+use RedeemID\Support\Logger;
 
 /**
  * Closes the gap between paying and access.
@@ -16,17 +16,17 @@ use WP2_Shopify\Support\Logger;
  * flight, and a banner says what is happening: "finishing up", then "ready".
  *
  * Shopify's order status page and confirmation email can link back to
- * /?wp2s_return=1 (see docs/shopify-flow.md). A marked customer lands on the
+ * /?redeemid_return=1 (see docs/shopify-flow.md). A marked customer lands on the
  * page they bought from; a guest is asked to log in with Shopify using the
  * email from their order, which is what unlocks a membership bought as a guest.
  */
 final class PostCheckout {
-	public const META       = '_wp2_shopify_checkout_started';
-	public const RETURN_ARG = 'wp2s_return';
-	private const ATTEMPT   = '_wp2_shopify_post_checkout_attempt';
-	private const BACK      = '_wp2_shopify_checkout_return';
-	private const READY     = '_wp2_shopify_checkout_ready';
-	private const BASE      = '_wp2_shopify_checkout_tags';
+	public const META       = '_redeemid_checkout_started';
+	public const RETURN_ARG = 'redeemid_return';
+	private const ATTEMPT   = '_redeemid_post_checkout_attempt';
+	private const BACK      = '_redeemid_checkout_return';
+	private const READY     = '_redeemid_checkout_ready';
+	private const BASE      = '_redeemid_checkout_tags';
 	private const WINDOW    = 30 * MINUTE_IN_SECONDS;
 	private const INTERVAL  = MINUTE_IN_SECONDS;
 
@@ -38,7 +38,7 @@ final class PostCheckout {
 	}
 
 	public static function enqueue(): void {
-		wp_enqueue_style( 'wp2-shopify-front', WP2_SHOPIFY_URL . 'assets/front.css', [], WP2_SHOPIFY_VERSION );
+		wp_enqueue_style( 'redeemid-front', REDEEMID_URL . 'assets/front.css', [], REDEEMID_VERSION );
 	}
 
 	/**
@@ -84,7 +84,7 @@ final class PostCheckout {
 		$user_id = get_current_user_id();
 
 		if ( ! $user_id ) {
-			wp_safe_redirect( add_query_arg( 'wp2s_notice', 'checkout_guest', home_url( '/' ) ) );
+			wp_safe_redirect( add_query_arg( 'redeemid_notice', 'checkout_guest', home_url( '/' ) ) );
 			exit;
 		}
 
@@ -148,7 +148,7 @@ final class PostCheckout {
 	 */
 	public static function banner(): void {
 		$user_id = get_current_user_id();
-		$guest   = ! $user_id && 'checkout_guest' === sanitize_key( wp_unslash( $_GET['wp2s_notice'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$guest   = ! $user_id && 'checkout_guest' === sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$ready   = $user_id && (int) get_user_meta( $user_id, self::READY, true ) > time() - HOUR_IN_SECONDS;
 		$active  = self::active( $user_id );
 
@@ -156,7 +156,7 @@ final class PostCheckout {
 		 * Whether to print the post-checkout banner at wp_body_open. A theme
 		 * that shows its own can return false.
 		 */
-		if ( ! ( $guest || $ready || $active ) || ! apply_filters( 'wp2_shopify_checkout_banner', true ) ) {
+		if ( ! ( $guest || $ready || $active ) || ! apply_filters( 'redeemid_checkout_banner', true ) ) {
 			return;
 		}
 
@@ -165,15 +165,15 @@ final class PostCheckout {
 		}
 
 		?>
-		<div class="wp2-shopify-checkout-banner" role="status">
+		<div class="redeemid-checkout-banner" role="status">
 			<?php if ( $guest ) : ?>
-				<p><?php esc_html_e( 'Thanks for your order. To use a membership you bought, log in with Shopify using the email address from your order.', 'wp2-shopify' ); ?></p>
-				<a class="wp-element-button" href="<?php echo esc_url( Flow::login_url( home_url( '/' ) ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'wp2-shopify' ); ?></a>
+				<p><?php esc_html_e( 'Thanks for your order. To use a membership you bought, log in with Shopify using the email address from your order.', 'redeemid' ); ?></p>
+				<a class="wp-element-button" href="<?php echo esc_url( Flow::login_url( home_url( '/' ) ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a>
 			<?php elseif ( $ready ) : ?>
-				<p><?php esc_html_e( 'Your membership is ready. Thanks for joining!', 'wp2-shopify' ); ?></p>
+				<p><?php esc_html_e( 'Your membership is ready. Thanks for joining!', 'redeemid' ); ?></p>
 			<?php else : ?>
-				<p><?php esc_html_e( 'Thanks for your order. We\'re finishing setting up your membership; this usually takes under a minute.', 'wp2-shopify' ); ?></p>
-				<?php self::refresh_form( __( 'Check again', 'wp2-shopify' ) ); ?>
+				<p><?php esc_html_e( 'Thanks for your order. We\'re finishing setting up your membership; this usually takes under a minute.', 'redeemid' ); ?></p>
+				<?php self::refresh_form( __( 'Check again', 'redeemid' ) ); ?>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -184,10 +184,10 @@ final class PostCheckout {
 	 */
 	public static function refresh_form( string $label, string $class = 'wp-element-button' ): void {
 		?>
-		<form method="post" action="<?php echo esc_url( Flow::action_url() ); ?>" class="wp2-shopify-inline-form">
-			<input type="hidden" name="action" value="wp2_shopify_sync">
-			<input type="hidden" name="redirect_to" value="<?php echo esc_attr( \WP2_Shopify\Blocks\Gate::current_url() ); ?>">
-			<?php wp_nonce_field( 'wp2_shopify_sync' ); ?>
+		<form method="post" action="<?php echo esc_url( Flow::action_url() ); ?>" class="redeemid-inline-form">
+			<input type="hidden" name="action" value="redeemid_sync">
+			<input type="hidden" name="redirect_to" value="<?php echo esc_attr( \RedeemID\Blocks\Gate::current_url() ); ?>">
+			<?php wp_nonce_field( 'redeemid_sync' ); ?>
 			<button type="submit" class="<?php echo esc_attr( $class ); ?>"><?php echo esc_html( $label ); ?></button>
 		</form>
 		<?php

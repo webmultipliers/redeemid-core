@@ -1,22 +1,22 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
-use WP2_Shopify\Blocks\Registration;
-use WP2_Shopify\Commerce\CartBridge;
-use WP2_Shopify\Config;
-use WP2_Shopify\Integrations\OfficialPlugin;
-use WP2_Shopify\Shopify\Discovery;
+use RedeemID\Blocks\Registration;
+use RedeemID\Commerce\CartBridge;
+use RedeemID\Config;
+use RedeemID\Integrations\OfficialPlugin;
+use RedeemID\Shopify\Discovery;
 
 /**
  * A short yes/no checklist of what the plugin needs, for the Shopify Health
- * block (blocks/health). Shopify → Debug stays the full diagnostics screen;
+ * block (blocks/health). RedeemID → Debug stays the full diagnostics screen;
  * this is the at-a-glance version a site or a theme can put on a page.
  *
  * Configuration rows come from Config::definitions(), so the checklist never
  * keeps its own copy of the config rules. Each says whether the value comes
  * from wp-config.php or Settings; no value is ever shown.
- * Themes and add-ons append their own rows with wp2_shopify_health_checks.
+ * Themes and add-ons append their own rows with redeemid_health_checks.
  */
 final class Health {
 	public const OK   = 'ok';
@@ -33,50 +33,50 @@ final class Health {
 			$checks[] = [ 'label' => $label, 'state' => $state, 'detail' => $detail ];
 		};
 
-		$add( __( 'WP2 Shopify plugin', 'wp2-shopify' ), self::OK, 'v' . WP2_SHOPIFY_VERSION );
+		$add( __( 'RedeemID plugin', 'redeemid' ), self::OK, 'v' . REDEEMID_VERSION );
 		$add(
-			__( 'Blockstudio', 'wp2-shopify' ),
+			__( 'Blockstudio', 'redeemid' ),
 			defined( 'BLOCKSTUDIO_VERSION' ) ? self::OK : self::FAIL,
-			defined( 'BLOCKSTUDIO_VERSION' ) ? 'v' . BLOCKSTUDIO_VERSION : __( 'not loaded (the plugin bundles it)', 'wp2-shopify' )
+			defined( 'BLOCKSTUDIO_VERSION' ) ? 'v' . BLOCKSTUDIO_VERSION : __( 'not loaded (the plugin bundles it)', 'redeemid' )
 		);
 
 		$missing = self::missing_blocks();
 		$add(
-			__( 'Plugin blocks registered', 'wp2-shopify' ),
+			__( 'Plugin blocks registered', 'redeemid' ),
 			$missing ? self::FAIL : self::OK,
 			/* translators: %s: block names */
-			$missing ? sprintf( __( 'missing: %s', 'wp2-shopify' ), implode( ', ', $missing ) ) : __( 'all registered', 'wp2-shopify' )
+			$missing ? sprintf( __( 'missing: %s', 'redeemid' ), implode( ', ', $missing ) ) : __( 'all registered', 'redeemid' )
 		);
 
 		$structure = (string) get_option( 'permalink_structure' );
-		$add( __( 'Pretty permalinks', 'wp2-shopify' ), '' !== $structure ? self::OK : self::FAIL, '' !== $structure ? $structure : __( 'required for the sign-in callback', 'wp2-shopify' ) );
+		$add( __( 'Pretty permalinks', 'redeemid' ), '' !== $structure ? self::OK : self::FAIL, '' !== $structure ? $structure : __( 'required for the sign-in callback', 'redeemid' ) );
 
 		$slug     = Config::callback_slug();
 		$callback = get_page_by_path( $slug );
 		$live     = $callback instanceof \WP_Post && 'publish' === $callback->post_status;
-		$add( __( 'Callback page', 'wp2-shopify' ), $live ? self::OK : self::WARN, $live ? '/' . $slug . '/' : __( 'not published; the plugin falls back to a bare result page', 'wp2-shopify' ) );
+		$add( __( 'Callback page', 'redeemid' ), $live ? self::OK : self::WARN, $live ? '/' . $slug . '/' : __( 'not published; the plugin falls back to a bare result page', 'redeemid' ) );
 
 		$available = Discovery::available();
-		$add( __( 'Shopify sign-in available', 'wp2-shopify' ), $available ? self::OK : self::FAIL, $available ? __( 'OIDC discovery answered', 'wp2-shopify' ) : __( 'no discovery: check the store domain and client ID', 'wp2-shopify' ) );
+		$add( __( 'Shopify sign-in available', 'redeemid' ), $available ? self::OK : self::FAIL, $available ? __( 'OIDC discovery answered', 'redeemid' ) : __( 'no discovery: check the store domain and client ID', 'redeemid' ) );
 
 		foreach ( Config::definitions() as $name => $def ) {
 			$source = Config::source( $name );
 			$set    = Config::has( $name );
 
 			if ( ConfigValues::UNREADABLE === $source ) {
-				$add( $name, $def['required'] ? self::FAIL : self::WARN, __( 'saved in Settings but unreadable: the encryption key changed', 'wp2-shopify' ) );
+				$add( $name, $def['required'] ? self::FAIL : self::WARN, __( 'saved in Settings but unreadable: the encryption key changed', 'redeemid' ) );
 				continue;
 			}
 
 			$add(
 				$name,
 				$set ? self::OK : ( $def['required'] ? self::FAIL : self::INFO ),
-				$set ? ( ConfigValues::CONSTANT === $source ? __( 'set in wp-config.php', 'wp2-shopify' ) : __( 'set in Settings', 'wp2-shopify' ) ) : ( $def['required'] ? __( 'missing (required)', 'wp2-shopify' ) : __( 'not set (optional)', 'wp2-shopify' ) )
+				$set ? ( ConfigValues::CONSTANT === $source ? __( 'set in wp-config.php', 'redeemid' ) : __( 'set in Settings', 'redeemid' ) ) : ( $def['required'] ? __( 'missing (required)', 'redeemid' ) : __( 'not set (optional)', 'redeemid' ) )
 			);
 		}
 
 		foreach ( array_keys( array_filter( Config::retired(), 'defined', ARRAY_FILTER_USE_KEY ) ) as $name ) {
-			$add( $name, self::WARN, __( 'defined but ignored: remove it from wp-config.php', 'wp2-shopify' ) );
+			$add( $name, self::WARN, __( 'defined but ignored: remove it from wp-config.php', 'redeemid' ) );
 		}
 
 		$official = OfficialPlugin::info();
@@ -86,20 +86,20 @@ final class Health {
 			OfficialPlugin::SAME_STORE  => self::OK,
 			OfficialPlugin::OTHER_STORE => self::FAIL,
 		];
-		$add( __( 'Shopify’s WordPress plugin', 'wp2-shopify' ), $states[ $official['state'] ] ?? self::WARN, OfficialPlugin::summary() );
+		$add( __( 'Shopify’s WordPress plugin', 'redeemid' ), $states[ $official['state'] ] ?? self::WARN, OfficialPlugin::summary() );
 
 		if ( OfficialPlugin::ABSENT !== $official['state'] ) {
-			$add( __( '/cart owner', 'wp2-shopify' ), self::INFO, $official['owns_cart'] ? __( 'Shopify’s plugin (its rewrite rule wins over pages)', 'wp2-shopify' ) : __( 'nobody yet: flush permalinks', 'wp2-shopify' ) );
+			$add( __( '/cart owner', 'redeemid' ), self::INFO, $official['owns_cart'] ? __( 'Shopify’s plugin (its rewrite rule wins over pages)', 'redeemid' ) : __( 'nobody yet: flush permalinks', 'redeemid' ) );
 
 			$bridge = CartBridge::enabled();
 			$last   = CartBridge::last();
 			$add(
-				__( 'Cart sign-in bridge', 'wp2-shopify' ),
+				__( 'Cart sign-in bridge', 'redeemid' ),
 				$bridge ? self::OK : self::WARN,
 				$bridge
 					/* translators: %s: date and time, or "never" */
-					? sprintf( __( 'active, last attached %s', 'wp2-shopify' ), $last['ok_at'] ? wp_date( 'Y-m-d H:i', (int) $last['ok_at'] ) : __( 'never', 'wp2-shopify' ) )
-					: __( 'off: needs the same store and a Storefront token', 'wp2-shopify' )
+					? sprintf( __( 'active, last attached %s', 'redeemid' ), $last['ok_at'] ? wp_date( 'Y-m-d H:i', (int) $last['ok_at'] ) : __( 'never', 'redeemid' ) )
+					: __( 'off: needs the same store and a Storefront token', 'redeemid' )
 			);
 		}
 
@@ -107,7 +107,7 @@ final class Health {
 		 * Rows to add to the health checklist, such as a theme's own checks.
 		 * Each row is [ 'label' => string, 'state' => ok|warn|fail|info, 'detail' => string ].
 		 */
-		$checks = apply_filters( 'wp2_shopify_health_checks', $checks );
+		$checks = apply_filters( 'redeemid_health_checks', $checks );
 
 		return array_values( array_filter( is_array( $checks ) ? $checks : [], [ self::class, 'valid' ] ) );
 	}

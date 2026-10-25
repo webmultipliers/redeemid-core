@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\TermRule;
-use WP2_Shopify\Access\TermRules;
+use RedeemID\Access\Level;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\TermRule;
+use RedeemID\Access\TermRules;
 
 /**
  * The Access fields on a term's add and edit screens, and an Access column
@@ -15,8 +15,8 @@ use WP2_Shopify\Access\TermRules;
  * previous rule stays and the editor is told why.
  */
 final class AccessTermFields {
-	private const NONCE  = 'wp2_shopify_access_term';
-	private const NOTICE = 'wp2_shopify_term_rule_problem_';
+	private const NONCE  = 'redeemid_access_term';
+	private const NOTICE = 'redeemid_term_rule_problem_';
 
 	public static function register(): void {
 		add_action( 'admin_init', [ self::class, 'hook_taxonomies' ] );
@@ -41,7 +41,7 @@ final class AccessTermFields {
 	}
 
 	public static function edit_fields( \WP_Term $term ): void {
-		echo '<tr class="form-field"><th scope="row">' . esc_html__( 'Access', 'wp2-shopify' ) . '</th><td>';
+		echo '<tr class="form-field"><th scope="row">' . esc_html__( 'Access', 'redeemid' ) . '</th><td>';
 		self::fields( TermRules::get( $term->term_id ) );
 		echo '</td></tr>';
 	}
@@ -53,21 +53,21 @@ final class AccessTermFields {
 		wp_nonce_field( self::NONCE, self::NONCE );
 		?>
 		<fieldset>
-			<legend class="screen-reader-text"><?php esc_html_e( 'Access', 'wp2-shopify' ); ?></legend>
-			<label style="display:block"><input type="radio" name="wp2_access[kind]" value="" <?php checked( $rule['kind'], TermRules::NONE ); ?>> <?php esc_html_e( 'No rule of its own (a child term takes its parent\'s when the taxonomy inherits)', 'wp2-shopify' ); ?></label>
-			<label style="display:block"><input type="radio" name="wp2_access[kind]" value="<?php echo esc_attr( TermRule::REQUIRES ); ?>" <?php checked( $rule['kind'], TermRule::REQUIRES ); ?>> <?php esc_html_e( 'Items here need one of these levels:', 'wp2-shopify' ); ?></label>
+			<legend class="screen-reader-text"><?php esc_html_e( 'Access', 'redeemid' ); ?></legend>
+			<label style="display:block"><input type="radio" name="redeemid_access[kind]" value="" <?php checked( $rule['kind'], TermRules::NONE ); ?>> <?php esc_html_e( 'No rule of its own (a child term takes its parent\'s when the taxonomy inherits)', 'redeemid' ); ?></label>
+			<label style="display:block"><input type="radio" name="redeemid_access[kind]" value="<?php echo esc_attr( TermRule::REQUIRES ); ?>" <?php checked( $rule['kind'], TermRule::REQUIRES ); ?>> <?php esc_html_e( 'Items here need one of these levels:', 'redeemid' ); ?></label>
 			<p style="margin:4px 0 8px 24px">
 				<?php foreach ( $levels as $slug => $level ) : ?>
-					<label style="display:inline-block;margin-right:10px"><input type="checkbox" name="wp2_access[levels][]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $rule['levels'], true ) ); ?>> <?php echo esc_html( $level->label ); ?></label>
+					<label style="display:inline-block;margin-right:10px"><input type="checkbox" name="redeemid_access[levels][]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $rule['levels'], true ) ); ?>> <?php echo esc_html( $level->label ); ?></label>
 				<?php endforeach; ?>
 			</p>
-			<label style="display:block"><input type="radio" name="wp2_access[kind]" value="<?php echo esc_attr( TermRule::OPENS ); ?>" <?php checked( $rule['kind'], TermRule::OPENS ); ?>> <?php esc_html_e( 'Items here are free to everyone until:', 'wp2-shopify' ); ?></label>
+			<label style="display:block"><input type="radio" name="redeemid_access[kind]" value="<?php echo esc_attr( TermRule::OPENS ); ?>" <?php checked( $rule['kind'], TermRule::OPENS ); ?>> <?php esc_html_e( 'Items here are free to everyone until:', 'redeemid' ); ?></label>
 			<p style="margin:4px 0 8px 24px">
-				<input type="datetime-local" name="wp2_access[opens_until]" value="<?php echo esc_attr( $until ); ?>" aria-label="<?php esc_attr_e( 'Free until', 'wp2-shopify' ); ?>" style="width:auto">
-				<br><span class="description" style="color:#b32d2e"><?php esc_html_e( 'This opens every item in this term to everyone, including items another term or the post type would lock. An end date is required, and the items lock again on it by themselves.', 'wp2-shopify' ); ?></span>
+				<input type="datetime-local" name="redeemid_access[opens_until]" value="<?php echo esc_attr( $until ); ?>" aria-label="<?php esc_attr_e( 'Free until', 'redeemid' ); ?>" style="width:auto">
+				<br><span class="description" style="color:#b32d2e"><?php esc_html_e( 'This opens every item in this term to everyone, including items another term or the post type would lock. An end date is required, and the items lock again on it by themselves.', 'redeemid' ); ?></span>
 			</p>
-			<label><?php esc_html_e( 'Priority', 'wp2-shopify' ); ?> <input type="number" min="-100" max="100" class="small-text" name="wp2_access[priority]" value="<?php echo esc_attr( (string) $rule['priority'] ); ?>" style="width:auto"></label>
-			<p class="description"><?php esc_html_e( 'Used only when the site resolves term conflicts by priority. Child terms with no rule of their own take this one when the taxonomy inherits. Site time zone.', 'wp2-shopify' ); ?></p>
+			<label><?php esc_html_e( 'Priority', 'redeemid' ); ?> <input type="number" min="-100" max="100" class="small-text" name="redeemid_access[priority]" value="<?php echo esc_attr( (string) $rule['priority'] ); ?>" style="width:auto"></label>
+			<p class="description"><?php esc_html_e( 'Used only when the site resolves term conflicts by priority. Child terms with no rule of their own take this one when the taxonomy inherits. Site time zone.', 'redeemid' ); ?></p>
 		</fieldset>
 		<?php
 	}
@@ -77,7 +77,7 @@ final class AccessTermFields {
 			return;
 		}
 
-		$raw   = isset( $_POST['wp2_access'] ) && is_array( $_POST['wp2_access'] ) ? wp_unslash( $_POST['wp2_access'] ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized in TermRules::sanitize().
+		$raw   = isset( $_POST['redeemid_access'] ) && is_array( $_POST['redeemid_access'] ) ? wp_unslash( $_POST['redeemid_access'] ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized in TermRules::sanitize().
 		$until = trim( (string) ( $raw['opens_until'] ?? '' ) );
 		$date  = '' !== $until ? date_create_immutable( $until, wp_timezone() ) : false;
 		$rule  = [
@@ -108,22 +108,22 @@ final class AccessTermFields {
 
 		delete_transient( $key );
 		$words = [
-			'requires_needs_level' => __( 'The term\'s access rule was not saved: tick at least one level.', 'wp2-shopify' ),
-			'opens_needs_expiry'   => __( 'The term\'s access rule was not saved: "free until" needs an end date.', 'wp2-shopify' ),
-			'opens_expiry_past'    => __( 'The term\'s access rule was not saved: the "free until" date has already passed.', 'wp2-shopify' ),
+			'requires_needs_level' => __( 'The term\'s access rule was not saved: tick at least one level.', 'redeemid' ),
+			'opens_needs_expiry'   => __( 'The term\'s access rule was not saved: "free until" needs an end date.', 'redeemid' ),
+			'opens_expiry_past'    => __( 'The term\'s access rule was not saved: the "free until" date has already passed.', 'redeemid' ),
 		];
 
 		printf( '<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html( $words[ $problem ] ?? $problem ) );
 	}
 
 	public static function columns( array $columns ): array {
-		$columns['wp2_access'] = __( 'Access', 'wp2-shopify' );
+		$columns['redeemid_access'] = __( 'Access', 'redeemid' );
 
 		return $columns;
 	}
 
 	public static function column( mixed $out, mixed $column, mixed $term_id ): mixed {
-		if ( 'wp2_access' !== $column ) {
+		if ( 'redeemid_access' !== $column ) {
 			return $out;
 		}
 
@@ -137,8 +137,8 @@ final class AccessTermFields {
 			TermRule::REQUIRES => implode( ' or ', array_map( static fn( $s ) => $levels->get( $s )?->label ?? $s, $rule['levels'] ) ),
 			TermRule::OPENS => $rule['opens_until'] > time()
 				/* translators: %s: date */
-				? sprintf( __( 'Free until %s', 'wp2-shopify' ), wp_date( get_option( 'date_format' ), $rule['opens_until'] ) )
-				: __( 'Free window ended', 'wp2-shopify' ),
+				? sprintf( __( 'Free until %s', 'redeemid' ), wp_date( get_option( 'date_format' ), $rule['opens_until'] ) )
+				: __( 'Free window ended', 'redeemid' ),
 			default => '—',
 		};
 	}

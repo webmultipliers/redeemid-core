@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Blocks;
+namespace RedeemID\Blocks;
 
-use WP2_Shopify\Entitlement\Decision;
+use RedeemID\Entitlement\Decision;
 
 /**
  * What the locked panel offers, from why the visitor was turned away. Pure,

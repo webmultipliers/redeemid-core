@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/membership-gate-content",
+	"name": "redeemid/membership-gate-content",
 	"title": "Members Only Area",
 	"category": "widgets",
 	"icon": "lock",
 	"description": "Content released only to entitled members. Never sent to anyone else.",
-	"parent": [ "wp2-shopify/membership-gate" ],
-	"textdomain": "wp2-shopify",
+	"parent": [ "redeemid/membership-gate" ],
+	"textdomain": "redeemid",
 	"supports": {
 		"html": false,
 		"inserter": false,

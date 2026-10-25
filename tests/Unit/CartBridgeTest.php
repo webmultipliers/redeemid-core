@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Commerce\CartBridge;
+use RedeemID\Commerce\CartBridge;
 
 final class CartBridgeTest extends TestCase {
 	public static function carts(): array {

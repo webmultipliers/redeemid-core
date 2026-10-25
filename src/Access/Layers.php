@@ -1,20 +1,20 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Gathers every rule layer on one item into a Context: the item's own rule,
  * its terms (ancestors walked), its post type and the site default.
  *
  * Gathering terms is the costly part, so the Context is cached on the item
- * in _wp2_access_effective, stamped with the rules version. Only layers are
+ * in _redeemid_access_effective, stamped with the rules version. Only layers are
  * cached; the Resolver runs on them at request time, so embargoes, free
  * windows and Opens expiry take effect on their date with no edit and no
  * cache flush.
  *
  * What invalidates the cache, in full:
  *
- * - The item's own rule saved, or its _wp2_access meta written any other way: that item.
+ * - The item's own rule saved, or its _redeemid_access meta written any other way: that item.
  * - The item saved (post type, publish date, status): that item.
  * - The item's terms set or removed: that item.
  * - A term rule written: every item, by version bump.
@@ -28,7 +28,7 @@ namespace WP2_Shopify\Access;
  * on every request, so editing a level needs no invalidation here.
  */
 final class Layers {
-	public const CACHE = '_wp2_access_effective';
+	public const CACHE = '_redeemid_access_effective';
 
 	public static function register(): void {
 		add_action( 'save_post', [ self::class, 'forget' ] );
@@ -106,7 +106,7 @@ final class Layers {
 		self::forget( $object_id );
 
 		/** This action is documented in src/Access/ItemRule.php */
-		do_action( 'wp2_shopify_access_changed', [ (int) $object_id ] );
+		do_action( 'redeemid_access_changed', [ (int) $object_id ] );
 	}
 
 	public static function meta_changed( mixed $meta_id, mixed $post_id, mixed $key ): void {

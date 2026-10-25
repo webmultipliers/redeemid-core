@@ -1,21 +1,21 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
-use WP2_Shopify\Shopify\Admin;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Shopify\Admin;
+use RedeemID\Support\Logger;
 
 /**
  * On-demand resync of one linked customer's tags and status from the Admin
- * API: a member's own refresh, a staff resync on Shopify → Customers, a tag
+ * API: a member's own refresh, a staff resync on RedeemID → Customers, a tag
  * webhook, or the post-checkout check. There is no scheduled sweep; webhooks
  * keep the mirror current, and staff can start a paced bulk resync
  * (BulkResync) when they need everyone re-read.
  */
 final class Reconciler {
 	/** Retired scheduled sweep: its cron hook and options are cleared on upgrade. */
-	public const RETIRED_HOOK    = 'wp2_shopify_reconcile';
-	public const RETIRED_OPTIONS = [ 'wp2_shopify_reconcile_stats', 'wp2_shopify_reconcile_cursor' ];
+	public const RETIRED_HOOK    = 'redeemid_reconcile';
+	public const RETIRED_OPTIONS = [ 'redeemid_reconcile_stats', 'redeemid_reconcile_cursor' ];
 	private const BATCH          = 50;
 
 	/**

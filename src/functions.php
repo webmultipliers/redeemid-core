@@ -15,8 +15,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @return array<int, array{value: string, label: string}>
  */
-function wp2_shopify_level_options(): array {
-	return \WP2_Shopify\Blocks\Gate::level_options();
+function redeemid_level_options(): array {
+	return \RedeemID\Blocks\Gate::level_options();
 }
 
 /**
@@ -27,8 +27,8 @@ function wp2_shopify_level_options(): array {
  * @param string            $slug A registered feature slug.
  * @param int|WP_User|null  $user
  */
-function wp2_shopify_has_feature( string $slug, int|\WP_User|null $user = null ): bool {
-	return \WP2_Shopify\Features\Registry::has( $slug, $user );
+function redeemid_has_feature( string $slug, int|\WP_User|null $user = null ): bool {
+	return \RedeemID\Features\Registry::has( $slug, $user );
 }
 
 /**
@@ -39,8 +39,8 @@ function wp2_shopify_has_feature( string $slug, int|\WP_User|null $user = null )
  * @param int|WP_User|null $user
  * @return array<string, array{label: string, provenance: string, routes: string[], primary: bool}>
  */
-function wp2_shopify_granted_features( int|\WP_User|null $user = null ): array {
-	return \WP2_Shopify\Features\Registry::granted( $user );
+function redeemid_granted_features( int|\WP_User|null $user = null ): array {
+	return \RedeemID\Features\Registry::granted( $user );
 }
 
 /**
@@ -49,6 +49,6 @@ function wp2_shopify_granted_features( int|\WP_User|null $user = null ): array {
  * @param int|WP_User|null $user
  * @return array<string, array{label: string, provenance: string, routes: string[], primary: bool}>
  */
-function wp2_shopify_menu_features( int|\WP_User|null $user = null ): array {
-	return \WP2_Shopify\Features\Registry::menu( $user );
+function redeemid_menu_features( int|\WP_User|null $user = null ): array {
+	return \RedeemID\Features\Registry::menu( $user );
 }

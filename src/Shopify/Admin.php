@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify\Shopify;
+namespace RedeemID\Shopify;
 
-use WP2_Shopify\Config;
-use WP2_Shopify\Support\CustomerId;
+use RedeemID\Config;
+use RedeemID\Support\CustomerId;
 
 /**
  * Admin API client, server-side only. Used for reconciliation, resync, tag
@@ -54,7 +54,7 @@ final class Admin {
 	 */
 	public static function customers( array $ids ): array|\WP_Error {
 		$data = self::query(
-			'query WP2Reconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }',
+			'query RedeemIDReconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }',
 			[ 'ids' => array_map( static fn( CustomerId $id ) => $id->gid(), array_slice( $ids, 0, 50 ) ) ],
 			'admin.customers'
 		);
@@ -103,7 +103,7 @@ final class Admin {
 		}
 
 		$params = implode( ', ', array_map( static fn( string $v ): string => "\${$v}: String", array_keys( $vars ) ) );
-		$data   = self::query( "query WP2Counts({$params}) { " . implode( ' ', $fields ) . ' }', $vars, 'admin.customersCount' );
+		$data   = self::query( "query RedeemIDCounts({$params}) { " . implode( ' ', $fields ) . ' }', $vars, 'admin.customersCount' );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;
@@ -127,7 +127,7 @@ final class Admin {
 	 * @return string[]|\WP_Error
 	 */
 	public static function customer_tags(): array|\WP_Error {
-		$data = self::query( 'query WP2CustomerTags { shop { customerTags(first: 250) { nodes } } }', [], 'admin.customerTags' );
+		$data = self::query( 'query RedeemIDCustomerTags { shop { customerTags(first: 250) { nodes } } }', [], 'admin.customerTags' );
 
 		if ( is_wp_error( $data ) ) {
 			return $data;
@@ -156,7 +156,7 @@ final class Admin {
 		}
 
 		$data = self::query(
-			"mutation WP2Tags(\$id: ID!, \$tags: [String!]!) { {$mutation}(id: \$id, tags: \$tags) { userErrors { field message } } }",
+			"mutation RedeemIDTags(\$id: ID!, \$tags: [String!]!) { {$mutation}(id: \$id, tags: \$tags) { userErrors { field message } } }",
 			[ 'id' => $id->gid(), 'tags' => array_values( $tags ) ],
 			'admin.' . $mutation
 		);

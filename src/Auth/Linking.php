@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
-use WP2_Shopify\Support\Logger;
+use RedeemID\Support\Logger;
 
 /**
  * Linking an existing WordPress account to a Shopify customer.
@@ -13,11 +13,11 @@ use WP2_Shopify\Support\Logger;
  * that token, never a raw user ID.
  */
 final class Linking {
-	private const META = '_wp2_shopify_link_token';
+	private const META = '_redeemid_link_token';
 	private const TTL  = 10 * MINUTE_IN_SECONDS;
 
 	/** Pending confirmations after a verified email match. */
-	private const PENDING = 'wp2s_link_pending_';
+	private const PENDING = 'redeemid_link_pending_';
 
 	public static function refusal( int $user_id ): ?string {
 		$user = get_userdata( $user_id );

@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/membership-refresh",
+	"name": "redeemid/membership-refresh",
 	"title": "Refresh Membership",
 	"category": "widgets",
 	"icon": "update",
-	"description": "Lets a signed-in, linked customer pull their membership from Shopify again (POST /wp2-shopify/v1/account/sync) and reloads the page when it changes. A Blockstudio dynamic island: the cached page carries an empty placeholder and guests see nothing.",
+	"description": "Lets a signed-in, linked customer pull their membership from Shopify again (POST /redeemid/v1/account/sync) and reloads the page when it changes. A Blockstudio dynamic island: the cached page carries an empty placeholder and guests see nothing.",
 	"keywords": [ "shopify", "sync", "resync", "membership", "refresh" ],
-	"textdomain": "wp2-shopify",
+	"textdomain": "redeemid",
 	"supports": { "align": false, "html": false },
 	"example": {},
 	"blockstudio": {

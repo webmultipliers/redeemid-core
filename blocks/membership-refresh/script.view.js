@@ -1,5 +1,5 @@
 /**
- * Click handler for wp2-shopify/membership-refresh. The button and its REST
+ * Click handler for redeemid/membership-refresh. The button and its REST
  * nonce arrive in the block's island fragment after load, so listen on the
  * document rather than on the button. Posts to /account/sync, then reloads so
  * gates re-render with the new tags.
@@ -11,8 +11,8 @@ const messages = {
 };
 
 async function refresh(root) {
-	const button = root.querySelector('.wp2-shopify-refresh__button');
-	const message = root.querySelector('.wp2-shopify-refresh__message');
+	const button = root.querySelector('.redeemid-refresh__button');
+	const message = root.querySelector('.redeemid-refresh__message');
 
 	button.disabled = true;
 	message.textContent = 'Checking with Shopify…';
@@ -20,10 +20,10 @@ async function refresh(root) {
 	let result = 'sync_failed';
 
 	try {
-		const response = await fetch(root.dataset.wp2RefreshEndpoint, {
+		const response = await fetch(root.dataset.redeemidRefreshEndpoint, {
 			method: 'POST',
 			credentials: 'same-origin',
-			headers: { Accept: 'application/json', 'X-WP-Nonce': root.dataset.wp2RefreshNonce },
+			headers: { Accept: 'application/json', 'X-WP-Nonce': root.dataset.redeemidRefreshNonce },
 		});
 		const body = await response.json().catch(() => null);
 		result = response.ok && body && body.result ? body.result : 'sync_failed';
@@ -42,7 +42,7 @@ async function refresh(root) {
 }
 
 document.addEventListener('click', (event) => {
-	const root = event.target.closest('.wp2-shopify-refresh__button')?.closest('[data-wp2-refresh-nonce]');
+	const root = event.target.closest('.redeemid-refresh__button')?.closest('[data-redeemid-refresh-nonce]');
 
 	if (root) {
 		refresh(root);

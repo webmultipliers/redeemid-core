@@ -1,13 +1,13 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Admin\CustomerQuery;
-use WP2_Shopify\Webhooks\Monitor;
+use RedeemID\Access\LevelStore;
+use RedeemID\Admin\CustomerQuery;
+use RedeemID\Webhooks\Monitor;
 
 /**
- * Daily counters for Shopify → Reports, kept for 400 days in one option.
+ * Daily counters for RedeemID → Reports, kept for 400 days in one option.
  *
  * The event log keeps 30 days, so it can't answer "how many joined Gold this
  * year". Stats counts a few low-frequency events as they are logged (a level
@@ -18,11 +18,11 @@ use WP2_Shopify\Webhooks\Monitor;
  * Counts only, by day: no user IDs. bump(), weekly() and prune() are pure.
  */
 final class Stats {
-	public const OPTION = 'wp2_shopify_stats';
+	public const OPTION = 'redeemid_stats';
 	public const KEEP   = 400;
 
 	public static function register(): void {
-		add_action( 'wp2_shopify_log', [ self::class, 'record' ], 20, 2 );
+		add_action( 'redeemid_log', [ self::class, 'record' ], 20, 2 );
 		add_action( Monitor::HOOK, [ self::class, 'snapshot' ], 20 );
 	}
 

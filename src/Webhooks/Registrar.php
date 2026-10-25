@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
-use WP2_Shopify\Shopify\Admin;
+use RedeemID\Shopify\Admin;
 
 /**
  * Registers the plugin's webhook subscriptions through the Admin API, so they
@@ -13,7 +13,7 @@ use WP2_Shopify\Shopify\Admin;
  * sends them to apps that declare them in the app's configuration.
  */
 final class Registrar {
-	public const RESULT = 'wp2_shopify_webhook_registration';
+	public const RESULT = 'redeemid_webhook_registration';
 
 	private const API_UNSUPPORTED = [ 'customers/data_request', 'customers/redact', 'shop/redact' ];
 
@@ -53,9 +53,9 @@ final class Registrar {
 	 * @return array{at: int, created: string[], existing: int, failed: array<string, string>, error: string}
 	 */
 	public static function sync(): array {
-		$uri    = rest_url( 'wp2-shopify/v1/webhooks/events' );
+		$uri    = rest_url( 'redeemid/v1/webhooks/events' );
 		$result = [ 'at' => time(), 'created' => [], 'existing' => 0, 'failed' => [], 'error' => '' ];
-		$data   = Admin::query( 'query WP2Webhooks { webhookSubscriptions(first: 100) { nodes { topic uri } } }', [], 'admin.webhooks' );
+		$data   = Admin::query( 'query RedeemIDWebhooks { webhookSubscriptions(first: 100) { nodes { topic uri } } }', [], 'admin.webhooks' );
 
 		if ( is_wp_error( $data ) ) {
 			$result['error'] = $data->get_error_message();
@@ -75,7 +75,7 @@ final class Registrar {
 
 		foreach ( $missing as $topic ) {
 			$created = Admin::query(
-				'mutation WP2WebhookCreate($topic: WebhookSubscriptionTopic!, $sub: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: $topic, webhookSubscription: $sub) { webhookSubscription { id } userErrors { field message } } }',
+				'mutation RedeemIDWebhookCreate($topic: WebhookSubscriptionTopic!, $sub: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: $topic, webhookSubscription: $sub) { webhookSubscription { id } userErrors { field message } } }',
 				[ 'topic' => self::enum( $topic ), 'sub' => [ 'uri' => $uri, 'format' => 'JSON' ] ],
 				'admin.webhook_create'
 			);

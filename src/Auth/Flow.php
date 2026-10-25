@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\Membership;
-use WP2_Shopify\Config;
-use WP2_Shopify\Plugin;
-use WP2_Shopify\Shopify\Admin;
-use WP2_Shopify\Shopify\CustomerAccount;
-use WP2_Shopify\Shopify\Discovery;
-use WP2_Shopify\Support\CustomerId;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\Reconciler;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\Membership;
+use RedeemID\Config;
+use RedeemID\Plugin;
+use RedeemID\Shopify\Admin;
+use RedeemID\Shopify\CustomerAccount;
+use RedeemID\Shopify\Discovery;
+use RedeemID\Support\CustomerId;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\Mirror;
+use RedeemID\Sync\Reconciler;
 
 /**
  * Sign-in, linking, logout, disconnect and sync-now as server-side flows.
@@ -22,7 +22,7 @@ use WP2_Shopify\Sync\Reconciler;
  * the visitor always lands on a page, never on raw JSON.
  */
 final class Flow {
-	public const QUERY_VAR = 'wp2_shopify_callback';
+	public const QUERY_VAR = 'redeemid_callback';
 
 	public static function register(): void {
 		add_action( 'init', [ self::class, 'add_rewrite' ] );
@@ -32,12 +32,12 @@ final class Flow {
 		add_action( 'set_auth_cookie', [ TokenVault::class, 'capture_session_token' ], 10, 6 );
 
 		foreach ( [ 'login', 'logout', 'new_account' ] as $action ) {
-			add_action( 'admin_post_wp2_shopify_' . $action, [ self::class, 'handle_' . $action ] );
-			add_action( 'admin_post_nopriv_wp2_shopify_' . $action, [ self::class, 'handle_' . $action ] );
+			add_action( 'admin_post_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
+			add_action( 'admin_post_nopriv_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
 		}
 
 		foreach ( [ 'connect', 'link_confirm', 'disconnect', 'sync' ] as $action ) {
-			add_action( 'admin_post_wp2_shopify_' . $action, [ self::class, 'handle_' . $action ] );
+			add_action( 'admin_post_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
 		}
 	}
 
@@ -51,7 +51,7 @@ final class Flow {
 	public static function login_url( string $redirect_to = '' ): string {
 		return add_query_arg(
 			[
-				'action'      => 'wp2_shopify_login',
+				'action'      => 'redeemid_login',
 				'redirect_to' => rawurlencode( $redirect_to ?: home_url( '/' ) ),
 			],
 			admin_url( 'admin-post.php' )
@@ -68,7 +68,7 @@ final class Flow {
 	 * Begin the PKCE flow. Returns the Shopify authorize URL.
 	 */
 	public static function start( string $redirect_to, ?int $link_user = null ): string|\WP_Error {
-		if ( ! Config::has( 'WP2_SHOPIFY_CLIENT_ID' ) || ! Discovery::available() ) {
+		if ( ! Config::has( 'REDEEMID_CLIENT_ID' ) || ! Discovery::available() ) {
 			return new \WP_Error( 'unavailable', self::message( 'unavailable' ) );
 		}
 
@@ -118,8 +118,8 @@ final class Flow {
 			// No page published at the callback slug: still show a calm result page.
 			status_header( 200 );
 			// notice_html() escapes every value it prints; wp_kses_post() would strip the confirm form.
-			wp_die( self::notice_html() ?: '<p>' . esc_html__( 'Nothing to do here.', 'wp2-shopify' ) . '</p>', // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				esc_html__( 'Sign in', 'wp2-shopify' ), [ 'response' => 200 ] );
+			wp_die( self::notice_html() ?: '<p>' . esc_html__( 'Nothing to do here.', 'redeemid' ) . '</p>', // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				esc_html__( 'Sign in', 'redeemid' ), [ 'response' => 200 ] );
 		}
 	}
 
@@ -148,7 +148,7 @@ final class Flow {
 		}
 
 		$claims  = Pkce::jwt_claims( $tokens['id_token'] ) ?? [];
-		$problem = Pkce::check_id_token_claims( $claims, Discovery::openid()['issuer'] ?? '', Config::get( 'WP2_SHOPIFY_CLIENT_ID' ), (string) $data['nonce'], time() );
+		$problem = Pkce::check_id_token_claims( $claims, Discovery::openid()['issuer'] ?? '', Config::get( 'REDEEMID_CLIENT_ID' ), (string) $data['nonce'], time() );
 
 		if ( $problem ) {
 			Logger::log( 'auth.id_token_rejected', [ 'reason' => $problem ] );
@@ -176,7 +176,7 @@ final class Flow {
 				Logger::log( 'auth.existing_account', [ 'user' => $match->ID, 'customer' => $id->numeric ] );
 
 				return add_query_arg(
-					'wp2s_existing',
+					'redeemid_existing',
 					rawurlencode(
 						Linking::hold(
 							[
@@ -212,7 +212,7 @@ final class Flow {
 	private static function existing_account( array $claims ): ?\WP_User {
 		$email = strtolower( trim( (string) ( $claims['email'] ?? '' ) ) );
 
-		if ( true !== ( $claims['email_verified'] ?? null ) || '' === $email || ! apply_filters( 'wp2_shopify_offer_existing_account', true ) ) {
+		if ( true !== ( $claims['email_verified'] ?? null ) || '' === $email || ! apply_filters( 'redeemid_offer_existing_account', true ) ) {
 			return null;
 		}
 
@@ -270,7 +270,7 @@ final class Flow {
 		self::apply_identity( $user->ID, $identity, 'login' );
 
 		Logger::log( 'auth.signed_in', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
-		do_action( 'wp2_shopify_signed_in', $user->ID, $id );
+		do_action( 'redeemid_signed_in', $user->ID, $id );
 
 		return self::landing( $user->ID, $redirect_to );
 	}
@@ -297,7 +297,7 @@ final class Flow {
 		 * @param int    $user_id
 		 * @param string $redirect_to Where sign-in started.
 		 */
-		return self::safe_redirect( (string) apply_filters( 'wp2_shopify_sign_in_redirect', $target, $user_id, $redirect_to ) );
+		return self::safe_redirect( (string) apply_filters( 'redeemid_sign_in_redirect', $target, $user_id, $redirect_to ) );
 	}
 
 	private static function complete_link( int $user_id, string $link_token, CustomerId $id, array $identity, array $claims, array $tokens, string $redirect_to ): string {
@@ -332,11 +332,11 @@ final class Flow {
 			]
 		);
 
-		return add_query_arg( 'wp2s_confirm', rawurlencode( $ref ), Config::callback_url() );
+		return add_query_arg( 'redeemid_confirm', rawurlencode( $ref ), Config::callback_url() );
 	}
 
 	public static function handle_link_confirm(): void {
-		check_admin_referer( 'wp2_shopify_link_confirm' );
+		check_admin_referer( 'redeemid_link_confirm' );
 
 		$ref     = sanitize_text_field( wp_unslash( $_POST['ref'] ?? '' ) );
 		$pending = Linking::take( $ref );
@@ -367,13 +367,13 @@ final class Flow {
 		}
 
 		Logger::log( 'link.linked', [ 'user' => $user_id, 'customer' => $id->numeric ] );
-		do_action( 'wp2_shopify_linked', $user_id, $id );
+		do_action( 'redeemid_linked', $user_id, $id );
 
-		self::redirect( add_query_arg( 'wp2s_notice', 'linked', (string) $pending['redirect_to'] ) );
+		self::redirect( add_query_arg( 'redeemid_notice', 'linked', (string) $pending['redirect_to'] ) );
 	}
 
 	public static function handle_connect(): void {
-		check_admin_referer( 'wp2_shopify_connect' );
+		check_admin_referer( 'redeemid_connect' );
 
 		$user_id = get_current_user_id();
 		$problem = Linking::refusal( $user_id ) ?? ( Mirror::customer_id( $user_id ) ? 'already_shadow' : null );
@@ -400,7 +400,7 @@ final class Flow {
 		$tokens   = TokenVault::get( $user_id );
 		$redirect = self::safe_redirect( $redirect_to );
 
-		do_action( 'wp2_shopify_before_logout', $user_id );
+		do_action( 'redeemid_before_logout', $user_id );
 
 		if ( $user_id ) {
 			wp_logout();
@@ -411,7 +411,7 @@ final class Flow {
 
 	public static function handle_logout(): void {
 		if ( is_user_logged_in() ) {
-			check_admin_referer( 'wp2_shopify_logout' );
+			check_admin_referer( 'redeemid_logout' );
 		}
 
 		self::redirect( self::logout( self::posted_redirect() ), true );
@@ -427,14 +427,14 @@ final class Flow {
 		TokenVault::forget_all( $user_id );
 		Mirror::unlink( $user_id );
 		Logger::log( 'link.disconnected', [ 'user' => $user_id ] );
-		do_action( 'wp2_shopify_disconnected', $user_id );
+		do_action( 'redeemid_disconnected', $user_id );
 
 		// The WordPress account stays signed in; the Shopify session is ended.
 		return OAuth::logout_url( (string) ( $tokens['id_token'] ?? '' ), self::notice_url( 'disconnected' ) );
 	}
 
 	public static function handle_disconnect(): void {
-		check_admin_referer( 'wp2_shopify_disconnect' );
+		check_admin_referer( 'redeemid_disconnect' );
 
 		$url = self::disconnect( get_current_user_id() );
 
@@ -455,21 +455,21 @@ final class Flow {
 		 * Answer a "sync now" without asking Shopify: return synced, sync_wait or
 		 * sync_failed to short-circuit, or null to sync as usual. For customers
 		 * Shopify does not know, such as a test site's simulated fixtures (see
-		 * wp2_shopify_customer_is_fixture). Runs before the rate limit.
+		 * redeemid_customer_is_fixture). Runs before the rate limit.
 		 */
-		$pre = apply_filters( 'wp2_shopify_pre_sync_now', null, $user_id );
+		$pre = apply_filters( 'redeemid_pre_sync_now', null, $user_id );
 
 		if ( in_array( $pre, [ 'synced', 'sync_wait', 'sync_failed' ], true ) ) {
 			return $pre;
 		}
 
-		$last =(int) get_user_meta( $user_id, '_wp2_shopify_last_sync_request', true );
+		$last =(int) get_user_meta( $user_id, '_redeemid_last_sync_request', true );
 
 		if ( time() - $last < MINUTE_IN_SECONDS ) {
 			return 'sync_wait';
 		}
 
-		update_user_meta( $user_id, '_wp2_shopify_last_sync_request', time() );
+		update_user_meta( $user_id, '_redeemid_last_sync_request', time() );
 
 		if ( Admin::available() ) {
 			return is_wp_error( Reconciler::sync_user( $user_id, 'sync_now' ) ) ? 'sync_failed' : 'synced';
@@ -489,9 +489,9 @@ final class Flow {
 	}
 
 	public static function handle_sync(): void {
-		check_admin_referer( 'wp2_shopify_sync' );
+		check_admin_referer( 'redeemid_sync' );
 
-		self::redirect( add_query_arg( 'wp2s_notice', self::sync_now( get_current_user_id() ), self::posted_redirect() ) );
+		self::redirect( add_query_arg( 'redeemid_notice', self::sync_now( get_current_user_id() ), self::posted_redirect() ) );
 	}
 
 	// ------------------------------------------------------------- Helpers
@@ -515,35 +515,35 @@ final class Flow {
 
 	public static function message( string $code ): string {
 		return match ( $code ) {
-			'state_invalid'                                                                                  => __( 'Your sign-in link expired or was opened in a different browser. Please try again.', 'wp2-shopify' ),
-			'shopify_denied'                                                                                 => __( 'Sign-in was cancelled at Shopify.', 'wp2-shopify' ),
-			'exchange_failed'                                                                                => __( 'Shopify sign-in could not be completed. Please try again.', 'wp2-shopify' ),
-			'profile_failed'                                                                                 => __( 'Your Shopify profile could not be loaded. Please try again.', 'wp2-shopify' ),
-			'unavailable'                                                                                    => __( 'Sign-in is temporarily unavailable.', 'wp2-shopify' ),
-			'id_token_missing', 'id_token_issuer', 'id_token_audience', 'id_token_expired', 'id_token_nonce' => __( 'Shopify sign-in could not be verified. Please try again.', 'wp2-shopify' ),
-			'link_token_missing', 'link_token_mismatch'                                                      => __( 'That connect request is no longer valid. Start again from your account.', 'wp2-shopify' ),
-			'link_token_expired'                                                                             => __( 'That connect request expired. Start again from your account.', 'wp2-shopify' ),
-			'link_session_mismatch'                                                                          => __( 'That connect request belongs to a different session. Start again from your account.', 'wp2-shopify' ),
-			'link_user_mismatch'                                                                             => __( 'Please sign in to the WordPress account you want to connect, then try again.', 'wp2-shopify' ),
-			'admin_refused'                                                                                  => __( 'Administrator accounts cannot be connected to a Shopify customer.', 'wp2-shopify' ),
-			'admin_sign_in_refused'                                                                          => __( 'Administrator accounts cannot sign in with Shopify. Use the WordPress login instead.', 'wp2-shopify' ),
-			'already_shadow'                                                                                 => __( 'This account already signs in with Shopify.', 'wp2-shopify' ),
-			'email_unverified'                                                                               => __( 'Shopify did not confirm that email address, so the accounts were not connected.', 'wp2-shopify' ),
-			'email_mismatch'                                                                                 => __( 'Your Shopify email does not match this account\'s email, so the accounts were not connected.', 'wp2-shopify' ),
-			'customer_already_linked'                                                                        => __( 'That Shopify customer is already connected to another account.', 'wp2-shopify' ),
-			'link_cancelled'                                                                                 => __( 'The accounts were not connected.', 'wp2-shopify' ),
-			'linked'                                                                                         => __( 'Your Shopify account is now connected.', 'wp2-shopify' ),
-			'disconnected'                                                                                   => __( 'Your Shopify account was disconnected.', 'wp2-shopify' ),
-			'synced'                                                                                         => __( 'Your membership details were refreshed.', 'wp2-shopify' ),
-			'sync_failed'                                                                                    => __( 'Your details could not be refreshed right now. Please try again later.', 'wp2-shopify' ),
-			'sync_wait'                                                                                      => __( 'Your details were refreshed a moment ago.', 'wp2-shopify' ),
-			'existing_expired'                                                                               => __( 'That sign-in expired. Please log in with Shopify again.', 'wp2-shopify' ),
+			'state_invalid'                                                                                  => __( 'Your sign-in link expired or was opened in a different browser. Please try again.', 'redeemid' ),
+			'shopify_denied'                                                                                 => __( 'Sign-in was cancelled at Shopify.', 'redeemid' ),
+			'exchange_failed'                                                                                => __( 'Shopify sign-in could not be completed. Please try again.', 'redeemid' ),
+			'profile_failed'                                                                                 => __( 'Your Shopify profile could not be loaded. Please try again.', 'redeemid' ),
+			'unavailable'                                                                                    => __( 'Sign-in is temporarily unavailable.', 'redeemid' ),
+			'id_token_missing', 'id_token_issuer', 'id_token_audience', 'id_token_expired', 'id_token_nonce' => __( 'Shopify sign-in could not be verified. Please try again.', 'redeemid' ),
+			'link_token_missing', 'link_token_mismatch'                                                      => __( 'That connect request is no longer valid. Start again from your account.', 'redeemid' ),
+			'link_token_expired'                                                                             => __( 'That connect request expired. Start again from your account.', 'redeemid' ),
+			'link_session_mismatch'                                                                          => __( 'That connect request belongs to a different session. Start again from your account.', 'redeemid' ),
+			'link_user_mismatch'                                                                             => __( 'Please sign in to the WordPress account you want to connect, then try again.', 'redeemid' ),
+			'admin_refused'                                                                                  => __( 'Administrator accounts cannot be connected to a Shopify customer.', 'redeemid' ),
+			'admin_sign_in_refused'                                                                          => __( 'Administrator accounts cannot sign in with Shopify. Use the WordPress login instead.', 'redeemid' ),
+			'already_shadow'                                                                                 => __( 'This account already signs in with Shopify.', 'redeemid' ),
+			'email_unverified'                                                                               => __( 'Shopify did not confirm that email address, so the accounts were not connected.', 'redeemid' ),
+			'email_mismatch'                                                                                 => __( 'Your Shopify email does not match this account\'s email, so the accounts were not connected.', 'redeemid' ),
+			'customer_already_linked'                                                                        => __( 'That Shopify customer is already connected to another account.', 'redeemid' ),
+			'link_cancelled'                                                                                 => __( 'The accounts were not connected.', 'redeemid' ),
+			'linked'                                                                                         => __( 'Your Shopify account is now connected.', 'redeemid' ),
+			'disconnected'                                                                                   => __( 'Your Shopify account was disconnected.', 'redeemid' ),
+			'synced'                                                                                         => __( 'Your membership details were refreshed.', 'redeemid' ),
+			'sync_failed'                                                                                    => __( 'Your details could not be refreshed right now. Please try again later.', 'redeemid' ),
+			'sync_wait'                                                                                      => __( 'Your details were refreshed a moment ago.', 'redeemid' ),
+			'existing_expired'                                                                               => __( 'That sign-in expired. Please log in with Shopify again.', 'redeemid' ),
 			default                                                                                          => '',
 		};
 	}
 
 	public static function notice_url( string $code ): string {
-		return add_query_arg( 'wp2s_notice', rawurlencode( $code ), Config::callback_url() );
+		return add_query_arg( 'redeemid_notice', rawurlencode( $code ), Config::callback_url() );
 	}
 
 	/**
@@ -560,10 +560,10 @@ final class Flow {
 
 	private static function notice_html(): string {
 		// phpcs:disable WordPress.Security.NonceVerification -- display only.
-		$notice   = sanitize_key( wp_unslash( $_GET['wp2s_notice'] ?? '' ) );
-		$ref      = sanitize_text_field( wp_unslash( $_GET['wp2s_confirm'] ?? '' ) );
-		$existing = sanitize_text_field( wp_unslash( $_GET['wp2s_existing'] ?? '' ) );
-		$connect  = ! empty( $_GET['wp2s_connect'] );
+		$notice   = sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) );
+		$ref      = sanitize_text_field( wp_unslash( $_GET['redeemid_confirm'] ?? '' ) );
+		$existing = sanitize_text_field( wp_unslash( $_GET['redeemid_existing'] ?? '' ) );
+		$connect  = ! empty( $_GET['redeemid_connect'] );
 		$back     = self::safe_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ?? '' ) ) );
 		// phpcs:enable
 
@@ -574,12 +574,12 @@ final class Flow {
 		if ( $connect && is_user_logged_in() && ! Mirror::customer_id( get_current_user_id() ) && ! Linking::refusal( get_current_user_id() ) ) {
 			ob_start();
 			?>
-			<form class="wp2-shopify-notice wp2-shopify-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
-				<p><?php esc_html_e( 'You\'re signed in. Connect your Shopify account to this one so your membership works here.', 'wp2-shopify' ); ?></p>
-				<input type="hidden" name="action" value="wp2_shopify_connect">
+			<form class="redeemid-notice redeemid-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
+				<p><?php esc_html_e( 'You\'re signed in. Connect your Shopify account to this one so your membership works here.', 'redeemid' ); ?></p>
+				<input type="hidden" name="action" value="redeemid_connect">
 				<input type="hidden" name="redirect_to" value="<?php echo esc_attr( $back ); ?>">
-				<?php wp_nonce_field( 'wp2_shopify_connect' ); ?>
-				<button type="submit" class="wp-element-button"><?php esc_html_e( 'Connect your Shopify account', 'wp2-shopify' ); ?></button>
+				<?php wp_nonce_field( 'redeemid_connect' ); ?>
+				<button type="submit" class="wp-element-button"><?php esc_html_e( 'Connect your Shopify account', 'redeemid' ); ?></button>
 			</form>
 			<?php
 			return (string) ob_get_clean();
@@ -589,29 +589,29 @@ final class Flow {
 			$pending = Linking::peek( $ref );
 
 			if ( ! $pending || (int) $pending['user_id'] !== get_current_user_id() ) {
-				return '<div class="wp2-shopify-notice" role="alert"><p>' . esc_html( self::message( 'link_token_missing' ) ) . '</p></div>';
+				return '<div class="redeemid-notice" role="alert"><p>' . esc_html( self::message( 'link_token_missing' ) ) . '</p></div>';
 			}
 
 			$user = wp_get_current_user();
 
 			ob_start();
 			?>
-			<form class="wp2-shopify-notice wp2-shopify-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
+			<form class="redeemid-notice redeemid-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
 				<p>
 					<?php
 					printf(
 						/* translators: 1: Shopify email, 2: WordPress username */
-						esc_html__( 'Connect the Shopify customer %1$s to your account %2$s?', 'wp2-shopify' ),
+						esc_html__( 'Connect the Shopify customer %1$s to your account %2$s?', 'redeemid' ),
 						'<strong>' . esc_html( (string) $pending['email'] ) . '</strong>',
 						'<strong>' . esc_html( $user->user_login ) . '</strong>'
 					);
 					?>
 				</p>
-				<input type="hidden" name="action" value="wp2_shopify_link_confirm">
+				<input type="hidden" name="action" value="redeemid_link_confirm">
 				<input type="hidden" name="ref" value="<?php echo esc_attr( $ref ); ?>">
-				<?php wp_nonce_field( 'wp2_shopify_link_confirm' ); ?>
-				<button type="submit" name="confirm" value="1" class="wp-element-button"><?php esc_html_e( 'Connect accounts', 'wp2-shopify' ); ?></button>
-				<button type="submit" name="cancel" value="1" class="wp-element-button is-style-outline"><?php esc_html_e( 'Cancel', 'wp2-shopify' ); ?></button>
+				<?php wp_nonce_field( 'redeemid_link_confirm' ); ?>
+				<button type="submit" name="confirm" value="1" class="wp-element-button"><?php esc_html_e( 'Connect accounts', 'redeemid' ); ?></button>
+				<button type="submit" name="cancel" value="1" class="wp-element-button is-style-outline"><?php esc_html_e( 'Cancel', 'redeemid' ); ?></button>
 			</form>
 			<?php
 			return (string) ob_get_clean();
@@ -619,7 +619,7 @@ final class Flow {
 
 		$message = self::message( $notice );
 
-		return '' === $message ? '' : '<div class="wp2-shopify-notice" role="status"><p>' . esc_html( $message ) . '</p></div>';
+		return '' === $message ? '' : '<div class="redeemid-notice" role="status"><p>' . esc_html( $message ) . '</p></div>';
 	}
 
 	/**
@@ -630,12 +630,12 @@ final class Flow {
 		$pending = Linking::peek( $ref );
 
 		if ( ! $pending || 'existing' !== ( $pending['kind'] ?? '' ) ) {
-			return '<div class="wp2-shopify-notice" role="alert"><p>' . esc_html( self::message( 'existing_expired' ) ) . '</p></div>';
+			return '<div class="redeemid-notice" role="alert"><p>' . esc_html( self::message( 'existing_expired' ) ) . '</p></div>';
 		}
 
 		$after = add_query_arg(
 			[
-				'wp2s_connect' => 1,
+				'redeemid_connect' => 1,
 				'redirect_to'  => rawurlencode( (string) $pending['redirect_to'] ),
 			],
 			Config::callback_url()
@@ -643,23 +643,23 @@ final class Flow {
 
 		ob_start();
 		?>
-		<div class="wp2-shopify-notice wp2-shopify-existing">
+		<div class="redeemid-notice redeemid-existing">
 			<p>
 				<?php
 				printf(
 					/* translators: %s: email address */
-					esc_html__( 'You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place.', 'wp2-shopify' ),
+					esc_html__( 'You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place.', 'redeemid' ),
 					'<strong>' . esc_html( (string) $pending['email'] ) . '</strong>'
 				);
 				?>
 			</p>
 			<p>
-				<a class="wp-element-button" href="<?php echo esc_url( wp_login_url( $after ) ); ?>"><?php esc_html_e( 'Sign in to my account', 'wp2-shopify' ); ?></a>
+				<a class="wp-element-button" href="<?php echo esc_url( wp_login_url( $after ) ); ?>"><?php esc_html_e( 'Sign in to my account', 'redeemid' ); ?></a>
 			</p>
 			<form method="post" action="<?php echo esc_url( self::action_url() ); ?>">
-				<input type="hidden" name="action" value="wp2_shopify_new_account">
+				<input type="hidden" name="action" value="redeemid_new_account">
 				<input type="hidden" name="ref" value="<?php echo esc_attr( $ref ); ?>">
-				<button type="submit" class="wp2-shopify-link-button"><?php esc_html_e( 'No thanks, use a separate account', 'wp2-shopify' ); ?></button>
+				<button type="submit" class="redeemid-link-button"><?php esc_html_e( 'No thanks, use a separate account', 'redeemid' ); ?></button>
 			</form>
 		</div>
 		<?php
@@ -674,7 +674,7 @@ final class Flow {
 	 * Redirect targets are allow-listed to this site.
 	 */
 	public static function safe_redirect( string $url ): string {
-		$fallback = (string) apply_filters( 'wp2_shopify_default_redirect', home_url( '/' ) );
+		$fallback = (string) apply_filters( 'redeemid_default_redirect', home_url( '/' ) );
 
 		return wp_validate_redirect( '' !== $url ? $url : $fallback, $fallback );
 	}

@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
 /**
  * The state of a bulk resync, as plain arrays. Pure, so every transition is

@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Webhooks\Signature;
+use RedeemID\Webhooks\Signature;
 
 final class SignatureTest extends TestCase {
 	private const SECRET = 'test-secret-not-real';

@@ -1,16 +1,16 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Checker;
-use WP2_Shopify\Access\Context;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Access\Resolver;
-use WP2_Shopify\Access\TermRule;
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Entitlement\Member;
+use RedeemID\Access\Checker;
+use RedeemID\Access\Context;
+use RedeemID\Access\Levels;
+use RedeemID\Access\Resolver;
+use RedeemID\Access\TermRule;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Entitlement\Member;
 
 /**
  * The precedence table from the design doc, one test per row.

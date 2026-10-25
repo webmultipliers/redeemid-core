@@ -1,4 +1,4 @@
-.wp2-shopify-gate__panel {
+.redeemid-gate__panel {
 	padding: var(--wp--preset--spacing--40, 1.5rem);
 	border: 1px solid currentColor;
 	border-radius: 0.5rem;
@@ -11,22 +11,22 @@
 	}
 }
 
-.wp2-shopify-gate__actions {
+.redeemid-gate__actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--wp--preset--spacing--20, 0.75rem);
 }
 
-.wp2-shopify-paywall {
+.redeemid-paywall {
 	margin-block: var(--wp--preset--spacing--40, 1.5rem);
 }
 
-.wp2-shopify-gate__hint {
+.redeemid-gate__hint {
 	font-size: 0.9em;
 	opacity: 0.85;
 }
 
-.wp2-shopify-gate__actions form {
+.redeemid-gate__actions form {
 	display: inline;
 	margin: 0;
 }

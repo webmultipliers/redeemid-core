@@ -1,22 +1,22 @@
 <?php
 
-namespace WP2_Shopify\Blocks;
+namespace RedeemID\Blocks;
 
-use WP2_Shopify\Access\Checker;
-use WP2_Shopify\Access\Gatekeeper;
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\Membership;
-use WP2_Shopify\Access\Viewer;
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Entitlement\Rule;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Sync\LevelHistory;
-use WP2_Shopify\Sync\PostCheckout;
+use RedeemID\Access\Checker;
+use RedeemID\Access\Gatekeeper;
+use RedeemID\Access\Level;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\Membership;
+use RedeemID\Access\Viewer;
+use RedeemID\Auth\Flow;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Entitlement\Rule;
+use RedeemID\Settings;
+use RedeemID\Sync\LevelHistory;
+use RedeemID\Sync\PostCheckout;
 
 /**
- * Server-side gating for wp2-shopify/membership-gate.
+ * Server-side gating for redeemid/membership-gate.
  *
  * The decision is applied to the parsed block tree before anything renders:
  * render_block_data removes the Members only child for visitors who are not
@@ -25,16 +25,16 @@ use WP2_Shopify\Sync\PostCheckout;
  * pre_render_block is a second lock on the child itself.
  */
 final class Gate {
-	public const PARENT  = 'wp2-shopify/membership-gate';
-	public const MEMBERS = 'wp2-shopify/membership-gate-content';
-	public const TEASER  = 'wp2-shopify/membership-gate-fallback';
+	public const PARENT  = 'redeemid/membership-gate';
+	public const MEMBERS = 'redeemid/membership-gate-content';
+	public const TEASER  = 'redeemid/membership-gate-fallback';
 
 	public const RULE_ITEM   = 'item';
 	public const RULE_LEVEL  = 'level';
 	public const RULE_CUSTOM = 'custom';
 
 	/** The Blockstudio component that renders the locked-visitor panel (blocks/locked-panel). */
-	public const PANEL = 'wp2-shopify/locked-panel';
+	public const PANEL = 'redeemid/locked-panel';
 
 	public static function register(): void {
 		add_filter( 'render_block_data', [ self::class, 'filter_children' ], 10, 1 );
@@ -225,7 +225,7 @@ final class Gate {
 	}
 
 	/**
-	 * The locked-visitor panel, rendered by the wp2-shopify/locked-panel
+	 * The locked-visitor panel, rendered by the redeemid/locked-panel
 	 * Blockstudio component so themes can restyle or override it. What it
 	 * offers depends on why the visitor was turned away (PanelKind).
 	 *
@@ -248,7 +248,7 @@ final class Gate {
 		$here    = (string) get_permalink() ?: self::current_url();
 		$cta     = (string) ( $a['fallbackCtaLabel'] ?? '' );
 		$data    = [
-			'message'    => (string) ( ( $a['fallbackMessage'] ?? '' ) ?: __( 'This content is for members.', 'wp2-shopify' ) ),
+			'message'    => (string) ( ( $a['fallbackMessage'] ?? '' ) ?: __( 'This content is for members.', 'redeemid' ) ),
 			'reason'     => '',
 			'kind'       => $kind,
 			'level'      => $level,
@@ -266,48 +266,48 @@ final class Gate {
 			case PanelKind::SIGN_IN:
 				if ( false !== ( $a['showSignIn'] ?? true ) ) {
 					$data['signInUrl'] = Flow::login_url( $here );
-					$data['hint']      = __( 'Already a member, or just bought a membership? Log in with Shopify using the email address you checked out with.', 'wp2-shopify' );
+					$data['hint']      = __( 'Already a member, or just bought a membership? Log in with Shopify using the email address you checked out with.', 'redeemid' );
 				}
 				break;
 			case PanelKind::CONNECT:
-				$data['reason']     = __( 'Your account here isn\'t connected to a Shopify customer yet. Connect it to use a membership you have.', 'wp2-shopify' );
-				$data['formAction'] = 'wp2_shopify_connect';
-				$data['formLabel']  = __( 'Connect your Shopify account', 'wp2-shopify' );
+				$data['reason']     = __( 'Your account here isn\'t connected to a Shopify customer yet. Connect it to use a membership you have.', 'redeemid' );
+				$data['formAction'] = 'redeemid_connect';
+				$data['formLabel']  = __( 'Connect your Shopify account', 'redeemid' );
 				break;
 			case PanelKind::FINISHING:
-				$data['reason']     = __( 'We\'re finishing setting up your membership. This usually takes under a minute after checkout.', 'wp2-shopify' );
-				$data['formAction'] = 'wp2_shopify_sync';
-				$data['formLabel']  = __( 'Check again', 'wp2-shopify' );
+				$data['reason']     = __( 'We\'re finishing setting up your membership. This usually takes under a minute after checkout.', 'redeemid' );
+				$data['formAction'] = 'redeemid_sync';
+				$data['formLabel']  = __( 'Check again', 'redeemid' );
 				$data['ctaLabel']   = '';
 				break;
 			case PanelKind::RENEW:
 				/* translators: %s: access level label, such as Gold */
-				$data['reason']     = $label ? sprintf( __( 'Your %s membership has ended.', 'wp2-shopify' ), $label ) : __( 'Your membership has ended.', 'wp2-shopify' );
+				$data['reason']     = $label ? sprintf( __( 'Your %s membership has ended.', 'redeemid' ), $label ) : __( 'Your membership has ended.', 'redeemid' );
 				/* translators: %s: access level label */
-				$data['ctaLabel']   = $label ? sprintf( __( 'Renew %s', 'wp2-shopify' ), $label ) : ( $cta ?: __( 'Renew', 'wp2-shopify' ) );
-				$data['formAction'] = 'wp2_shopify_sync';
-				$data['formLabel']  = __( 'Already renewed? Refresh', 'wp2-shopify' );
+				$data['ctaLabel']   = $label ? sprintf( __( 'Renew %s', 'redeemid' ), $label ) : ( $cta ?: __( 'Renew', 'redeemid' ) );
+				$data['formAction'] = 'redeemid_sync';
+				$data['formLabel']  = __( 'Already renewed? Refresh', 'redeemid' );
 				break;
 			case PanelKind::UPGRADE:
 			case PanelKind::JOIN:
 				// The level's own button label is written for newcomers; an existing member is upgrading.
 				$data['ctaLabel']   = PanelKind::UPGRADE === $kind && $label
 					/* translators: %s: access level label */
-					? sprintf( __( 'Upgrade to %s', 'wp2-shopify' ), $label )
+					? sprintf( __( 'Upgrade to %s', 'redeemid' ), $label )
 					/* translators: %s: access level label */
-					: ( $cta ?: ( $label ? sprintf( __( 'Join %s', 'wp2-shopify' ), $label ) : '' ) );
-				$data['formAction'] = 'wp2_shopify_sync';
-				$data['formLabel']  = __( 'Already bought it? Refresh', 'wp2-shopify' );
+					: ( $cta ?: ( $label ? sprintf( __( 'Join %s', 'redeemid' ), $label ) : '' ) );
+				$data['formAction'] = 'redeemid_sync';
+				$data['formLabel']  = __( 'Already bought it? Refresh', 'redeemid' );
 				break;
 			case PanelKind::DISABLED:
-				$data['reason']   = __( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' );
+				$data['reason']   = __( 'Your account is disabled. Contact the store for help.', 'redeemid' );
 				$data['ctaLabel'] = '';
 				break;
 			case PanelKind::DRIP:
-				$data['message']  = __( 'This is part of your membership and opens soon.', 'wp2-shopify' );
+				$data['message']  = __( 'This is part of your membership and opens soon.', 'redeemid' );
 				$data['reason']   = (int) ( $a['unlocksAt'] ?? 0 ) > 0
 					/* translators: %s: a date */
-					? sprintf( __( 'It opens for you on %s.', 'wp2-shopify' ), wp_date( (string) get_option( 'date_format' ), (int) $a['unlocksAt'] ) )
+					? sprintf( __( 'It opens for you on %s.', 'redeemid' ), wp_date( (string) get_option( 'date_format' ), (int) $a['unlocksAt'] ) )
 					: '';
 				$data['ctaLabel'] = '';
 				// Personal: the date is this member's own.
@@ -333,7 +333,7 @@ final class Gate {
 		 * @param array<string, string> $data
 		 * @param Decision              $decision
 		 */
-		$data = (array) apply_filters( 'wp2_shopify_locked_panel', $data, $decision );
+		$data = (array) apply_filters( 'redeemid_locked_panel', $data, $decision );
 
 		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'name' => self::PANEL, 'data' => $data ] ) : '';
 	}

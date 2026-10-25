@@ -1,19 +1,19 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\BlockAccess;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Features\Cache;
-use WP2_Shopify\Features\Feature;
-use WP2_Shopify\Features\Grant;
-use WP2_Shopify\Features\Resolver;
-use WP2_Shopify\Features\Route;
-use WP2_Shopify\Features\Surfaces;
+use RedeemID\Access\BlockAccess;
+use RedeemID\Access\Levels;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Entitlement\Member;
+use RedeemID\Features\Cache;
+use RedeemID\Features\Feature;
+use RedeemID\Features\Grant;
+use RedeemID\Features\Resolver;
+use RedeemID\Features\Route;
+use RedeemID\Features\Surfaces;
 
 /**
  * The feature registry's pure core: the acceptance matrix and named tests,
@@ -253,7 +253,7 @@ final class FeaturesTest extends TestCase {
 			'quiet'   => Feature::from_array( 'quiet', [ 'cache' => 'private', 'enforcement' => [ 'php' ] ] ),
 		];
 
-		$this->assertSame( [ 'wp2-feature-ad-free' ], Surfaces::classes( $features, [ 'ad-free', 'quiet' ] ) );
+		$this->assertSame( [ 'redeemid-feature-ad-free' ], Surfaces::classes( $features, [ 'ad-free', 'quiet' ] ) );
 		$this->assertSame( [], Surfaces::classes( $features, [] ) );
 	}
 

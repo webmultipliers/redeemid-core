@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Decision;
+use RedeemID\Entitlement\Decision;
 
 /**
  * A visitor's result against an effective rule, with the level a wall should

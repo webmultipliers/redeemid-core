@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Integrations;
+namespace RedeemID\Integrations;
 
-use WP2_Shopify\Access\Gatekeeper;
-use WP2_Shopify\Access\Index;
-use WP2_Shopify\Access\Surfaces;
+use RedeemID\Access\Gatekeeper;
+use RedeemID\Access\Index;
+use RedeemID\Access\Surfaces;
 
 /**
  * Keeps SEO plugins from describing a gated item with its locked text.
@@ -40,8 +40,8 @@ final class SeoPlugins {
 		add_filter( 'rank_math/frontend/robots', [ self::class, 'robots' ] );
 		add_filter( 'wpseo_exclude_from_sitemap_by_post_ids', [ self::class, 'yoast_sitemap_exclude' ] );
 		add_filter( 'rank_math/sitemap/entry', [ self::class, 'rank_math_sitemap_entry' ], 10, 3 );
-		add_action( 'wp2_shopify_access_locked_changed', [ self::class, 'clear_sitemap_caches' ] );
-		add_action( 'wp2_shopify_access_changed', [ self::class, 'clear_sitemap_caches' ] );
+		add_action( 'redeemid_access_locked_changed', [ self::class, 'clear_sitemap_caches' ] );
+		add_action( 'redeemid_access_changed', [ self::class, 'clear_sitemap_caches' ] );
 	}
 
 	/**

@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Support\CustomerId;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Entitlement\Member;
+use RedeemID\Support\CustomerId;
+use RedeemID\Support\Logger;
 
 /**
  * The WordPress-side mirror of a Shopify customer. Shopify stays the
@@ -13,25 +13,25 @@ use WP2_Shopify\Support\Logger;
  * Meta keys keep the POC names where they already existed.
  */
 final class Mirror {
-	public const GID         = '_wp2_shopify_customer_id';
-	public const NUMERIC     = '_wp2_shopify_customer_numeric_id';
-	public const TAGS        = '_wp2_shopify_tags';
-	public const STATUS      = '_wp2_shopify_customer_status';
-	public const EMAIL       = '_wp2_shopify_email_address';
-	public const FIRST_NAME  = '_wp2_shopify_first_name';
-	public const LAST_NAME   = '_wp2_shopify_last_name';
-	public const VERIFIED    = '_wp2_shopify_verified_email';
-	public const EMAIL_OPTIN = '_wp2_shopify_email_marketing_consent';
-	public const SMS_OPTIN   = '_wp2_shopify_sms_marketing_consent';
-	public const SUMMARY     = '_wp2_shopify_purchasing_summary';
-	public const LAST_SYNC   = '_wp2_shopify_last_sync';
-	public const SYNC_SOURCE = '_wp2_shopify_sync_source';
-	public const SYNC_FAILED = '_wp2_shopify_sync_failed';
-	public const LAST_EVENT  = '_wp2_shopify_last_webhook_event';
-	public const LINKED_AT   = '_wp2_shopify_linked_at';
-	public const SINCE       = '_wp2_shopify_member_since';
-	public const RENEWS      = '_wp2_shopify_renews_on';
-	public const HISTORY     = '_wp2_shopify_level_history';
+	public const GID         = '_redeemid_customer_id';
+	public const NUMERIC     = '_redeemid_customer_numeric_id';
+	public const TAGS        = '_redeemid_tags';
+	public const STATUS      = '_redeemid_customer_status';
+	public const EMAIL       = '_redeemid_email_address';
+	public const FIRST_NAME  = '_redeemid_first_name';
+	public const LAST_NAME   = '_redeemid_last_name';
+	public const VERIFIED    = '_redeemid_verified_email';
+	public const EMAIL_OPTIN = '_redeemid_email_marketing_consent';
+	public const SMS_OPTIN   = '_redeemid_sms_marketing_consent';
+	public const SUMMARY     = '_redeemid_purchasing_summary';
+	public const LAST_SYNC   = '_redeemid_last_sync';
+	public const SYNC_SOURCE = '_redeemid_sync_source';
+	public const SYNC_FAILED = '_redeemid_sync_failed';
+	public const LAST_EVENT  = '_redeemid_last_webhook_event';
+	public const LINKED_AT   = '_redeemid_linked_at';
+	public const SINCE       = '_redeemid_member_since';
+	public const RENEWS      = '_redeemid_renews_on';
+	public const HISTORY     = '_redeemid_level_history';
 
 	/** Every key this class writes, for privacy export, erasure and disconnect. */
 	public const ALL_KEYS = [
@@ -39,8 +39,8 @@ final class Mirror {
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
 		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::HISTORY,
 		// Legacy POC keys removed on disconnect / erasure.
-		'_wp2_last_sync', '_wp2_shopify_real_email', '_wp2_shopify_refresh_token', '_wp2_shopify_customer_payload',
-		'_wp2_shopify_default_address', '_wp2_shopify_addresses', '_wp2_shopify_phone_number', '_wp2_shopify_deleted_at',
+		\RedeemID\Legacy::POC_LAST_SYNC, '_redeemid_real_email', '_redeemid_refresh_token', '_redeemid_customer_payload',
+		'_redeemid_default_address', '_redeemid_addresses', '_redeemid_phone_number', '_redeemid_deleted_at',
 	];
 
 	public static function find_user( CustomerId $id ): ?\WP_User {
@@ -85,7 +85,7 @@ final class Mirror {
 	 * the admin offers no Shopify links for it.
 	 */
 	public static function is_fixture( int $user_id ): bool {
-		return (bool) apply_filters( 'wp2_shopify_customer_is_fixture', false, $user_id );
+		return (bool) apply_filters( 'redeemid_customer_is_fixture', false, $user_id );
 	}
 
 	public static function customer_id( int $user_id ): ?CustomerId {

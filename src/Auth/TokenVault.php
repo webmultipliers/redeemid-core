@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
-use WP2_Shopify\Plugin;
-use WP2_Shopify\Support\Lock;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Plugin;
+use RedeemID\Support\Lock;
+use RedeemID\Support\Logger;
 
 /**
  * Shopify tokens for one WordPress login session.
@@ -15,7 +15,7 @@ use WP2_Shopify\Support\Logger;
  * second device does not overwrite the first device's tokens.
  */
 final class TokenVault {
-	private const KEY = 'wp2_shopify';
+	private const KEY = 'redeemid';
 
 	/** Session token captured from the set_auth_cookie action during sign-in. */
 	private static string $fresh_session = '';
@@ -133,14 +133,14 @@ final class TokenVault {
 		$tokens        = self::get( $user_id, $session_token );
 
 		if ( ! $tokens || '' === $tokens['refresh_token'] ) {
-			return new \WP_Error( 'wp2_shopify_no_session', 'There is no Shopify session to refresh.' );
+			return new \WP_Error( 'redeemid_no_session', 'There is no Shopify session to refresh.' );
 		}
 
 		$lock = 'refresh:' . hash( 'sha256', $session_token );
 
 		if ( ! Lock::acquire( $lock, 30 ) ) {
 			// Another request is refreshing this session; it will store the rotated token.
-			return new \WP_Error( 'wp2_shopify_refresh_busy', 'Session refresh already in progress.' );
+			return new \WP_Error( 'redeemid_refresh_busy', 'Session refresh already in progress.' );
 		}
 
 		try {

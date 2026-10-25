@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
 /**
  * PKCE and OAuth random values (RFC 7636). Generated server-side only; the

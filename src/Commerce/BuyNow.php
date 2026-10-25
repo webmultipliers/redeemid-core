@@ -1,12 +1,12 @@
 <?php
 
-namespace WP2_Shopify\Commerce;
+namespace RedeemID\Commerce;
 
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Shopify\Storefront;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\PostCheckout;
+use RedeemID\Auth\Flow;
+use RedeemID\Auth\TokenVault;
+use RedeemID\Shopify\Storefront;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\PostCheckout;
 
 /**
  * Buy-now without JavaScript: a plain form POST creates a
@@ -19,14 +19,14 @@ use WP2_Shopify\Sync\PostCheckout;
  * visitor to Shopify. A per-IP rate limit stops it being used to spam carts.
  */
 final class BuyNow {
-	public const ACTION = 'wp2_shopify_buy_now';
+	public const ACTION = 'redeemid_buy_now';
 	private const PER_MINUTE = 10;
 
 	public static function message( string $code ): string {
 		return match ( $code ) {
-			'buy_invalid'     => __( 'That option could not be found. Please choose again.', 'wp2-shopify' ),
-			'buy_busy'        => __( 'Too many checkout attempts. Please wait a minute and try again.', 'wp2-shopify' ),
-			'buy_unavailable' => __( 'Checkout is temporarily unavailable. Please try again shortly.', 'wp2-shopify' ),
+			'buy_invalid'     => __( 'That option could not be found. Please choose again.', 'redeemid' ),
+			'buy_busy'        => __( 'Too many checkout attempts. Please wait a minute and try again.', 'redeemid' ),
+			'buy_unavailable' => __( 'Checkout is temporarily unavailable. Please try again shortly.', 'redeemid' ),
 			default           => '',
 		};
 	}
@@ -109,7 +109,7 @@ final class BuyNow {
 	private static function within_rate_limit(): bool {
 		// phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__ -- only hashed into a rate-limit key on an uncached POST.
 		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-		$key = 'wp2_shopify_buy_' . md5( $ip );
+		$key = 'redeemid_buy_' . md5( $ip );
 		$n   = (int) get_transient( $key );
 
 		if ( $n >= self::PER_MINUTE ) {
@@ -122,7 +122,7 @@ final class BuyNow {
 	}
 
 	private static function back( string $url, string $code ): never {
-		wp_safe_redirect( add_query_arg( 'wp2s_notice', $code, $url ) );
+		wp_safe_redirect( add_query_arg( 'redeemid_notice', $code, $url ) );
 		exit;
 	}
 }

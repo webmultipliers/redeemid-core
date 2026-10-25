@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
-use WP2_Shopify\Support\CustomerId;
+use RedeemID\Support\CustomerId;
 
 /**
  * Reduce a webhook payload to the few fields its handler needs.

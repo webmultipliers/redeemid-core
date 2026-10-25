@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
 /**
  * Inbox records in a dedicated table with a retention cap.
@@ -13,7 +13,7 @@ final class WpdbInboxStore implements InboxStore {
 	public static function table(): string {
 		global $wpdb;
 
-		return $wpdb->prefix . 'wp2_shopify_webhooks';
+		return $wpdb->prefix . 'redeemid_webhooks';
 	}
 
 	public static function install(): void {
@@ -44,7 +44,7 @@ final class WpdbInboxStore implements InboxStore {
 			) {$charset};"
 		);
 
-		update_option( 'wp2_shopify_db_version', self::DB_VERSION, false );
+		update_option( 'redeemid_db_version', self::DB_VERSION, false );
 	}
 
 	public function insert_if_new( string $dedupe_key, array $row ): ?int {

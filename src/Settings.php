@@ -1,15 +1,15 @@
 <?php
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
-use WP2_Shopify\Entitlement\Evaluator;
+use RedeemID\Entitlement\Evaluator;
 
 /**
  * Non-secret settings. Each can also be forced from code with the
  * matching filter, so a site can keep them under version control.
  */
 final class Settings {
-	public const OPTION = 'wp2_shopify_settings';
+	public const OPTION = 'redeemid_settings';
 
 	private const DEFAULTS = [
 		'clear_cart_on_logout' => false,
@@ -28,7 +28,7 @@ final class Settings {
 	}
 
 	public static function get( string $key ): mixed {
-		return apply_filters( 'wp2_shopify_setting_' . $key, self::all()[ $key ] ?? null );
+		return apply_filters( 'redeemid_setting_' . $key, self::all()[ $key ] ?? null );
 	}
 
 	public static function sanitize( mixed $input ): array {

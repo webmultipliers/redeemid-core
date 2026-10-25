@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Support\CustomerId;
+use RedeemID\Support\CustomerId;
 
 final class CustomerIdTest extends TestCase {
 	public static function equivalent(): array {

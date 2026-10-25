@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Blocks\Gate;
-use WP2_Shopify\Features\Feature;
-use WP2_Shopify\Features\Registry;
-use WP2_Shopify\Settings;
+use RedeemID\Blocks\Gate;
+use RedeemID\Features\Feature;
+use RedeemID\Features\Registry;
+use RedeemID\Settings;
 
 /**
  * Per-block visibility: an Access setting on every block, decided on the
@@ -39,7 +39,7 @@ use WP2_Shopify\Settings;
  * holding every level.
  */
 final class BlockAccess {
-	public const ATTR = 'wp2Access';
+	public const ATTR = 'redeemidAccess';
 
 	public const EVERYONE = 'everyone';
 	public const READERS  = 'readers';
@@ -246,13 +246,13 @@ final class BlockAccess {
 	}
 
 	public static function editor_assets(): void {
-		$handle = 'wp2-shopify-block-access';
+		$handle = 'redeemid-block-access';
 
 		wp_enqueue_script(
 			$handle,
-			WP2_SHOPIFY_URL . 'assets/block-access.js',
+			REDEEMID_URL . 'assets/block-access.js',
 			[ 'wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-data', 'wp-i18n', 'wp-blocks' ],
-			WP2_SHOPIFY_VERSION,
+			REDEEMID_VERSION,
 			// In the head, so the attribute filter runs before any block type registers.
 			false
 		);
@@ -267,7 +267,7 @@ final class BlockAccess {
 
 		wp_add_inline_script(
 			$handle,
-			'window.wp2ShopifyBlockAccess = ' . wp_json_encode(
+			'window.redeemidBlockAccess = ' . wp_json_encode(
 				[
 					'attr'     => self::ATTR,
 					'skip'     => self::SKIP,
@@ -295,8 +295,8 @@ final class BlockAccess {
 			return;
 		}
 
-		wp_register_style( 'wp2-shopify-block-access', false, [], WP2_SHOPIFY_VERSION );
-		wp_add_inline_style( 'wp2-shopify-block-access', '.wp2-access-limited{outline:1px dashed #b26200;outline-offset:3px}.wp2-access-locked,.wp2-access-without{outline-color:#2271b1}' );
-		wp_enqueue_style( 'wp2-shopify-block-access' );
+		wp_register_style( 'redeemid-block-access', false, [], REDEEMID_VERSION );
+		wp_add_inline_style( 'redeemid-block-access', '.redeemid-access-limited{outline:1px dashed #b26200;outline-offset:3px}.redeemid-access-locked,.redeemid-access-without{outline-color:#2271b1}' );
+		wp_enqueue_style( 'redeemid-block-access' );
 	}
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Rule;
+use RedeemID\Entitlement\Rule;
 
 /**
  * A named access level: a reusable condition plus how the wall presents it.

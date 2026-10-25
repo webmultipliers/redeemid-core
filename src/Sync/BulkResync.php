@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
-use WP2_Shopify\Shopify\Admin;
-use WP2_Shopify\Shopify\Http;
-use WP2_Shopify\Support\Lock;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Shopify\Admin;
+use RedeemID\Shopify\Http;
+use RedeemID\Support\Lock;
+use RedeemID\Support\Logger;
 
 /**
  * Re-read every linked customer from Shopify, when staff ask for it. Nothing
@@ -15,12 +15,12 @@ use WP2_Shopify\Support\Logger;
  * order, so it can pause, resume and survive a failed request. Pacer keeps it
  * to the spare half of the store's API budget, waits out Shopify being busy
  * with a growing backoff, and stops after repeated failures. WP-Cron (or
- * Action Scheduler) carries it; while staff have Shopify → Customers open, the
+ * Action Scheduler) carries it; while staff have RedeemID → Customers open, the
  * page also nudges it along, so it finishes even where WP-Cron is unreliable.
  */
 final class BulkResync {
-	public const OPTION = 'wp2_shopify_bulk_resync';
-	public const HOOK   = 'wp2_shopify_bulk_resync';
+	public const OPTION = 'redeemid_bulk_resync';
+	public const HOOK   = 'redeemid_bulk_resync';
 	public const SOURCE = 'bulk';
 
 	private const LOCK  = 'bulk_resync';
@@ -220,7 +220,7 @@ final class BulkResync {
 		$at = time() + max( 0, $delay );
 
 		if ( function_exists( 'as_schedule_single_action' ) ) {
-			as_schedule_single_action( $at, self::HOOK, [], 'wp2-shopify' );
+			as_schedule_single_action( $at, self::HOOK, [], 'redeemid' );
 			return;
 		}
 
@@ -229,7 +229,7 @@ final class BulkResync {
 
 	public static function unschedule(): void {
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
-			as_unschedule_all_actions( self::HOOK, [], 'wp2-shopify' );
+			as_unschedule_all_actions( self::HOOK, [], 'redeemid' );
 		}
 
 		wp_clear_scheduled_hook( self::HOOK );

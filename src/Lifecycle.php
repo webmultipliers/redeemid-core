@@ -1,15 +1,15 @@
 <?php
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
-use WP2_Shopify\Access\Index;
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Auth\ShadowUsers;
-use WP2_Shopify\Support\EventLog;
-use WP2_Shopify\Sync\BulkResync;
-use WP2_Shopify\Sync\Reconciler;
-use WP2_Shopify\Webhooks\Monitor;
-use WP2_Shopify\Webhooks\WpdbInboxStore;
+use RedeemID\Access\Index;
+use RedeemID\Auth\Flow;
+use RedeemID\Auth\ShadowUsers;
+use RedeemID\Support\EventLog;
+use RedeemID\Sync\BulkResync;
+use RedeemID\Sync\Reconciler;
+use RedeemID\Webhooks\Monitor;
+use RedeemID\Webhooks\WpdbInboxStore;
 
 final class Lifecycle {
 	public static function activate(): void {
@@ -19,8 +19,8 @@ final class Lifecycle {
 		Flow::add_rewrite();
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules -- activation hook only.
 
-		if ( ! wp_next_scheduled( 'wp2_shopify_prune' ) ) {
-			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wp2_shopify_prune' );
+		if ( ! wp_next_scheduled( 'redeemid_prune' ) ) {
+			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'redeemid_prune' );
 		}
 
 		Monitor::ensure_scheduled();
@@ -44,7 +44,7 @@ final class Lifecycle {
 
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( Reconciler::RETIRED_HOOK );
-		wp_clear_scheduled_hook( 'wp2_shopify_prune' );
+		wp_clear_scheduled_hook( 'redeemid_prune' );
 		Monitor::unschedule();
 		BulkResync::unschedule();
 		wp_clear_scheduled_hook( Index::REINDEX );

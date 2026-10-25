@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/membership-gate-fallback",
+	"name": "redeemid/membership-gate-fallback",
 	"title": "Public Teaser Area",
 	"category": "widgets",
 	"icon": "visibility",
 	"description": "Shown to visitors who are not entitled, when the gate uses the teaser area. Public by definition.",
-	"parent": [ "wp2-shopify/membership-gate" ],
-	"textdomain": "wp2-shopify",
+	"parent": [ "redeemid/membership-gate" ],
+	"textdomain": "redeemid",
 	"supports": {
 		"html": false,
 		"inserter": false,

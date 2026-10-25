@@ -16,120 +16,120 @@
 defined( 'ABSPATH' ) || exit;
 
 // A Blockstudio fetch-populated select stores {value, label}; older content holds the bare handle.
-$wp2_handle      = sanitize_title( \WP2_Shopify\Blocks\Gate::option( $a['productHandle'] ?? '', '' ) );
-$wp2_button      = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Join now', 'wp2-shopify' );
-$wp2_classes     = 'wp2-shopify-plan' . ( ! empty( $a['highlight'] ) ? ' is-highlighted' : '' );
-$wp2_unavailable = static function ( string $message ) use ( $wp2_classes, $a ): void {
+$redeemid_handle      = sanitize_title( \RedeemID\Blocks\Gate::option( $a['productHandle'] ?? '', '' ) );
+$redeemid_button      = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Join now', 'redeemid' );
+$redeemid_classes     = 'redeemid-plan' . ( ! empty( $a['highlight'] ) ? ' is-highlighted' : '' );
+$redeemid_unavailable = static function ( string $message ) use ( $redeemid_classes, $a ): void {
 	?>
-	<div useBlockProps class="<?php echo esc_attr( $wp2_classes ); ?> is-unavailable">
+	<div useBlockProps class="<?php echo esc_attr( $redeemid_classes ); ?> is-unavailable">
 		<?php if ( ! empty( $a['heading'] ) ) : ?>
-			<h3 class="wp2-shopify-plan__title"><?php echo esc_html( (string) $a['heading'] ); ?></h3>
+			<h3 class="redeemid-plan__title"><?php echo esc_html( (string) $a['heading'] ); ?></h3>
 		<?php endif; ?>
-		<p class="wp2-shopify-plan__notice"><?php echo esc_html( $message ); ?></p>
+		<p class="redeemid-plan__notice"><?php echo esc_html( $message ); ?></p>
 	</div>
 	<?php
 };
 
 // Blockstudio reads a template that returns early as one that rendered nothing, and then skips the
 // block's stylesheet, so every branch that prints markup runs to the end of the file instead.
-$wp2_product = null;
-$wp2_problem = '';
+$redeemid_product = null;
+$redeemid_problem = '';
 
 if ( $isPreview ) {
-	$wp2_problem = 'preview';
-} elseif ( '' === $wp2_handle ) {
-	$wp2_problem = $isEditor ? __( 'Choose a Shopify product in the block settings.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
-} elseif ( ! \WP2_Shopify\Shopify\Storefront::available() ) {
-	$wp2_problem = $isEditor ? __( 'Add a Storefront private (or public) access token in Shopify → Settings, or as WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN in wp-config.php, to show live prices and checkout.', 'wp2-shopify' ) : __( 'This plan is not available right now.', 'wp2-shopify' );
+	$redeemid_problem = 'preview';
+} elseif ( '' === $redeemid_handle ) {
+	$redeemid_problem = $isEditor ? __( 'Choose a Shopify product in the block settings.', 'redeemid' ) : __( 'This plan is not available right now.', 'redeemid' );
+} elseif ( ! \RedeemID\Shopify\Storefront::available() ) {
+	$redeemid_problem = $isEditor ? __( 'Add a Storefront private (or public) access token in RedeemID → Settings, or as REDEEMID_STOREFRONT_PRIVATE_TOKEN in wp-config.php, to show live prices and checkout.', 'redeemid' ) : __( 'This plan is not available right now.', 'redeemid' );
 } else {
-	$wp2_product = \WP2_Shopify\Shopify\Storefront::product( $wp2_handle );
+	$redeemid_product = \RedeemID\Shopify\Storefront::product( $redeemid_handle );
 
-	if ( is_wp_error( $wp2_product ) ) {
-		$wp2_problem = __( 'Plans are temporarily unavailable. Please try again shortly.', 'wp2-shopify' );
-	} elseif ( null === $wp2_product || ! $wp2_product['variants'] ) {
-		$wp2_problem = $isEditor ? sprintf( /* translators: %s: product handle */ __( 'No Shopify product with the handle "%s" is published to this sales channel.', 'wp2-shopify' ), $wp2_handle ) : __( 'This plan is not available right now.', 'wp2-shopify' );
+	if ( is_wp_error( $redeemid_product ) ) {
+		$redeemid_problem = __( 'Plans are temporarily unavailable. Please try again shortly.', 'redeemid' );
+	} elseif ( null === $redeemid_product || ! $redeemid_product['variants'] ) {
+		$redeemid_problem = $isEditor ? sprintf( /* translators: %s: product handle */ __( 'No Shopify product with the handle "%s" is published to this sales channel.', 'redeemid' ), $redeemid_handle ) : __( 'This plan is not available right now.', 'redeemid' );
 	}
 }
 
-if ( 'preview' === $wp2_problem ) :
+if ( 'preview' === $redeemid_problem ) :
 	// The inserter preview shows sample data, never a live Shopify call.
 	?>
-	<div useBlockProps class="<?php echo esc_attr( $wp2_classes ); ?>">
-		<h3 class="wp2-shopify-plan__title"><?php echo esc_html( (string) ( $a['heading'] ?? '' ) ?: __( 'Gold membership', 'wp2-shopify' ) ); ?></h3>
-		<p class="wp2-shopify-plan__price">$12.00</p>
-		<p class="wp2-shopify-plan__description"><?php esc_html_e( 'Every story, the archive and the weekly briefing.', 'wp2-shopify' ); ?></p>
-		<span class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></span>
+	<div useBlockProps class="<?php echo esc_attr( $redeemid_classes ); ?>">
+		<h3 class="redeemid-plan__title"><?php echo esc_html( (string) ( $a['heading'] ?? '' ) ?: __( 'Gold membership', 'redeemid' ) ); ?></h3>
+		<p class="redeemid-plan__price">$12.00</p>
+		<p class="redeemid-plan__description"><?php esc_html_e( 'Every story, the archive and the weekly briefing.', 'redeemid' ); ?></p>
+		<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>
 	</div>
 	<?php
-elseif ( '' !== $wp2_problem ) :
-	$wp2_unavailable( $wp2_problem );
+elseif ( '' !== $redeemid_problem ) :
+	$redeemid_unavailable( $redeemid_problem );
 else :
-$wp2_variant     = \WP2_Shopify\Shopify\Storefront::pick_variant( $wp2_product, (string) ( $a['variantId'] ?? '' ) );
-$wp2_title       = (string) ( $a['heading'] ?? '' ) ?: $wp2_product['title'];
-$wp2_description = (string) ( $a['description'] ?? '' ) ?: $wp2_product['description'];
-$wp2_plan        = \WP2_Shopify\Shopify\Storefront::pick_plan( $wp2_product, $wp2_variant, (string) ( $a['sellingPlanId'] ?? '' ) );
-$wp2_charge      = $wp2_plan && $wp2_plan['price'] ? $wp2_plan : $wp2_variant;
-$wp2_price       = \WP2_Shopify\Shopify\Storefront::format_money( $wp2_charge['price'] );
-$wp2_compare_at  = $wp2_plan ? $wp2_plan['compareAt'] : $wp2_variant['compareAt'];
-$wp2_compare     = ! empty( $a['showCompareAt'] ) && $wp2_compare_at && (float) $wp2_compare_at['amount'] > (float) ( $wp2_charge['price']['amount'] ?? 0 ) ? \WP2_Shopify\Shopify\Storefront::format_money( $wp2_compare_at ) : '';
-$wp2_image       = ! empty( $a['showImage'] ) ? $wp2_product['image'] : null;
+$redeemid_variant     = \RedeemID\Shopify\Storefront::pick_variant( $redeemid_product, (string) ( $a['variantId'] ?? '' ) );
+$redeemid_title       = (string) ( $a['heading'] ?? '' ) ?: $redeemid_product['title'];
+$redeemid_description = (string) ( $a['description'] ?? '' ) ?: $redeemid_product['description'];
+$redeemid_plan        = \RedeemID\Shopify\Storefront::pick_plan( $redeemid_product, $redeemid_variant, (string) ( $a['sellingPlanId'] ?? '' ) );
+$redeemid_charge      = $redeemid_plan && $redeemid_plan['price'] ? $redeemid_plan : $redeemid_variant;
+$redeemid_price       = \RedeemID\Shopify\Storefront::format_money( $redeemid_charge['price'] );
+$redeemid_compare_at  = $redeemid_plan ? $redeemid_plan['compareAt'] : $redeemid_variant['compareAt'];
+$redeemid_compare     = ! empty( $a['showCompareAt'] ) && $redeemid_compare_at && (float) $redeemid_compare_at['amount'] > (float) ( $redeemid_charge['price']['amount'] ?? 0 ) ? \RedeemID\Shopify\Storefront::format_money( $redeemid_compare_at ) : '';
+$redeemid_image       = ! empty( $a['showImage'] ) ? $redeemid_product['image'] : null;
 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-$wp2_notice = $isEditor ? '' : \WP2_Shopify\Commerce\BuyNow::message( sanitize_key( wp_unslash( $_GET['wp2s_notice'] ?? '' ) ) );
-$wp2_return = $isEditor ? '' : remove_query_arg( 'wp2s_notice', \WP2_Shopify\Blocks\Gate::current_url() );
+$redeemid_notice = $isEditor ? '' : \RedeemID\Commerce\BuyNow::message( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) );
+$redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \RedeemID\Blocks\Gate::current_url() );
 ?>
-<div useBlockProps class="<?php echo esc_attr( $wp2_classes ); ?>">
-	<?php if ( $wp2_image ) : ?>
-		<img class="wp2-shopify-plan__image" src="<?php echo esc_url( $wp2_image['url'] ); ?>" alt="<?php echo esc_attr( $wp2_image['alt'] ); ?>" <?php echo $wp2_image['width'] ? 'width="' . (int) $wp2_image['width'] . '" height="' . (int) $wp2_image['height'] . '"' : ''; ?> loading="lazy">
+<div useBlockProps class="<?php echo esc_attr( $redeemid_classes ); ?>">
+	<?php if ( $redeemid_image ) : ?>
+		<img class="redeemid-plan__image" src="<?php echo esc_url( $redeemid_image['url'] ); ?>" alt="<?php echo esc_attr( $redeemid_image['alt'] ); ?>" <?php echo $redeemid_image['width'] ? 'width="' . (int) $redeemid_image['width'] . '" height="' . (int) $redeemid_image['height'] . '"' : ''; ?> loading="lazy">
 	<?php endif; ?>
 
-	<h3 class="wp2-shopify-plan__title"><?php echo esc_html( $wp2_title ); ?></h3>
+	<h3 class="redeemid-plan__title"><?php echo esc_html( $redeemid_title ); ?></h3>
 
-	<?php if ( '' !== $wp2_price ) : ?>
-		<p class="wp2-shopify-plan__price">
-			<?php echo esc_html( $wp2_price ); ?>
-			<?php if ( '' !== $wp2_compare ) : ?>
-				<s class="wp2-shopify-plan__compare"><?php echo esc_html( $wp2_compare ); ?></s>
+	<?php if ( '' !== $redeemid_price ) : ?>
+		<p class="redeemid-plan__price">
+			<?php echo esc_html( $redeemid_price ); ?>
+			<?php if ( '' !== $redeemid_compare ) : ?>
+				<s class="redeemid-plan__compare"><?php echo esc_html( $redeemid_compare ); ?></s>
 			<?php endif; ?>
 		</p>
 	<?php endif; ?>
 
-	<?php if ( $wp2_plan && '' !== $wp2_plan['name'] ) : ?>
-		<p class="wp2-shopify-plan__terms"><?php echo esc_html( $wp2_plan['name'] ); ?></p>
+	<?php if ( $redeemid_plan && '' !== $redeemid_plan['name'] ) : ?>
+		<p class="redeemid-plan__terms"><?php echo esc_html( $redeemid_plan['name'] ); ?></p>
 	<?php endif; ?>
 
-	<?php if ( $isEditor && $wp2_variant['plans'] ) : ?>
-		<div class="wp2-shopify-plan__notice">
-			<p><?php esc_html_e( 'Selling plans for this variant (put an ID in the block settings to sell on that plan):', 'wp2-shopify' ); ?></p>
+	<?php if ( $isEditor && $redeemid_variant['plans'] ) : ?>
+		<div class="redeemid-plan__notice">
+			<p><?php esc_html_e( 'Selling plans for this variant (put an ID in the block settings to sell on that plan):', 'redeemid' ); ?></p>
 			<ul>
-				<?php foreach ( $wp2_variant['plans'] as $wp2_option ) : ?>
-					<li><code><?php echo esc_html( (string) preg_replace( '#^.*/#', '', $wp2_option['id'] ) ); ?></code> <?php echo esc_html( $wp2_option['name'] . ( $wp2_option['price'] ? ' · ' . \WP2_Shopify\Shopify\Storefront::format_money( $wp2_option['price'] ) : '' ) ); ?></li>
+				<?php foreach ( $redeemid_variant['plans'] as $redeemid_option ) : ?>
+					<li><code><?php echo esc_html( (string) preg_replace( '#^.*/#', '', $redeemid_option['id'] ) ); ?></code> <?php echo esc_html( $redeemid_option['name'] . ( $redeemid_option['price'] ? ' · ' . \RedeemID\Shopify\Storefront::format_money( $redeemid_option['price'] ) : '' ) ); ?></li>
 				<?php endforeach; ?>
 			</ul>
 		</div>
 	<?php endif; ?>
 
-	<?php if ( '' !== $wp2_description ) : ?>
-		<p class="wp2-shopify-plan__description"><?php echo esc_html( wp_trim_words( $wp2_description, 40 ) ); ?></p>
+	<?php if ( '' !== $redeemid_description ) : ?>
+		<p class="redeemid-plan__description"><?php echo esc_html( wp_trim_words( $redeemid_description, 40 ) ); ?></p>
 	<?php endif; ?>
 
-	<?php if ( '' !== $wp2_notice ) : ?>
-		<p class="wp2-shopify-plan__notice" role="alert"><?php echo esc_html( $wp2_notice ); ?></p>
+	<?php if ( '' !== $redeemid_notice ) : ?>
+		<p class="redeemid-plan__notice" role="alert"><?php echo esc_html( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
-	<?php if ( ! $wp2_variant['available'] ) : ?>
-		<button type="button" class="wp-element-button" disabled><?php esc_html_e( 'Sold out', 'wp2-shopify' ); ?></button>
+	<?php if ( ! $redeemid_variant['available'] ) : ?>
+		<button type="button" class="wp-element-button" disabled><?php esc_html_e( 'Sold out', 'redeemid' ); ?></button>
 	<?php elseif ( $isEditor ) : ?>
-		<span class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></span>
+		<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>
 	<?php else : ?>
-		<form class="wp2-shopify-plan__form" method="post" action="<?php echo esc_url( \WP2_Shopify\Commerce\BuyNow::form_url() ); ?>">
-			<input type="hidden" name="action" value="<?php echo esc_attr( \WP2_Shopify\Commerce\BuyNow::ACTION ); ?>">
-			<input type="hidden" name="variant" value="<?php echo esc_attr( $wp2_variant['id'] ); ?>">
-			<?php if ( $wp2_plan ) : ?>
-				<input type="hidden" name="selling_plan" value="<?php echo esc_attr( $wp2_plan['id'] ); ?>">
+		<form class="redeemid-plan__form" method="post" action="<?php echo esc_url( \RedeemID\Commerce\BuyNow::form_url() ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( \RedeemID\Commerce\BuyNow::ACTION ); ?>">
+			<input type="hidden" name="variant" value="<?php echo esc_attr( $redeemid_variant['id'] ); ?>">
+			<?php if ( $redeemid_plan ) : ?>
+				<input type="hidden" name="selling_plan" value="<?php echo esc_attr( $redeemid_plan['id'] ); ?>">
 			<?php endif; ?>
-			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $wp2_return ); ?>">
-			<button type="submit" class="wp-element-button"><?php echo esc_html( $wp2_button ); ?></button>
+			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redeemid_return ); ?>">
+			<button type="submit" class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></button>
 		</form>
 	<?php endif; ?>
 </div>

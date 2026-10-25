@@ -1,21 +1,28 @@
 <?php
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
 /**
- * Backwards compatibility with the proof of concept.
- *
- * [wp2_shopify_identity] stays as a deprecated alias of [wp2_shopify_login]
- * (Auth\SignInLinks): both render the sign-in control.
+ * Shortcodes under the plugin's old names keep rendering, with a deprecation
+ * notice: page builders and classic widgets store them where Legacy::import()
+ * does not look. Each renders exactly as its new name does.
  */
 final class Compat {
 	public static function register(): void {
-		add_shortcode( 'wp2_shopify_identity', [ self::class, 'identity_shortcode' ] );
+		foreach ( array_keys( Legacy::SHORTCODES ) as $old ) {
+			add_shortcode( $old, [ self::class, 'legacy_shortcode' ] );
+		}
 	}
 
-	public static function identity_shortcode(): string {
-		_deprecated_function( '[wp2_shopify_identity]', '2.0.0', '[wp2_shopify_login] or the wp2-shopify/auth-action block' );
+	/**
+	 * @param array<string, string>|string $atts
+	 */
+	public static function legacy_shortcode( array|string $atts, ?string $content, string $tag ): string {
+		global $shortcode_tags;
 
-		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'id' => 'wp2-shopify/auth-action', 'data' => [] ] ) : '';
+		$new = Legacy::SHORTCODES[ $tag ] ?? '';
+		_deprecated_function( esc_html( "[{$tag}]" ), '2.0.0', esc_html( "[{$new}]" ) );
+
+		return isset( $shortcode_tags[ $new ] ) ? (string) call_user_func( $shortcode_tags[ $new ], $atts, $content, $new ) : '';
 	}
 }

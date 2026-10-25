@@ -1,28 +1,28 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Entitlement\Member;
+use RedeemID\Sync\Mirror;
 
 /**
  * Who the gates decide for on this request.
  *
  * Normally the signed-in visitor's synced mirror. Two exceptions, both for
- * people with the wp2_bypass_gates capability (administrators and editors
+ * people with the redeemid_bypass_gates capability (administrators and editors
  * unless a role says otherwise):
  *
  * - Bypass: on an item's own page, and only there, they read the whole item.
  *   Never in loops, feeds, search, REST, embeds or GraphQL, so what they see
  *   anywhere else is what visitors see.
- * - Preview as: ?wp2_preview_as=locked or =<level> makes this one request
+ * - Preview as: ?redeemid_preview_as=locked or =<level> makes this one request
  *   decide as a locked visitor or as a member holding that level, with no
  *   bypass. Nothing is stored: no cookie, no option, no user meta. The admin
  *   bar shows which view is on, with links to switch and to leave it.
  */
 final class Viewer {
-	public const CAP    = 'wp2_bypass_gates';
-	public const PARAM  = 'wp2_preview_as';
+	public const CAP    = 'redeemid_bypass_gates';
+	public const PARAM  = 'redeemid_preview_as';
 	public const LOCKED = 'locked';
 
 	public static function register(): void {
@@ -47,7 +47,7 @@ final class Viewer {
 	}
 
 	/**
-	 * The view requested with ?wp2_preview_as=, or null. Only people who could
+	 * The view requested with ?redeemid_preview_as=, or null. Only people who could
 	 * bypass may ask for one; for anyone else the parameter means nothing.
 	 */
 	public static function preview_as(): ?string {
@@ -124,22 +124,22 @@ final class Viewer {
 		$levels = LevelStore::levels();
 		$base   = remove_query_arg( self::PARAM );
 		$title  = null === $as
-			? __( 'Access: full view (bypass)', 'wp2-shopify' )
+			? __( 'Access: full view (bypass)', 'redeemid' )
 			/* translators: %s: a level label, or "a locked visitor" */
-			: sprintf( __( 'Access: viewing as %s', 'wp2-shopify' ), self::LOCKED === $as ? __( 'a locked visitor', 'wp2-shopify' ) : ( $levels->get( $as )?->label ?? $as ) );
+			: sprintf( __( 'Access: viewing as %s', 'redeemid' ), self::LOCKED === $as ? __( 'a locked visitor', 'redeemid' ) : ( $levels->get( $as )?->label ?? $as ) );
 
-		$bar->add_node( [ 'id' => 'wp2-access', 'title' => esc_html( $title ), 'href' => null === $as ? add_query_arg( self::PARAM, self::LOCKED, $base ) : $base ] );
+		$bar->add_node( [ 'id' => 'redeemid-access', 'title' => esc_html( $title ), 'href' => null === $as ? add_query_arg( self::PARAM, self::LOCKED, $base ) : $base ] );
 
 		if ( null !== $as ) {
-			$bar->add_node( [ 'parent' => 'wp2-access', 'id' => 'wp2-access-exit', 'title' => esc_html__( 'Exit preview', 'wp2-shopify' ), 'href' => $base ] );
+			$bar->add_node( [ 'parent' => 'redeemid-access', 'id' => 'redeemid-access-exit', 'title' => esc_html__( 'Exit preview', 'redeemid' ), 'href' => $base ] );
 		}
 
-		$bar->add_node( [ 'parent' => 'wp2-access', 'id' => 'wp2-access-locked', 'title' => esc_html__( 'View as a locked visitor', 'wp2-shopify' ), 'href' => add_query_arg( self::PARAM, self::LOCKED, $base ) ] );
+		$bar->add_node( [ 'parent' => 'redeemid-access', 'id' => 'redeemid-access-locked', 'title' => esc_html__( 'View as a locked visitor', 'redeemid' ), 'href' => add_query_arg( self::PARAM, self::LOCKED, $base ) ] );
 
 		foreach ( $levels->all() as $slug => $level ) {
 			if ( ! $level->builtin() ) {
 				/* translators: %s: level label */
-				$bar->add_node( [ 'parent' => 'wp2-access', 'id' => 'wp2-access-' . $slug, 'title' => esc_html( sprintf( __( 'View as %s', 'wp2-shopify' ), $level->label ) ), 'href' => add_query_arg( self::PARAM, $slug, $base ) ] );
+				$bar->add_node( [ 'parent' => 'redeemid-access', 'id' => 'redeemid-access-' . $slug, 'title' => esc_html( sprintf( __( 'View as %s', 'redeemid' ), $level->label ) ), 'href' => add_query_arg( self::PARAM, $slug, $base ) ] );
 			}
 		}
 	}

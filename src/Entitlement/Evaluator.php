@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Entitlement;
+namespace RedeemID\Entitlement;
 
 /**
  * Pure entitlement decision. No WordPress calls, so the whole

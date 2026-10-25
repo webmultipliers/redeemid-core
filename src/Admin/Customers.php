@@ -1,22 +1,22 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\Membership;
-use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Config;
-use WP2_Shopify\Shopify\Admin as AdminApi;
-use WP2_Shopify\Support\EventLog;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\BulkJob;
-use WP2_Shopify\Sync\BulkResync;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\Reconciler;
-use WP2_Shopify\Webhooks\WpdbInboxStore;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\Membership;
+use RedeemID\Auth\TokenVault;
+use RedeemID\Config;
+use RedeemID\Shopify\Admin as AdminApi;
+use RedeemID\Support\EventLog;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\BulkJob;
+use RedeemID\Sync\BulkResync;
+use RedeemID\Sync\Mirror;
+use RedeemID\Sync\Reconciler;
+use RedeemID\Webhooks\WpdbInboxStore;
 
 /**
- * Shopify → Customers: the linked customers, one customer's details, and the
+ * RedeemID → Customers: the linked customers, one customer's details, and the
  * controls an admin needs while testing: resync, edit tags, disconnect, and a
  * link to the customer in the Shopify admin. "Resync all" starts a paced
  * background resync of everyone (BulkResync), which staff can pause, resume
@@ -27,8 +27,8 @@ use WP2_Shopify\Webhooks\WpdbInboxStore;
  * Mirror::is_fixture) are edited locally instead.
  */
 final class Customers {
-	public const PAGE   = 'wp2-shopify-customers';
-	public const ACTION = 'wp2_shopify_customers';
+	public const PAGE   = 'redeemid-customers';
+	public const ACTION = 'redeemid_customers';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'action' ] );
@@ -60,7 +60,7 @@ final class Customers {
 		check_admin_referer( 'bulk-customers' );
 
 		if ( ! current_user_can( Menu::CAP ) ) {
-			wp_die( esc_html__( 'Not allowed.', 'wp2-shopify' ), 403 );
+			wp_die( esc_html__( 'Not allowed.', 'redeemid' ), 403 );
 		}
 
 		$do    = sanitize_key( wp_unslash( '-1' !== ( $_POST['action'] ?? '-1' ) ? $_POST['action'] : ( $_POST['action2'] ?? '' ) ) );
@@ -178,7 +178,7 @@ final class Customers {
 		$eta  = BulkJob::eta( $job );
 		$line = sprintf(
 			/* translators: 1: customers done 2: customers in total 3: customers whose tags or status changed 4: customers no longer in Shopify */
-			__( '%1$d of %2$d customers re-read. %3$d changed, %4$d no longer in Shopify.', 'wp2-shopify' ),
+			__( '%1$d of %2$d customers re-read. %3$d changed, %4$d no longer in Shopify.', 'redeemid' ),
 			$job['done'],
 			$job['total'],
 			$job['changed'],
@@ -187,12 +187,12 @@ final class Customers {
 
 		if ( null !== $eta && $eta > 0 ) {
 			/* translators: %s: human time difference, such as "5 mins" */
-			$line .= ' ' . sprintf( __( 'About %s left.', 'wp2-shopify' ), human_time_diff( time(), time() + $eta ) );
+			$line .= ' ' . sprintf( __( 'About %s left.', 'redeemid' ), human_time_diff( time(), time() + $eta ) );
 		}
 
 		if ( BulkJob::RUNNING === $job['status'] && (int) $job['next_at'] > time() + 5 ) {
 			/* translators: %s: human time difference */
-			$line .= ' ' . sprintf( __( 'Waiting %s for Shopify before the next batch.', 'wp2-shopify' ), human_time_diff( time(), (int) $job['next_at'] ) );
+			$line .= ' ' . sprintf( __( 'Waiting %s for Shopify before the next batch.', 'redeemid' ), human_time_diff( time(), (int) $job['next_at'] ) );
 		}
 
 		return [
@@ -287,17 +287,17 @@ final class Customers {
 		}
 
 		Menu::panel_start(
-			__( 'Activation', 'wp2-shopify' ),
-			__( 'Customers Shopify tags for each level, and how many of them have signed in to this site. Members who haven\'t can be pointed at the sign-in page. Counted once an hour.', 'wp2-shopify' ),
-			self::bulk_button( 'activation_refresh', __( 'Count again', 'wp2-shopify' ) )
+			__( 'Activation', 'redeemid' ),
+			__( 'Customers Shopify tags for each level, and how many of them have signed in to this site. Members who haven\'t can be pointed at the sign-in page. Counted once an hour.', 'redeemid' ),
+			self::bulk_button( 'activation_refresh', __( 'Count again', 'redeemid' ) )
 		);
 		?>
-		<div class="wp2s-panel__body wp2s-panel__body--flush">
+		<div class="redeemid-panel__body redeemid-panel__body--flush">
 			<table class="widefat striped">
-				<thead><tr><th><?php esc_html_e( 'Level', 'wp2-shopify' ); ?></th><th><?php esc_html_e( 'In Shopify', 'wp2-shopify' ); ?></th><th><?php esc_html_e( 'Signed in here', 'wp2-shopify' ); ?></th><th><?php esc_html_e( 'Activated', 'wp2-shopify' ); ?></th></tr></thead>
+				<thead><tr><th><?php esc_html_e( 'Level', 'redeemid' ); ?></th><th><?php esc_html_e( 'In Shopify', 'redeemid' ); ?></th><th><?php esc_html_e( 'Signed in here', 'redeemid' ); ?></th><th><?php esc_html_e( 'Activated', 'redeemid' ); ?></th></tr></thead>
 				<tbody>
 					<?php
-					$rows = [ [ __( 'All customers', 'wp2-shopify' ), $stats['shopify_total'], $stats['linked_total'], '' ] ];
+					$rows = [ [ __( 'All customers', 'redeemid' ), $stats['shopify_total'], $stats['linked_total'], '' ] ];
 
 					foreach ( $stats['levels'] as $slug => $row ) {
 						$rows[] = [ $row['label'], $row['shopify'], $row['linked'], $slug ];
@@ -317,7 +317,7 @@ final class Customers {
 			</table>
 		</div>
 		<?php if ( $stats['error'] ) : ?>
-			<div class="wp2s-panel__footer"><span class="description"><?php esc_html_e( 'Shopify could not be asked for its counts; the WordPress side is shown.', 'wp2-shopify' ); ?></span></div>
+			<div class="redeemid-panel__footer"><span class="description"><?php esc_html_e( 'Shopify could not be asked for its counts; the WordPress side is shown.', 'redeemid' ); ?></span></div>
 		<?php endif; ?>
 		<?php
 		Menu::panel_end();
@@ -328,56 +328,56 @@ final class Customers {
 		$open     = $job && BulkJob::is_open( $job );
 		$view     = $job ? self::bulk_view( $job ) : null;
 		$statuses = [
-			BulkJob::RUNNING   => [ 'warn', __( 'Running', 'wp2-shopify' ) ],
-			BulkJob::PAUSED    => [ 'neutral', __( 'Paused', 'wp2-shopify' ) ],
-			BulkJob::DONE      => [ 'ok', __( 'Finished', 'wp2-shopify' ) ],
-			BulkJob::CANCELLED => [ 'neutral', __( 'Cancelled', 'wp2-shopify' ) ],
-			BulkJob::FAILED    => [ 'error', __( 'Stopped', 'wp2-shopify' ) ],
+			BulkJob::RUNNING   => [ 'warn', __( 'Running', 'redeemid' ) ],
+			BulkJob::PAUSED    => [ 'neutral', __( 'Paused', 'redeemid' ) ],
+			BulkJob::DONE      => [ 'ok', __( 'Finished', 'redeemid' ) ],
+			BulkJob::CANCELLED => [ 'neutral', __( 'Cancelled', 'redeemid' ) ],
+			BulkJob::FAILED    => [ 'error', __( 'Stopped', 'redeemid' ) ],
 		];
 		$buttons  = '';
 
 		if ( ! $open ) {
-			$buttons .= self::bulk_button( 'bulk_start', $job ? __( 'Resync all again', 'wp2-shopify' ) : __( 'Resync all customers', 'wp2-shopify' ), 'primary', __( 'Re-read every linked customer from Shopify? It runs in the background and can be paused.', 'wp2-shopify' ) );
+			$buttons .= self::bulk_button( 'bulk_start', $job ? __( 'Resync all again', 'redeemid' ) : __( 'Resync all customers', 'redeemid' ), 'primary', __( 'Re-read every linked customer from Shopify? It runs in the background and can be paused.', 'redeemid' ) );
 		}
 
 		if ( $job && BulkJob::RUNNING === $job['status'] ) {
-			$buttons .= self::bulk_button( 'bulk_pause', __( 'Pause', 'wp2-shopify' ) );
+			$buttons .= self::bulk_button( 'bulk_pause', __( 'Pause', 'redeemid' ) );
 		}
 
 		if ( $job && in_array( $job['status'], [ BulkJob::PAUSED, BulkJob::FAILED ], true ) ) {
-			$buttons .= self::bulk_button( 'bulk_resume', __( 'Resume', 'wp2-shopify' ), 'primary' );
+			$buttons .= self::bulk_button( 'bulk_resume', __( 'Resume', 'redeemid' ), 'primary' );
 		}
 
 		if ( $job && ( $open || BulkJob::FAILED === $job['status'] ) ) {
-			$buttons .= self::bulk_button( 'bulk_cancel', __( 'Cancel', 'wp2-shopify' ) );
+			$buttons .= self::bulk_button( 'bulk_cancel', __( 'Cancel', 'redeemid' ) );
 		}
 
 		Menu::panel_start(
-			__( 'Resync all customers', 'wp2-shopify' ),
-			__( 'Re-reads every linked customer\'s tags and status from Shopify, 50 per request, using only the spare half of the store\'s API budget so sign-ins and webhooks are never slowed. It runs in the background: you can leave this page. Nothing starts it on a schedule.', 'wp2-shopify' ),
+			__( 'Resync all customers', 'redeemid' ),
+			__( 'Re-reads every linked customer\'s tags and status from Shopify, 50 per request, using only the spare half of the store\'s API budget so sign-ins and webhooks are never slowed. It runs in the background: you can leave this page. Nothing starts it on a schedule.', 'redeemid' ),
 			$buttons,
-			'wp2s-bulk'
+			'redeemid-bulk'
 		);
 
 		if ( $job ) :
 			[ $state, $label ] = $statuses[ $job['status'] ] ?? [ 'neutral', $job['status'] ];
 			?>
-			<div class="wp2s-panel__body" data-wp2s-bulk="<?php echo esc_attr( $job['status'] ); ?>">
+			<div class="redeemid-panel__body" data-redeemid-bulk="<?php echo esc_attr( $job['status'] ); ?>">
 				<p>
 					<?php echo Menu::status( $state, $label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 					<?php
 					/* translators: %s: date and time */
-					echo esc_html( sprintf( __( 'Started %s', 'wp2-shopify' ), wp_date( 'Y-m-d H:i', (int) $job['started_at'] ) ) );
+					echo esc_html( sprintf( __( 'Started %s', 'redeemid' ), wp_date( 'Y-m-d H:i', (int) $job['started_at'] ) ) );
 					?>
 				</p>
-				<progress class="wp2s-progress" max="100" value="<?php echo (int) $view['percent']; ?>"><?php echo (int) $view['percent']; ?>%</progress>
-				<p class="wp2s-bulk__line"><?php echo esc_html( $view['line'] ); ?></p>
-				<p class="wp2s-bulk__error"<?php echo '' === $view['error'] ? ' hidden' : ''; ?>><strong><?php esc_html_e( 'Last error:', 'wp2-shopify' ); ?></strong> <span><?php echo esc_html( $view['error'] ); ?></span></p>
+				<progress class="redeemid-progress" max="100" value="<?php echo (int) $view['percent']; ?>"><?php echo (int) $view['percent']; ?>%</progress>
+				<p class="redeemid-bulk__line"><?php echo esc_html( $view['line'] ); ?></p>
+				<p class="redeemid-bulk__error"<?php echo '' === $view['error'] ? ' hidden' : ''; ?>><strong><?php esc_html_e( 'Last error:', 'redeemid' ); ?></strong> <span><?php echo esc_html( $view['error'] ); ?></span></p>
 			</div>
 			<?php if ( BulkJob::RUNNING === $job['status'] ) : ?>
 				<script>
 				( function () {
-					var box = document.querySelector( '[data-wp2s-bulk]' );
+					var box = document.querySelector( '[data-redeemid-bulk]' );
 					var body = new URLSearchParams( { action: <?php echo wp_json_encode( self::ACTION ); ?>, nonce: <?php echo wp_json_encode( wp_create_nonce( self::ACTION ) ); ?> } );
 					var poll = function () {
 						fetch( <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>, { method: 'POST', credentials: 'same-origin', body: body } )
@@ -386,8 +386,8 @@ final class Customers {
 								if ( ! r || ! r.success || ! r.data ) { return; }
 								if ( r.data.status !== 'running' ) { window.location.reload(); return; }
 								box.querySelector( 'progress' ).value = r.data.percent;
-								box.querySelector( '.wp2s-bulk__line' ).textContent = r.data.line;
-								var err = box.querySelector( '.wp2s-bulk__error' );
+								box.querySelector( '.redeemid-bulk__line' ).textContent = r.data.line;
+								var err = box.querySelector( '.redeemid-bulk__error' );
 								err.hidden = ! r.data.error;
 								err.querySelector( 'span' ).textContent = r.data.error;
 								setTimeout( poll, 5000 );
@@ -484,19 +484,19 @@ final class Customers {
 		Menu::result_notice(
 			[
 				/* translators: %d: number of customers */
-				'synced'      => [ 'success', __( 'Resynced %d customer(s) from Shopify.', 'wp2-shopify' ) ],
+				'synced'      => [ 'success', __( 'Resynced %d customer(s) from Shopify.', 'redeemid' ) ],
 				/* translators: %d: number of customers */
-				'sync_failed' => [ 'error', __( 'Shopify could not be reached. See App events for the failed call.', 'wp2-shopify' ) ],
-				'no_admin'    => [ 'error', __( 'The Admin API is not configured, so the plugin cannot read from or write to Shopify. See Debug.', 'wp2-shopify' ) ],
+				'sync_failed' => [ 'error', __( 'Shopify could not be reached. See App events for the failed call.', 'redeemid' ) ],
+				'no_admin'    => [ 'error', __( 'The Admin API is not configured, so the plugin cannot read from or write to Shopify. See Debug.', 'redeemid' ) ],
 				/* translators: %d: number of users */
-				'unlinked'    => [ 'success', __( 'Disconnected %d user(s) from Shopify. Their WordPress accounts were kept.', 'wp2-shopify' ) ],
-				'tags_saved'  => [ 'success', __( 'Tags saved.', 'wp2-shopify' ) ],
-				'tags_failed' => [ 'error', __( 'Shopify rejected the tag change. The tags below are what Shopify holds now.', 'wp2-shopify' ) ],
-				'bulk_started'   => [ 'success', __( 'Resync started. It runs in the background; progress is below.', 'wp2-shopify' ) ],
-				'bulk_running'   => [ 'warning', __( 'A resync is already in progress.', 'wp2-shopify' ) ],
-				'bulk_paused'    => [ 'success', __( 'Resync paused. It stops after the batch in progress.', 'wp2-shopify' ) ],
-				'bulk_resumed'   => [ 'success', __( 'Resync resumed from where it stopped.', 'wp2-shopify' ) ],
-				'bulk_cancelled' => [ 'success', __( 'Resync cancelled. Customers already re-read keep their new data.', 'wp2-shopify' ) ],
+				'unlinked'    => [ 'success', __( 'Disconnected %d user(s) from Shopify. Their WordPress accounts were kept.', 'redeemid' ) ],
+				'tags_saved'  => [ 'success', __( 'Tags saved.', 'redeemid' ) ],
+				'tags_failed' => [ 'error', __( 'Shopify rejected the tag change. The tags below are what Shopify holds now.', 'redeemid' ) ],
+				'bulk_started'   => [ 'success', __( 'Resync started. It runs in the background; progress is below.', 'redeemid' ) ],
+				'bulk_running'   => [ 'warning', __( 'A resync is already in progress.', 'redeemid' ) ],
+				'bulk_paused'    => [ 'success', __( 'Resync paused. It stops after the batch in progress.', 'redeemid' ) ],
+				'bulk_resumed'   => [ 'success', __( 'Resync resumed from where it stopped.', 'redeemid' ) ],
+				'bulk_cancelled' => [ 'success', __( 'Resync cancelled. Customers already re-read keep their new data.', 'redeemid' ) ],
 			]
 		);
 	}
@@ -506,23 +506,23 @@ final class Customers {
 		$actions = '';
 
 		if ( '' !== Config::admin_url() ) {
-			$actions .= sprintf( '<a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'wp2-shopify' ) );
+			$actions .= sprintf( '<a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'redeemid' ) );
 		}
 
 		$filters = CustomerQuery::filters();
 		$table->prepare_items();
-		Menu::page_start( __( 'Customers', 'wp2-shopify' ), __( 'Shopify customers', 'wp2-shopify' ), $actions, __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'wp2-shopify' ) );
+		Menu::page_start( __( 'Customers', 'redeemid' ), __( 'Shopify customers', 'redeemid' ), $actions, __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'redeemid' ) );
 		self::notices();
 		self::activation_panel();
 		self::bulk_panel();
 		?>
 		<?php $table->views(); ?>
-		<form method="get" id="wp2s-customer-filters">
+		<form method="get" id="redeemid-customer-filters">
 			<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
 			<?php foreach ( array_filter( [ 'state' => $filters['state'], 'orderby' => $filters['orderby'] ] ) as $key => $value ) : ?>
 				<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>">
 			<?php endforeach; ?>
-			<?php $table->search_box( __( 'Search name, email or customer ID', 'wp2-shopify' ), 'wp2s-customer' ); ?>
+			<?php $table->search_box( __( 'Search name, email or customer ID', 'redeemid' ), 'redeemid-customer' ); ?>
 		</form>
 		<form method="post">
 			<?php $table->display(); ?>
@@ -536,32 +536,32 @@ final class Customers {
 		$tags    = Mirror::tags( $user->ID );
 		$events  = EventLog::query( [ 'user' => $user->ID ], 15, 1 )['rows'];
 		$hooks   = ( new WpdbInboxStore() )->query( [ 'customer' => $id->numeric ], 15, 1 )['rows'];
-		$buttons = sprintf( '<a class="button" href="%s">%s</a>', esc_url( (string) get_edit_user_link( $user->ID ) ), esc_html__( 'Edit WordPress user', 'wp2-shopify' ) );
+		$buttons = sprintf( '<a class="button" href="%s">%s</a>', esc_url( (string) get_edit_user_link( $user->ID ) ), esc_html__( 'Edit WordPress user', 'redeemid' ) );
 
 		if ( ! $fixture && '' !== Config::admin_url() ) {
-			$buttons .= sprintf( '<a class="button" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers/' . $id->numeric ) ), esc_html__( 'Open in Shopify admin', 'wp2-shopify' ) );
+			$buttons .= sprintf( '<a class="button" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers/' . $id->numeric ) ), esc_html__( 'Open in Shopify admin', 'redeemid' ) );
 		}
 
-		$buttons .= sprintf( '<a class="button" href="%s" onclick="return confirm(\'%s\')">%s</a>', esc_url( self::action_url( 'unlink', $user->ID ) ), esc_js( __( 'Disconnect this user from Shopify? Their WordPress account stays.', 'wp2-shopify' ) ), esc_html__( 'Disconnect', 'wp2-shopify' ) );
-		$buttons .= sprintf( '<a class="button button-primary" href="%s">%s</a>', esc_url( self::action_url( 'sync', $user->ID, true ) ), esc_html__( 'Resync from Shopify', 'wp2-shopify' ) );
+		$buttons .= sprintf( '<a class="button" href="%s" onclick="return confirm(\'%s\')">%s</a>', esc_url( self::action_url( 'unlink', $user->ID ) ), esc_js( __( 'Disconnect this user from Shopify? Their WordPress account stays.', 'redeemid' ) ), esc_html__( 'Disconnect', 'redeemid' ) );
+		$buttons .= sprintf( '<a class="button button-primary" href="%s">%s</a>', esc_url( self::action_url( 'sync', $user->ID, true ) ), esc_html__( 'Resync from Shopify', 'redeemid' ) );
 
 		Menu::page_start(
-			__( 'Customers', 'wp2-shopify' ),
+			__( 'Customers', 'redeemid' ),
 			$user->display_name ?: $user->user_login,
-			sprintf( '<a class="page-title-action" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) ), esc_html__( 'All customers', 'wp2-shopify' ) ),
+			sprintf( '<a class="page-title-action" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) ), esc_html__( 'All customers', 'redeemid' ) ),
 			$user->user_email
 		);
 		self::notices();
 		?>
 
 		<?php if ( $fixture ) : ?>
-			<div class="notice notice-info inline"><p><?php esc_html_e( 'Test fixture: this customer does not exist in Shopify. Tag edits and resyncs stay in WordPress.', 'wp2-shopify' ); ?></p></div>
+			<div class="notice notice-info inline"><p><?php esc_html_e( 'Test fixture: this customer does not exist in Shopify. Tag edits and resyncs stay in WordPress.', 'redeemid' ); ?></p></div>
 		<?php endif; ?>
 
-		<div class="wp2s-columns">
-			<?php Menu::panel_start( __( 'Synced data', 'wp2-shopify' ), __( 'What WordPress last read from Shopify for this customer.', 'wp2-shopify' ), $buttons ); ?>
-				<div class="wp2s-panel__body wp2s-panel__body--flush">
-					<table class="widefat striped wp2s-kv">
+		<div class="redeemid-columns">
+			<?php Menu::panel_start( __( 'Synced data', 'redeemid' ), __( 'What WordPress last read from Shopify for this customer.', 'redeemid' ), $buttons ); ?>
+				<div class="redeemid-panel__body redeemid-panel__body--flush">
+					<table class="widefat striped redeemid-kv">
 						<?php foreach ( UserProfile::rows( $user ) as $label => $value ) : ?>
 							<tr><th scope="row"><?php echo esc_html( $label ); ?></th><td><?php echo esc_html( (string) $value ); ?></td></tr>
 						<?php endforeach; ?>
@@ -574,51 +574,51 @@ final class Customers {
 				<input type="hidden" name="do" value="tags">
 				<input type="hidden" name="user" value="<?php echo (int) $user->ID; ?>">
 				<?php wp_nonce_field( self::ACTION ); ?>
-				<?php Menu::panel_start( __( 'Tags', 'wp2-shopify' ), $fixture ? __( 'Saved in WordPress only, because this is a test fixture.', 'wp2-shopify' ) : __( 'Saved to Shopify, then read back.', 'wp2-shopify' ) ); ?>
-					<div class="wp2s-panel__body">
+				<?php Menu::panel_start( __( 'Tags', 'redeemid' ), $fixture ? __( 'Saved in WordPress only, because this is a test fixture.', 'redeemid' ) : __( 'Saved to Shopify, then read back.', 'redeemid' ) ); ?>
+					<div class="redeemid-panel__body">
 						<?php if ( $tags ) : ?>
-							<p class="description"><?php esc_html_e( 'Tick a tag to remove it.', 'wp2-shopify' ); ?></p>
-							<div class="wp2s-tag-list">
+							<p class="description"><?php esc_html_e( 'Tick a tag to remove it.', 'redeemid' ); ?></p>
+							<div class="redeemid-tag-list">
 								<?php foreach ( $tags as $tag ) : ?>
 									<label><input type="checkbox" name="remove[]" value="<?php echo esc_attr( $tag ); ?>"> <code><?php echo esc_html( $tag ); ?></code></label>
 								<?php endforeach; ?>
 							</div>
 						<?php else : ?>
-							<p><?php esc_html_e( 'No tags.', 'wp2-shopify' ); ?></p>
+							<p><?php esc_html_e( 'No tags.', 'redeemid' ); ?></p>
 						<?php endif; ?>
 						<p>
-							<label for="wp2s-add-tags"><?php esc_html_e( 'Add tags (comma separated)', 'wp2-shopify' ); ?></label><br>
-							<input type="text" id="wp2s-add-tags" name="add" class="regular-text" placeholder="gold-member">
+							<label for="redeemid-add-tags"><?php esc_html_e( 'Add tags (comma separated)', 'redeemid' ); ?></label><br>
+							<input type="text" id="redeemid-add-tags" name="add" class="regular-text" placeholder="gold-member">
 						</p>
 					</div>
-					<div class="wp2s-panel__footer">
-						<?php submit_button( $fixture ? __( 'Save tags', 'wp2-shopify' ) : __( 'Save tags to Shopify', 'wp2-shopify' ), 'secondary', 'submit', false ); ?>
+					<div class="redeemid-panel__footer">
+						<?php submit_button( $fixture ? __( 'Save tags', 'redeemid' ) : __( 'Save tags to Shopify', 'redeemid' ), 'secondary', 'submit', false ); ?>
 					</div>
 				<?php Menu::panel_end(); ?>
 			</form>
 		</div>
 
-		<div class="wp2s-columns">
-			<?php Menu::panel_start( __( 'Recent app events', 'wp2-shopify' ), '', sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Events::PAGE, [ 'user' => $user->ID ] ) ), esc_html__( 'View all', 'wp2-shopify' ) ) ); ?>
-				<div class="wp2s-panel__body wp2s-panel__body--flush">
+		<div class="redeemid-columns">
+			<?php Menu::panel_start( __( 'Recent app events', 'redeemid' ), '', sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Events::PAGE, [ 'user' => $user->ID ] ) ), esc_html__( 'View all', 'redeemid' ) ) ); ?>
+				<div class="redeemid-panel__body redeemid-panel__body--flush">
 					<table class="widefat striped">
 						<?php foreach ( $events as $row ) : ?>
 							<tr><td><?php echo Menu::ago( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['event'] ); ?></code></td><td><?php echo esc_html( trim( $row['label'] . ' ' . $row['status'] ) ); ?></td></tr>
 						<?php endforeach; ?>
 						<?php if ( ! $events ) : ?>
-							<tr><td><?php esc_html_e( 'Nothing logged yet.', 'wp2-shopify' ); ?></td></tr>
+							<tr><td><?php esc_html_e( 'Nothing logged yet.', 'redeemid' ); ?></td></tr>
 						<?php endif; ?>
 					</table>
 				</div>
 			<?php Menu::panel_end(); ?>
-			<?php Menu::panel_start( __( 'Recent webhooks', 'wp2-shopify' ), '', sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Webhooks::PAGE, [ 'customer' => $id->numeric ] ) ), esc_html__( 'View all', 'wp2-shopify' ) ) ); ?>
-				<div class="wp2s-panel__body wp2s-panel__body--flush">
+			<?php Menu::panel_start( __( 'Recent webhooks', 'redeemid' ), '', sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Webhooks::PAGE, [ 'customer' => $id->numeric ] ) ), esc_html__( 'View all', 'redeemid' ) ) ); ?>
+				<div class="redeemid-panel__body redeemid-panel__body--flush">
 					<table class="widefat striped">
 						<?php foreach ( $hooks as $row ) : ?>
 							<tr><td><?php echo Menu::ago( $row['received_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['topic'] ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
 						<?php endforeach; ?>
 						<?php if ( ! $hooks ) : ?>
-							<tr><td><?php esc_html_e( 'No webhooks for this customer.', 'wp2-shopify' ); ?></td></tr>
+							<tr><td><?php esc_html_e( 'No webhooks for this customer.', 'redeemid' ); ?></td></tr>
 						<?php endif; ?>
 					</table>
 				</div>

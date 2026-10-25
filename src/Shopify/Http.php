@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Shopify;
+namespace RedeemID\Shopify;
 
-use WP2_Shopify\Support\Logger;
+use RedeemID\Support\Logger;
 
 /**
  * Shared transport: version-pinned URLs are built by callers; this enforces

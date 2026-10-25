@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
 /**
  * Canonical Shopify customer identity.

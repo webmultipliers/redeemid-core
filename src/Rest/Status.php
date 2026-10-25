@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Rest;
+namespace RedeemID\Rest;
 
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Auth\ShadowUsers;
-use WP2_Shopify\Shopify\Discovery;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Auth\Flow;
+use RedeemID\Auth\ShadowUsers;
+use RedeemID\Shopify\Discovery;
+use RedeemID\Sync\Mirror;
 
 /**
  * The visitor's own display-safe state, for GET /auth/status and for
@@ -13,7 +13,7 @@ use WP2_Shopify\Sync\Mirror;
  * are Blockstudio dynamic islands instead.
  */
 final class Status {
-	public const AJAX_ACTION = 'wp2_shopify_status';
+	public const AJAX_ACTION = 'redeemid_status';
 
 	public static function register(): void {
 		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ self::class, 'ajax' ] );
@@ -47,8 +47,8 @@ final class Status {
 				'actionUrl'   => Flow::action_url(),
 				// Fresh per-user nonces for the hydrated forms; never baked into cacheable HTML.
 				'nonces'      => [
-					'logout'  => wp_create_nonce( 'wp2_shopify_logout' ),
-					'connect' => wp_create_nonce( 'wp2_shopify_connect' ),
+					'logout'  => wp_create_nonce( 'redeemid_logout' ),
+					'connect' => wp_create_nonce( 'redeemid_connect' ),
 					'rest'    => wp_create_nonce( 'wp_rest' ),
 				],
 			]
