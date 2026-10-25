@@ -21,7 +21,6 @@ final class Topics {
 	public const SUMMARY    = 'summary';
 	public const COMPLIANCE = 'compliance';
 	public const UNINSTALL  = 'uninstalled';
-	public const MEMBERSHIP = 'membership';
 	public const IGNORED    = 'ignored';
 
 	private const MAP = [
@@ -45,10 +44,11 @@ final class Topics {
 		'customers/redact'                          => self::COMPLIANCE,
 		'shop/redact'                               => self::COMPLIANCE,
 		'app/uninstalled'                           => self::UNINSTALL,
-		// Purchase-to-tag loop.
-		'orders/paid'                               => self::MEMBERSHIP,
-		'orders/cancelled'                          => self::MEMBERSHIP,
-		'refunds/create'                            => self::MEMBERSHIP,
+		// Subscribed by earlier versions for purchase-to-tag, now done in Shopify Flow
+		// or another app. Acknowledged so old subscriptions don't dead-letter.
+		'orders/paid'                               => self::IGNORED,
+		'orders/cancelled'                          => self::IGNORED,
+		'refunds/create'                            => self::IGNORED,
 	];
 
 	public static function kind( string $topic ): ?string {

@@ -6,9 +6,8 @@ use WP2_Shopify\Config;
 use WP2_Shopify\Support\CustomerId;
 
 /**
- * Admin API client, server-side only. Used for the plugin-owned purchase-to-tag
- * loop and for reconciliation. Never called
- * with credentials from the browser.
+ * Admin API client, server-side only. Used for reconciliation, resync, tag
+ * editing and webhook registration. Never called with credentials from the browser.
  */
 final class Admin {
 	public static function available(): bool {
@@ -45,27 +44,6 @@ final class Admin {
 	}
 
 	/**
-	 * Whether the token can read orders older than 60 days (read_all_orders).
-	 * Checked against the app's granted scopes once a day.
-	 */
-	public static function full_order_history(): bool {
-		$scopes = get_transient( 'wp2_shopify_admin_scopes' );
-
-		if ( ! is_string( $scopes ) ) {
-			$data = self::query( 'query WP2Scopes { currentAppInstallation { accessScopes { handle } } }', [], 'admin.scopes' );
-
-			if ( is_wp_error( $data ) ) {
-				return false;
-			}
-
-			$scopes = implode( ',', array_column( (array) ( $data['currentAppInstallation']['accessScopes'] ?? [] ), 'handle' ) );
-			set_transient( 'wp2_shopify_admin_scopes', $scopes, DAY_IN_SECONDS );
-		}
-
-		return in_array( 'read_all_orders', explode( ',', $scopes ), true );
-	}
-
-	/**
 	 * Gating fields for up to 50 customers in one call.
 	 *
 	 * @param CustomerId[] $ids
@@ -96,65 +74,6 @@ final class Admin {
 		}
 
 		return $out;
-	}
-
-	/**
-	 * Orders that can grant membership, newest first. `complete` is false when the
-	 * customer has more orders, or an order more line items, than one page holds.
-	 *
-	 * @return array{tags: string[], complete: bool, orders: array<int, array{cancelled: bool, financial_status: string, products: array<string, int>}>}|\WP_Error
-	 */
-	public static function membership_orders( CustomerId $id ): array|\WP_Error {
-		$data = self::query(
-			'query WP2Orders($id: ID!) { customer(id: $id) { tags orders(first: 100, reverse: true) { pageInfo { hasNextPage } nodes { cancelledAt displayFinancialStatus lineItems(first: 100) { pageInfo { hasNextPage } nodes { currentQuantity product { id } } } } } } }',
-			[ 'id' => $id->gid() ],
-			'admin.membership_orders'
-		);
-
-		if ( is_wp_error( $data ) ) {
-			return $data;
-		}
-
-		if ( ! is_array( $data['customer'] ?? null ) ) {
-			return new \WP_Error( 'shopify_no_customer', 'Customer not found.' );
-		}
-
-		$orders   = [];
-		$complete = empty( $data['customer']['orders']['pageInfo']['hasNextPage'] );
-
-		foreach ( (array) ( $data['customer']['orders']['nodes'] ?? [] ) as $order ) {
-			$products = [];
-
-			if ( ! empty( $order['lineItems']['pageInfo']['hasNextPage'] ) ) {
-				$complete = false;
-			}
-
-			foreach ( (array) ( $order['lineItems']['nodes'] ?? [] ) as $line ) {
-				$product = (string) ( $line['product']['id'] ?? '' );
-
-				if ( '' !== $product ) {
-					$products[ $product ] = ( $products[ $product ] ?? 0 ) + (int) ( $line['currentQuantity'] ?? 0 );
-				}
-			}
-
-			$orders[] = [
-				'cancelled'        => ! empty( $order['cancelledAt'] ),
-				'financial_status' => (string) ( $order['displayFinancialStatus'] ?? '' ),
-				'products'         => $products,
-			];
-		}
-
-		return [ 'tags' => (array) ( $data['customer']['tags'] ?? [] ), 'complete' => $complete, 'orders' => $orders ];
-	}
-
-	public static function order_customer( string $order_id ): ?CustomerId {
-		if ( ! ctype_digit( $order_id ) ) {
-			return null;
-		}
-
-		$data = self::query( 'query WP2OrderCustomer($id: ID!) { order(id: $id) { customer { id } } }', [ 'id' => 'gid://shopify/Order/' . $order_id ], 'admin.order_customer' );
-
-		return is_wp_error( $data ) ? null : CustomerId::parse( $data['order']['customer']['id'] ?? null );
 	}
 
 	/**

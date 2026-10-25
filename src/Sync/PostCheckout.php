@@ -2,15 +2,14 @@
 
 namespace WP2_Shopify\Sync;
 
-use WP2_Shopify\Membership\MembershipSync;
 use WP2_Shopify\Shopify\Admin;
 
 /**
  * Closes the gap between paying and access: a buyer who
- * returns from checkout should not see a page that is still locked while the
- * orders/paid webhook is in flight. A checkout handoff calls mark()
- * (nothing does yet); the next signed-in page views re-run the membership computation,
- * at most once a minute, for up to 30 minutes.
+ * returns from checkout should not see a page that is still locked while
+ * Shopify Flow (or another app) tags them and the tag webhook is in flight.
+ * A checkout handoff calls mark() (nothing does yet); the next signed-in page
+ * views re-read the customer's tags, at most once a minute, for up to 30 minutes.
  */
 final class PostCheckout {
 	public const META       = '_wp2_shopify_checkout_started';
@@ -53,11 +52,8 @@ final class PostCheckout {
 		}
 
 		$before = Mirror::tags( $user_id );
-		$result = MembershipSync::recompute( $id );
 
-		if ( null === $result ) {
-			Reconciler::sync_user( $user_id, 'post_checkout' );
-		}
+		Reconciler::sync_user( $user_id, 'post_checkout' );
 
 		if ( Mirror::tags( $user_id ) !== $before ) {
 			// Access changed: stop polling.

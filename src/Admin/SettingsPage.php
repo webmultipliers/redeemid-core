@@ -242,10 +242,19 @@ final class SettingsPage {
 	 */
 	private static function behaviour(): void {
 		$settings = Settings::all();
+		$saved    = get_option( Settings::OPTION, [] );
+		// Left by versions that tagged purchases themselves; the next save drops it.
+		$old_map  = is_array( $saved ) ? trim( (string) ( $saved['membership_map'] ?? '' ) ) : '';
 		?>
+		<?php if ( '' !== $old_map ) : ?>
+			<div class="notice notice-warning inline">
+				<p><?php esc_html_e( 'This plugin no longer adds or removes tags when an order is paid, cancelled or refunded. Tags it already added stay in Shopify. Set up the same rules in Shopify Flow (see docs/shopify-flow.md) before new orders arrive. Your old product map, for reference:', 'wp2-shopify' ); ?></p>
+				<pre><?php echo esc_html( $old_map ); ?></pre>
+			</div>
+		<?php endif; ?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'wp2_shopify' ); ?>
-			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How synced Shopify tags unlock content, which products grant tags, and what happens on sign-out.', 'wp2-shopify' ) ); ?>
+			<?php Menu::panel_start( __( 'Membership', 'wp2-shopify' ), __( 'How synced Shopify tags unlock content, and what happens on sign-out.', 'wp2-shopify' ) ); ?>
 			<div class="wp2s-panel__body wp2s-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
@@ -260,10 +269,9 @@ final class SettingsPage {
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="wp2s-map"><?php esc_html_e( 'Membership products', 'wp2-shopify' ); ?></label></th>
+					<th scope="row"><?php esc_html_e( 'Membership tags', 'wp2-shopify' ); ?></th>
 					<td>
-						<textarea id="wp2s-map" rows="5" cols="60" class="large-text code" name="<?php echo esc_attr( Settings::OPTION ); ?>[membership_map]" placeholder="1234567890: member, gold"><?php echo esc_textarea( (string) $settings['membership_map'] ); ?></textarea>
-						<p class="description"><?php esc_html_e( 'One per line: Shopify product ID, a colon, then the customer tags a paid order grants. The plugin adds these tags on payment and removes them on refund or cancellation. It never touches other tags.', 'wp2-shopify' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Customers get their tags in Shopify, from Shopify Flow or a subscription or membership app. This plugin only reads them. See docs/shopify-flow.md for recipes.', 'wp2-shopify' ); ?></p>
 					</td>
 				</tr>
 				<tr>
