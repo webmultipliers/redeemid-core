@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
 /**
  * What is wrong with the tag chain, from facts Monitor gathers. Pure, so the

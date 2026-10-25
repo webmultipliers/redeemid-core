@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Shopify;
+namespace RedeemID\Shopify;
 
 /**
  * Customer Account API: the signed-in customer's own data, server-side only.
@@ -10,7 +10,7 @@ final class CustomerAccount {
 	 * Field names verified at build time against the pinned version.
 	 */
 	private const IDENTITY_QUERY = <<<'GRAPHQL'
-query WP2Identity {
+query RedeemIDIdentity {
   customer {
     id
     firstName

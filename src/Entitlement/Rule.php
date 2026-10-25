@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Entitlement;
+namespace RedeemID\Entitlement;
 
 /**
  * A gate rule as saved in block attributes. It stores a rule,

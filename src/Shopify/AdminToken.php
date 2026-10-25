@@ -1,26 +1,26 @@
 <?php
 
-namespace WP2_Shopify\Shopify;
+namespace RedeemID\Shopify;
 
-use WP2_Shopify\Config;
-use WP2_Shopify\Plugin;
-use WP2_Shopify\Support\Lock;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Config;
+use RedeemID\Plugin;
+use RedeemID\Support\Lock;
+use RedeemID\Support\Logger;
 
 /**
  * The Admin API access token for the Dev Dashboard app named by
- * WP2_SHOPIFY_ADMIN_CLIENT_ID + WP2_SHOPIFY_ADMIN_CLIENT_SECRET. Its tokens come
+ * REDEEMID_ADMIN_CLIENT_ID + REDEEMID_ADMIN_CLIENT_SECRET. Its tokens come
  * from the client credentials grant and last about 24 hours, so they are
  * fetched on demand and cached, encrypted, until shortly before expiry.
  */
 final class AdminToken {
-	private const CACHE = 'wp2_shopify_admin_token';
+	private const CACHE = 'redeemid_admin_token';
 
 	/** Renew this many seconds before Shopify's stated expiry. */
 	private const MARGIN = 300;
 
 	public static function configured(): bool {
-		return Config::has( 'WP2_SHOPIFY_ADMIN_CLIENT_ID' ) && Config::has( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' );
+		return Config::has( 'REDEEMID_ADMIN_CLIENT_ID' ) && Config::has( 'REDEEMID_ADMIN_CLIENT_SECRET' );
 	}
 
 	public static function get(): string|\WP_Error {
@@ -78,8 +78,8 @@ final class AdminToken {
 			http_build_query(
 				[
 					'grant_type'    => 'client_credentials',
-					'client_id'     => Config::get( 'WP2_SHOPIFY_ADMIN_CLIENT_ID' ),
-					'client_secret' => Config::get( 'WP2_SHOPIFY_ADMIN_CLIENT_SECRET' ),
+					'client_id'     => Config::get( 'REDEEMID_ADMIN_CLIENT_ID' ),
+					'client_secret' => Config::get( 'REDEEMID_ADMIN_CLIENT_SECRET' ),
 				]
 			),
 			'admin.client_credentials'
@@ -88,7 +88,7 @@ final class AdminToken {
 		if ( is_wp_error( $response ) ) {
 			// shop_not_permitted: the app and the store are not in the same Shopify organization.
 			Logger::log( 'shopify.token_failed', [ 'error' => $response->get_error_message() ] );
-			update_option( 'wp2_shopify_admin_token_error', [ 'error' => $response->get_error_message(), 'at' => time() ], false );
+			update_option( 'redeemid_admin_token_error', [ 'error' => $response->get_error_message(), 'at' => time() ], false );
 
 			return $response;
 		}
@@ -100,8 +100,8 @@ final class AdminToken {
 		}
 
 		set_transient( self::CACHE, Plugin::crypto()->encrypt( $token ), self::ttl( $response ) );
-		update_option( 'wp2_shopify_admin_token_scopes', (string) ( $response['scope'] ?? '' ), false );
-		delete_option( 'wp2_shopify_admin_token_error' );
+		update_option( 'redeemid_admin_token_scopes', (string) ( $response['scope'] ?? '' ), false );
+		delete_option( 'redeemid_admin_token_error' );
 
 		return $token;
 	}

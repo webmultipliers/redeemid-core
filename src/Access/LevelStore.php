@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Sync\Mirror;
 
 /**
  * Where access levels live: one option, overridable from code with the
- * wp2_shopify_access_levels filter so a site can keep them in version control.
+ * redeemid_access_levels filter so a site can keep them in version control.
  * When the filter changes the result, the Access screen shows the levels as
  * managed in code and read-only, so an edit never silently does nothing.
  */
 final class LevelStore {
-	public const OPTION     = 'wp2_shopify_access_levels';
-	private const KNOWN_KEY = 'wp2_shopify_known_tags';
+	public const OPTION     = 'redeemid_access_levels';
+	private const KNOWN_KEY = 'redeemid_known_tags';
 
 	private static ?Levels $levels = null;
 
@@ -34,13 +34,13 @@ final class LevelStore {
 		 * ([ [ 'tags' => [...], 'match' => 'any'|'all' ] ]), includes, badge,
 		 * message, cta_label and cta_url.
 		 */
-		$config = apply_filters( 'wp2_shopify_access_levels', self::saved() );
+		$config = apply_filters( 'redeemid_access_levels', self::saved() );
 
 		return is_array( $config ) ? $config : [];
 	}
 
 	public static function managed_in_code(): bool {
-		return has_filter( 'wp2_shopify_access_levels' ) && self::config() !== self::saved();
+		return has_filter( 'redeemid_access_levels' ) && self::config() !== self::saved();
 	}
 
 	public static function levels(): Levels {
@@ -76,10 +76,10 @@ final class LevelStore {
 		}
 
 		/**
-		 * Levels changed. Surfaces relays this as wp2_shopify_access_changed
+		 * Levels changed. Surfaces relays this as redeemid_access_changed
 		 * with no IDs ("possibly all"); a later PR bumps the rules version here.
 		 */
-		do_action( 'wp2_shopify_access_levels_changed', $saved );
+		do_action( 'redeemid_access_levels_changed', $saved );
 	}
 
 	/**

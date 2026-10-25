@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Shopify\Http;
-use WP2_Shopify\Sync\BulkJob;
-use WP2_Shopify\Sync\Pacer;
+use RedeemID\Shopify\Http;
+use RedeemID\Sync\BulkJob;
+use RedeemID\Sync\Pacer;
 
 final class BulkResyncTest extends TestCase {
 	private const NOW = 1_800_000_000;

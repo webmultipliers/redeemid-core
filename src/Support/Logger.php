@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
 /**
  * Operational log lines: IDs, topics, timings and outcomes only.
@@ -25,10 +25,10 @@ final class Logger {
 		/**
 		 * Lets a site route plugin events to its own logger.
 		 */
-		do_action( 'wp2_shopify_log', $event, $context );
+		do_action( 'redeemid_log', $event, $context );
 
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( '[wp2-shopify] ' . $event . ( $context ? ' ' . wp_json_encode( $context ) : '' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			error_log( '[redeemid] ' . $event . ( $context ? ' ' . wp_json_encode( $context ) : '' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
 		}
 	}
 }

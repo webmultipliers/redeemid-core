@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Auth\Pkce;
-use WP2_Shopify\Support\Crypto;
+use RedeemID\Auth\Pkce;
+use RedeemID\Support\Crypto;
 
 final class CryptoAndPkceTest extends TestCase {
 	private const SALTS = 'a-long-test-salt-material-that-is-not-real-1234567890';

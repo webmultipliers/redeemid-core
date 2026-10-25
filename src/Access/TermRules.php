@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Access rules saved on taxonomy terms, and the walk from an item's terms to
@@ -16,7 +16,7 @@ namespace WP2_Shopify\Access;
  * nearest ancestor's. A term's own rule always beats an ancestor's.
  */
 final class TermRules {
-	public const META = '_wp2_access';
+	public const META = '_redeemid_access';
 
 	public const NONE = '';
 

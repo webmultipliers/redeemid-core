@@ -1,8 +1,8 @@
 /**
- * Signs the official plugin's cart in (WP2_Shopify\Commerce\CartBridge).
+ * Signs the official plugin's cart in (RedeemID\Commerce\CartBridge).
  *
  * Its <shopify-cart> keeps the cart GID in localStorage['__shopify:cartId'].
- * When a linked customer is signed in, the GID is posted to WP2, which attaches
+ * When a linked customer is signed in, the GID is posted to RedeemID, which attaches
  * their identity on the server. When nobody is signed in, a cart this script
  * attached is dropped so the next visitor can't check out as that customer.
  *
@@ -10,10 +10,10 @@
  * Every failure is silent; the cart still works as a guest cart.
  */
 (() => {
-	const config = window.wp2ShopifyCartBridge;
+	const config = window.redeemidCartBridge;
 	const CART = '__shopify:cartId';
-	const ATTACHED = 'wp2-shopify:attachedCart';
-	const SEEN = 'wp2-shopify:signedInCart';
+	const ATTACHED = 'redeemid:attachedCart';
+	const SEEN = 'redeemid:signedInCart';
 
 	if (!config) {
 		return;

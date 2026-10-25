@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
 /**
  * Storage for webhook dedupe records and the minimal data a queued job needs.

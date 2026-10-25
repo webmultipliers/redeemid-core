@@ -1,13 +1,13 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Shopify\AdminToken;
-use WP2_Shopify\Webhooks\Registrar;
+use RedeemID\Shopify\AdminToken;
+use RedeemID\Webhooks\Registrar;
 
 final class RegistrarTest extends TestCase {
-	private const URI = 'https://example.test/wp-json/wp2-shopify/v1/webhooks/events';
+	private const URI = 'https://example.test/wp-json/redeemid/v1/webhooks/events';
 
 	public function test_topic_enum_names(): void {
 		$this->assertSame( 'CUSTOMER_TAGS_ADDED', Registrar::enum( 'customer.tags_added' ) );

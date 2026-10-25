@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Config;
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Shopify\Admin as AdminApi;
-use WP2_Shopify\Shopify\Discovery;
-use WP2_Shopify\Shopify\Storefront;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Webhooks\Registrar;
+use RedeemID\Access\LevelStore;
+use RedeemID\Config;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Shopify\Admin as AdminApi;
+use RedeemID\Shopify\Discovery;
+use RedeemID\Shopify\Storefront;
+use RedeemID\Support\Logger;
+use RedeemID\Webhooks\Registrar;
 
 /**
- * The setup checklist on Shopify → Overview: each thing a new site needs, in
+ * The setup checklist on RedeemID → Overview: each thing a new site needs, in
  * the order to do it, with the button that does it where the plugin can.
  *
  * - Test connection asks each Shopify API once and keeps the answers.
@@ -23,9 +23,9 @@ use WP2_Shopify\Webhooks\Registrar;
  * steps() is pure; facts() gathers what it needs.
  */
 final class Setup {
-	public const ACTION = 'wp2_shopify_setup';
-	private const TEST  = 'wp2_shopify_connection_test';
-	private const TAGS  = 'wp2_shopify_shop_tags';
+	public const ACTION = 'redeemid_setup';
+	private const TEST  = 'redeemid_connection_test';
+	private const TAGS  = 'redeemid_shop_tags';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'action' ] );
@@ -69,13 +69,13 @@ final class Setup {
 		}
 
 		if ( AdminApi::available() ) {
-			$ping               = AdminApi::query( 'query WP2Ping { shop { name } }', [], 'admin.ping' );
+			$ping               = AdminApi::query( 'query RedeemIDPing { shop { name } }', [], 'admin.ping' );
 			$results['admin']   = ! is_wp_error( $ping );
 			$errors['admin']    = is_wp_error( $ping ) ? $ping->get_error_code() : '';
 		}
 
 		if ( Storefront::available() ) {
-			$search                = Storefront::search_products( 'wp2 connection test ' . $started );
+			$search                = Storefront::search_products( 'redeemid connection test ' . $started );
 			$results['storefront'] = ! is_wp_error( $search );
 			$errors['storefront']  = is_wp_error( $search ) ? $search->get_error_code() : '';
 		}
@@ -103,8 +103,8 @@ final class Setup {
 				'post_type'    => 'page',
 				'post_status'  => 'publish',
 				'post_name'    => $slug,
-				'post_title'   => __( 'Signing in', 'wp2-shopify' ),
-				'post_content' => '<!-- wp:paragraph --><p>' . esc_html__( 'You can close this page or carry on browsing.', 'wp2-shopify' ) . '</p><!-- /wp:paragraph -->',
+				'post_title'   => __( 'Signing in', 'redeemid' ),
+				'post_content' => '<!-- wp:paragraph --><p>' . esc_html__( 'You can close this page or carry on browsing.', 'redeemid' ) . '</p><!-- /wp:paragraph -->',
 			],
 			true
 		);
@@ -177,7 +177,7 @@ final class Setup {
 		$activity = Activation::stats();
 
 		return [
-			'config'      => Config::has( 'WP2_SHOPIFY_STORE_DOMAIN' ) && ! $missing,
+			'config'      => Config::has( 'REDEEMID_STORE_DOMAIN' ) && ! $missing,
 			'test'        => is_array( $test ) ? $test : null,
 			'permalinks'  => '' !== (string) get_option( 'permalink_structure' ),
 			'callback'    => $page instanceof \WP_Post && 'publish' === $page->post_status,

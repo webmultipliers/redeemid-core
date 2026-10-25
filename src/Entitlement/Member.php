@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Entitlement;
+namespace RedeemID\Entitlement;
 
 /**
  * What the gate knows about the current visitor: the synced mirror only,

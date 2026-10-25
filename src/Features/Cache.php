@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
 /**
  * The caching rule each feature declares, applied when a page actually
@@ -9,14 +9,14 @@ namespace WP2_Shopify\Features;
  *
  * - private: the page is not stored in a shared cache (DONOTCACHEPAGE, and
  *   Cache-Control: private while headers can still be sent).
- * - vary: the wp2_shopify_fset cookie carries a hash of the visitor's
+ * - vary: the redeemid_fset cookie carries a hash of the visitor's
  *   granted set, for a cache layer that can vary on a cookie. Whether yours
  *   can is for you to verify on your stack.
  * - fragment: nothing here; the consumer renders the varying part per
  *   visitor (a dynamic island, an uncached endpoint).
  */
 final class Cache {
-	public const COOKIE = 'wp2_shopify_fset';
+	public const COOKIE = 'redeemid_fset';
 
 	public static function used( ?Feature $feature ): void {
 		if ( ! $feature || Feature::CACHE_PRIVATE !== $feature->cache || ! is_user_logged_in() || ( is_admin() && ! wp_doing_ajax() ) ) {

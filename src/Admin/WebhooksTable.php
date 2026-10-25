@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Support\CustomerId;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Webhooks\InboxStore;
-use WP2_Shopify\Webhooks\WpdbInboxStore;
+use RedeemID\Support\CustomerId;
+use RedeemID\Sync\Mirror;
+use RedeemID\Webhooks\InboxStore;
+use RedeemID\Webhooks\WpdbInboxStore;
 
 if ( ! class_exists( \WP_List_Table::class ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -24,20 +24,20 @@ final class WebhooksTable extends \WP_List_Table {
 
 	public function get_columns(): array {
 		return [
-			'received_at'  => __( 'Received', 'wp2-shopify' ),
-			'topic'        => __( 'Topic', 'wp2-shopify' ),
-			'status'       => __( 'Outcome', 'wp2-shopify' ),
-			'customer'     => __( 'Customer', 'wp2-shopify' ),
-			'attempts'     => __( 'Attempts', 'wp2-shopify' ),
-			'processed_at' => __( 'Processed', 'wp2-shopify' ),
-			'webhook_id'   => __( 'Shopify webhook ID', 'wp2-shopify' ),
+			'received_at'  => __( 'Received', 'redeemid' ),
+			'topic'        => __( 'Topic', 'redeemid' ),
+			'status'       => __( 'Outcome', 'redeemid' ),
+			'customer'     => __( 'Customer', 'redeemid' ),
+			'attempts'     => __( 'Attempts', 'redeemid' ),
+			'processed_at' => __( 'Processed', 'redeemid' ),
+			'webhook_id'   => __( 'Shopify webhook ID', 'redeemid' ),
 		];
 	}
 
 	public function prepare_items(): void {
 		$this->_column_headers = [ $this->get_columns(), [], [], 'topic' ];
 
-		$per_page = $this->get_items_per_page( 'wp2_shopify_per_page', 50 );
+		$per_page = $this->get_items_per_page( 'redeemid_per_page', 50 );
 		$result   = $this->store->query( self::filters(), $per_page, $this->get_pagenum() );
 
 		$this->items = $result['rows'];
@@ -60,7 +60,7 @@ final class WebhooksTable extends \WP_List_Table {
 	protected function get_views(): array {
 		$current = self::filters()['status'];
 		$counts  = $this->store->counts();
-		$views   = [ 'all' => sprintf( '<a href="%s"%s>%s <span class="count">(%d)</span></a>', esc_url( Menu::url( Webhooks::PAGE ) ), '' === $current ? ' class="current"' : '', esc_html__( 'All', 'wp2-shopify' ), array_sum( $counts ) ) ];
+		$views   = [ 'all' => sprintf( '<a href="%s"%s>%s <span class="count">(%d)</span></a>', esc_url( Menu::url( Webhooks::PAGE ) ), '' === $current ? ' class="current"' : '', esc_html__( 'All', 'redeemid' ), array_sum( $counts ) ) ];
 
 		foreach ( [ InboxStore::QUEUED, InboxStore::PROCESSED, InboxStore::UNMATCHED, InboxStore::IGNORED, InboxStore::DEAD ] as $status ) {
 			$views[ $status ] = sprintf( '<a href="%s"%s>%s <span class="count">(%d)</span></a>', esc_url( Menu::url( Webhooks::PAGE, [ 'status' => $status ] ) ), $current === $status ? ' class="current"' : '', esc_html( ucfirst( $status ) ), $counts[ $status ] ?? 0 );
@@ -78,19 +78,19 @@ final class WebhooksTable extends \WP_List_Table {
 		?>
 		<div class="alignleft actions">
 			<select name="topic">
-				<option value=""><?php esc_html_e( 'All topics', 'wp2-shopify' ); ?></option>
+				<option value=""><?php esc_html_e( 'All topics', 'redeemid' ); ?></option>
 				<?php foreach ( $this->store->topics() as $topic ) : ?>
 					<option value="<?php echo esc_attr( $topic ); ?>" <?php selected( $filters['topic'], $topic ); ?>><?php echo esc_html( $topic ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<input type="text" name="customer" placeholder="<?php esc_attr_e( 'Customer ID', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( $filters['customer'] ); ?>" class="wp2s-filter-customer">
-			<?php submit_button( __( 'Filter', 'wp2-shopify' ), '', 'filter_action', false ); ?>
+			<input type="text" name="customer" placeholder="<?php esc_attr_e( 'Customer ID', 'redeemid' ); ?>" value="<?php echo esc_attr( $filters['customer'] ); ?>" class="redeemid-filter-customer">
+			<?php submit_button( __( 'Filter', 'redeemid' ), '', 'filter_action', false ); ?>
 		</div>
 		<?php
 	}
 
 	public function no_items(): void {
-		esc_html_e( 'No webhooks received yet.', 'wp2-shopify' );
+		esc_html_e( 'No webhooks received yet.', 'redeemid' );
 	}
 
 	protected function column_default( $item, $column_name ): string {
@@ -118,7 +118,7 @@ final class WebhooksTable extends \WP_List_Table {
 		}
 
 		if ( InboxStore::DEAD === $item['status'] && 'unknown_topic' !== $item['error'] ) {
-			$html .= $this->row_actions( [ 'retry' => sprintf( '<a href="%s">%s</a>', esc_url( Webhooks::retry_url( (int) $item['id'] ) ), esc_html__( 'Retry', 'wp2-shopify' ) ) ], true );
+			$html .= $this->row_actions( [ 'retry' => sprintf( '<a href="%s">%s</a>', esc_url( Webhooks::retry_url( (int) $item['id'] ) ), esc_html__( 'Retry', 'redeemid' ) ) ], true );
 		}
 
 		return $html;

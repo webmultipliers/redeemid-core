@@ -1,12 +1,12 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Entitlement\Rule;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Entitlement\Member;
+use RedeemID\Entitlement\Rule;
 
 final class EvaluatorTest extends TestCase {
 	private const NOW = 1_800_000_000;

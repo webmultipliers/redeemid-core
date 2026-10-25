@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * A rule saved on one taxonomy term, already walked up from a parent term

@@ -2,7 +2,7 @@
 /**
  * Member Account, rendered as a Blockstudio dynamic island: the page carries
  * a neutral placeholder for everyone, and each visitor's own fragment (never
- * cached) fills in their membership from WP2_Shopify\Blocks\Account::view().
+ * cached) fills in their membership from RedeemID\Blocks\Account::view().
  *
  * @var array $a                Block attributes.
  * @var bool  $isEditor         Rendering inside the block editor.
@@ -11,109 +11,109 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WP2_Shopify\Blocks\Account;
-use WP2_Shopify\Blocks\Gate;
+use RedeemID\Blocks\Account;
+use RedeemID\Blocks\Gate;
 
-$wp2_title = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your membership', 'wp2-shopify' );
-$wp2_here  = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
-$wp2_join  = Gate::url( $a['joinUrl'] ?? '' );
-$wp2_view  = ! $isEditor && $isIslandFragment ? Account::view( get_current_user_id() ) : null;
+$redeemid_title = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your membership', 'redeemid' );
+$redeemid_here  = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
+$redeemid_join  = Gate::url( $a['joinUrl'] ?? '' );
+$redeemid_view  = ! $isEditor && $isIslandFragment ? Account::view( get_current_user_id() ) : null;
 
-$wp2_form = static function ( string $action, string $label, string $class = 'wp-element-button is-style-outline' ) use ( $wp2_here ): void {
+$redeemid_form = static function ( string $action, string $label, string $class = 'wp-element-button is-style-outline' ) use ( $redeemid_here ): void {
 	?>
-	<form class="wp2-shopify-account__form" method="post" action="<?php echo esc_url( \WP2_Shopify\Auth\Flow::action_url() ); ?>">
+	<form class="redeemid-account__form" method="post" action="<?php echo esc_url( \RedeemID\Auth\Flow::action_url() ); ?>">
 		<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
 		<?php wp_nonce_field( $action, '_wpnonce', false ); ?>
-		<input type="hidden" name="redirect_to" value="<?php echo esc_url( $wp2_here ); ?>">
+		<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redeemid_here ); ?>">
 		<button type="submit" class="<?php echo esc_attr( $class ); ?>"><?php echo esc_html( $label ); ?></button>
 	</form>
 	<?php
 };
 ?>
-<section useBlockProps class="wp2-shopify-account<?php echo $wp2_view ? ' is-' . esc_attr( $wp2_view['state'] ) : ''; ?>" aria-live="polite">
-	<h2 class="wp2-shopify-account__title"><?php echo esc_html( $wp2_title ); ?></h2>
+<section useBlockProps class="redeemid-account<?php echo $redeemid_view ? ' is-' . esc_attr( $redeemid_view['state'] ) : ''; ?>" aria-live="polite">
+	<h2 class="redeemid-account__title"><?php echo esc_html( $redeemid_title ); ?></h2>
 
 	<?php if ( $isEditor ) : ?>
-		<p><?php esc_html_e( 'Each customer sees their own levels, dates, features and account links here.', 'wp2-shopify' ); ?></p>
-	<?php elseif ( ! $wp2_view ) : ?>
-		<p class="wp2-shopify-account__loading"><?php esc_html_e( 'Loading your membership…', 'wp2-shopify' ); ?></p>
-	<?php elseif ( 'guest' === $wp2_view['state'] ) : ?>
-		<p><?php esc_html_e( 'Log in with Shopify to see your membership.', 'wp2-shopify' ); ?></p>
-		<p><a class="wp-element-button" href="<?php echo esc_url( \WP2_Shopify\Auth\Flow::login_url( $wp2_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'wp2-shopify' ); ?></a></p>
-	<?php elseif ( 'not_linked' === $wp2_view['state'] ) : ?>
-		<p><?php esc_html_e( 'Your account here isn\'t connected to a Shopify customer yet.', 'wp2-shopify' ); ?></p>
-		<?php $wp2_form( 'wp2_shopify_connect', __( 'Connect your Shopify account', 'wp2-shopify' ), 'wp-element-button' ); ?>
-	<?php elseif ( 'syncing' === $wp2_view['state'] ) : ?>
-		<p><?php esc_html_e( 'Your membership details are on their way from Shopify.', 'wp2-shopify' ); ?></p>
+		<p><?php esc_html_e( 'Each customer sees their own levels, dates, features and account links here.', 'redeemid' ); ?></p>
+	<?php elseif ( ! $redeemid_view ) : ?>
+		<p class="redeemid-account__loading"><?php esc_html_e( 'Loading your membership…', 'redeemid' ); ?></p>
+	<?php elseif ( 'guest' === $redeemid_view['state'] ) : ?>
+		<p><?php esc_html_e( 'Log in with Shopify to see your membership.', 'redeemid' ); ?></p>
+		<p><a class="wp-element-button" href="<?php echo esc_url( \RedeemID\Auth\Flow::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a></p>
+	<?php elseif ( 'not_linked' === $redeemid_view['state'] ) : ?>
+		<p><?php esc_html_e( 'Your account here isn\'t connected to a Shopify customer yet.', 'redeemid' ); ?></p>
+		<?php $redeemid_form( 'redeemid_connect', __( 'Connect your Shopify account', 'redeemid' ), 'wp-element-button' ); ?>
+	<?php elseif ( 'syncing' === $redeemid_view['state'] ) : ?>
+		<p><?php esc_html_e( 'Your membership details are on their way from Shopify.', 'redeemid' ); ?></p>
 	<?php else : ?>
-		<?php if ( 'disabled' === $wp2_view['state'] ) : ?>
-			<p class="wp2-shopify-account__alert"><?php esc_html_e( 'Your account is disabled. Contact the store for help.', 'wp2-shopify' ); ?></p>
+		<?php if ( 'disabled' === $redeemid_view['state'] ) : ?>
+			<p class="redeemid-account__alert"><?php esc_html_e( 'Your account is disabled. Contact the store for help.', 'redeemid' ); ?></p>
 		<?php endif; ?>
 
-		<dl class="wp2-shopify-account__details">
-			<dt><?php esc_html_e( 'Signed in as', 'wp2-shopify' ); ?></dt>
-			<dd><?php echo esc_html( trim( $wp2_view['name'] . ( '' !== $wp2_view['email'] ? ' · ' . $wp2_view['email'] : '' ) ) ); ?></dd>
+		<dl class="redeemid-account__details">
+			<dt><?php esc_html_e( 'Signed in as', 'redeemid' ); ?></dt>
+			<dd><?php echo esc_html( trim( $redeemid_view['name'] . ( '' !== $redeemid_view['email'] ? ' · ' . $redeemid_view['email'] : '' ) ) ); ?></dd>
 
-			<dt><?php esc_html_e( 'Membership', 'wp2-shopify' ); ?></dt>
+			<dt><?php esc_html_e( 'Membership', 'redeemid' ); ?></dt>
 			<dd>
-				<?php if ( $wp2_view['levels'] ) : ?>
-					<ul class="wp2-shopify-account__levels">
-						<?php foreach ( $wp2_view['levels'] as $wp2_level ) : ?>
+				<?php if ( $redeemid_view['levels'] ) : ?>
+					<ul class="redeemid-account__levels">
+						<?php foreach ( $redeemid_view['levels'] as $redeemid_level ) : ?>
 							<li>
-								<strong><?php echo esc_html( $wp2_level['label'] ); ?></strong>
-								<?php if ( '' !== $wp2_level['since'] ) : ?>
+								<strong><?php echo esc_html( $redeemid_level['label'] ); ?></strong>
+								<?php if ( '' !== $redeemid_level['since'] ) : ?>
 									<?php /* translators: %s: date */ ?>
-									<span><?php echo esc_html( sprintf( __( 'since %s', 'wp2-shopify' ), Account::date( $wp2_level['since'] ) ) ); ?></span>
+									<span><?php echo esc_html( sprintf( __( 'since %s', 'redeemid' ), Account::date( $redeemid_level['since'] ) ) ); ?></span>
 								<?php endif; ?>
 							</li>
 						<?php endforeach; ?>
 					</ul>
-				<?php elseif ( $wp2_view['checking_out'] ) : ?>
-					<?php esc_html_e( 'Finishing setting up your membership…', 'wp2-shopify' ); ?>
+				<?php elseif ( $redeemid_view['checking_out'] ) : ?>
+					<?php esc_html_e( 'Finishing setting up your membership…', 'redeemid' ); ?>
 				<?php else : ?>
-					<?php esc_html_e( 'No membership yet.', 'wp2-shopify' ); ?>
-					<?php if ( '' !== $wp2_join ) : ?>
-						<a href="<?php echo esc_url( $wp2_join ); ?>"><?php esc_html_e( 'See the plans', 'wp2-shopify' ); ?></a>
+					<?php esc_html_e( 'No membership yet.', 'redeemid' ); ?>
+					<?php if ( '' !== $redeemid_join ) : ?>
+						<a href="<?php echo esc_url( $redeemid_join ); ?>"><?php esc_html_e( 'See the plans', 'redeemid' ); ?></a>
 					<?php endif; ?>
 				<?php endif; ?>
-				<?php foreach ( $wp2_view['ended'] as $wp2_ended ) : ?>
+				<?php foreach ( $redeemid_view['ended'] as $redeemid_ended ) : ?>
 					<?php /* translators: 1: access level label 2: date */ ?>
-					<p class="wp2-shopify-account__ended"><?php echo esc_html( sprintf( __( 'Your %1$s membership ended on %2$s.', 'wp2-shopify' ), $wp2_ended['label'], Account::date( $wp2_ended['until'] ) ) ); ?></p>
+					<p class="redeemid-account__ended"><?php echo esc_html( sprintf( __( 'Your %1$s membership ended on %2$s.', 'redeemid' ), $redeemid_ended['label'], Account::date( $redeemid_ended['until'] ) ) ); ?></p>
 				<?php endforeach; ?>
 			</dd>
 
-			<?php if ( '' !== $wp2_view['renews'] ) : ?>
-				<dt><?php esc_html_e( 'Renews', 'wp2-shopify' ); ?></dt>
-				<dd><?php echo esc_html( Account::date( $wp2_view['renews'] ) ); ?></dd>
+			<?php if ( '' !== $redeemid_view['renews'] ) : ?>
+				<dt><?php esc_html_e( 'Renews', 'redeemid' ); ?></dt>
+				<dd><?php echo esc_html( Account::date( $redeemid_view['renews'] ) ); ?></dd>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $a['showFeatures'] ) && $wp2_view['features'] ) : ?>
-				<dt><?php esc_html_e( 'Includes', 'wp2-shopify' ); ?></dt>
-				<dd><?php echo esc_html( implode( ', ', $wp2_view['features'] ) ); ?></dd>
+			<?php if ( ! empty( $a['showFeatures'] ) && $redeemid_view['features'] ) : ?>
+				<dt><?php esc_html_e( 'Includes', 'redeemid' ); ?></dt>
+				<dd><?php echo esc_html( implode( ', ', $redeemid_view['features'] ) ); ?></dd>
 			<?php endif; ?>
 
-			<dt><?php esc_html_e( 'Last updated from Shopify', 'wp2-shopify' ); ?></dt>
+			<dt><?php esc_html_e( 'Last updated from Shopify', 'redeemid' ); ?></dt>
 			<dd>
 				<?php
 				echo esc_html(
-					$wp2_view['synced']
+					$redeemid_view['synced']
 						/* translators: %s: human time difference */
-						? sprintf( __( '%s ago', 'wp2-shopify' ), human_time_diff( $wp2_view['synced'] ) )
-						: __( 'Not yet', 'wp2-shopify' )
+						? sprintf( __( '%s ago', 'redeemid' ), human_time_diff( $redeemid_view['synced'] ) )
+						: __( 'Not yet', 'redeemid' )
 				);
 				?>
 			</dd>
 		</dl>
 
-		<div class="wp2-shopify-account__actions">
-			<?php $wp2_form( 'wp2_shopify_sync', __( 'Refresh membership', 'wp2-shopify' ) ); ?>
-			<?php if ( '' !== $wp2_view['subscription_url'] ) : ?>
-				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $wp2_view['subscription_url'] ); ?>"><?php esc_html_e( 'Manage subscription', 'wp2-shopify' ); ?></a>
+		<div class="redeemid-account__actions">
+			<?php $redeemid_form( 'redeemid_sync', __( 'Refresh membership', 'redeemid' ) ); ?>
+			<?php if ( '' !== $redeemid_view['subscription_url'] ) : ?>
+				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $redeemid_view['subscription_url'] ); ?>"><?php esc_html_e( 'Manage subscription', 'redeemid' ); ?></a>
 			<?php endif; ?>
-			<?php if ( '' !== $wp2_view['account_url'] ) : ?>
-				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $wp2_view['account_url'] ); ?>"><?php esc_html_e( 'Orders and account in Shopify', 'wp2-shopify' ); ?></a>
+			<?php if ( '' !== $redeemid_view['account_url'] ) : ?>
+				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $redeemid_view['account_url'] ); ?>"><?php esc_html_e( 'Orders and account in Shopify', 'redeemid' ); ?></a>
 			<?php endif; ?>
-			<?php $wp2_form( 'wp2_shopify_logout', __( 'Log out', 'wp2-shopify' ), 'wp2-shopify-link-button' ); ?>
+			<?php $redeemid_form( 'redeemid_logout', __( 'Log out', 'redeemid' ), 'redeemid-link-button' ); ?>
 		</div>
 	<?php endif; ?>
 </section>

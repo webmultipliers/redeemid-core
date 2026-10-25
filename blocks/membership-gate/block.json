@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/membership-gate",
+	"name": "redeemid/membership-gate",
 	"title": "Membership Gate",
 	"category": "widgets",
 	"icon": "lock",
 	"description": "Releases its Members only area to entitled members. The decision is made on the server; locked content is never sent to anyone else.",
 	"keywords": [ "members", "paywall", "gate", "shopify", "tags" ],
-	"textdomain": "wp2-shopify",
+	"textdomain": "redeemid",
 	"supports": { "align": [ "wide", "full" ], "html": false },
 	"example": { "attributes": { "requiredTags": [ { "tag": "gold-member" } ] } },
 	"variations": [
@@ -33,7 +33,7 @@
 				"type": "select",
 				"label": "Rule",
 				"default": "custom",
-				"help": "An access level and this item's rule come from Shopify → Access. This item's rule follows the post's Access box. Whatever you pick, a gate only narrows the item's rule.",
+				"help": "An access level and this item's rule come from RedeemID → Access. This item's rule follows the post's Access box. Whatever you pick, a gate only narrows the item's rule.",
 				"options": [
 					{ "value": "custom", "label": "Custom tags (below)" },
 					{ "value": "level", "label": "An access level" },
@@ -44,8 +44,8 @@
 				"id": "level",
 				"type": "select",
 				"label": "Access level",
-				"help": "Visitors who hold this level, or one that includes it, see the Members only area. Levels are managed under Shopify → Access.",
-				"populate": { "type": "function", "function": "wp2_shopify_level_options" },
+				"help": "Visitors who hold this level, or one that includes it, see the Members only area. Levels are managed under RedeemID → Access.",
+				"populate": { "type": "function", "function": "redeemid_level_options" },
 				"conditions": [ [ { "id": "ruleSource", "operator": "==", "value": "level" } ] ]
 			},
 			{

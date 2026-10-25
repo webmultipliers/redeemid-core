@@ -2,8 +2,8 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP2 Shopify 2.0.0-alpha.1\n"
-"Report-Msgid-Bugs-To: https://github.com/webmultipliers/shopify-for-wp/issues\n"
+"Project-Id-Version: RedeemID 2.0.0-alpha.1\n"
+"Report-Msgid-Bugs-To: https://github.com/webmultipliers/redeemid/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12,25 +12,25 @@ msgstr ""
 "POT-Creation-Date: 2026-10-25T04:20:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: wp2-shopify\n"
+"X-Domain: redeemid\n"
 
 #. Plugin Name of the plugin
-#: wp2-shopify.php
-msgid "WP2 Shopify"
+#: redeemid.php
+msgid "RedeemID"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: wp2-shopify.php
-msgid "https://github.com/webmultipliers/shopify-for-wp"
+#: redeemid.php
+msgid "https://github.com/webmultipliers/redeemid"
 msgstr ""
 
 #. Description of the plugin
-#: wp2-shopify.php
+#: redeemid.php
 msgid "Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7."
 msgstr ""
 
 #. Author of the plugin
-#: wp2-shopify.php
+#: redeemid.php
 msgid "Web Multipliers"
 msgstr ""
 
@@ -419,7 +419,7 @@ msgid "This plan is not available right now."
 msgstr ""
 
 #: blocks/plan-card/index.php:43
-msgid "Add a Storefront private (or public) access token in Shopify → Settings, or as WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN in wp-config.php, to show live prices and checkout."
+msgid "Add a Storefront private (or public) access token in RedeemID → Settings, or as REDEEMID_STOREFRONT_PRIVATE_TOKEN in wp-config.php, to show live prices and checkout."
 msgstr ""
 
 #: blocks/plan-card/index.php:48
@@ -649,7 +649,7 @@ msgid "Includes a level that does not exist."
 msgstr ""
 
 #: src/Admin/Access.php:200
-msgid "Managed in code: the wp2_shopify_access_levels filter sets these levels, so they are read-only here."
+msgid "Managed in code: the redeemid_access_levels filter sets these levels, so they are read-only here."
 msgstr ""
 
 #. translators: %s: level label
@@ -896,7 +896,7 @@ msgid "Features are granted by Shopify entitlement, never by hand in WordPress: 
 msgstr ""
 
 #: src/Admin/AccessFeatures.php:87
-msgid "Shopify → Customers edits tags in Shopify."
+msgid "RedeemID → Customers edits tags in Shopify."
 msgstr ""
 
 #: src/Admin/AccessFeatures.php:92
@@ -904,7 +904,7 @@ msgid "No features are registered yet."
 msgstr ""
 
 #: src/Admin/AccessFeatures.php:92
-msgid "A theme or plugin registers them with the wp2_shopify_features filter; see docs/features.md."
+msgid "A theme or plugin registers them with the redeemid_features filter; see docs/features.md."
 msgstr ""
 
 #: src/Admin/AccessFeatures.php:94
@@ -1105,7 +1105,7 @@ msgid "Nothing"
 msgstr ""
 
 #: src/Admin/AccessRules.php:134
-msgid "Managed in code: the wp2_shopify_access_rules filter sets these rules, so they are read-only here."
+msgid "Managed in code: the redeemid_access_rules filter sets these rules, so they are read-only here."
 msgstr ""
 
 #: src/Admin/AccessRules.php:141
@@ -1888,7 +1888,7 @@ msgid "Configuration"
 msgstr ""
 
 #: src/Admin/Debug.php:90
-msgid "These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from Shopify → Settings."
+msgid "These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from RedeemID → Settings."
 msgstr ""
 
 #: src/Admin/Debug.php:91
@@ -2044,7 +2044,7 @@ msgid "Webhooks"
 msgstr ""
 
 #: src/Admin/Debug.php:198
-msgid "Shopify → Webhooks"
+msgid "RedeemID → Webhooks"
 msgstr ""
 
 #: src/Admin/Debug.php:202
@@ -2095,7 +2095,7 @@ msgid "Shopify's WordPress plugin"
 msgstr ""
 
 #: src/Admin/Debug.php:237
-msgid "WP2 runs with or without it. When it is active, it owns the anonymous storefront and WP2 owns sign-in and access. WP2 never reads its access token."
+msgid "RedeemID runs with or without it. When it is active, it owns the anonymous storefront and RedeemID owns sign-in and access. RedeemID never reads its access token."
 msgstr ""
 
 #: src/Admin/Debug.php:239
@@ -2350,13 +2350,13 @@ msgid "Shopify access"
 msgstr ""
 
 #: src/Admin/Menu.php:119
-msgid "WP2 Shopify: WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN is deprecated. Rename it to WP2_SHOPIFY_CLIENT_SECRET in wp-config.php."
+msgid "RedeemID: REDEEMID_PRIVATE_ACCESS_TOKEN is deprecated. Rename it to REDEEMID_CLIENT_SECRET in wp-config.php."
 msgstr ""
 
 #. translators: %s: constant names
 #: src/Admin/Menu.php:127
 #, php-format
-msgid "WP2 Shopify no longer reads %s from wp-config.php."
+msgid "RedeemID no longer reads %s from wp-config.php."
 msgstr ""
 
 #: src/Admin/Menu.php:129
@@ -2366,7 +2366,7 @@ msgstr ""
 #. translators: %d: number of linked users
 #: src/Admin/Menu.php:142
 #, php-format
-msgid "WP2 Shopify 2.0 upgrade: stored Shopify sessions were discarded for security, so linked customers sign in once more. Re-register your Shopify webhooks from Shopify → Webhooks (the old /iwebhooks path is gone). %d linked users were updated."
+msgid "RedeemID 2.0 upgrade: stored Shopify sessions were discarded for security, so linked customers sign in once more. Re-register your Shopify webhooks from RedeemID → Webhooks (the old /iwebhooks path is gone). %d linked users were updated."
 msgstr ""
 
 #: src/Admin/Menu.php:147
@@ -2728,7 +2728,7 @@ msgid "Some values were not saved. They are marked below."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:96
-msgid "Enter the store's credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or WP2_SHOPIFY_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it."
+msgid "Enter the store's credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or REDEEMID_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:110
@@ -2790,7 +2790,7 @@ msgid "Remove the saved value"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:211
-msgid "A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or WP2_SHOPIFY_ENCRYPTION_KEY changed since it was saved. Enter it again."
+msgid "A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or REDEEMID_ENCRYPTION_KEY changed since it was saved. Enter it again."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:219
@@ -2806,7 +2806,7 @@ msgid "that is longer than any Shopify credential."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:235
-msgid "no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or WP2_SHOPIFY_ENCRYPTION_KEY."
+msgid "no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:236
@@ -2854,7 +2854,7 @@ msgid "Send visitors to Shopify sign-in from the site's login links (comment for
 msgstr ""
 
 #: src/Admin/SettingsPage.php:278
-msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Log in and Log out under Appearance → Menus → Shopify, and classic themes can use the [wp2_shopify_login] shortcode."
+msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Log in and Log out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:282
@@ -2909,7 +2909,7 @@ msgid "You can close this page or carry on browsing."
 msgstr ""
 
 #: src/Admin/UserProfile.php:33
-msgid "Manage in Shopify → Customers"
+msgid "Manage in RedeemID → Customers"
 msgstr ""
 
 #: src/Admin/UserProfile.php:34
@@ -3365,7 +3365,7 @@ msgid "Feature slugs the current user holds. Present on your own user only."
 msgstr ""
 
 #: src/Integrations/OfficialPlugin.php:120
-msgid "Not installed. WP2 runs on its own; add it for a full storefront."
+msgid "Not installed. RedeemID runs on its own; add it for a full storefront."
 msgstr ""
 
 #. translators: %s: version
@@ -3377,13 +3377,13 @@ msgstr ""
 #. translators: 1: version 2: store domain
 #: src/Integrations/OfficialPlugin.php:122
 #, php-format
-msgid "Version %1$s, connected to %2$s, the same store as WP2."
+msgid "Version %1$s, connected to %2$s, the same store as RedeemID."
 msgstr ""
 
 #. translators: 1: version 2: their store 3: our store
 #: src/Integrations/OfficialPlugin.php:123
 #, php-format
-msgid "Version %1$s is connected to %2$s, but WP2 is set up for %3$s. Purchases there will not unlock content here."
+msgid "Version %1$s is connected to %2$s, but RedeemID is set up for %3$s. Purchases there will not unlock content here."
 msgstr ""
 
 #: src/Privacy.php:19
@@ -3432,7 +3432,7 @@ msgid "The Shopify link and synced data were removed. The Shopify customer recor
 msgstr ""
 
 #: src/Support/Health.php:36
-msgid "WP2 Shopify plugin"
+msgid "RedeemID plugin"
 msgstr ""
 
 #: src/Support/Health.php:38
@@ -3584,8 +3584,8 @@ msgstr[1] ""
 #. translators: %d: number of deliveries
 #: src/Webhooks/Monitor.php:143
 #, php-format
-msgid "%d webhook failed in the last day and was set aside. Retry it from Shopify → Webhooks."
-msgid_plural "%d webhooks failed in the last day and were set aside. Retry them from Shopify → Webhooks."
+msgid "%d webhook failed in the last day and was set aside. Retry it from RedeemID → Webhooks."
+msgid_plural "%d webhooks failed in the last day and were set aside. Retry them from RedeemID → Webhooks."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -3606,7 +3606,7 @@ msgstr ""
 
 #: src/Webhooks/Monitor.php:189
 #: src/Webhooks/Monitor.php:215
-msgid "Open Shopify → Webhooks"
+msgid "Open RedeemID → Webhooks"
 msgstr ""
 
 #: src/Webhooks/Monitor.php:198
@@ -3693,7 +3693,7 @@ msgid "(not registered)"
 msgstr ""
 
 #: assets/block-access.js:146
-msgid "Features are site-wide behaviours from Shopify → Access → Features. Decided on the server: a hidden block is never sent."
+msgid "Features are site-wide behaviours from RedeemID → Access → Features. Decided on the server: a hidden block is never sent."
 msgstr ""
 
 #: assets/block-access.js:152
@@ -3849,7 +3849,7 @@ msgstr ""
 
 #: blocks/health/block.json
 msgctxt "block description"
-msgid "An at-a-glance checklist of what WP2 Shopify needs: Blockstudio, its blocks, permalinks, the callback page, Shopify sign-in, which wp-config constants are set (never their values) and Shopify's own plugin. Shown to administrators only, in a Blockstudio dynamic island, so a cached page never carries it. Themes add rows with the wp2_shopify_health_checks filter."
+msgid "An at-a-glance checklist of what RedeemID needs: Blockstudio, its blocks, permalinks, the callback page, Shopify sign-in, which wp-config constants are set (never their values) and Shopify's own plugin. Shown to administrators only, in a Blockstudio dynamic island, so a cached page never carries it. Themes add rows with the redeemid_health_checks filter."
 msgstr ""
 
 #: blocks/health/block.json
@@ -3992,7 +3992,7 @@ msgstr ""
 
 #: blocks/membership-refresh/block.json
 msgctxt "block description"
-msgid "Lets a signed-in, linked customer pull their membership from Shopify again (POST /wp2-shopify/v1/account/sync) and reloads the page when it changes. A Blockstudio dynamic island: the cached page carries an empty placeholder and guests see nothing."
+msgid "Lets a signed-in, linked customer pull their membership from Shopify again (POST /redeemid/v1/account/sync) and reloads the page when it changes. A Blockstudio dynamic island: the cached page carries an empty placeholder and guests see nothing."
 msgstr ""
 
 #: blocks/membership-refresh/block.json

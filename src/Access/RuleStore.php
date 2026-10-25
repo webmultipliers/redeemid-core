@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Where the site-wide rule settings live: one option, overridable from code
- * with the wp2_shopify_access_rules filter, like the levels.
+ * with the redeemid_access_rules filter, like the levels.
  *
  * It also keeps the rules version. Every item caches its rule layers stamped
  * with the version (Layers), so anything that can change many items at once
@@ -12,8 +12,8 @@ namespace WP2_Shopify\Access;
  * finding and clearing every affected item.
  */
 final class RuleStore {
-	public const OPTION  = 'wp2_shopify_access_rules';
-	public const VERSION = 'wp2_shopify_access_rules_version';
+	public const OPTION  = 'redeemid_access_rules';
+	public const VERSION = 'redeemid_access_rules_version';
 
 	private static ?Rules $rules = null;
 
@@ -32,13 +32,13 @@ final class RuleStore {
 		 * public_after_days) and taxonomies (taxonomy => enabled, inherit,
 		 * priority).
 		 */
-		$config = apply_filters( 'wp2_shopify_access_rules', self::saved() );
+		$config = apply_filters( 'redeemid_access_rules', self::saved() );
 
 		return is_array( $config ) ? $config : [];
 	}
 
 	public static function managed_in_code(): bool {
-		return has_filter( 'wp2_shopify_access_rules' ) && self::config() !== self::saved();
+		return has_filter( 'redeemid_access_rules' ) && self::config() !== self::saved();
 	}
 
 	public static function rules(): Rules {
@@ -83,7 +83,7 @@ final class RuleStore {
 		Gatekeeper::flush();
 
 		/** This action is documented in src/Access/ItemRule.php */
-		do_action( 'wp2_shopify_access_changed', [] );
+		do_action( 'redeemid_access_changed', [] );
 	}
 
 	/**

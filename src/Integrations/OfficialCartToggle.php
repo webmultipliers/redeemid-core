@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Integrations;
+namespace RedeemID\Integrations;
 
 /**
  * Keyboard access for the cart toggle of Shopify's WordPress plugin.
@@ -12,7 +12,7 @@ namespace WP2_Shopify\Integrations;
  */
 final class OfficialCartToggle {
 	public const BLOCK  = 'create-block/shopify-cart-toggle-block';
-	public const HANDLE = 'wp2-shopify-cart-toggle';
+	public const HANDLE = 'redeemid-cart-toggle';
 
 	public static function register(): void {
 		add_filter( 'render_block_' . self::BLOCK, [ self::class, 'markup' ] );
@@ -42,7 +42,7 @@ final class OfficialCartToggle {
 			return;
 		}
 
-		wp_register_script( self::HANDLE, '', [], WP2_SHOPIFY_VERSION, [ 'in_footer' => true ] );
+		wp_register_script( self::HANDLE, '', [], REDEEMID_VERSION, [ 'in_footer' => true ] );
 		wp_enqueue_script( self::HANDLE );
 		wp_add_inline_script(
 			self::HANDLE,

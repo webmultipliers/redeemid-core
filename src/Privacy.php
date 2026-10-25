@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
-use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Auth\TokenVault;
+use RedeemID\Sync\Mirror;
 
 /**
  * WordPress privacy export and erasure for the Shopify mirror.
@@ -15,8 +15,8 @@ final class Privacy {
 	}
 
 	public static function exporters( array $exporters ): array {
-		$exporters['wp2-shopify'] = [
-			'exporter_friendly_name' => __( 'Shopify link and synced data', 'wp2-shopify' ),
+		$exporters['redeemid'] = [
+			'exporter_friendly_name' => __( 'Shopify link and synced data', 'redeemid' ),
 			'callback'               => [ self::class, 'export' ],
 		];
 
@@ -24,8 +24,8 @@ final class Privacy {
 	}
 
 	public static function erasers( array $erasers ): array {
-		$erasers['wp2-shopify'] = [
-			'eraser_friendly_name' => __( 'Shopify link and synced data', 'wp2-shopify' ),
+		$erasers['redeemid'] = [
+			'eraser_friendly_name' => __( 'Shopify link and synced data', 'redeemid' ),
 			'callback'             => [ self::class, 'erase' ],
 		];
 
@@ -50,17 +50,17 @@ final class Privacy {
 
 		if ( $user ) {
 			$labels = [
-				Mirror::GID         => __( 'Shopify customer ID', 'wp2-shopify' ),
-				Mirror::NUMERIC     => __( 'Shopify customer number', 'wp2-shopify' ),
-				Mirror::EMAIL       => __( 'Shopify email', 'wp2-shopify' ),
-				Mirror::FIRST_NAME  => __( 'First name (Shopify)', 'wp2-shopify' ),
-				Mirror::LAST_NAME   => __( 'Last name (Shopify)', 'wp2-shopify' ),
-				Mirror::TAGS        => __( 'Shopify tags', 'wp2-shopify' ),
-				Mirror::STATUS      => __( 'Account status', 'wp2-shopify' ),
-				Mirror::EMAIL_OPTIN => __( 'Email marketing consent', 'wp2-shopify' ),
-				Mirror::SMS_OPTIN   => __( 'SMS marketing consent', 'wp2-shopify' ),
-				Mirror::SUMMARY     => __( 'Purchasing summary', 'wp2-shopify' ),
-				Mirror::LAST_SYNC   => __( 'Last synced', 'wp2-shopify' ),
+				Mirror::GID         => __( 'Shopify customer ID', 'redeemid' ),
+				Mirror::NUMERIC     => __( 'Shopify customer number', 'redeemid' ),
+				Mirror::EMAIL       => __( 'Shopify email', 'redeemid' ),
+				Mirror::FIRST_NAME  => __( 'First name (Shopify)', 'redeemid' ),
+				Mirror::LAST_NAME   => __( 'Last name (Shopify)', 'redeemid' ),
+				Mirror::TAGS        => __( 'Shopify tags', 'redeemid' ),
+				Mirror::STATUS      => __( 'Account status', 'redeemid' ),
+				Mirror::EMAIL_OPTIN => __( 'Email marketing consent', 'redeemid' ),
+				Mirror::SMS_OPTIN   => __( 'SMS marketing consent', 'redeemid' ),
+				Mirror::SUMMARY     => __( 'Purchasing summary', 'redeemid' ),
+				Mirror::LAST_SYNC   => __( 'Last synced', 'redeemid' ),
 			];
 
 			foreach ( $labels as $key => $label ) {
@@ -78,7 +78,7 @@ final class Privacy {
 		}
 
 		return [
-			'data' => $data ? [ [ 'group_id' => 'wp2-shopify', 'group_label' => __( 'Shopify', 'wp2-shopify' ), 'item_id' => 'shopify-' . $user->ID, 'data' => $data ] ] : [],
+			'data' => $data ? [ [ 'group_id' => 'redeemid', 'group_label' => __( 'Shopify', 'redeemid' ), 'item_id' => 'shopify-' . $user->ID, 'data' => $data ] ] : [],
 			'done' => true,
 		];
 	}
@@ -94,7 +94,7 @@ final class Privacy {
 		return [
 			'items_removed'  => (bool) $user,
 			'items_retained' => false,
-			'messages'       => $user ? [ __( 'The Shopify link and synced data were removed. The Shopify customer record itself is managed in Shopify.', 'wp2-shopify' ) ] : [],
+			'messages'       => $user ? [ __( 'The Shopify link and synced data were removed. The Shopify customer record itself is managed in Shopify.', 'redeemid' ) ] : [],
 			'done'           => true,
 		];
 	}

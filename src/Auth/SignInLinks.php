@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
-use WP2_Shopify\Blocks\Gate;
-use WP2_Shopify\Config;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Shopify\Discovery;
+use RedeemID\Blocks\Gate;
+use RedeemID\Config;
+use RedeemID\Settings;
+use RedeemID\Shopify\Discovery;
 
 /**
  * "Log in with Shopify" outside the plugin's blocks:
@@ -14,14 +14,14 @@ use WP2_Shopify\Shopify\Discovery;
  *   other plugins that send visitors to the WordPress login still offer it;
  * - nav menu items (Appearance → Menus → Shopify): Log in with Shopify, which
  *   hides once signed in, and Log out, which shows only then;
- * - the [wp2_shopify_login] shortcode, for classic themes and widgets;
+ * - the [redeemid_login] shortcode, for classic themes and widgets;
  * - optionally, login_url() itself pointing visitors at Shopify sign-in.
  *   Staff keep wp-login.php: wp-admin's own redirects are never changed.
  */
 final class SignInLinks {
-	public const LOGIN_ITEM  = '#wp2s-login';
-	public const LOGOUT_ITEM = '#wp2s-logout';
-	public const SHORTCODE   = 'wp2_shopify_login';
+	public const LOGIN_ITEM  = '#redeemid-login';
+	public const LOGOUT_ITEM = '#redeemid-logout';
+	public const SHORTCODE   = 'redeemid_login';
 
 	public static function register(): void {
 		add_filter( 'login_message', [ self::class, 'login_button' ] );
@@ -33,7 +33,7 @@ final class SignInLinks {
 	}
 
 	public static function available(): bool {
-		return Config::has( 'WP2_SHOPIFY_CLIENT_ID' ) && Discovery::available();
+		return Config::has( 'REDEEMID_CLIENT_ID' ) && Discovery::available();
 	}
 
 	/**
@@ -58,16 +58,16 @@ final class SignInLinks {
 		}
 
 		return (string) $message . sprintf(
-			'<div class="wp2-shopify-login"><a class="button button-primary button-large" href="%s" rel="nofollow">%s</a><p class="wp2-shopify-login__or">%s</p></div>',
+			'<div class="redeemid-login"><a class="button button-primary button-large" href="%s" rel="nofollow">%s</a><p class="redeemid-login__or">%s</p></div>',
 			esc_url( Flow::login_url( self::login_redirect() ) ),
-			esc_html__( 'Log in with Shopify', 'wp2-shopify' ),
-			esc_html__( 'or with your username and password', 'wp2-shopify' )
+			esc_html__( 'Log in with Shopify', 'redeemid' ),
+			esc_html__( 'or with your username and password', 'redeemid' )
 		);
 	}
 
 	public static function login_style(): void {
 		if ( Settings::get( 'login_button' ) ) {
-			wp_enqueue_style( 'wp2-shopify-front', WP2_SHOPIFY_URL . 'assets/front.css', [], WP2_SHOPIFY_VERSION );
+			wp_enqueue_style( 'redeemid-front', REDEEMID_URL . 'assets/front.css', [], REDEEMID_VERSION );
 		}
 	}
 
@@ -109,7 +109,7 @@ final class SignInLinks {
 					continue;
 				}
 
-				$item->url = wp_nonce_url( add_query_arg( 'action', 'wp2_shopify_logout', Flow::action_url() ), 'wp2_shopify_logout' );
+				$item->url = wp_nonce_url( add_query_arg( 'action', 'redeemid_logout', Flow::action_url() ), 'redeemid_logout' );
 			}
 
 			$out[] = $item;
@@ -119,18 +119,18 @@ final class SignInLinks {
 	}
 
 	public static function menu_meta_box(): void {
-		add_meta_box( 'wp2-shopify-menu-items', __( 'Shopify', 'wp2-shopify' ), [ self::class, 'render_meta_box' ], 'nav-menus', 'side', 'low' );
+		add_meta_box( 'redeemid-menu-items', __( 'Shopify', 'redeemid' ), [ self::class, 'render_meta_box' ], 'nav-menus', 'side', 'low' );
 	}
 
 	public static function render_meta_box(): void {
 		$items = [
-			self::LOGIN_ITEM  => __( 'Log in with Shopify', 'wp2-shopify' ),
-			self::LOGOUT_ITEM => __( 'Log out', 'wp2-shopify' ),
+			self::LOGIN_ITEM  => __( 'Log in with Shopify', 'redeemid' ),
+			self::LOGOUT_ITEM => __( 'Log out', 'redeemid' ),
 		];
 		$i     = -1;
 		?>
-		<div id="wp2-shopify-menu-items" class="posttypediv">
-			<p class="description"><?php esc_html_e( 'Log in shows to guests only and returns them to the page they were on; Log out shows to signed-in visitors only.', 'wp2-shopify' ); ?></p>
+		<div id="redeemid-menu-items" class="posttypediv">
+			<p class="description"><?php esc_html_e( 'Log in shows to guests only and returns them to the page they were on; Log out shows to signed-in visitors only.', 'redeemid' ); ?></p>
 			<div class="tabs-panel tabs-panel-active">
 				<ul class="categorychecklist form-no-clear">
 					<?php foreach ( $items as $url => $label ) : ?>
@@ -146,7 +146,7 @@ final class SignInLinks {
 			</div>
 			<p class="button-controls wp-clearfix">
 				<span class="add-to-menu">
-					<input type="submit" class="button submit-add-to-menu right" value="<?php esc_attr_e( 'Add to Menu', 'wp2-shopify' ); ?>" name="add-wp2-shopify-menu-item" id="submit-wp2-shopify-menu-items">
+					<input type="submit" class="button submit-add-to-menu right" value="<?php esc_attr_e( 'Add to Menu', 'redeemid' ); ?>" name="add-redeemid-menu-item" id="submit-redeemid-menu-items">
 					<span class="spinner"></span>
 				</span>
 			</p>
@@ -155,7 +155,7 @@ final class SignInLinks {
 	}
 
 	/**
-	 * [wp2_shopify_login show="auto|login|logout|connect" login_label="" logout_label="" redirect=""]
+	 * [redeemid_login show="auto|login|logout|connect" login_label="" logout_label="" redirect=""]
 	 * renders the Shopify Sign-in block, so it caches and behaves the same.
 	 *
 	 * @param array<string, string>|string $atts
@@ -182,6 +182,6 @@ final class SignInLinks {
 			$data['redirectAfterLogin'] = esc_url_raw( $atts['redirect'] );
 		}
 
-		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'id' => 'wp2-shopify/auth-action', 'data' => $data ] ) : '';
+		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'id' => 'redeemid/auth-action', 'data' => $data ] ) : '';
 	}
 }

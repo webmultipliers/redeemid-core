@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/paywall-break",
+	"name": "redeemid/paywall-break",
 	"title": "Paywall Break",
 	"category": "widgets",
 	"icon": "lock",
 	"description": "Everything after this block is withheld from visitors this item's access rule locks out. They see the content above it, then the level's sign-in and join panel.",
 	"keywords": [ "paywall", "members", "teaser", "break", "more" ],
-	"textdomain": "wp2-shopify",
+	"textdomain": "redeemid",
 	"supports": { "html": false, "multiple": false, "reusable": false, "customClassName": false },
 	"example": {},
 	"blockstudio": true

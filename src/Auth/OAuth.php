@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
-use WP2_Shopify\Config;
-use WP2_Shopify\Shopify\Discovery;
-use WP2_Shopify\Shopify\Http;
+use RedeemID\Config;
+use RedeemID\Shopify\Discovery;
+use RedeemID\Shopify\Http;
 
 /**
  * Customer Account API OAuth 2.0 + PKCE, entirely server-side.
@@ -14,7 +14,7 @@ final class OAuth {
 		return add_query_arg(
 			rawurlencode_deep(
 				[
-					'client_id'             => Config::get( 'WP2_SHOPIFY_CLIENT_ID' ),
+					'client_id'             => Config::get( 'REDEEMID_CLIENT_ID' ),
 					'response_type'         => 'code',
 					'redirect_uri'          => Config::callback_url(),
 					'scope'                 => Config::SCOPES,
@@ -77,16 +77,16 @@ final class OAuth {
 
 	private static function token_request( array $params, string $label ): array|\WP_Error {
 		$endpoint  = Discovery::endpoint( 'token_endpoint' );
-		$client_id = Config::get( 'WP2_SHOPIFY_CLIENT_ID' );
+		$client_id = Config::get( 'REDEEMID_CLIENT_ID' );
 
 		if ( '' === $endpoint || '' === $client_id ) {
-			return new \WP_Error( 'wp2_shopify_unconfigured', 'Shopify sign-in is not configured.' );
+			return new \WP_Error( 'redeemid_unconfigured', 'Shopify sign-in is not configured.' );
 		}
 
 		// Shopify marks client_id required on every token request, confidential clients included.
 		$params['client_id'] = $client_id;
 		$headers             = [ 'Content-Type' => 'application/x-www-form-urlencoded' ];
-		$secret              = Config::get( 'WP2_SHOPIFY_CLIENT_SECRET' );
+		$secret              = Config::get( 'REDEEMID_CLIENT_SECRET' );
 
 		if ( '' !== $secret ) {
 			// Confidential client.
@@ -103,7 +103,7 @@ final class OAuth {
 		}
 
 		if ( empty( $response['access_token'] ) ) {
-			return new \WP_Error( 'wp2_shopify_token', 'Shopify did not issue an access token.' );
+			return new \WP_Error( 'redeemid_token', 'Shopify did not issue an access token.' );
 		}
 
 		return [

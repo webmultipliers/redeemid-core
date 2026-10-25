@@ -1,6 +1,6 @@
 {
-	"name": "webmultipliers/wp2-shopify",
-	"description": "Shopify for WordPress: Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating, built on Blockstudio 7.",
+	"name": "webmultipliers/redeemid",
+	"description": "RedeemID: Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {
@@ -15,17 +15,17 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WP2_Shopify\\": "src/"
+			"RedeemID\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"WP2_Shopify\\Tests\\": "tests/"
+			"RedeemID\\Tests\\": "tests/"
 		}
 	},
 	"scripts": {
 		"test": "phpunit",
-		"lint": "find src blocks tests wp2-shopify.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
+		"lint": "find src blocks tests redeemid.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
 		"phpcs": "phpcs",
 		"build-prod": [
 			"@composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress"

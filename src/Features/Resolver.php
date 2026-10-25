@@ -1,14 +1,14 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
-use WP2_Shopify\Access\Checker;
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Entitlement\Rule;
+use RedeemID\Access\Checker;
+use RedeemID\Access\Level;
+use RedeemID\Access\Levels;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Entitlement\Member;
+use RedeemID\Entitlement\Rule;
 
 /**
  * Which features a visitor holds, with provenance. Pure: no WordPress calls,

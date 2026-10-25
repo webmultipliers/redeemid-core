@@ -1,6 +1,6 @@
 # Tagging customers with Shopify Flow
 
-WP2 Shopify reads customer tags; it never decides who should have them. Something in Shopify adds a tag when a customer buys a membership and removes it when the membership ends. That is usually [Shopify Flow](https://apps.shopify.com/flow), or a subscription or membership app that tags customers itself. WordPress then mirrors the tags, and access levels (Shopify → Access → Levels) point at them.
+RedeemID reads customer tags; it never decides who should have them. Something in Shopify adds a tag when a customer buys a membership and removes it when the membership ends. That is usually [Shopify Flow](https://apps.shopify.com/flow), or a subscription or membership app that tags customers itself. WordPress then mirrors the tags, and access levels (RedeemID → Access → Levels) point at them.
 
 Because the state lives in Shopify, renewals, cancellations, failed payments, pauses and fixed terms are all handled where the billing happens, and WordPress follows within seconds through the `customer.tags_added` and `customer.tags_removed` webhooks.
 
@@ -26,11 +26,11 @@ Add a **Wait** step to the grant workflow, after the tag is added, then **Remove
 
 ## Subscriptions
 
-Subscription apps (Shopify Subscriptions, Recharge, Appstle and others) know when a contract is active, paused, failed or cancelled; WP2's app can't read another app's contracts. Use the app's own customer tagging if it has one, or its Flow triggers, to add a tag while a subscription is active and remove it when it ends. Point the level at that tag.
+Subscription apps (Shopify Subscriptions, Recharge, Appstle and others) know when a contract is active, paused, failed or cancelled; RedeemID's app can't read another app's contracts. Use the app's own customer tagging if it has one, or its Flow triggers, to add a tag while a subscription is active and remove it when it ends. Point the level at that tag.
 
 ## Complimentary and manual access
 
-Add the tag by hand in Shopify, or from Shopify → Customers → a customer in WordPress (which writes to Shopify). Use a separate tag such as `gold-comp`, and let the Gold level match either tag, so no purchase workflow ever removes it.
+Add the tag by hand in Shopify, or from RedeemID → Customers → a customer in WordPress (which writes to Shopify). Use a separate tag such as `gold-comp`, and let the Gold level match either tag, so no purchase workflow ever removes it.
 
 ## Start and renewal dates
 
@@ -43,14 +43,14 @@ They are read on every sync.
 
 ## Bringing customers back after checkout
 
-In Shopify, Settings → Checkout → Order status page → Additional scripts, or in the order confirmation email template, add a link to the return link shown under Shopify → Settings in WordPress (it ends in `/?wp2s_return=1`). A customer who bought while signed in goes back to the page they bought from, and sees "Your membership is ready" as soon as the tag lands. A guest is asked to log in with Shopify using the email from their order.
+In Shopify, Settings → Checkout → Order status page → Additional scripts, or in the order confirmation email template, add a link to the return link shown under RedeemID → Settings in WordPress (it ends in `/?redeemid_return=1`). A customer who bought while signed in goes back to the page they bought from, and sees "Your membership is ready" as soon as the tag lands. A guest is asked to log in with Shopify using the email from their order.
 
 ## Checking it works
 
-- Shopify → Customers in WordPress shows each linked customer's synced tags and the webhook that last changed them.
-- Shopify → Access → Test shows what a given tag set or user gets on any item.
+- RedeemID → Customers in WordPress shows each linked customer's synced tags and the webhook that last changed them.
+- RedeemID → Access → Test shows what a given tag set or user gets on any item.
 - A signed-in customer who has just paid can use the **Refresh Membership** block instead of waiting for the webhook.
 
 ## Upgrading from a version with "Membership products"
 
-Earlier versions added and removed tags themselves from a product map in Shopify → Settings. That is gone. Tags it already added stay on the customers in Shopify. Shopify → Settings shows the old map until you next save the membership settings, so you can rebuild it as workflows before new orders arrive. Existing `orders/paid`, `orders/cancelled` and `refunds/create` webhook subscriptions are acknowledged and ignored, and you can delete them from the app. The `read_orders` scope is no longer needed.
+Earlier versions added and removed tags themselves from a product map in RedeemID → Settings. That is gone. Tags it already added stay on the customers in Shopify. RedeemID → Settings shows the old map until you next save the membership settings, so you can rebuild it as workflows before new orders arrive. Existing `orders/paid`, `orders/cancelled` and `refunds/create` webhook subscriptions are acknowledged and ignored, and you can delete them from the app. The `read_orders` scope is no longer needed.

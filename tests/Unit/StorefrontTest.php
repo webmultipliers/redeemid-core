@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Commerce\BuyNow;
-use WP2_Shopify\Shopify\Discovery;
-use WP2_Shopify\Shopify\Storefront;
+use RedeemID\Commerce\BuyNow;
+use RedeemID\Shopify\Discovery;
+use RedeemID\Shopify\Storefront;
 
 final class StorefrontTest extends TestCase {
 	private static function raw(): array {

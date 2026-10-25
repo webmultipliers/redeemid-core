@@ -1,17 +1,17 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Support\Stats;
+use RedeemID\Access\LevelStore;
+use RedeemID\Support\Stats;
 
 /**
- * Shopify → Reports: members gained and lost, sign-ins and purchases, from
+ * RedeemID → Reports: members gained and lost, sign-ins and purchases, from
  * the daily counters in Support\Stats. Counting starts when this version is
  * installed; nothing is reconstructed from the past.
  */
 final class Reports {
-	public const PAGE = 'wp2-shopify-reports';
+	public const PAGE = 'redeemid-reports';
 
 	private const WEEKS = 12;
 
@@ -22,52 +22,52 @@ final class Reports {
 		$levels = array_filter( LevelStore::levels()->all(), static fn( $level ) => ! $level->builtin() );
 		$since  = $stats ? min( array_keys( $stats ) ) : '';
 		$tiles  = [
-			[ __( 'Joined a level', 'wp2-shopify' ), Stats::total( $stats, 'join:', 30, $now ) ],
-			[ __( 'Left a level', 'wp2-shopify' ), Stats::total( $stats, 'leave:', 30, $now ) ],
-			[ __( 'Purchases that unlocked access', 'wp2-shopify' ), Stats::total( $stats, 'unlocked', 30, $now ) ],
-			[ __( 'Plan card checkouts', 'wp2-shopify' ), Stats::total( $stats, 'checkout', 30, $now ) ],
-			[ __( 'Shopify sign-ins', 'wp2-shopify' ), Stats::total( $stats, 'sign_in', 30, $now ) ],
+			[ __( 'Joined a level', 'redeemid' ), Stats::total( $stats, 'join:', 30, $now ) ],
+			[ __( 'Left a level', 'redeemid' ), Stats::total( $stats, 'leave:', 30, $now ) ],
+			[ __( 'Purchases that unlocked access', 'redeemid' ), Stats::total( $stats, 'unlocked', 30, $now ) ],
+			[ __( 'Plan card checkouts', 'redeemid' ), Stats::total( $stats, 'checkout', 30, $now ) ],
+			[ __( 'Shopify sign-ins', 'redeemid' ), Stats::total( $stats, 'sign_in', 30, $now ) ],
 		];
 		$joins  = Stats::weekly( $stats, 'join:', self::WEEKS, $now );
 		$leaves = Stats::weekly( $stats, 'leave:', self::WEEKS, $now );
 		$latest = self::latest_members( $stats );
 
 		Menu::page_start(
-			__( 'Reports', 'wp2-shopify' ),
-			__( 'Membership reports', 'wp2-shopify' ),
+			__( 'Reports', 'redeemid' ),
+			__( 'Membership reports', 'redeemid' ),
 			'',
 			$since
 				/* translators: %s: date */
-				? sprintf( __( 'Counted since %s. A level is joined or left when Shopify adds or removes its tag; "unlocked access" is a purchase whose tag reached WordPress while the buyer was signed in.', 'wp2-shopify' ), $since )
-				: __( 'Nothing counted yet. Counting starts now: levels joined and left, sign-ins and purchases.', 'wp2-shopify' )
+				? sprintf( __( 'Counted since %s. A level is joined or left when Shopify adds or removes its tag; "unlocked access" is a purchase whose tag reached WordPress while the buyer was signed in.', 'redeemid' ), $since )
+				: __( 'Nothing counted yet. Counting starts now: levels joined and left, sign-ins and purchases.', 'redeemid' )
 		);
 		?>
-		<h2 class="wp2s-section-title"><?php esc_html_e( 'Last 30 days', 'wp2-shopify' ); ?></h2>
-		<div class="wp2s-tiles">
+		<h2 class="redeemid-section-title"><?php esc_html_e( 'Last 30 days', 'redeemid' ); ?></h2>
+		<div class="redeemid-tiles">
 			<?php foreach ( $tiles as [ $label, $value ] ) : ?>
-				<div class="wp2s-tile">
-					<span class="wp2s-tile__value"><?php echo esc_html( number_format_i18n( $value ) ); ?></span>
-					<span class="wp2s-tile__label"><?php echo esc_html( $label ); ?></span>
+				<div class="redeemid-tile">
+					<span class="redeemid-tile__value"><?php echo esc_html( number_format_i18n( $value ) ); ?></span>
+					<span class="redeemid-tile__label"><?php echo esc_html( $label ); ?></span>
 				</div>
 			<?php endforeach; ?>
 		</div>
 
-		<?php Menu::panel_start( __( 'Joined and left, by week', 'wp2-shopify' ), __( 'All levels together, for the last 12 weeks. Each week ends on the date shown.', 'wp2-shopify' ) ); ?>
-			<div class="wp2s-panel__body">
+		<?php Menu::panel_start( __( 'Joined and left, by week', 'redeemid' ), __( 'All levels together, for the last 12 weeks. Each week ends on the date shown.', 'redeemid' ) ); ?>
+			<div class="redeemid-panel__body">
 				<?php self::chart( $joins, $leaves ); ?>
 			</div>
 		<?php Menu::panel_end(); ?>
 
-		<?php Menu::panel_start( __( 'By level', 'wp2-shopify' ), __( 'Members are linked customers holding the level, counted once a day.', 'wp2-shopify' ) ); ?>
-			<div class="wp2s-panel__body wp2s-panel__body--flush">
+		<?php Menu::panel_start( __( 'By level', 'redeemid' ), __( 'Members are linked customers holding the level, counted once a day.', 'redeemid' ) ); ?>
+			<div class="redeemid-panel__body redeemid-panel__body--flush">
 				<table class="widefat striped">
 					<thead><tr>
-						<th><?php esc_html_e( 'Level', 'wp2-shopify' ); ?></th>
-						<th class="num"><?php esc_html_e( 'Members', 'wp2-shopify' ); ?></th>
-						<th class="num"><?php esc_html_e( 'Joined, 30 days', 'wp2-shopify' ); ?></th>
-						<th class="num"><?php esc_html_e( 'Left, 30 days', 'wp2-shopify' ); ?></th>
-						<th class="num"><?php esc_html_e( 'Joined, 12 months', 'wp2-shopify' ); ?></th>
-						<th class="num"><?php esc_html_e( 'Left, 12 months', 'wp2-shopify' ); ?></th>
+						<th><?php esc_html_e( 'Level', 'redeemid' ); ?></th>
+						<th class="num"><?php esc_html_e( 'Members', 'redeemid' ); ?></th>
+						<th class="num"><?php esc_html_e( 'Joined, 30 days', 'redeemid' ); ?></th>
+						<th class="num"><?php esc_html_e( 'Left, 30 days', 'redeemid' ); ?></th>
+						<th class="num"><?php esc_html_e( 'Joined, 12 months', 'redeemid' ); ?></th>
+						<th class="num"><?php esc_html_e( 'Left, 12 months', 'redeemid' ); ?></th>
 					</tr></thead>
 					<tbody>
 						<?php foreach ( $levels as $slug => $level ) : ?>
@@ -137,37 +137,37 @@ final class Reports {
 
 			return sprintf( 'M%1$.1f %2$.1fV%3$.1fQ%1$.1f %4$.1f %5$.1f %4$.1fH%6$.1fQ%7$.1f %4$.1f %7$.1f %3$.1fV%2$.1fZ', $x, $base, $top + $r, $top, $x + $r, $x + $bar - $r, $x + $bar );
 		};
-		$label = __( 'Joined', 'wp2-shopify' );
-		$lost  = __( 'Left', 'wp2-shopify' );
+		$label = __( 'Joined', 'redeemid' );
+		$lost  = __( 'Left', 'redeemid' );
 		?>
-		<div class="wp2s-legend">
-			<span><i class="wp2s-legend__swatch wp2s-series-1"></i><?php echo esc_html( $label ); ?></span>
-			<span><i class="wp2s-legend__swatch wp2s-series-2"></i><?php echo esc_html( $lost ); ?></span>
+		<div class="redeemid-legend">
+			<span><i class="redeemid-legend__swatch redeemid-series-1"></i><?php echo esc_html( $label ); ?></span>
+			<span><i class="redeemid-legend__swatch redeemid-series-2"></i><?php echo esc_html( $lost ); ?></span>
 		</div>
-		<svg class="wp2s-chart" viewBox="0 0 <?php echo (int) $w; ?> <?php echo (int) $h; ?>" role="img" aria-label="<?php esc_attr_e( 'Members who joined and left a level each week', 'wp2-shopify' ); ?>">
+		<svg class="redeemid-chart" viewBox="0 0 <?php echo (int) $w; ?> <?php echo (int) $h; ?>" role="img" aria-label="<?php esc_attr_e( 'Members who joined and left a level each week', 'redeemid' ); ?>">
 			<?php for ( $i = 0; $i <= 4; $i++ ) : ?>
-				<line class="wp2s-chart__grid<?php echo 0 === $i ? ' is-base' : ''; ?>" x1="<?php echo (int) $left; ?>" x2="<?php echo (int) $w; ?>" y1="<?php echo esc_attr( (string) $y( $i * $step ) ); ?>" y2="<?php echo esc_attr( (string) $y( $i * $step ) ); ?>"></line>
-				<text class="wp2s-chart__tick" x="<?php echo (int) ( $left - 6 ); ?>" y="<?php echo esc_attr( (string) ( $y( $i * $step ) + 4 ) ); ?>" text-anchor="end"><?php echo esc_html( number_format_i18n( $i * $step ) ); ?></text>
+				<line class="redeemid-chart__grid<?php echo 0 === $i ? ' is-base' : ''; ?>" x1="<?php echo (int) $left; ?>" x2="<?php echo (int) $w; ?>" y1="<?php echo esc_attr( (string) $y( $i * $step ) ); ?>" y2="<?php echo esc_attr( (string) $y( $i * $step ) ); ?>"></line>
+				<text class="redeemid-chart__tick" x="<?php echo (int) ( $left - 6 ); ?>" y="<?php echo esc_attr( (string) ( $y( $i * $step ) + 4 ) ); ?>" text-anchor="end"><?php echo esc_html( number_format_i18n( $i * $step ) ); ?></text>
 			<?php endfor; ?>
 			<?php foreach ( $joins as $i => $week ) : ?>
 				<?php
 				$x0 = $left + $i * $band + ( $band - 2 * $bar - 2 ) / 2;
 				?>
-				<g class="wp2s-chart__week">
+				<g class="redeemid-chart__week">
 					<title><?php echo esc_html( sprintf( '%s · %s %d · %s %d', wp_date( 'M j', strtotime( $week['end'] ) ), $label, $week['value'], $lost, $leaves[ $i ]['value'] ) ); ?></title>
-					<rect class="wp2s-chart__hit" x="<?php echo esc_attr( (string) ( $left + $i * $band ) ); ?>" y="0" width="<?php echo esc_attr( (string) $band ); ?>" height="<?php echo (int) $base; ?>"></rect>
-					<path class="wp2s-series-1" d="<?php echo esc_attr( $shape( $x0, $week['value'] ) ); ?>"></path>
-					<path class="wp2s-series-2" d="<?php echo esc_attr( $shape( $x0 + $bar + 2, $leaves[ $i ]['value'] ) ); ?>"></path>
+					<rect class="redeemid-chart__hit" x="<?php echo esc_attr( (string) ( $left + $i * $band ) ); ?>" y="0" width="<?php echo esc_attr( (string) $band ); ?>" height="<?php echo (int) $base; ?>"></rect>
+					<path class="redeemid-series-1" d="<?php echo esc_attr( $shape( $x0, $week['value'] ) ); ?>"></path>
+					<path class="redeemid-series-2" d="<?php echo esc_attr( $shape( $x0 + $bar + 2, $leaves[ $i ]['value'] ) ); ?>"></path>
 					<?php if ( 0 === $i % 2 || count( $joins ) - 1 === $i ) : ?>
-						<text class="wp2s-chart__tick" x="<?php echo esc_attr( (string) ( $left + ( $i + 0.5 ) * $band ) ); ?>" y="<?php echo (int) ( $h - 6 ); ?>" text-anchor="middle"><?php echo esc_html( wp_date( 'M j', strtotime( $week['end'] ) ) ); ?></text>
+						<text class="redeemid-chart__tick" x="<?php echo esc_attr( (string) ( $left + ( $i + 0.5 ) * $band ) ); ?>" y="<?php echo (int) ( $h - 6 ); ?>" text-anchor="middle"><?php echo esc_html( wp_date( 'M j', strtotime( $week['end'] ) ) ); ?></text>
 					<?php endif; ?>
 				</g>
 			<?php endforeach; ?>
 		</svg>
-		<details class="wp2s-chart__table">
-			<summary><?php esc_html_e( 'Show as a table', 'wp2-shopify' ); ?></summary>
+		<details class="redeemid-chart__table">
+			<summary><?php esc_html_e( 'Show as a table', 'redeemid' ); ?></summary>
 			<table class="widefat striped">
-				<thead><tr><th><?php esc_html_e( 'Week ending', 'wp2-shopify' ); ?></th><th class="num"><?php echo esc_html( $label ); ?></th><th class="num"><?php echo esc_html( $lost ); ?></th></tr></thead>
+				<thead><tr><th><?php esc_html_e( 'Week ending', 'redeemid' ); ?></th><th class="num"><?php echo esc_html( $label ); ?></th><th class="num"><?php echo esc_html( $lost ); ?></th></tr></thead>
 				<tbody>
 					<?php foreach ( $joins as $i => $week ) : ?>
 						<tr><td><?php echo esc_html( $week['end'] ); ?></td><td class="num"><?php echo (int) $week['value']; ?></td><td class="num"><?php echo (int) $leaves[ $i ]['value']; ?></td></tr>

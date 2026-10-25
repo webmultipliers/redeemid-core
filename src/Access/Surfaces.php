@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Every surface besides the body that could show, match or confirm locked
@@ -20,11 +20,11 @@ namespace WP2_Shopify\Access;
  *   sitemaps together, so the two never disagree. Otherwise they stay listed.
  * - Schema: locked items say isAccessibleForFree false, pointing at the
  *   paywall container. Crawlers get the same locked view as any visitor.
- * - Headers: X-WP2-Access on singular items lets a CDN vary or bypass
+ * - Headers: X-RedeemID-Access on singular items lets a CDN vary or bypass
  *   without parsing HTML; entitled and bypass views are Cache-Control: private.
  */
 final class Surfaces {
-	private const JOIN = 'wp2s';
+	private const JOIN = 'redeemid';
 
 	/** @var array<int, true> Queries whose search SQL was rewritten, by object ID. */
 	private static array $rewritten = [];
@@ -46,7 +46,7 @@ final class Surfaces {
 
 		add_action( 'template_redirect', [ self::class, 'send_headers' ], 1 );
 		add_action( 'wp_head', [ self::class, 'schema' ], 30 );
-		add_action( 'wp2_shopify_access_levels_changed', static fn() => do_action( 'wp2_shopify_access_changed', [] ) );
+		add_action( 'redeemid_access_levels_changed', static fn() => do_action( 'redeemid_access_changed', [] ) );
 	}
 
 	/**
@@ -217,7 +217,7 @@ final class Surfaces {
 		$in = implode( ',', array_fill( 0, count( $types ), '%s' ) );
 
 		// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $in is a list of %s placeholders.
-		return $where . $wpdb->prepare( " AND {$wpdb->comments}.comment_post_ID NOT IN ( SELECT wp2l.post_id FROM {$wpdb->postmeta} AS wp2l INNER JOIN {$wpdb->posts} AS wp2p ON wp2p.ID = wp2l.post_id WHERE wp2l.meta_key = %s AND wp2p.post_type IN ($in) )", array_merge( [ Index::LOCKED ], $types ) );
+		return $where . $wpdb->prepare( " AND {$wpdb->comments}.comment_post_ID NOT IN ( SELECT ridl.post_id FROM {$wpdb->postmeta} AS ridl INNER JOIN {$wpdb->posts} AS ridp ON ridp.ID = ridl.post_id WHERE ridl.meta_key = %s AND ridp.post_type IN ($in) )", array_merge( [ Index::LOCKED ], $types ) );
 	}
 
 	/**
@@ -290,7 +290,7 @@ final class Surfaces {
 		}
 
 		$state = self::state( $post );
-		header( 'X-WP2-Access: ' . $state );
+		header( 'X-RedeemID-Access: ' . $state );
 
 		if ( 'granted' === $state || 'bypass' === $state || null !== Viewer::preview_as() ) {
 			header( 'Cache-Control: private, no-store, max-age=0' );
@@ -299,7 +299,7 @@ final class Surfaces {
 
 	/**
 	 * Google's paywalled-content markup on locked items. Return false from the
-	 * wp2_shopify_paywall_schema filter when an SEO plugin already adds it.
+	 * redeemid_paywall_schema filter when an SEO plugin already adds it.
 	 */
 	public static function schema(): void {
 		if ( ! is_singular() ) {
@@ -321,14 +321,14 @@ final class Surfaces {
 			'hasPart'             => [
 				'@type'               => 'WebPageElement',
 				'isAccessibleForFree' => false,
-				'cssSelector'         => '.wp2-shopify-paywall',
+				'cssSelector'         => '.redeemid-paywall',
 			],
 		];
 
 		/**
 		 * Filter the paywall JSON-LD for a locked item. Return false to print none.
 		 */
-		$data = apply_filters( 'wp2_shopify_paywall_schema', $data, $post );
+		$data = apply_filters( 'redeemid_paywall_schema', $data, $post );
 
 		if ( is_array( $data ) ) {
 			echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG ) . "</script>\n";

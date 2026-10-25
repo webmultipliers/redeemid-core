@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
 /**
  * One feature decision for one visitor, with provenance and the trace the

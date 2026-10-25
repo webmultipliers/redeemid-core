@@ -1,16 +1,16 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Drip;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Access\Membership;
-use WP2_Shopify\Blocks\PanelKind;
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Sync\LevelHistory;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Access\Drip;
+use RedeemID\Access\Levels;
+use RedeemID\Access\Membership;
+use RedeemID\Blocks\PanelKind;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Entitlement\Member;
+use RedeemID\Sync\LevelHistory;
+use RedeemID\Sync\Mirror;
 
 final class MemberJourneyTest extends TestCase {
 	private const NOW = 1_800_000_000;

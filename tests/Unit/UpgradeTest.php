@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Blocks\Gate;
-use WP2_Shopify\Blocks\Upgrade;
+use RedeemID\Blocks\Gate;
+use RedeemID\Blocks\Upgrade;
 
 final class UpgradeTest extends TestCase {
 	public function test_plain_string_urls_become_link_values(): void {
@@ -15,13 +15,13 @@ final class UpgradeTest extends TestCase {
 	}
 
 	public function test_nested_editor_values_are_upgraded_too(): void {
-		$parsed = Upgrade::block( [ 'blockName' => 'wp2-shopify/auth-action', 'attrs' => [ 'blockstudio' => [ 'attributes' => [ 'redirectAfterLogout' => '/' ] ] ] ] );
+		$parsed = Upgrade::block( [ 'blockName' => 'redeemid/auth-action', 'attrs' => [ 'blockstudio' => [ 'attributes' => [ 'redirectAfterLogout' => '/' ] ] ] ] );
 
 		$this->assertSame( [ 'url' => '/' ], $parsed['attrs']['blockstudio']['attributes']['redirectAfterLogout'] );
 	}
 
 	public function test_a_bare_product_handle_becomes_a_select_value(): void {
-		$parsed = Upgrade::block( [ 'blockName' => 'wp2-shopify/plan-card', 'attrs' => [ 'productHandle' => 'gold-membership' ] ] );
+		$parsed = Upgrade::block( [ 'blockName' => 'redeemid/plan-card', 'attrs' => [ 'productHandle' => 'gold-membership' ] ] );
 
 		$this->assertSame( [ 'value' => 'gold-membership', 'label' => 'gold-membership' ], $parsed['attrs']['productHandle'] );
 	}

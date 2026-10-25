@@ -1,14 +1,14 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
-use WP2_Shopify\Access\Level;
+use RedeemID\Access\Level;
 
 /**
  * A registered feature: a site behaviour a customer unlocks because of what
- * Shopify already decided. Registration is code (the wp2_shopify_features
+ * Shopify already decided. Registration is code (the redeemid_features
  * filter); who gets it is a condition, set in code or mapped on
- * Shopify → Access → Features. A feature has no price and no checkout.
+ * RedeemID → Access → Features. A feature has no price and no checkout.
  *
  * Every feature declares how it is enforced and how pages that depend on it
  * are cached, so a security or cache review has something to check against.
@@ -24,7 +24,7 @@ final class Feature {
 
 	/** Do not store a page that depends on it in a shared cache. */
 	public const CACHE_PRIVATE = 'private';
-	/** A cache layer varies on the granted-feature set (X-WP2-Features). */
+	/** A cache layer varies on the granted-feature set (X-RedeemID-Features). */
 	public const CACHE_VARY = 'vary';
 	/** Only a fragment depends on it, rendered per visitor (an island). */
 	public const CACHE_FRAGMENT = 'fragment';

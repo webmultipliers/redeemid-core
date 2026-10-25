@@ -1,33 +1,33 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\Viewer;
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Access\Level;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\Viewer;
+use RedeemID\Entitlement\Member;
+use RedeemID\Settings;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\Mirror;
 
 /**
  * The feature registry: what is registered, who gets it, and the one
- * canonical server-side check (wp2_shopify_has_feature()).
+ * canonical server-side check (redeemid_has_feature()).
  *
- * - Registration is code: the wp2_shopify_features filter.
+ * - Registration is code: the redeemid_features filter.
  * - Mapping is configuration: one stored condition per feature
- *   (wp2_shopify_feature_conditions), edited on Shopify → Access → Features
+ *   (redeemid_feature_conditions), edited on RedeemID → Access → Features
  *   or from a level's screen. A registration that sets its own condition is
  *   managed in code and read-only there.
  * - Grants are derived, never stored: the mirror plus the condition,
  *   resolved once per request for every feature and memoized.
  * - Grant and revoke happen only through the mirror (webhooks,
  *   resyncs, sign-in, the Customers tag editor, which writes to
- *   Shopify). wp2_shopify_features_changed fires when a mirror write changes
+ *   Shopify). redeemid_features_changed fires when a mirror write changes
  *   a customer's set.
  */
 final class Registry {
-	public const OPTION = 'wp2_shopify_feature_conditions';
+	public const OPTION = 'redeemid_feature_conditions';
 
 	/** Mirror keys whose change can change a customer's features. */
 	private const WATCHED = [ Mirror::TAGS, Mirror::STATUS, Mirror::LAST_SYNC, Mirror::SYNC_FAILED, Mirror::GID, Mirror::NUMERIC ];
@@ -46,7 +46,7 @@ final class Registry {
 			add_filter( "{$op}_user_metadata", [ self::class, 'before_write' ], 10, 3 );
 		}
 
-		add_action( 'wp2_shopify_access_levels_changed', [ self::class, 'flush' ] );
+		add_action( 'redeemid_access_levels_changed', [ self::class, 'flush' ] );
 		add_action( 'shutdown', [ self::class, 'after_writes' ] );
 	}
 
@@ -70,10 +70,10 @@ final class Registry {
 		 * - sensitive: true when the thing it guards must be withheld server-side;
 		 * - cache: private, vary or fragment (required; private if missing);
 		 * - primary: list it in the member menu (at most three are shown);
-		 * - js: print a presentation-only boolean for it in window.wp2ShopifyFeatures;
+		 * - js: print a presentation-only boolean for it in window.redeemidFeatures;
 		 * - condition: set who gets it in code (managed in code, read-only in admin).
 		 */
-		$defs = apply_filters( 'wp2_shopify_features', [] );
+		$defs = apply_filters( 'redeemid_features', [] );
 
 		return is_array( $defs ) ? $defs : [];
 	}
@@ -91,7 +91,7 @@ final class Registry {
 		 * else, or an exception, fails the test. Guests and disabled or never-synced
 		 * customers never reach it.
 		 */
-		$tests = apply_filters( 'wp2_shopify_feature_tests', [] );
+		$tests = apply_filters( 'redeemid_feature_tests', [] );
 		$out   = [];
 
 		foreach ( is_array( $tests ) ? $tests : [] as $name => $test ) {
@@ -168,7 +168,7 @@ final class Registry {
 
 		$grants = self::resolver()->resolve( array_values( $features ), $member, $now, $user_id );
 
-		if ( ! has_filter( 'wp2_shopify_feature_decision' ) ) {
+		if ( ! has_filter( 'redeemid_feature_decision' ) ) {
 			return $grants;
 		}
 
@@ -198,7 +198,7 @@ final class Registry {
 			 * @param Grant  $grant   The decision with its routes and trace.
 			 * @param Member $member
 			 */
-			$result = apply_filters( 'wp2_shopify_feature_decision', $grant->granted, $grant->slug, $user_id, $grant, $member );
+			$result = apply_filters( 'redeemid_feature_decision', $grant->granted, $grant->slug, $user_id, $grant, $member );
 		} catch ( \Throwable ) {
 			$result = null;
 		}
@@ -209,7 +209,7 @@ final class Registry {
 			return $grant;
 		}
 
-		$key = 'wp2_shopify_feat_' . md5( $grant->slug . '|' . $user_id . '|' . (int) $after );
+		$key = 'redeemid_feat_' . md5( $grant->slug . '|' . $user_id . '|' . (int) $after );
 
 		if ( ! get_transient( $key ) ) {
 			set_transient( $key, 1, HOUR_IN_SECONDS );
@@ -362,7 +362,7 @@ final class Registry {
 		 *
 		 * @param string[] $slugs
 		 */
-		do_action( 'wp2_shopify_features_mapping_changed', $slugs );
+		do_action( 'redeemid_features_mapping_changed', $slugs );
 	}
 
 	/**
@@ -401,7 +401,7 @@ final class Registry {
 				 * @param string[] $added
 				 * @param string[] $removed
 				 */
-				do_action( 'wp2_shopify_features_changed', $user_id, $added, $removed );
+				do_action( 'redeemid_features_changed', $user_id, $added, $removed );
 			}
 		}
 

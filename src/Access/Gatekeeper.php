@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Blocks\Gate;
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Settings;
+use RedeemID\Blocks\Gate;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Settings;
 
 /**
  * The one teaser path. Every surface that renders an item's content goes
@@ -15,7 +15,7 @@ use WP2_Shopify\Settings;
  *
  * Which rule applies comes from the Resolver, fed by the item's layers
  * (Layers: item, terms, post type, site default) and the
- * wp2_shopify_access_context filter.
+ * redeemid_access_context filter.
  */
 final class Gatekeeper {
 	/** @var array<string, Verdict> */
@@ -28,7 +28,7 @@ final class Gatekeeper {
 		add_filter( 'the_content', [ self::class, 'filter_content' ], 8 );
 		// Auto excerpts: core renders blocks to HTML before the_content runs, so the cut happens first, here.
 		add_filter( 'get_the_excerpt', [ self::class, 'filter_excerpt' ], 9, 2 );
-		add_action( 'wp2_shopify_access_levels_changed', [ self::class, 'flush' ] );
+		add_action( 'redeemid_access_levels_changed', [ self::class, 'flush' ] );
 	}
 
 	public static function flush(): void {
@@ -41,7 +41,7 @@ final class Gatekeeper {
 		 * Filter the rule layers for an item. Runs on every request, after the
 		 * cache, so a filter here never needs a cache flush.
 		 */
-		$context = apply_filters( 'wp2_shopify_access_context', Layers::context( $post ), $post );
+		$context = apply_filters( 'redeemid_access_context', Layers::context( $post ), $post );
 
 		// A broken filter must lock, not leak: an unknown level fails closed in the Checker.
 		return $context instanceof Context ? $context : new Context( item_mode: Context::ITEM_LEVEL, item_levels: [ '__invalid_context' ] );
@@ -57,7 +57,7 @@ final class Gatekeeper {
 		/**
 		 * Filter the resolved rule for an item.
 		 */
-		$filtered = apply_filters( 'wp2_shopify_effective_rule', $rule, $post );
+		$filtered = apply_filters( 'redeemid_effective_rule', $rule, $post );
 		$rule     = $filtered instanceof EffectiveRule ? $filtered : new EffectiveRule( [ [ '__invalid_rule' ] ], 'Filter' );
 
 		return self::$rules[ $post->ID ] = $rule;
@@ -79,7 +79,7 @@ final class Gatekeeper {
 		 * Filter the teaser setting for a post type: mode (blocks, words,
 		 * excerpt, none) and count. A paywall break in the content always wins.
 		 */
-		$setting = apply_filters( 'wp2_shopify_teaser_settings', RuleStore::rules()->type( $post->post_type )['teaser'], $post->post_type, $post );
+		$setting = apply_filters( 'redeemid_teaser_settings', RuleStore::rules()->type( $post->post_type )['teaser'], $post->post_type, $post );
 
 		return Teaser::from_array( is_array( $setting ) ? $setting : [] );
 	}
@@ -126,14 +126,14 @@ final class Gatekeeper {
 			'fallbackMessage'  => $level && '' !== $level->message
 				? $level->message
 				/* translators: %s: access level label, such as Gold */
-				: ( $label ? sprintf( __( 'This content is for %s members.', 'wp2-shopify' ), $label ) : __( 'This content is for members.', 'wp2-shopify' ) ),
+				: ( $label ? sprintf( __( 'This content is for %s members.', 'redeemid' ), $label ) : __( 'This content is for members.', 'redeemid' ) ),
 			'fallbackCtaLabel' => $level->cta_label ?? '',
 			'fallbackCtaUrl'   => $level->cta_url ?? '',
 			'showSignIn'       => true,
 			'unlocksAt'        => Decision::DRIP === $verdict->decision->reason ? Drip::opens_for( $post, get_current_user_id() ) : 0,
 		];
 
-		return '<div class="wp2-shopify-paywall" data-wp2-level="' . esc_attr( (string) $verdict->next_level ) . '">'
+		return '<div class="redeemid-paywall" data-redeemid-level="' . esc_attr( (string) $verdict->next_level ) . '">'
 			. Gate::fallback_panel( $a, $verdict->decision, (string) $verdict->next_level )
 			. '</div>';
 	}

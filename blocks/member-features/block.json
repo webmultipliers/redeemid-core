@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/member-features",
+	"name": "redeemid/member-features",
 	"title": "Membership Features",
 	"category": "widgets",
 	"icon": "awards",
 	"description": "Lists the features the visitor holds and where each comes from (\"Ad-free reading, from Gold\"), for the account page; a menu mode shows only primary features, at most three, for a header. A Blockstudio dynamic island: the cached page carries a neutral placeholder and each visitor's own list fills it in.",
 	"keywords": [ "shopify", "features", "membership", "perks", "account", "menu" ],
-	"textdomain": "wp2-shopify",
+	"textdomain": "redeemid",
 	"supports": { "align": false, "html": false },
 	"example": {},
 	"blockstudio": {

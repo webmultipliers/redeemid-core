@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Webhooks\Inbox;
-use WP2_Shopify\Webhooks\InboxStore;
+use RedeemID\Webhooks\Inbox;
+use RedeemID\Webhooks\InboxStore;
 
 final class InboxTest extends TestCase {
 	private function payload( string $name ): array {

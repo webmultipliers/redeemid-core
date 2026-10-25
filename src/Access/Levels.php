@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Evaluator;
+use RedeemID\Entitlement\Evaluator;
 
 /**
  * The set of access levels, with the inclusion arithmetic the Resolver needs.

@@ -17,22 +17,22 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WP2_Shopify\Blocks\Gate;
+use RedeemID\Blocks\Gate;
 
-$wp2_mode    = Gate::option( $a['mode'] ?? '', 'auto' );
-$wp2_style   = Gate::option( $a['controlStyle'] ?? '', 'button' );
-$wp2_preview = Gate::option( $a['previewState'] ?? '', 'guest' );
-$wp2_login   = ( $a['loginLabel'] ?? '' ) ?: __( 'Log in with Shopify', 'wp2-shopify' );
-$wp2_logout  = ( $a['logoutLabel'] ?? '' ) ?: __( 'Log out', 'wp2-shopify' );
-$wp2_connect = ( $a['connectLabel'] ?? '' ) ?: __( 'Connect Shopify account', 'wp2-shopify' );
-$wp2_class   = 'button' === $wp2_style ? 'wp-element-button wp2-shopify-auth__control' : 'wp2-shopify-auth__control wp2-shopify-auth__control--link';
+$redeemid_mode    = Gate::option( $a['mode'] ?? '', 'auto' );
+$redeemid_style   = Gate::option( $a['controlStyle'] ?? '', 'button' );
+$redeemid_preview = Gate::option( $a['previewState'] ?? '', 'guest' );
+$redeemid_login   = ( $a['loginLabel'] ?? '' ) ?: __( 'Log in with Shopify', 'redeemid' );
+$redeemid_logout  = ( $a['logoutLabel'] ?? '' ) ?: __( 'Log out', 'redeemid' );
+$redeemid_connect = ( $a['connectLabel'] ?? '' ) ?: __( 'Connect Shopify account', 'redeemid' );
+$redeemid_class   = 'button' === $redeemid_style ? 'wp-element-button redeemid-auth__control' : 'redeemid-auth__control redeemid-auth__control--link';
 
 if ( $isEditor ) {
-	$wp2_labels = [ 'guest' => $wp2_login, 'member' => $wp2_logout, 'unlinked' => $wp2_connect ];
+	$redeemid_labels = [ 'guest' => $redeemid_login, 'member' => $redeemid_logout, 'unlinked' => $redeemid_connect ];
 	?>
-	<div useBlockProps class="wp2-shopify-auth">
-		<span class="<?php echo esc_attr( $wp2_class ); ?>"><?php echo esc_html( $wp2_labels[ $wp2_preview ] ?? $wp2_login ); ?></span>
-		<small class="wp2-shopify-auth__note"><?php esc_html_e( 'Preview. Each visitor sees the action for their own state.', 'wp2-shopify' ); ?></small>
+	<div useBlockProps class="redeemid-auth">
+		<span class="<?php echo esc_attr( $redeemid_class ); ?>"><?php echo esc_html( $redeemid_labels[ $redeemid_preview ] ?? $redeemid_login ); ?></span>
+		<small class="redeemid-auth__note"><?php esc_html_e( 'Preview. Each visitor sees the action for their own state.', 'redeemid' ); ?></small>
 	</div>
 	<?php
 	return;
@@ -40,40 +40,40 @@ if ( $isEditor ) {
 
 // The page the control sits on. The placeholder is cached per URL, so the URL itself is safe in it;
 // the fragment is rendered by a separate request and reads the page from its same-origin referer.
-$wp2_here        = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
-$wp2_after_login = Gate::url( $a['redirectAfterLogin'] ?? '' ) ?: $wp2_here;
-$wp2_after_out   = Gate::url( $a['redirectAfterLogout'] ?? '' ) ?: $wp2_here;
+$redeemid_here        = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
+$redeemid_after_login = Gate::url( $a['redirectAfterLogin'] ?? '' ) ?: $redeemid_here;
+$redeemid_after_out   = Gate::url( $a['redirectAfterLogout'] ?? '' ) ?: $redeemid_here;
 // Only the island fragment is personal; anything else may land in a shared cache.
-$wp2_user        = $isIslandFragment ? get_current_user_id() : 0;
-$wp2_linked      = $wp2_user && ( null !== \WP2_Shopify\Sync\Mirror::customer_id( $wp2_user ) || \WP2_Shopify\Auth\ShadowUsers::is_shadow( $wp2_user ) );
+$redeemid_user        = $isIslandFragment ? get_current_user_id() : 0;
+$redeemid_linked      = $redeemid_user && ( null !== \RedeemID\Sync\Mirror::customer_id( $redeemid_user ) || \RedeemID\Auth\ShadowUsers::is_shadow( $redeemid_user ) );
 
-$wp2_form = static function ( string $action, string $label, string $redirect ) use ( $wp2_class ): void {
+$redeemid_form = static function ( string $action, string $label, string $redirect ) use ( $redeemid_class ): void {
 	?>
-	<form class="wp2-shopify-auth__form" method="post" action="<?php echo esc_url( \WP2_Shopify\Auth\Flow::action_url() ); ?>">
+	<form class="redeemid-auth__form" method="post" action="<?php echo esc_url( \RedeemID\Auth\Flow::action_url() ); ?>">
 		<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>">
 		<?php wp_nonce_field( $action, '_wpnonce', false ); ?>
 		<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect ); ?>">
-		<button type="submit" class="<?php echo esc_attr( $wp2_class ); ?>"><?php echo esc_html( $label ); ?></button>
+		<button type="submit" class="<?php echo esc_attr( $redeemid_class ); ?>"><?php echo esc_html( $label ); ?></button>
 	</form>
 	<?php
 };
 
 // No early return here: Blockstudio reads a template that returns as one that rendered nothing and skips its stylesheet.
-if ( ! \WP2_Shopify\Shopify\Discovery::available() ) :
+if ( ! \RedeemID\Shopify\Discovery::available() ) :
 	?>
-	<div useBlockProps class="wp2-shopify-auth is-unavailable">
-		<button type="button" class="<?php echo esc_attr( $wp2_class ); ?>" disabled><?php esc_html_e( 'Sign-in is temporarily unavailable', 'wp2-shopify' ); ?></button>
+	<div useBlockProps class="redeemid-auth is-unavailable">
+		<button type="button" class="<?php echo esc_attr( $redeemid_class ); ?>" disabled><?php esc_html_e( 'Sign-in is temporarily unavailable', 'redeemid' ); ?></button>
 	</div>
 <?php else : ?>
-<div useBlockProps class="wp2-shopify-auth" aria-live="polite">
-	<?php if ( ! $wp2_user ) : ?>
-		<?php if ( 'logout' !== $wp2_mode && 'connect' !== $wp2_mode ) : ?>
-			<a class="<?php echo esc_attr( $wp2_class ); ?>" href="<?php echo esc_url( \WP2_Shopify\Auth\Flow::login_url( $wp2_after_login ) ); ?>" rel="nofollow"><?php echo esc_html( $wp2_login ); ?></a>
+<div useBlockProps class="redeemid-auth" aria-live="polite">
+	<?php if ( ! $redeemid_user ) : ?>
+		<?php if ( 'logout' !== $redeemid_mode && 'connect' !== $redeemid_mode ) : ?>
+			<a class="<?php echo esc_attr( $redeemid_class ); ?>" href="<?php echo esc_url( \RedeemID\Auth\Flow::login_url( $redeemid_after_login ) ); ?>" rel="nofollow"><?php echo esc_html( $redeemid_login ); ?></a>
 		<?php endif; ?>
-	<?php elseif ( $wp2_linked && ( 'auto' === $wp2_mode || 'logout' === $wp2_mode ) ) : ?>
-		<?php $wp2_form( 'wp2_shopify_logout', $wp2_logout, $wp2_after_out ); ?>
-	<?php elseif ( ! $wp2_linked && ( 'auto' === $wp2_mode || 'connect' === $wp2_mode ) ) : ?>
-		<?php $wp2_form( 'wp2_shopify_connect', $wp2_connect, $wp2_here ); ?>
+	<?php elseif ( $redeemid_linked && ( 'auto' === $redeemid_mode || 'logout' === $redeemid_mode ) ) : ?>
+		<?php $redeemid_form( 'redeemid_logout', $redeemid_logout, $redeemid_after_out ); ?>
+	<?php elseif ( ! $redeemid_linked && ( 'auto' === $redeemid_mode || 'connect' === $redeemid_mode ) ) : ?>
+		<?php $redeemid_form( 'redeemid_connect', $redeemid_connect, $redeemid_here ); ?>
 	<?php endif; ?>
 </div>
 <?php endif; ?>

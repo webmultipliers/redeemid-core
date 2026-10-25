@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
 /**
  * Access rules from the command line.
  *
- *     wp wp2-shopify access explain <post> [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
- *     wp wp2-shopify access features [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
- *     wp wp2-shopify access recompute
+ *     wp redeemid access explain <post> [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
+ *     wp redeemid access features [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
+ *     wp redeemid access recompute
  */
 final class Cli {
 	public static function register(): void {
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( \WP_CLI::class ) ) {
-			\WP_CLI::add_command( 'wp2-shopify access', self::class );
+			\WP_CLI::add_command( 'redeemid access', self::class );
 		}
 	}
 

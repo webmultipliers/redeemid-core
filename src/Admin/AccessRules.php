@@ -1,22 +1,22 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\Context;
-use WP2_Shopify\Access\Index;
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\RuleStore;
-use WP2_Shopify\Access\Rules;
-use WP2_Shopify\Access\Teaser;
-use WP2_Shopify\Access\TermRules;
+use RedeemID\Access\Context;
+use RedeemID\Access\Index;
+use RedeemID\Access\Level;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\RuleStore;
+use RedeemID\Access\Rules;
+use RedeemID\Access\Teaser;
+use RedeemID\Access\TermRules;
 
 /**
- * Shopify → Access → Content rules: the site default, how several term
+ * RedeemID → Access → Content rules: the site default, how several term
  * rules combine, and the controls for each post type and taxonomy.
  */
 final class AccessRules {
-	public const ACTION = 'wp2_shopify_access_rules';
+	public const ACTION = 'redeemid_access_rules';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'action' ] );
@@ -111,10 +111,10 @@ final class AccessRules {
 		$managed  = RuleStore::managed_in_code();
 		$disabled = $managed ? 'disabled' : '';
 		$modes    = [
-			Teaser::MODE_BLOCKS  => __( 'First blocks', 'wp2-shopify' ),
-			Teaser::MODE_WORDS   => __( 'First words', 'wp2-shopify' ),
-			Teaser::MODE_EXCERPT => __( 'Excerpt only', 'wp2-shopify' ),
-			Teaser::MODE_NONE    => __( 'Nothing', 'wp2-shopify' ),
+			Teaser::MODE_BLOCKS  => __( 'First blocks', 'redeemid' ),
+			Teaser::MODE_WORDS   => __( 'First words', 'redeemid' ),
+			Teaser::MODE_EXCERPT => __( 'Excerpt only', 'redeemid' ),
+			Teaser::MODE_NONE    => __( 'Nothing', 'redeemid' ),
 		];
 		$checks   = static function ( string $name, array $chosen ) use ( $levels, $disabled ): void {
 			foreach ( $levels as $slug => $level ) {
@@ -131,55 +131,55 @@ final class AccessRules {
 		?>
 
 		<?php if ( $managed ) : ?>
-			<div class="notice notice-info inline"><p><?php esc_html_e( 'Managed in code: the wp2_shopify_access_rules filter sets these rules, so they are read-only here.', 'wp2-shopify' ); ?></p></div>
+			<div class="notice notice-info inline"><p><?php esc_html_e( 'Managed in code: the redeemid_access_rules filter sets these rules, so they are read-only here.', 'redeemid' ); ?></p></div>
 		<?php endif; ?>
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
 			<?php wp_nonce_field( self::ACTION ); ?>
 
-			<?php Menu::panel_start( __( 'Defaults', 'wp2-shopify' ), __( 'The fallback rule, and how an item in several gated terms is decided.', 'wp2-shopify' ) ); ?>
-			<div class="wp2s-panel__body wp2s-panel__body--flush">
+			<?php Menu::panel_start( __( 'Defaults', 'redeemid' ), __( 'The fallback rule, and how an item in several gated terms is decided.', 'redeemid' ) ); ?>
+			<div class="redeemid-panel__body redeemid-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Site default', 'wp2-shopify' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Site default', 'redeemid' ); ?></th>
 					<td>
-						<div class="wp2s-level-checks"><?php $checks( 'site_levels', $rules->site_levels ); ?></div>
-						<p class="description"><?php esc_html_e( 'Applies to items in any gated post type with no rule from their terms or post type. Usually left empty.', 'wp2-shopify' ); ?></p>
+						<div class="redeemid-level-checks"><?php $checks( 'site_levels', $rules->site_levels ); ?></div>
+						<p class="description"><?php esc_html_e( 'Applies to items in any gated post type with no rule from their terms or post type. Usually left empty.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'When terms disagree', 'wp2-shopify' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'When terms disagree', 'redeemid' ); ?></th>
 					<td>
 						<?php
 						$conflicts = [
-							Context::CONFLICT_MOST     => __( 'Most restrictive: the visitor must pass every term\'s rule (recommended)', 'wp2-shopify' ),
-							Context::CONFLICT_LEAST    => __( 'Least restrictive: passing any one term\'s rule is enough', 'wp2-shopify' ),
-							Context::CONFLICT_PRIORITY => __( 'Priority: the term with the highest priority decides', 'wp2-shopify' ),
+							Context::CONFLICT_MOST     => __( 'Most restrictive: the visitor must pass every term\'s rule (recommended)', 'redeemid' ),
+							Context::CONFLICT_LEAST    => __( 'Least restrictive: passing any one term\'s rule is enough', 'redeemid' ),
+							Context::CONFLICT_PRIORITY => __( 'Priority: the term with the highest priority decides', 'redeemid' ),
 						];
 						foreach ( $conflicts as $value => $label ) :
 							?>
-							<label class="wp2s-block-label"><input type="radio" name="conflict" value="<?php echo esc_attr( $value ); ?>" <?php checked( $rules->conflict, $value ); ?> <?php echo esc_attr( $disabled ); ?>> <?php echo esc_html( $label ); ?></label>
+							<label class="redeemid-block-label"><input type="radio" name="conflict" value="<?php echo esc_attr( $value ); ?>" <?php checked( $rules->conflict, $value ); ?> <?php echo esc_attr( $disabled ); ?>> <?php echo esc_html( $label ); ?></label>
 						<?php endforeach; ?>
-						<p class="description"><?php esc_html_e( 'Level inclusion counts first: an item in a Silver term and a Gold term needs Gold when Gold includes Silver. An unexpired "open until" term always wins.', 'wp2-shopify' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Level inclusion counts first: an item in a Silver term and a Gold term needs Gold when Gold includes Silver. An unexpired "open until" term always wins.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
 			</table>
 			</div>
 			<?php Menu::panel_end(); ?>
 
-			<?php Menu::panel_start( __( 'Post types', 'wp2-shopify' ), __( 'Which post types can be gated, what every item needs, and what locked visitors get.', 'wp2-shopify' ) ); ?>
-			<div class="wp2s-panel__body wp2s-panel__body--flush wp2s-table-scroll">
+			<?php Menu::panel_start( __( 'Post types', 'redeemid' ), __( 'Which post types can be gated, what every item needs, and what locked visitors get.', 'redeemid' ) ); ?>
+			<div class="redeemid-panel__body redeemid-panel__body--flush redeemid-table-scroll">
 			<table class="widefat striped">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Post type', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Can be gated', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Every item needs', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Teaser for locked visitors', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Opens after (days)', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Comments on locked items', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Search engines', 'wp2-shopify' ); ?></th>
+						<th><?php esc_html_e( 'Post type', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Can be gated', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Every item needs', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Teaser for locked visitors', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Opens after (days)', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Comments on locked items', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Search engines', 'redeemid' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -189,50 +189,50 @@ final class AccessRules {
 					$base = 'types[' . $type . ']';
 					?>
 					<tr>
-						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code class="wp2s-code-small"><?php echo esc_html( $type ); ?></code></td>
-						<td><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" aria-label="<?php esc_attr_e( 'Can be gated', 'wp2-shopify' ); ?>" <?php checked( $row['enabled'] ); ?> <?php echo esc_attr( $disabled ); ?>></td>
-						<td><div class="wp2s-level-checks"><?php $checks( $base . '[levels]', $row['levels'] ); ?></div></td>
+						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code class="redeemid-code-small"><?php echo esc_html( $type ); ?></code></td>
+						<td><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" aria-label="<?php esc_attr_e( 'Can be gated', 'redeemid' ); ?>" <?php checked( $row['enabled'] ); ?> <?php echo esc_attr( $disabled ); ?>></td>
+						<td><div class="redeemid-level-checks"><?php $checks( $base . '[levels]', $row['levels'] ); ?></div></td>
 						<td>
-							<span class="wp2s-inline-form"><select name="<?php echo esc_attr( $base ); ?>[teaser_mode]" aria-label="<?php esc_attr_e( 'Teaser', 'wp2-shopify' ); ?>" <?php echo esc_attr( $disabled ); ?>>
+							<span class="redeemid-inline-form"><select name="<?php echo esc_attr( $base ); ?>[teaser_mode]" aria-label="<?php esc_attr_e( 'Teaser', 'redeemid' ); ?>" <?php echo esc_attr( $disabled ); ?>>
 								<?php foreach ( $modes as $value => $label ) : ?>
 									<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $row['teaser']['mode'], $value ); ?>><?php echo esc_html( $label ); ?></option>
 								<?php endforeach; ?>
 							</select>
-							<input type="number" min="0" max="1000" class="small-text" name="<?php echo esc_attr( $base ); ?>[teaser_count]" aria-label="<?php esc_attr_e( 'How many blocks or words', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['teaser']['count'] ); ?>" <?php echo esc_attr( $disabled ); ?>></span>
+							<input type="number" min="0" max="1000" class="small-text" name="<?php echo esc_attr( $base ); ?>[teaser_count]" aria-label="<?php esc_attr_e( 'How many blocks or words', 'redeemid' ); ?>" value="<?php echo esc_attr( (string) $row['teaser']['count'] ); ?>" <?php echo esc_attr( $disabled ); ?>></span>
 						</td>
 						<td>
-							<input type="number" min="0" max="36500" class="small-text" name="<?php echo esc_attr( $base ); ?>[public_after_days]" aria-label="<?php esc_attr_e( 'Opens after days', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['public_after_days'] ); ?>" <?php echo esc_attr( $disabled ); ?>>
+							<input type="number" min="0" max="36500" class="small-text" name="<?php echo esc_attr( $base ); ?>[public_after_days]" aria-label="<?php esc_attr_e( 'Opens after days', 'redeemid' ); ?>" value="<?php echo esc_attr( (string) $row['public_after_days'] ); ?>" <?php echo esc_attr( $disabled ); ?>>
 						</td>
 						<td>
-							<select name="<?php echo esc_attr( $base ); ?>[comments]" aria-label="<?php esc_attr_e( 'Comments on locked items', 'wp2-shopify' ); ?>" <?php echo esc_attr( $disabled ); ?>>
-								<option value="<?php echo esc_attr( Rules::COMMENTS_MEMBERS ); ?>" <?php selected( $row['comments'], Rules::COMMENTS_MEMBERS ); ?>><?php esc_html_e( 'Readers only', 'wp2-shopify' ); ?></option>
-								<option value="<?php echo esc_attr( Rules::COMMENTS_EVERYONE ); ?>" <?php selected( $row['comments'], Rules::COMMENTS_EVERYONE ); ?>><?php esc_html_e( 'Everyone', 'wp2-shopify' ); ?></option>
+							<select name="<?php echo esc_attr( $base ); ?>[comments]" aria-label="<?php esc_attr_e( 'Comments on locked items', 'redeemid' ); ?>" <?php echo esc_attr( $disabled ); ?>>
+								<option value="<?php echo esc_attr( Rules::COMMENTS_MEMBERS ); ?>" <?php selected( $row['comments'], Rules::COMMENTS_MEMBERS ); ?>><?php esc_html_e( 'Readers only', 'redeemid' ); ?></option>
+								<option value="<?php echo esc_attr( Rules::COMMENTS_EVERYONE ); ?>" <?php selected( $row['comments'], Rules::COMMENTS_EVERYONE ); ?>><?php esc_html_e( 'Everyone', 'redeemid' ); ?></option>
 							</select>
 						</td>
 						<td>
-							<label><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[noindex]" value="1" <?php checked( $row['noindex'] ); ?> <?php echo esc_attr( $disabled ); ?>> <?php esc_html_e( 'Keep locked items out', 'wp2-shopify' ); ?></label>
+							<label><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[noindex]" value="1" <?php checked( $row['noindex'] ); ?> <?php echo esc_attr( $disabled ); ?>> <?php esc_html_e( 'Keep locked items out', 'redeemid' ); ?></label>
 						</td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>
 			</div>
-			<div class="wp2s-panel__footer">
-			<p class="description"><?php esc_html_e( 'A paywall break block in an item always sets its teaser. "Opens after" frees items that many days after they were published (0 for never), checked on every request. "Readers only" hides comments, the comment count and the form from visitors who cannot read the item. "Keep locked items out" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser.', 'wp2-shopify' ); ?></p>
+			<div class="redeemid-panel__footer">
+			<p class="description"><?php esc_html_e( 'A paywall break block in an item always sets its teaser. "Opens after" frees items that many days after they were published (0 for never), checked on every request. "Readers only" hides comments, the comment count and the form from visitors who cannot read the item. "Keep locked items out" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser.', 'redeemid' ); ?></p>
 
 			</div>
 			<?php Menu::panel_end(); ?>
 
-			<?php Menu::panel_start( __( 'Taxonomies', 'wp2-shopify' ), __( 'Which taxonomies\' term rules count. Rules are set on each term\'s edit screen.', 'wp2-shopify' ) ); ?>
-			<div class="wp2s-panel__body wp2s-panel__body--flush wp2s-table-scroll">
+			<?php Menu::panel_start( __( 'Taxonomies', 'redeemid' ), __( 'Which taxonomies\' term rules count. Rules are set on each term\'s edit screen.', 'redeemid' ) ); ?>
+			<div class="redeemid-panel__body redeemid-panel__body--flush redeemid-table-scroll">
 			<table class="widefat striped">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Taxonomy', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Term rules count', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Child terms inherit', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Priority', 'wp2-shopify' ); ?></th>
-						<th><?php esc_html_e( 'Terms with a rule', 'wp2-shopify' ); ?></th>
+						<th><?php esc_html_e( 'Taxonomy', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Term rules count', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Child terms inherit', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Priority', 'redeemid' ); ?></th>
+						<th><?php esc_html_e( 'Terms with a rule', 'redeemid' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -243,33 +243,33 @@ final class AccessRules {
 					$used = self::terms_with_rules( $name );
 					?>
 					<tr>
-						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code class="wp2s-code-small"><?php echo esc_html( $name ); ?></code></td>
-						<td><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" aria-label="<?php esc_attr_e( 'Term rules count', 'wp2-shopify' ); ?>" <?php checked( $row['enabled'] ); ?> <?php echo esc_attr( $disabled ); ?>></td>
+						<td><strong><?php echo esc_html( $object->labels->name ); ?></strong><br><code class="redeemid-code-small"><?php echo esc_html( $name ); ?></code></td>
+						<td><input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" aria-label="<?php esc_attr_e( 'Term rules count', 'redeemid' ); ?>" <?php checked( $row['enabled'] ); ?> <?php echo esc_attr( $disabled ); ?>></td>
 						<td>
 							<?php if ( $object->hierarchical ) : ?>
-								<input type="checkbox" name="<?php echo esc_attr( $base ); ?>[inherit]" value="1" aria-label="<?php esc_attr_e( 'Child terms inherit', 'wp2-shopify' ); ?>" <?php checked( $row['inherit'] ); ?> <?php echo esc_attr( $disabled ); ?>>
+								<input type="checkbox" name="<?php echo esc_attr( $base ); ?>[inherit]" value="1" aria-label="<?php esc_attr_e( 'Child terms inherit', 'redeemid' ); ?>" <?php checked( $row['inherit'] ); ?> <?php echo esc_attr( $disabled ); ?>>
 							<?php else : ?>
 								—
 							<?php endif; ?>
 						</td>
-						<td><input type="number" min="-100" max="100" class="small-text" name="<?php echo esc_attr( $base ); ?>[priority]" aria-label="<?php esc_attr_e( 'Priority', 'wp2-shopify' ); ?>" value="<?php echo esc_attr( (string) $row['priority'] ); ?>" <?php echo esc_attr( $disabled ); ?>></td>
+						<td><input type="number" min="-100" max="100" class="small-text" name="<?php echo esc_attr( $base ); ?>[priority]" aria-label="<?php esc_attr_e( 'Priority', 'redeemid' ); ?>" value="<?php echo esc_attr( (string) $row['priority'] ); ?>" <?php echo esc_attr( $disabled ); ?>></td>
 						<td>
 							<?php echo esc_html( (string) $used ); ?> &middot;
-							<a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=' . $name ) ); ?>"><?php esc_html_e( 'Edit terms', 'wp2-shopify' ); ?></a>
+							<a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=' . $name ) ); ?>"><?php esc_html_e( 'Edit terms', 'redeemid' ); ?></a>
 						</td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>
 			</div>
-			<div class="wp2s-panel__footer">
-			<p class="description"><?php esc_html_e( 'In the priority mode the taxonomy priority counts first, then the term\'s own.', 'wp2-shopify' ); ?>
+			<div class="redeemid-panel__footer">
+			<p class="description"><?php esc_html_e( 'In the priority mode the taxonomy priority counts first, then the term\'s own.', 'redeemid' ); ?>
 
 				<?php
 				echo esc_html(
 					Index::pending()
-						? __( 'Search index: updating in the background after a rule change. Until it finishes, search still checks every result against public text.', 'wp2-shopify' )
-						: __( 'Search index: up to date. Search matches locked items on their public text only.', 'wp2-shopify' )
+						? __( 'Search index: updating in the background after a rule change. Until it finishes, search still checks every result against public text.', 'redeemid' )
+						: __( 'Search index: up to date. Search matches locked items on their public text only.', 'redeemid' )
 				);
 				?>
 			</p>
@@ -277,7 +277,7 @@ final class AccessRules {
 			<?php Menu::panel_end(); ?>
 
 			<?php if ( ! $managed ) : ?>
-				<?php submit_button( __( 'Save content rules', 'wp2-shopify' ) ); ?>
+				<?php submit_button( __( 'Save content rules', 'redeemid' ) ); ?>
 			<?php endif; ?>
 		</form>
 		<?php

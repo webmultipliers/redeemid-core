@@ -1,11 +1,11 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\Checker;
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Access\Checker;
+use RedeemID\Access\LevelStore;
+use RedeemID\Settings;
+use RedeemID\Sync\Mirror;
 
 /**
  * The Customers list's filters, shared by the table and the CSV export so an

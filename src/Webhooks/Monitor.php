@@ -1,13 +1,13 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
-use WP2_Shopify\Admin\Menu;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Shopify\Admin;
-use WP2_Shopify\Support\Health;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\BulkResync;
+use RedeemID\Admin\Menu;
+use RedeemID\Settings;
+use RedeemID\Shopify\Admin;
+use RedeemID\Support\Health;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\BulkResync;
 
 /**
  * Keeps the tag chain from failing quietly.
@@ -17,12 +17,12 @@ use WP2_Shopify\Sync\BulkResync;
  * and whenever an admin screen asks, it checks the local side: deliveries
  * rejected, stuck in the queue or dead-lettered, WP-Cron stalled, or no
  * delivery at all for a while. Problems show in an admin notice, Site Health,
- * the Shopify Health block and Shopify → Webhooks, and can be emailed.
+ * the Shopify Health block and RedeemID → Webhooks, and can be emailed.
  */
 final class Monitor {
-	public const HOOK   = 'wp2_shopify_monitor';
-	public const OPTION = 'wp2_shopify_monitor';
-	public const ACTION = 'wp2_shopify_monitor_check';
+	public const HOOK   = 'redeemid_monitor';
+	public const OPTION = 'redeemid_monitor';
+	public const ACTION = 'redeemid_monitor_check';
 
 	/** At most one alert email per this many seconds, unless something new breaks. */
 	private const ALERT_EVERY = DAY_IN_SECONDS;
@@ -36,7 +36,7 @@ final class Monitor {
 		add_action( 'admin_notices', [ self::class, 'notice' ] );
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'check_now' ] );
 		add_filter( 'site_status_tests', [ self::class, 'site_health' ] );
-		add_filter( 'wp2_shopify_health_checks', [ self::class, 'health_row' ] );
+		add_filter( 'redeemid_health_checks', [ self::class, 'health_row' ] );
 	}
 
 	public static function ensure_scheduled(): void {
@@ -73,13 +73,13 @@ final class Monitor {
 	}
 
 	/**
-	 * "Check now" on Shopify → Webhooks.
+	 * "Check now" on RedeemID → Webhooks.
 	 */
 	public static function check_now(): void {
 		Menu::guard( self::ACTION );
 		self::run();
 
-		wp_safe_redirect( Menu::url( \WP2_Shopify\Admin\Webhooks::PAGE, [ 'result' => self::problems() ? 'checked_problems' : 'checked_ok' ] ) );
+		wp_safe_redirect( Menu::url( \RedeemID\Admin\Webhooks::PAGE, [ 'result' => self::problems() ? 'checked_problems' : 'checked_ok' ] ) );
 		exit;
 	}
 
@@ -104,7 +104,7 @@ final class Monitor {
 
 		$inbox = new WpdbInboxStore();
 		$last  = $inbox->last_received();
-		$prune = wp_next_scheduled( 'wp2_shopify_prune' );
+		$prune = wp_next_scheduled( 'redeemid_prune' );
 		$reg   = get_option( Registrar::RESULT );
 
 		self::$problems = Watchdog::problems(
@@ -115,7 +115,7 @@ final class Monitor {
 				'quiet_days'    => (int) Settings::get( 'quiet_days' ),
 				'oldest_queued' => $inbox->oldest_queued(),
 				'dead_recent'   => $inbox->count_since( InboxStore::DEAD, time() - DAY_IN_SECONDS ),
-				'rejected_at'   => (int) get_option( 'wp2_shopify_webhook_rejected', 0 ),
+				'rejected_at'   => (int) get_option( 'redeemid_webhook_rejected', 0 ),
 				'registration'  => is_array( $reg ) ? $reg : null,
 				'cron_late'     => $prune ? max( 0, time() - (int) $prune ) : 0,
 			]
@@ -129,22 +129,22 @@ final class Monitor {
 	 */
 	public static function message( string $code, int $n ): string {
 		return match ( $code ) {
-			'check_failed'     => __( 'The daily check could not list webhook subscriptions in Shopify. See App events for the failed call.', 'wp2-shopify' ),
+			'check_failed'     => __( 'The daily check could not list webhook subscriptions in Shopify. See App events for the failed call.', 'redeemid' ),
 			/* translators: %d: number of topics */
-			'subscribe_failed' => sprintf( _n( '%d webhook subscription could not be created in Shopify.', '%d webhook subscriptions could not be created in Shopify.', $n, 'wp2-shopify' ), $n ),
-			'rejected'         => __( 'Webhook deliveries were rejected in the last day because their signature did not match. Check the Admin app client secret in Settings.', 'wp2-shopify' ),
+			'subscribe_failed' => sprintf( _n( '%d webhook subscription could not be created in Shopify.', '%d webhook subscriptions could not be created in Shopify.', $n, 'redeemid' ), $n ),
+			'rejected'         => __( 'Webhook deliveries were rejected in the last day because their signature did not match. Check the Admin app client secret in Settings.', 'redeemid' ),
 			/* translators: %d: minutes */
-			'backlog'          => sprintf( __( 'Webhooks have waited %d minutes to be processed. WP-Cron or Action Scheduler is not running, so tag changes are not reaching WordPress.', 'wp2-shopify' ), $n ),
+			'backlog'          => sprintf( __( 'Webhooks have waited %d minutes to be processed. WP-Cron or Action Scheduler is not running, so tag changes are not reaching WordPress.', 'redeemid' ), $n ),
 			/* translators: %d: hours */
-			'cron'             => sprintf( __( 'WP-Cron looks stopped: a daily task is %d hours late. Queued webhooks and checks depend on it; set up a real cron job for wp-cron.php.', 'wp2-shopify' ), $n ),
+			'cron'             => sprintf( __( 'WP-Cron looks stopped: a daily task is %d hours late. Queued webhooks and checks depend on it; set up a real cron job for wp-cron.php.', 'redeemid' ), $n ),
 			/* translators: %d: number of topics */
-			'resubscribed'     => sprintf( _n( 'Shopify had removed %d webhook subscription, so it was created again. Shopify does this after deliveries fail for several hours: check that nothing blocks the webhook endpoint, then consider a bulk resync on Customers.', 'Shopify had removed %d webhook subscriptions, so they were created again. Shopify does this after deliveries fail for several hours: check that nothing blocks the webhook endpoint, then consider a bulk resync on Customers.', $n, 'wp2-shopify' ), $n ),
+			'resubscribed'     => sprintf( _n( 'Shopify had removed %d webhook subscription, so it was created again. Shopify does this after deliveries fail for several hours: check that nothing blocks the webhook endpoint, then consider a bulk resync on Customers.', 'Shopify had removed %d webhook subscriptions, so they were created again. Shopify does this after deliveries fail for several hours: check that nothing blocks the webhook endpoint, then consider a bulk resync on Customers.', $n, 'redeemid' ), $n ),
 			/* translators: %d: number of deliveries */
-			'dead'             => sprintf( _n( '%d webhook failed in the last day and was set aside. Retry it from Shopify → Webhooks.', '%d webhooks failed in the last day and were set aside. Retry them from Shopify → Webhooks.', $n, 'wp2-shopify' ), $n ),
+			'dead'             => sprintf( _n( '%d webhook failed in the last day and was set aside. Retry it from RedeemID → Webhooks.', '%d webhooks failed in the last day and were set aside. Retry them from RedeemID → Webhooks.', $n, 'redeemid' ), $n ),
 			'quiet'            => $n
 				/* translators: %d: days */
-				? sprintf( __( 'No webhook has arrived for %d days although customers are linked. If tags changed in Shopify since, deliveries are not getting through.', 'wp2-shopify' ), $n )
-				: __( 'No webhook has arrived yet although customers are linked. If webhooks are registered, check that Shopify can reach the endpoint.', 'wp2-shopify' ),
+				? sprintf( __( 'No webhook has arrived for %d days although customers are linked. If tags changed in Shopify since, deliveries are not getting through.', 'redeemid' ), $n )
+				: __( 'No webhook has arrived yet although customers are linked. If webhooks are registered, check that Shopify can reach the endpoint.', 'redeemid' ),
 			default            => $code,
 		};
 	}
@@ -175,18 +175,18 @@ final class Monitor {
 		$wide     = $screen && in_array( $screen->id, [ 'dashboard', 'plugins' ], true );
 
 		// Failures everywhere staff land first; warnings only on the plugin's own pages.
-		// Shopify → Webhooks lists them in its Delivery health panel instead.
-		if ( ! $worst || \WP2_Shopify\Admin\Webhooks::PAGE === $page || ( Watchdog::WARN === $worst && ! $ours ) || ( Watchdog::FAIL === $worst && ! $ours && ! $wide ) ) {
+		// RedeemID → Webhooks lists them in its Delivery health panel instead.
+		if ( ! $worst || \RedeemID\Admin\Webhooks::PAGE === $page || ( Watchdog::WARN === $worst && ! $ours ) || ( Watchdog::FAIL === $worst && ! $ours && ! $wide ) ) {
 			return;
 		}
 
 		printf(
 			'<div class="notice notice-%s"><p><strong>%s</strong></p><ul class="ul-disc">%s</ul><p><a href="%s">%s</a></p></div>',
 			Watchdog::FAIL === $worst ? 'error' : 'warning',
-			esc_html__( 'Shopify tag updates may not be reaching WordPress', 'wp2-shopify' ),
+			esc_html__( 'Shopify tag updates may not be reaching WordPress', 'redeemid' ),
 			implode( '', array_map( static fn( $m ) => '<li>' . esc_html( $m ) . '</li>', self::messages() ) ), // phpcs:ignore WordPress.Security.EscapeOutput -- escaped per item.
-			esc_url( Menu::url( \WP2_Shopify\Admin\Webhooks::PAGE ) ),
-			esc_html__( 'Open Shopify → Webhooks', 'wp2-shopify' )
+			esc_url( Menu::url( \RedeemID\Admin\Webhooks::PAGE ) ),
+			esc_html__( 'Open RedeemID → Webhooks', 'redeemid' )
 		);
 	}
 
@@ -194,8 +194,8 @@ final class Monitor {
 	 * @param array<string, array<string, mixed>> $tests
 	 */
 	public static function site_health( array $tests ): array {
-		$tests['direct']['wp2_shopify_webhooks'] = [
-			'label' => __( 'Shopify webhooks are arriving', 'wp2-shopify' ),
+		$tests['direct']['redeemid_webhooks'] = [
+			'label' => __( 'Shopify webhooks are arriving', 'redeemid' ),
 			'test'  => [ self::class, 'site_health_result' ],
 		];
 
@@ -206,14 +206,14 @@ final class Monitor {
 		$worst = Watchdog::worst( self::problems() );
 
 		return [
-			'label'       => $worst ? __( 'Shopify tag updates may not be reaching WordPress', 'wp2-shopify' ) : __( 'Shopify webhooks are arriving', 'wp2-shopify' ),
+			'label'       => $worst ? __( 'Shopify tag updates may not be reaching WordPress', 'redeemid' ) : __( 'Shopify webhooks are arriving', 'redeemid' ),
 			'status'      => Watchdog::FAIL === $worst ? 'critical' : ( $worst ? 'recommended' : 'good' ),
-			'badge'       => [ 'label' => __( 'Shopify', 'wp2-shopify' ), 'color' => 'blue' ],
+			'badge'       => [ 'label' => __( 'RedeemID', 'redeemid' ), 'color' => 'blue' ],
 			'description' => $worst
 				? '<ul>' . implode( '', array_map( static fn( $m ) => '<li>' . esc_html( $m ) . '</li>', self::messages() ) ) . '</ul>'
-				: '<p>' . esc_html__( 'Members gain and lose access when Shopify sends tag changes. Subscriptions, the processing queue and WP-Cron all look healthy.', 'wp2-shopify' ) . '</p>',
-			'actions'     => sprintf( '<p><a href="%s">%s</a></p>', esc_url( Menu::url( \WP2_Shopify\Admin\Webhooks::PAGE ) ), esc_html__( 'Open Shopify → Webhooks', 'wp2-shopify' ) ),
-			'test'        => 'wp2_shopify_webhooks',
+				: '<p>' . esc_html__( 'Members gain and lose access when Shopify sends tag changes. Subscriptions, the processing queue and WP-Cron all look healthy.', 'redeemid' ) . '</p>',
+			'actions'     => sprintf( '<p><a href="%s">%s</a></p>', esc_url( Menu::url( \RedeemID\Admin\Webhooks::PAGE ) ), esc_html__( 'Open RedeemID → Webhooks', 'redeemid' ) ),
+			'test'        => 'redeemid_webhooks',
 		];
 	}
 
@@ -226,9 +226,9 @@ final class Monitor {
 		$messages = self::messages();
 
 		$checks[] = [
-			'label'  => __( 'Webhook delivery', 'wp2-shopify' ),
+			'label'  => __( 'Webhook delivery', 'redeemid' ),
 			'state'  => Watchdog::FAIL === $worst ? Health::FAIL : ( $worst ? Health::WARN : Health::OK ),
-			'detail' => $messages ? $messages[0] : __( 'subscriptions, queue and cron healthy', 'wp2-shopify' ),
+			'detail' => $messages ? $messages[0] : __( 'subscriptions, queue and cron healthy', 'redeemid' ),
 		];
 
 		return $checks;
@@ -263,8 +263,8 @@ final class Monitor {
 		$sent  = wp_mail(
 			(string) get_option( 'admin_email' ),
 			/* translators: %s: site name */
-			sprintf( __( '[%s] Shopify tag updates may not be reaching WordPress', 'wp2-shopify' ), wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES ) ),
-			implode( "\n", $lines ) . "\n\n" . Menu::url( \WP2_Shopify\Admin\Webhooks::PAGE )
+			sprintf( __( '[%s] Shopify tag updates may not be reaching WordPress', 'redeemid' ), wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES ) ),
+			implode( "\n", $lines ) . "\n\n" . Menu::url( \RedeemID\Admin\Webhooks::PAGE )
 		);
 
 		$state['alerted_at'] = time();

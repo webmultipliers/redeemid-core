@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Shopify;
+namespace RedeemID\Shopify;
 
-use WP2_Shopify\Config;
+use RedeemID\Config;
 
 /**
  * Cached OpenID and Customer Account API discovery for the configured store.
@@ -10,9 +10,9 @@ use WP2_Shopify\Config;
  * configuration overrides, not a substitute for discovery.
  */
 final class Discovery {
-	private const CACHE      = 'wp2_shopify_discovery';
-	private const LAST_GOOD  = 'wp2_shopify_discovery_last_good';
-	private const LAST_FETCH = 'wp2_shopify_discovery_fetched_at';
+	private const CACHE      = 'redeemid_discovery';
+	private const LAST_GOOD  = 'redeemid_discovery_last_good';
+	private const LAST_FETCH = 'redeemid_discovery_fetched_at';
 
 	public static function openid(): array {
 		$cached = get_transient( self::CACHE );
@@ -56,9 +56,9 @@ final class Discovery {
 
 	public static function endpoint( string $key ): string {
 		$overrides = [
-			'authorization_endpoint' => 'WP2_SHOPIFY_OAUTH_AUTHORIZE_URL',
-			'token_endpoint'         => 'WP2_SHOPIFY_OAUTH_TOKEN_URL',
-			'end_session_endpoint'   => 'WP2_SHOPIFY_OAUTH_LOGOUT_URL',
+			'authorization_endpoint' => 'REDEEMID_OAUTH_AUTHORIZE_URL',
+			'token_endpoint'         => 'REDEEMID_OAUTH_TOKEN_URL',
+			'end_session_endpoint'   => 'REDEEMID_OAUTH_LOGOUT_URL',
 		];
 
 		if ( isset( $overrides[ $key ] ) && Config::has( $overrides[ $key ] ) ) {

@@ -1,16 +1,16 @@
 <?php
 
-namespace WP2_Shopify\Blocks;
+namespace RedeemID\Blocks;
 
-use WP2_Shopify\Access\LevelStore;
-use WP2_Shopify\Access\Membership;
-use WP2_Shopify\Auth\ShadowUsers;
-use WP2_Shopify\Config;
-use WP2_Shopify\Features\Registry;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Sync\LevelHistory;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\PostCheckout;
+use RedeemID\Access\LevelStore;
+use RedeemID\Access\Membership;
+use RedeemID\Auth\ShadowUsers;
+use RedeemID\Config;
+use RedeemID\Features\Registry;
+use RedeemID\Settings;
+use RedeemID\Sync\LevelHistory;
+use RedeemID\Sync\Mirror;
+use RedeemID\Sync\PostCheckout;
 
 /**
  * What the Member Account block (blocks/member-account) shows a signed-in

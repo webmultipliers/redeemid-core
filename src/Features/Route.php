@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
-use WP2_Shopify\Access\Level;
+use RedeemID\Access\Level;
 
 /**
  * One granting route of a feature: tests that must all pass, plus the label
@@ -11,7 +11,7 @@ use WP2_Shopify\Access\Level;
  *
  * Test types: level (a level slug, inclusion expanded), tag (a Shopify
  * customer tag from the mirror), test (a custom test registered with the
- * wp2_shopify_feature_tests filter, with an optional argument).
+ * redeemid_feature_tests filter, with an optional argument).
  */
 final class Route {
 	public const LEVEL = 'level';

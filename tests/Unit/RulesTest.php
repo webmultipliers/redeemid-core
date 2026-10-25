@@ -1,12 +1,12 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Context;
-use WP2_Shopify\Access\Rules;
-use WP2_Shopify\Access\TermRule;
-use WP2_Shopify\Access\TermRules;
+use RedeemID\Access\Context;
+use RedeemID\Access\Rules;
+use RedeemID\Access\TermRule;
+use RedeemID\Access\TermRules;
 
 final class RulesTest extends TestCase {
 	public function test_empty_config_gates_every_type_with_no_rule(): void {

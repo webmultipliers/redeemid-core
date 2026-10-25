@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\Levels;
+use RedeemID\Access\Level;
+use RedeemID\Access\Levels;
 
 final class LevelsTest extends TestCase {
 	private function levels( array $config ): Levels {

@@ -1,22 +1,22 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Blocks\Gate;
+use RedeemID\Blocks\Gate;
 
 /**
  * What queries need to know about each item's access, kept in post meta so
  * search, sitemaps and comment feeds can filter in SQL instead of loading
  * every item:
  *
- * - _wp2_access_search: the text anyone may read, for items whose rule is
+ * - _redeemid_access_search: the text anyone may read, for items whose rule is
  *   not open, may change on a date, or that hold a membership gate or a
  *   block shown only to readers. Search matches this instead of
  *   post_content (Surfaces), so a locked phrase never finds its item, for
  *   anyone.
- * - _wp2_access_locked: set while the item's rule is not open. Sitemaps and
+ * - _redeemid_access_locked: set while the item's rule is not open. Sitemaps and
  *   comment feeds leave such items out where the post type asks.
- * - _wp2_access_next: the next time a date could change the rule (embargo
+ * - _redeemid_access_next: the next time a date could change the rule (embargo
  *   end, free window end, archive window, a term's free-until). An hourly
  *   pass refreshes items whose time has come.
  *
@@ -27,17 +27,17 @@ use WP2_Shopify\Blocks\Gate;
  * in the meantime; only sitemaps and comment feeds can lag behind.
  */
 final class Index {
-	public const SEARCH = '_wp2_access_search';
-	public const LOCKED = '_wp2_access_locked';
-	public const NEXT   = '_wp2_access_next';
+	public const SEARCH = '_redeemid_access_search';
+	public const LOCKED = '_redeemid_access_locked';
+	public const NEXT   = '_redeemid_access_next';
 
-	public const REINDEX = 'wp2_shopify_access_reindex';
-	public const TIMED   = 'wp2_shopify_access_timed';
-	public const CURSOR  = 'wp2_shopify_access_reindex_cursor';
+	public const REINDEX = 'redeemid_access_reindex';
+	public const TIMED   = 'redeemid_access_timed';
+	public const CURSOR  = 'redeemid_access_reindex_cursor';
 
 	/** Bump to rebuild every item's index after an upgrade that changes what it holds. */
 	private const VERSION     = 2;
-	private const VERSION_KEY = 'wp2_shopify_access_index_version';
+	private const VERSION_KEY = 'redeemid_access_index_version';
 
 	private const BATCH = 200;
 
@@ -46,7 +46,7 @@ final class Index {
 
 	public static function register(): void {
 		add_action( 'save_post', [ self::class, 'enqueue' ], 99 );
-		add_action( 'wp2_shopify_access_changed', [ self::class, 'changed' ] );
+		add_action( 'redeemid_access_changed', [ self::class, 'changed' ] );
 		add_action( 'shutdown', [ self::class, 'drain' ] );
 		add_action( self::REINDEX, [ self::class, 'run_batch' ] );
 		add_action( self::TIMED, [ self::class, 'run_timed' ] );
@@ -185,7 +185,7 @@ final class Index {
 			 * @param int  $post_id
 			 * @param bool $locked
 			 */
-			do_action( 'wp2_shopify_access_locked_changed', $post->ID, $locked );
+			do_action( 'redeemid_access_locked_changed', $post->ID, $locked );
 		}
 		self::set( $post->ID, self::NEXT, null === $next ? null : (string) $next );
 		self::set( $post->ID, self::SEARCH, $search ? self::text( $post, $locked ) : null );

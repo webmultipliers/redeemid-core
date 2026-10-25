@@ -1,19 +1,19 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Context;
-use WP2_Shopify\Access\Index;
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Access\Checker;
-use WP2_Shopify\Access\EffectiveRule;
-use WP2_Shopify\Access\Surfaces;
-use WP2_Shopify\Access\Teaser;
-use WP2_Shopify\Access\TermRule;
-use WP2_Shopify\Access\Viewer;
-use WP2_Shopify\Entitlement\Evaluator;
+use RedeemID\Access\Context;
+use RedeemID\Access\Index;
+use RedeemID\Access\Level;
+use RedeemID\Access\Levels;
+use RedeemID\Access\Checker;
+use RedeemID\Access\EffectiveRule;
+use RedeemID\Access\Surfaces;
+use RedeemID\Access\Teaser;
+use RedeemID\Access\TermRule;
+use RedeemID\Access\Viewer;
+use RedeemID\Entitlement\Evaluator;
 
 final class IndexTest extends TestCase {
 	private const NOW = 1800000000;
@@ -37,16 +37,16 @@ final class IndexTest extends TestCase {
 	}
 
 	public function test_strip_removes_a_nested_block_and_its_placeholder(): void {
-		$members = [ 'blockName' => 'wp2-shopify/membership-gate-content', 'attrs' => [], 'innerBlocks' => [ [ 'blockName' => 'core/paragraph', 'attrs' => [], 'innerBlocks' => [], 'innerHTML' => '<p>SECRET</p>', 'innerContent' => [ '<p>SECRET</p>' ] ] ], 'innerHTML' => '', 'innerContent' => [ null ] ];
-		$teaser  = [ 'blockName' => 'wp2-shopify/membership-gate-fallback', 'attrs' => [], 'innerBlocks' => [], 'innerHTML' => '<p>Join</p>', 'innerContent' => [ '<p>Join</p>' ] ];
-		$gate    = [ 'blockName' => 'wp2-shopify/membership-gate', 'attrs' => [], 'innerBlocks' => [ $members, $teaser ], 'innerHTML' => '<div></div>', 'innerContent' => [ '<div>', null, '', null, '</div>' ] ];
+		$members = [ 'blockName' => 'redeemid/membership-gate-content', 'attrs' => [], 'innerBlocks' => [ [ 'blockName' => 'core/paragraph', 'attrs' => [], 'innerBlocks' => [], 'innerHTML' => '<p>SECRET</p>', 'innerContent' => [ '<p>SECRET</p>' ] ] ], 'innerHTML' => '', 'innerContent' => [ null ] ];
+		$teaser  = [ 'blockName' => 'redeemid/membership-gate-fallback', 'attrs' => [], 'innerBlocks' => [], 'innerHTML' => '<p>Join</p>', 'innerContent' => [ '<p>Join</p>' ] ];
+		$gate    = [ 'blockName' => 'redeemid/membership-gate', 'attrs' => [], 'innerBlocks' => [ $members, $teaser ], 'innerHTML' => '<div></div>', 'innerContent' => [ '<div>', null, '', null, '</div>' ] ];
 		$group   = [ 'blockName' => 'core/group', 'attrs' => [], 'innerBlocks' => [ $gate ], 'innerHTML' => '<div></div>', 'innerContent' => [ '<div>', null, '</div>' ] ];
 
-		$out = Teaser::strip( [ $group ], 'wp2-shopify/membership-gate-content' );
+		$out = Teaser::strip( [ $group ], 'redeemid/membership-gate-content' );
 
 		$this->assertStringNotContainsString( 'SECRET', (string) json_encode( $out ) );
 		$kept = $out[0]['innerBlocks'][0];
-		$this->assertSame( [ 'wp2-shopify/membership-gate-fallback' ], array_column( $kept['innerBlocks'], 'blockName' ) );
+		$this->assertSame( [ 'redeemid/membership-gate-fallback' ], array_column( $kept['innerBlocks'], 'blockName' ) );
 		$this->assertSame( [ '<div>', '', null, '</div>' ], $kept['innerContent'], 'One placeholder per kept inner block' );
 	}
 
@@ -54,7 +54,7 @@ final class IndexTest extends TestCase {
 		$sql = "((wp_posts.post_title LIKE '%x%') OR (wp_posts.post_excerpt LIKE '%x%') OR (wp_posts.post_content LIKE '%x%'))";
 
 		$this->assertSame(
-			"((wp_posts.post_title LIKE '%x%') OR (wp_posts.post_excerpt LIKE '%x%') OR (COALESCE(wp2s.meta_value, wp_posts.post_content) LIKE '%x%'))",
+			"((wp_posts.post_title LIKE '%x%') OR (wp_posts.post_excerpt LIKE '%x%') OR (COALESCE(redeemid.meta_value, wp_posts.post_content) LIKE '%x%'))",
 			Surfaces::public_column( $sql, 'wp_posts' )
 		);
 	}

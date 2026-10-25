@@ -1,45 +1,45 @@
 <?php
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
-use WP2_Shopify\Access\Badges;
-use WP2_Shopify\Access\BlockAccess;
-use WP2_Shopify\Access\Cli;
-use WP2_Shopify\Access\Gatekeeper;
-use WP2_Shopify\Access\Index;
-use WP2_Shopify\Access\ItemRule;
-use WP2_Shopify\Access\Layers;
-use WP2_Shopify\Access\Surfaces;
-use WP2_Shopify\Access\TermRules;
-use WP2_Shopify\Access\Viewer;
-use WP2_Shopify\Features\Registry as FeatureRegistry;
-use WP2_Shopify\Features\Surfaces as FeatureSurfaces;
-use WP2_Shopify\Admin\AccessColumn;
-use WP2_Shopify\Admin\AccessMetaBox;
-use WP2_Shopify\Admin\AccessTermFields;
-use WP2_Shopify\Admin\Menu;
-use WP2_Shopify\Admin\UserProfile;
-use WP2_Shopify\Auth\Flow;
-use WP2_Shopify\Auth\ShadowUsers;
-use WP2_Shopify\Auth\SignInLinks;
-use WP2_Shopify\Blocks\Registration;
-use WP2_Shopify\Commerce\BuyNow;
-use WP2_Shopify\Commerce\CartBridge;
-use WP2_Shopify\Integrations\OfficialCartToggle;
-use WP2_Shopify\Integrations\SeoPlugins;
-use WP2_Shopify\Rest\Routes;
-use WP2_Shopify\Rest\Status;
-use WP2_Shopify\Support\Crypto;
-use WP2_Shopify\Support\EventLog;
-use WP2_Shopify\Support\Stats;
-use WP2_Shopify\Sync\BulkResync;
-use WP2_Shopify\Sync\Cli as SyncCli;
-use WP2_Shopify\Sync\LevelHistory;
-use WP2_Shopify\Sync\PostCheckout;
-use WP2_Shopify\Webhooks\Endpoint;
-use WP2_Shopify\Webhooks\Monitor;
-use WP2_Shopify\Webhooks\Processor;
-use WP2_Shopify\Webhooks\WpdbInboxStore;
+use RedeemID\Access\Badges;
+use RedeemID\Access\BlockAccess;
+use RedeemID\Access\Cli;
+use RedeemID\Access\Gatekeeper;
+use RedeemID\Access\Index;
+use RedeemID\Access\ItemRule;
+use RedeemID\Access\Layers;
+use RedeemID\Access\Surfaces;
+use RedeemID\Access\TermRules;
+use RedeemID\Access\Viewer;
+use RedeemID\Features\Registry as FeatureRegistry;
+use RedeemID\Features\Surfaces as FeatureSurfaces;
+use RedeemID\Admin\AccessColumn;
+use RedeemID\Admin\AccessMetaBox;
+use RedeemID\Admin\AccessTermFields;
+use RedeemID\Admin\Menu;
+use RedeemID\Admin\UserProfile;
+use RedeemID\Auth\Flow;
+use RedeemID\Auth\ShadowUsers;
+use RedeemID\Auth\SignInLinks;
+use RedeemID\Blocks\Registration;
+use RedeemID\Commerce\BuyNow;
+use RedeemID\Commerce\CartBridge;
+use RedeemID\Integrations\OfficialCartToggle;
+use RedeemID\Integrations\SeoPlugins;
+use RedeemID\Rest\Routes;
+use RedeemID\Rest\Status;
+use RedeemID\Support\Crypto;
+use RedeemID\Support\EventLog;
+use RedeemID\Support\Stats;
+use RedeemID\Sync\BulkResync;
+use RedeemID\Sync\Cli as SyncCli;
+use RedeemID\Sync\LevelHistory;
+use RedeemID\Sync\PostCheckout;
+use RedeemID\Webhooks\Endpoint;
+use RedeemID\Webhooks\Monitor;
+use RedeemID\Webhooks\Processor;
+use RedeemID\Webhooks\WpdbInboxStore;
 
 final class Plugin {
 	private static ?Crypto $crypto = null;
@@ -78,12 +78,12 @@ final class Plugin {
 
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
 		// Translations installed in wp-content/languages win; the bundled .pot is the template.
-		add_action( 'init', static fn() => load_plugin_textdomain( 'wp2-shopify', false, dirname( plugin_basename( WP2_SHOPIFY_FILE ) ) . '/languages' ) );
+		add_action( 'init', static fn() => load_plugin_textdomain( 'redeemid', false, dirname( plugin_basename( REDEEMID_FILE ) ) . '/languages' ) );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );
 		add_action( Endpoint::HOOK, [ Processor::class, 'process' ] );
 		add_action( 'admin_init', [ Lifecycle::class, 'retire_reconciliation' ] );
-		add_action( 'wp2_shopify_prune', [ WpdbInboxStore::class, 'prune' ] );
-		add_action( 'wp2_shopify_prune', [ EventLog::class, 'prune' ] );
+		add_action( 'redeemid_prune', [ WpdbInboxStore::class, 'prune' ] );
+		add_action( 'redeemid_prune', [ EventLog::class, 'prune' ] );
 		add_action( 'admin_init', [ EventLog::class, 'maybe_install' ] );
 		add_action( 'admin_init', [ Migration::class, 'maybe_run' ] );
 
@@ -97,7 +97,7 @@ final class Plugin {
 	}
 
 	/**
-	 * Token encryption, keyed from WP2_SHOPIFY_ENCRYPTION_KEY or the WordPress salts.
+	 * Token encryption, keyed from REDEEMID_ENCRYPTION_KEY or the WordPress salts.
 	 */
 	public static function crypto(): Crypto {
 		if ( ! self::$crypto ) {
@@ -109,7 +109,7 @@ final class Plugin {
 				$salts .= 'put your unique phrase here' === $value ? '' : $value;
 			}
 
-			self::$crypto = Crypto::from_config( Config::get( 'WP2_SHOPIFY_ENCRYPTION_KEY' ), $salts );
+			self::$crypto = Crypto::from_config( Config::get( 'REDEEMID_ENCRYPTION_KEY' ), $salts );
 		}
 
 		return self::$crypto;

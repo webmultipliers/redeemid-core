@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f7063a37fc9e5035def8e24dfdf5dd75",
+    "content-hash": "1b9ac86f8053a0c6df99e83c61a26803",
     "packages": [
         {
             "name": "blockstudio/blockstudio",

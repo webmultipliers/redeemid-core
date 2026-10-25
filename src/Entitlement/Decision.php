@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Entitlement;
+namespace RedeemID\Entitlement;
 
 final class Decision {
 	public const GRANTED      = 'granted';

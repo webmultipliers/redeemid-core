@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Member;
-use WP2_Shopify\Features\Registry;
-use WP2_Shopify\Settings;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Entitlement\Member;
+use RedeemID\Features\Registry;
+use RedeemID\Settings;
+use RedeemID\Sync\Mirror;
 
 /**
  * The resolution trace for one item and one viewer: every layer, the rule
  * they resolve to and where it came from, what this viewer gets, which of
  * the item's blocks they see, and how search, comments and search engines
- * treat it. Shown on Shopify → Access → Test and by
- * `wp wp2-shopify access explain`.
+ * treat it. Shown on RedeemID → Access → Test and by
+ * `wp redeemid access explain`.
  *
  * Never uses the editor bypass: it answers for the viewer described, as an
  * automated check would.
@@ -66,7 +66,7 @@ final class Explain {
 		$gated     = ItemRule::gated( $post );
 		$context   = Gatekeeper::context( $post );
 		$rule      = ( new Resolver( $levels ) )->resolve( $context, $now );
-		$filtered  = apply_filters( 'wp2_shopify_effective_rule', $rule, $post );
+		$filtered  = apply_filters( 'redeemid_effective_rule', $rule, $post );
 		$rule      = $filtered instanceof EffectiveRule ? $filtered : new EffectiveRule( [ [ '__invalid_rule' ] ], 'Filter' );
 		$verdict   = $checker->check( $rule, $member, $now );
 		$reads     = $rule->open() || $verdict->granted();
@@ -74,15 +74,15 @@ final class Explain {
 		$blocks    = parse_blocks( $post->post_content );
 		$type_row  = RuleStore::rules()->type( $post->post_type );
 		$label     = static fn( string $slug ) => $levels->get( $slug )?->label ?? $slug;
-		$sees      = __( 'The whole item.', 'wp2-shopify' );
+		$sees      = __( 'The whole item.', 'redeemid' );
 
 		if ( ! $reads ) {
 			$cut  = Gatekeeper::teaser( $post )->cut( Teaser::strip( $blocks, [ BlockAccess::class, 'members_only' ] ), (string) $post->post_excerpt );
 			$sees = match ( $cut['source'] ) {
-				Teaser::SOURCE_BREAK   => __( 'The content above the paywall break, then the wall.', 'wp2-shopify' ),
-				Teaser::SOURCE_SETTING => __( 'The post type\'s teaser, then the wall.', 'wp2-shopify' ),
-				Teaser::SOURCE_EXCERPT => __( 'The hand-written excerpt, then the wall.', 'wp2-shopify' ),
-				default                => __( 'Only the wall: no teaser.', 'wp2-shopify' ),
+				Teaser::SOURCE_BREAK   => __( 'The content above the paywall break, then the wall.', 'redeemid' ),
+				Teaser::SOURCE_SETTING => __( 'The post type\'s teaser, then the wall.', 'redeemid' ),
+				Teaser::SOURCE_EXCERPT => __( 'The hand-written excerpt, then the wall.', 'redeemid' ),
+				default                => __( 'Only the wall: no teaser.', 'redeemid' ),
 			};
 		}
 
@@ -107,14 +107,14 @@ final class Explain {
 			'blocks'         => $conditions,
 			'surfaces'       => [
 				Gatekeeper::protected( $post )
-					? __( 'Search matches its public text only: title, excerpt, teaser and blocks shown to locked visitors.', 'wp2-shopify' )
-					: __( 'Search matches its full text: nothing in it is restricted.', 'wp2-shopify' ),
+					? __( 'Search matches its public text only: title, excerpt, teaser and blocks shown to locked visitors.', 'redeemid' )
+					: __( 'Search matches its full text: nothing in it is restricted.', 'redeemid' ),
 				Rules::COMMENTS_EVERYONE === $type_row['comments']
-					? __( 'Comments: shown to everyone.', 'wp2-shopify' )
-					: __( 'Comments: on a locked item, shown only to visitors who can read it.', 'wp2-shopify' ),
+					? __( 'Comments: shown to everyone.', 'redeemid' )
+					: __( 'Comments: on a locked item, shown only to visitors who can read it.', 'redeemid' ),
 				$type_row['noindex'] && ! $rule->open()
-					? __( 'Search engines: noindex, and left out of sitemaps.', 'wp2-shopify' )
-					: __( 'Search engines: indexed and in sitemaps. Locked items show crawlers the teaser only.', 'wp2-shopify' ),
+					? __( 'Search engines: noindex, and left out of sitemaps.', 'redeemid' )
+					: __( 'Search engines: indexed and in sitemaps. Locked items show crawlers the teaser only.', 'redeemid' ),
 			],
 		];
 	}

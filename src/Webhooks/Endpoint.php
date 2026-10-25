@@ -1,20 +1,20 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
-use WP2_Shopify\Config;
-use WP2_Shopify\Support\Logger;
+use RedeemID\Config;
+use RedeemID\Support\Logger;
 
 /**
- * POST /wp-json/wp2-shopify/v1/webhooks/events. Replaces the POC's
+ * POST /wp-json/redeemid/v1/webhooks/events. Replaces the POC's
  * misspelled /iwebhooks/events; the old path is not kept.
  */
 final class Endpoint {
-	public const HOOK = 'wp2_shopify_process_webhook';
+	public const HOOK = 'redeemid_process_webhook';
 
 	public static function register_routes(): void {
 		register_rest_route(
-			'wp2-shopify/v1',
+			'redeemid/v1',
 			'/webhooks/events',
 			[
 				'methods'             => 'POST',
@@ -31,7 +31,7 @@ final class Endpoint {
 
 		if ( ! Signature::verify( $raw, (string) $request->get_header( 'x-shopify-hmac-sha256' ), $secret ) ) {
 			Logger::log( 'webhook.rejected', [ 'reason' => 'hmac', 'topic' => (string) $request->get_header( 'x-shopify-topic' ) ] );
-			update_option( 'wp2_shopify_webhook_rejected', time(), false );
+			update_option( 'redeemid_webhook_rejected', time(), false );
 
 			return new \WP_REST_Response( [ 'ok' => false ], 401 );
 		}
@@ -68,7 +68,7 @@ final class Endpoint {
 
 	public static function schedule( int $row_id, int $delay = 0 ): void {
 		if ( function_exists( 'as_schedule_single_action' ) ) {
-			as_schedule_single_action( time() + $delay, self::HOOK, [ $row_id ], 'wp2-shopify' );
+			as_schedule_single_action( time() + $delay, self::HOOK, [ $row_id ], 'redeemid' );
 			return;
 		}
 

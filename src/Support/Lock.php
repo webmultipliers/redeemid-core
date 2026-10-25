@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Support;
+namespace RedeemID\Support;
 
 /**
  * A small cross-request mutex. add_option() is an INSERT on a unique key, so
@@ -8,7 +8,7 @@ namespace WP2_Shopify\Support;
  */
 final class Lock {
 	public static function acquire( string $name, int $ttl = 30 ): bool {
-		$option = 'wp2_shopify_lock_' . md5( $name );
+		$option = 'redeemid_lock_' . md5( $name );
 		$now    = time();
 
 		if ( add_option( $option, $now + $ttl, '', false ) ) {
@@ -40,6 +40,6 @@ final class Lock {
 	}
 
 	public static function release( string $name ): void {
-		delete_option( 'wp2_shopify_lock_' . md5( $name ) );
+		delete_option( 'redeemid_lock_' . md5( $name ) );
 	}
 }

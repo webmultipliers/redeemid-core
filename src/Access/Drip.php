@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Sync\LevelHistory;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Sync\LevelHistory;
+use RedeemID\Sync\Mirror;
 
 /**
  * Drip: an item a member may read only once they have been a member for N
@@ -24,7 +24,7 @@ final class Drip {
 		/**
 		 * Days of membership an item needs before members can read it.
 		 */
-		return max( 0, (int) apply_filters( 'wp2_shopify_drip_days', ItemRule::get( $post )['drip_days'], $post ) );
+		return max( 0, (int) apply_filters( 'redeemid_drip_days', ItemRule::get( $post )['drip_days'], $post ) );
 	}
 
 	/**

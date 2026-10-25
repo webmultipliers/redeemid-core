@@ -1,8 +1,8 @@
 <?php
 
-namespace WP2_Shopify\Shopify;
+namespace RedeemID\Shopify;
 
-use WP2_Shopify\Config;
+use RedeemID\Config;
 
 /**
  * Storefront API from the server: public catalog reads, cart
@@ -21,7 +21,7 @@ final class Storefront {
 	public const CACHE_TTL = 5 * MINUTE_IN_SECONDS;
 
 	private const PRODUCT_QUERY = <<<'GRAPHQL'
-query WP2PlanProduct($handle: String!) {
+query RedeemIDPlanProduct($handle: String!) {
   product(handle: $handle) {
     id
     handle
@@ -49,7 +49,7 @@ query WP2PlanProduct($handle: String!) {
 GRAPHQL;
 
 	private const PRODUCT_SEARCH = <<<'GRAPHQL'
-query WP2ProductSearch($query: String) {
+query RedeemIDProductSearch($query: String) {
   products(first: 20, query: $query, sortKey: TITLE) {
     nodes { handle title }
   }
@@ -57,7 +57,7 @@ query WP2ProductSearch($query: String) {
 GRAPHQL;
 
 	private const CART_CREATE = <<<'GRAPHQL'
-mutation WP2BuyNow($input: CartInput!) {
+mutation RedeemIDBuyNow($input: CartInput!) {
   cartCreate(input: $input) {
     cart { id checkoutUrl }
     userErrors { field message }
@@ -66,7 +66,7 @@ mutation WP2BuyNow($input: CartInput!) {
 GRAPHQL;
 
 	private const CART_BUYER = <<<'GRAPHQL'
-mutation WP2CartBuyer($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+mutation RedeemIDCartBuyer($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
   cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
     cart { id }
     userErrors { field message }
@@ -75,7 +75,7 @@ mutation WP2CartBuyer($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
 GRAPHQL;
 
 	public static function available(): bool {
-		return '' !== Config::store_domain() && ( Config::has( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' ) || Config::has( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' ) );
+		return '' !== Config::store_domain() && ( Config::has( 'REDEEMID_STOREFRONT_PRIVATE_TOKEN' ) || Config::has( 'REDEEMID_PUBLIC_ACCESS_TOKEN' ) );
 	}
 
 	public static function endpoint(): string {
@@ -90,7 +90,7 @@ GRAPHQL;
 	 */
 	public static function search_products( string $search ): array|\WP_Error {
 		$search = trim( preg_replace( '/[^\p{L}\p{N} _-]+/u', ' ', $search ) ?? '' );
-		$key    = 'wp2_shopify_sf_search_' . md5( Config::store_domain() . '|' . strtolower( $search ) );
+		$key    = 'redeemid_sf_search_' . md5( Config::store_domain() . '|' . strtolower( $search ) );
 		$cached = get_transient( $key );
 
 		if ( is_array( $cached ) ) {
@@ -144,7 +144,7 @@ GRAPHQL;
 		}
 
 		$country = self::country();
-		$key     = 'wp2_shopify_sf_product_' . md5( Config::store_domain() . '|' . $handle . '|' . $country );
+		$key     = 'redeemid_sf_product_' . md5( Config::store_domain() . '|' . $handle . '|' . $country );
 		$cached = get_transient( $key );
 
 		if ( is_array( $cached ) ) {
@@ -265,7 +265,7 @@ GRAPHQL;
 	 * plan card prices differ by country.
 	 */
 	public static function country(): string {
-		$country = strtoupper( (string) apply_filters( 'wp2_shopify_context_country', '' ) );
+		$country = strtoupper( (string) apply_filters( 'redeemid_context_country', '' ) );
 
 		return preg_match( '/^[A-Z]{2}$/', $country ) ? $country : '';
 	}
@@ -389,10 +389,10 @@ GRAPHQL;
 	 * @param bool $buyer The request comes from a buyer's action (buy-now, cart), not a cached catalog read.
 	 */
 	private static function headers( bool $buyer = false ): array {
-		$private = Config::get( 'WP2_SHOPIFY_STOREFRONT_PRIVATE_TOKEN' );
+		$private = Config::get( 'REDEEMID_STOREFRONT_PRIVATE_TOKEN' );
 
 		if ( '' === $private ) {
-			return [ 'X-Shopify-Storefront-Access-Token' => Config::get( 'WP2_SHOPIFY_PUBLIC_ACCESS_TOKEN' ) ];
+			return [ 'X-Shopify-Storefront-Access-Token' => Config::get( 'REDEEMID_PUBLIC_ACCESS_TOKEN' ) ];
 		}
 
 		$ip = $buyer ? self::buyer_ip() : '';
@@ -402,14 +402,14 @@ GRAPHQL;
 
 	/**
 	 * The visitor's IP as the web server saw it. Behind a proxy or CDN that is
-	 * the proxy's address; the wp2_shopify_buyer_ip filter can return the real
+	 * the proxy's address; the redeemid_buyer_ip filter can return the real
 	 * one from a header the site trusts. Forwarded headers are not read here,
 	 * because a visitor can set them.
 	 */
 	private static function buyer_ip(): string {
 		// phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__ -- validated with FILTER_VALIDATE_IP below; read on uncached checkout calls.
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-		$ip = (string) apply_filters( 'wp2_shopify_buyer_ip', $ip );
+		$ip = (string) apply_filters( 'redeemid_buyer_ip', $ip );
 
 		return false !== filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
 	}

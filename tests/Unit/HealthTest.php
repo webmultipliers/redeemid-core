@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Support\Health;
+use RedeemID\Support\Health;
 
 final class HealthTest extends TestCase {
 	public function test_accepts_a_row_with_a_label_and_known_state(): void {

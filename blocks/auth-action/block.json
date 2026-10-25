@@ -1,13 +1,13 @@
 {
 	"$schema": "https://blockstudio.dev/schema/block",
 	"apiVersion": 3,
-	"name": "wp2-shopify/auth-action",
+	"name": "redeemid/auth-action",
 	"title": "Shopify Sign-in",
 	"category": "widgets",
 	"icon": "admin-users",
 	"description": "Log in with Shopify, log out, or connect an existing account. Works without JavaScript: the page carries the guest link, and a Blockstudio island swaps in the visitor's own action after load, so cached pages stay cacheable.",
 	"keywords": [ "login", "logout", "shopify", "account" ],
-	"textdomain": "wp2-shopify",
+	"textdomain": "redeemid",
 	"supports": { "align": false, "html": false },
 	"example": {},
 	"variations": [

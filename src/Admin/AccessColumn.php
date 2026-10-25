@@ -1,12 +1,12 @@
 <?php
 
-namespace WP2_Shopify\Admin;
+namespace RedeemID\Admin;
 
-use WP2_Shopify\Access\Context;
-use WP2_Shopify\Access\Gatekeeper;
-use WP2_Shopify\Access\ItemRule;
-use WP2_Shopify\Access\Level;
-use WP2_Shopify\Access\LevelStore;
+use RedeemID\Access\Context;
+use RedeemID\Access\Gatekeeper;
+use RedeemID\Access\ItemRule;
+use RedeemID\Access\Level;
+use RedeemID\Access\LevelStore;
 
 /**
  * An Access column on every gated post list, showing each item's effective
@@ -15,7 +15,7 @@ use WP2_Shopify\Access\LevelStore;
  * Access box; quick and bulk edit leave them as they are.
  */
 final class AccessColumn {
-	private const NONCE = 'wp2_shopify_access_list';
+	private const NONCE = 'redeemid_access_list';
 
 	public static function register(): void {
 		add_action( 'admin_init', [ self::class, 'hook_types' ] );
@@ -35,7 +35,7 @@ final class AccessColumn {
 	}
 
 	public static function columns( array $columns ): array {
-		$columns['wp2_access'] = __( 'Access', 'wp2-shopify' );
+		$columns['redeemid_access'] = __( 'Access', 'redeemid' );
 
 		return $columns;
 	}
@@ -43,14 +43,14 @@ final class AccessColumn {
 	public static function column( string $column, int $post_id ): void {
 		$post = get_post( $post_id );
 
-		if ( 'wp2_access' !== $column || ! $post instanceof \WP_Post ) {
+		if ( 'redeemid_access' !== $column || ! $post instanceof \WP_Post ) {
 			return;
 		}
 
 		$rule = ItemRule::get( $post );
 
 		printf(
-			'<span class="wp2-access-explain">%s</span><span class="hidden wp2-access-data" data-mode="%s" data-levels="%s"></span>',
+			'<span class="redeemid-access-explain">%s</span><span class="hidden redeemid-access-data" data-mode="%s" data-levels="%s"></span>',
 			esc_html( Gatekeeper::rule( $post )->explain( LevelStore::levels() ) ),
 			esc_attr( $rule['mode'] ),
 			esc_attr( implode( ',', $rule['levels'] ) )
@@ -66,29 +66,29 @@ final class AccessColumn {
 	}
 
 	private static function box( string $column, string $type, bool $bulk ): void {
-		if ( 'wp2_access' !== $column || ! in_array( $type, ItemRule::post_types(), true ) ) {
+		if ( 'redeemid_access' !== $column || ! in_array( $type, ItemRule::post_types(), true ) ) {
 			return;
 		}
 
 		$levels = array_filter( LevelStore::levels()->all(), static fn( Level $l ) => Level::PUBLIC !== $l->slug );
 		$modes  = [
-			Context::ITEM_INHERIT => __( 'Inherit', 'wp2-shopify' ),
-			Context::ITEM_PUBLIC  => __( 'Public', 'wp2-shopify' ),
-			Context::ITEM_LEVEL   => __( 'These levels instead', 'wp2-shopify' ),
-			Context::ITEM_ADD     => __( 'Inherited, plus these levels', 'wp2-shopify' ),
+			Context::ITEM_INHERIT => __( 'Inherit', 'redeemid' ),
+			Context::ITEM_PUBLIC  => __( 'Public', 'redeemid' ),
+			Context::ITEM_LEVEL   => __( 'These levels instead', 'redeemid' ),
+			Context::ITEM_ADD     => __( 'Inherited, plus these levels', 'redeemid' ),
 		];
 
 		if ( ! $bulk ) {
 			wp_nonce_field( self::NONCE, self::NONCE );
 		}
 		?>
-		<fieldset class="inline-edit-col-right wp2-access-inline">
+		<fieldset class="inline-edit-col-right redeemid-access-inline">
 			<div class="inline-edit-col">
 				<label class="inline-edit-group">
-					<span class="title"><?php esc_html_e( 'Access', 'wp2-shopify' ); ?></span>
-					<select name="wp2_access_mode">
+					<span class="title"><?php esc_html_e( 'Access', 'redeemid' ); ?></span>
+					<select name="redeemid_access_mode">
 						<?php if ( $bulk ) : ?>
-							<option value=""><?php esc_html_e( '— No change —', 'wp2-shopify' ); ?></option>
+							<option value=""><?php esc_html_e( '— No change —', 'redeemid' ); ?></option>
 						<?php endif; ?>
 						<?php foreach ( $modes as $value => $label ) : ?>
 							<option value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $label ); ?></option>
@@ -97,7 +97,7 @@ final class AccessColumn {
 				</label>
 				<div class="inline-edit-group">
 					<?php foreach ( $levels as $slug => $level ) : ?>
-						<label class="alignleft" style="margin-right:10px"><input type="checkbox" name="wp2_access_levels[]" value="<?php echo esc_attr( $slug ); ?>"> <?php echo esc_html( $level->label ); ?></label>
+						<label class="alignleft" style="margin-right:10px"><input type="checkbox" name="redeemid_access_levels[]" value="<?php echo esc_attr( $slug ); ?>"> <?php echo esc_html( $level->label ); ?></label>
 					<?php endforeach; ?>
 				</div>
 			</div>
@@ -109,7 +109,7 @@ final class AccessColumn {
 	 * Quick edit posts through admin-ajax with its own nonce, so this box adds one.
 	 */
 	public static function quick_save( int $post_id, \WP_Post $post ): void {
-		if ( ! wp_doing_ajax() || ! isset( $_POST[ self::NONCE ], $_POST['wp2_access_mode'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST[ self::NONCE ] ) ), self::NONCE ) ) {
+		if ( ! wp_doing_ajax() || ! isset( $_POST[ self::NONCE ], $_POST['redeemid_access_mode'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST[ self::NONCE ] ) ), self::NONCE ) ) {
 			return;
 		}
 
@@ -117,7 +117,7 @@ final class AccessColumn {
 			return;
 		}
 
-		self::apply( $post, sanitize_key( wp_unslash( $_POST['wp2_access_mode'] ) ), self::posted_levels() );
+		self::apply( $post, sanitize_key( wp_unslash( $_POST['redeemid_access_mode'] ) ), self::posted_levels() );
 	}
 
 	/**
@@ -126,13 +126,13 @@ final class AccessColumn {
 	 * @param int[] $updated
 	 */
 	public static function bulk_save( array $updated, array $data ): void {
-		$mode = sanitize_key( (string) ( $data['wp2_access_mode'] ?? '' ) );
+		$mode = sanitize_key( (string) ( $data['redeemid_access_mode'] ?? '' ) );
 
 		if ( '' === $mode ) {
 			return;
 		}
 
-		$levels = array_map( 'sanitize_key', (array) ( $data['wp2_access_levels'] ?? [] ) );
+		$levels = array_map( 'sanitize_key', (array) ( $data['redeemid_access_levels'] ?? [] ) );
 
 		foreach ( $updated as $post_id ) {
 			$post = get_post( (int) $post_id );
@@ -153,7 +153,7 @@ final class AccessColumn {
 
 	private static function posted_levels(): array {
 		// phpcs:ignore WordPress.Security.NonceVerification -- checked in quick_save().
-		return isset( $_POST['wp2_access_levels'] ) && is_array( $_POST['wp2_access_levels'] ) ? array_map( 'sanitize_key', wp_unslash( $_POST['wp2_access_levels'] ) ) : [];
+		return isset( $_POST['redeemid_access_levels'] ) && is_array( $_POST['redeemid_access_levels'] ) ? array_map( 'sanitize_key', wp_unslash( $_POST['redeemid_access_levels'] ) ) : [];
 	}
 
 	/**
@@ -175,14 +175,14 @@ final class AccessColumn {
 			window.inlineEditPost.edit = function ( id ) {
 				edit.apply( this, arguments );
 				var postId = typeof id === 'object' ? this.getId( id ) : id;
-				var data = document.querySelector( '#post-' + postId + ' .wp2-access-data' );
-				var row = document.querySelector( '#edit-' + postId + ' .wp2-access-inline' );
+				var data = document.querySelector( '#post-' + postId + ' .redeemid-access-data' );
+				var row = document.querySelector( '#edit-' + postId + ' .redeemid-access-inline' );
 				if ( ! data || ! row ) {
 					return;
 				}
 				var levels = ( data.dataset.levels || '' ).split( ',' );
-				row.querySelector( 'select[name="wp2_access_mode"]' ).value = data.dataset.mode || 'inherit';
-				row.querySelectorAll( 'input[name="wp2_access_levels[]"]' ).forEach( function ( box ) {
+				row.querySelector( 'select[name="redeemid_access_mode"]' ).value = data.dataset.mode || 'inherit';
+				row.querySelectorAll( 'input[name="redeemid_access_levels[]"]' ).forEach( function ( box ) {
 					box.checked = levels.indexOf( box.value ) !== -1;
 				} );
 			};

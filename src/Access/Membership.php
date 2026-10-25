@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Entitlement\Member;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Entitlement\Member;
 
 /**
  * Which paid levels a member holds, for the account card, the locked panel

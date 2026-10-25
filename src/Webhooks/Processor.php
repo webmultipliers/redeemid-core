@@ -1,14 +1,14 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
-use WP2_Shopify\Auth\ShadowUsers;
-use WP2_Shopify\Auth\TokenVault;
-use WP2_Shopify\Shopify\Admin;
-use WP2_Shopify\Support\CustomerId;
-use WP2_Shopify\Support\Logger;
-use WP2_Shopify\Sync\Mirror;
-use WP2_Shopify\Sync\Reconciler;
+use RedeemID\Auth\ShadowUsers;
+use RedeemID\Auth\TokenVault;
+use RedeemID\Shopify\Admin;
+use RedeemID\Support\CustomerId;
+use RedeemID\Support\Logger;
+use RedeemID\Sync\Mirror;
+use RedeemID\Sync\Reconciler;
 
 /**
  * Applies a queued inbox row. Handlers are idempotent; transient failures are
@@ -65,7 +65,7 @@ final class Processor {
 				return self::compliance( $topic, $user );
 
 			case Topics::UNINSTALL:
-				update_option( 'wp2_shopify_app_uninstalled', time(), false );
+				update_option( 'redeemid_app_uninstalled', time(), false );
 				return InboxStore::PROCESSED;
 
 			case Topics::MERGE:
@@ -169,7 +169,7 @@ final class Processor {
 		/**
 		 * Which user receives content authored by a deleted shadow user. Return null to delete the content.
 		 */
-		$target = apply_filters( 'wp2_shopify_reassign_user', $admins ? (int) $admins[0] : null );
+		$target = apply_filters( 'redeemid_reassign_user', $admins ? (int) $admins[0] : null );
 
 		return null === $target ? null : (int) $target;
 	}

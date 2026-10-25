@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Access;
+namespace RedeemID\Access;
 
-use WP2_Shopify\Entitlement\Decision;
-use WP2_Shopify\Entitlement\Evaluator;
-use WP2_Shopify\Entitlement\Member;
+use RedeemID\Entitlement\Decision;
+use RedeemID\Entitlement\Evaluator;
+use RedeemID\Entitlement\Member;
 
 /**
  * Does this visitor pass an effective rule? Each level's groups go through

@@ -1,9 +1,9 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
-use WP2_Shopify\Support\CustomerId;
-use WP2_Shopify\Sync\Mirror;
+use RedeemID\Support\CustomerId;
+use RedeemID\Sync\Mirror;
 
 /**
  * Shadow WordPress users for Shopify customers: keyed by the
@@ -13,7 +13,7 @@ use WP2_Shopify\Sync\Mirror;
  */
 final class ShadowUsers {
 	public const ROLE          = 'shopify_customer';
-	public const EMAIL_DOMAIN  = 'shadow.wp2-shopify.invalid';
+	public const EMAIL_DOMAIN  = 'shadow.redeemid.invalid';
 	private const LEGACY_EMAIL = '@shadow.shopify-identity.local';
 
 	public static function register(): void {
@@ -27,7 +27,7 @@ final class ShadowUsers {
 
 	public static function ensure_role(): void {
 		if ( ! get_role( self::ROLE ) ) {
-			add_role( self::ROLE, __( 'Shopify Customer', 'wp2-shopify' ), [ 'read' => true ] );
+			add_role( self::ROLE, __( 'Shopify Customer', 'redeemid' ), [ 'read' => true ] );
 		}
 	}
 
@@ -48,7 +48,7 @@ final class ShadowUsers {
 				'user_pass'    => wp_generate_password( 64, true, true ),
 				'first_name'   => $first,
 				'last_name'    => $last,
-				'display_name' => trim( $first . ' ' . $last ) ?: __( 'Shopify customer', 'wp2-shopify' ),
+				'display_name' => trim( $first . ' ' . $last ) ?: __( 'Shopify customer', 'redeemid' ),
 				'role'         => self::ROLE,
 			]
 		);
@@ -67,7 +67,7 @@ final class ShadowUsers {
 
 	public static function block_password_reset( $allow, $user_id ) {
 		return self::is_shadow( (int) $user_id )
-			? new \WP_Error( 'wp2_shopify_no_reset', __( 'This account signs in with Shopify. Manage your sign-in from your Shopify account.', 'wp2-shopify' ) )
+			? new \WP_Error( 'redeemid_no_reset', __( 'This account signs in with Shopify. Manage your sign-in from your Shopify account.', 'redeemid' ) )
 			: $allow;
 	}
 
@@ -79,7 +79,7 @@ final class ShadowUsers {
 			return;
 		}
 
-		wp_safe_redirect( (string) apply_filters( 'wp2_shopify_customer_admin_redirect', home_url( '/' ) ) );
+		wp_safe_redirect( (string) apply_filters( 'redeemid_customer_admin_redirect', home_url( '/' ) ) );
 		exit;
 	}
 

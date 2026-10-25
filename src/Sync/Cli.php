@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Sync;
+namespace RedeemID\Sync;
 
 /**
  * Resyncs from the command line. Like the admin, nothing here runs by itself.
  *
- *     wp wp2-shopify resync user <id>...
- *     wp wp2-shopify resync all [--foreground]
- *     wp wp2-shopify resync status|pause|resume|cancel
+ *     wp redeemid resync user <id>...
+ *     wp redeemid resync all [--foreground]
+ *     wp redeemid resync status|pause|resume|cancel
  */
 final class Cli {
 	public static function register(): void {
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( \WP_CLI::class ) ) {
-			\WP_CLI::add_command( 'wp2-shopify resync', self::class );
+			\WP_CLI::add_command( 'redeemid resync', self::class );
 		}
 	}
 
@@ -65,7 +65,7 @@ final class Cli {
 		}
 
 		if ( empty( $assoc['foreground'] ) ) {
-			\WP_CLI::success( 'Resync started in the background. Follow it with: wp wp2-shopify resync status' );
+			\WP_CLI::success( 'Resync started in the background. Follow it with: wp redeemid resync status' );
 			return;
 		}
 

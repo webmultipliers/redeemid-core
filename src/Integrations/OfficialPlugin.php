@@ -1,16 +1,16 @@
 <?php
 
-namespace WP2_Shopify\Integrations;
+namespace RedeemID\Integrations;
 
-use WP2_Shopify\Config;
+use RedeemID\Config;
 
 /**
  * Shopify's own WordPress plugin ("Sell on WordPress" channel, 1.x).
  *
  * It is an anonymous storefront: product, collection and cart-toggle blocks,
  * /products, /collections and /cart routes, and Storefront Web Components.
- * WP2 runs beside it and never reads its credentials. Only its store domain is
- * compared with WP2_SHOPIFY_STORE_DOMAIN, because both plugins must point at
+ * RedeemID runs beside it and never reads its credentials. Only its store domain is
+ * compared with REDEEMID_STORE_DOMAIN, because both plugins must point at
  * the same store for a member's purchase to unlock anything.
  *
  * Verified against 1.0.0 (2026-03-20): it defines SHOPIFY_WP_VERSION and
@@ -31,7 +31,7 @@ final class OfficialPlugin {
 	 *
 	 * @param string $version      The official plugin's version, '' when it is not loaded.
 	 * @param string $their_domain Its connected store domain, '' when not connected.
-	 * @param string $our_domain   WP2's normalised store domain.
+	 * @param string $our_domain   RedeemID's normalised store domain.
 	 */
 	public static function classify( string $version, string $their_domain, string $our_domain ): string {
 		if ( '' === $version ) {
@@ -44,7 +44,7 @@ final class OfficialPlugin {
 			return self::UNCONNECTED;
 		}
 
-		// WP2 not configured yet: nothing to disagree with.
+		// RedeemID not configured yet: nothing to disagree with.
 		if ( '' === $our_domain || $their_domain === self::normalise( $our_domain ) ) {
 			return self::SAME_STORE;
 		}
@@ -74,7 +74,7 @@ final class OfficialPlugin {
 			$domain = (string) get_option( 'shopify_store_url', '' );
 		}
 
-		$state = (string) apply_filters( 'wp2_shopify_official_state', self::classify( $version, $domain, Config::store_domain() ), $version, $domain );
+		$state = (string) apply_filters( 'redeemid_official_state', self::classify( $version, $domain, Config::store_domain() ), $version, $domain );
 
 		self::$info = [
 			'state'          => in_array( $state, [ self::ABSENT, self::UNCONNECTED, self::SAME_STORE, self::OTHER_STORE ], true ) ? $state : self::ABSENT,
@@ -92,7 +92,7 @@ final class OfficialPlugin {
 	}
 
 	/**
-	 * Active and connected to the store WP2 is configured for.
+	 * Active and connected to the store RedeemID is configured for.
 	 */
 	public static function serves_storefront(): bool {
 		return self::SAME_STORE === self::state();
@@ -117,10 +117,10 @@ final class OfficialPlugin {
 		$info = self::info();
 
 		return match ( $info['state'] ) {
-			self::ABSENT      => __( 'Not installed. WP2 runs on its own; add it for a full storefront.', 'wp2-shopify' ),
-			self::UNCONNECTED => sprintf( /* translators: %s: version */ __( 'Version %s is active but not connected to a store yet.', 'wp2-shopify' ), $info['version'] ),
-			self::SAME_STORE  => sprintf( /* translators: 1: version 2: store domain */ __( 'Version %1$s, connected to %2$s, the same store as WP2.', 'wp2-shopify' ), $info['version'], $info['store_domain'] ?: Config::store_domain() ),
-			default           => sprintf( /* translators: 1: version 2: their store 3: our store */ __( 'Version %1$s is connected to %2$s, but WP2 is set up for %3$s. Purchases there will not unlock content here.', 'wp2-shopify' ), $info['version'], $info['store_domain'], Config::store_domain() ),
+			self::ABSENT      => __( 'Not installed. RedeemID runs on its own; add it for a full storefront.', 'redeemid' ),
+			self::UNCONNECTED => sprintf( /* translators: %s: version */ __( 'Version %s is active but not connected to a store yet.', 'redeemid' ), $info['version'] ),
+			self::SAME_STORE  => sprintf( /* translators: 1: version 2: store domain */ __( 'Version %1$s, connected to %2$s, the same store as RedeemID.', 'redeemid' ), $info['version'], $info['store_domain'] ?: Config::store_domain() ),
+			default           => sprintf( /* translators: 1: version 2: their store 3: our store */ __( 'Version %1$s is connected to %2$s, but RedeemID is set up for %3$s. Purchases there will not unlock content here.', 'redeemid' ), $info['version'], $info['store_domain'], Config::store_domain() ),
 		};
 	}
 

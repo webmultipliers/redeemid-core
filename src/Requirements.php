@@ -4,7 +4,7 @@
  * explain itself, on an unsupported host instead of fataling.
  */
 
-namespace WP2_Shopify;
+namespace RedeemID;
 
 class Requirements {
 	const MIN_PHP = '8.2';
@@ -43,11 +43,11 @@ class Requirements {
 	 * @param string[] $problems
 	 */
 	public static function report( array $problems ) {
-		$message = '<strong>WP2 Shopify is not running.</strong> ' . implode( ' ', array_map( 'esc_html', $problems ) );
+		$message = '<strong>RedeemID is not running.</strong> ' . implode( ' ', array_map( 'esc_html', $problems ) );
 
 		if ( defined( 'WP_SANDBOX_SCRAPING' ) || ( isset( $_GET['action'] ) && 'activate' === $_GET['action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			deactivate_plugins( plugin_basename( WP2_SHOPIFY_FILE ) );
-			wp_die( wp_kses_post( $message ), 'WP2 Shopify', array( 'back_link' => true ) );
+			deactivate_plugins( plugin_basename( REDEEMID_FILE ) );
+			wp_die( wp_kses_post( $message ), 'RedeemID', array( 'back_link' => true ) );
 		}
 
 		add_action(

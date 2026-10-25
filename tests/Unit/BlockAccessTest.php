@@ -1,18 +1,18 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Badges;
-use WP2_Shopify\Access\BlockAccess;
-use WP2_Shopify\Access\Cli;
-use WP2_Shopify\Access\Context;
-use WP2_Shopify\Access\EffectiveRule;
-use WP2_Shopify\Access\Explain;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Access\Teaser;
-use WP2_Shopify\Access\TermRule;
+use RedeemID\Access\Badges;
+use RedeemID\Access\BlockAccess;
+use RedeemID\Access\Cli;
+use RedeemID\Access\Context;
+use RedeemID\Access\EffectiveRule;
+use RedeemID\Access\Explain;
+use RedeemID\Access\Levels;
+use RedeemID\Access\Teaser;
+use RedeemID\Access\TermRule;
 
 final class BlockAccessTest extends TestCase {
 	private const NOW = 1800000000;
@@ -39,7 +39,7 @@ final class BlockAccessTest extends TestCase {
 
 	public function test_the_break_and_gate_areas_ignore_a_setting(): void {
 		$this->assertSame( BlockAccess::EVERYONE, BlockAccess::setting( self::block( Teaser::BREAK_BLOCK, [ 'show' => 'readers' ] ) )['show'] );
-		$this->assertSame( BlockAccess::EVERYONE, BlockAccess::setting( self::block( 'wp2-shopify/membership-gate-content', [ 'show' => 'locked' ] ) )['show'] );
+		$this->assertSame( BlockAccess::EVERYONE, BlockAccess::setting( self::block( 'redeemid/membership-gate-content', [ 'show' => 'locked' ] ) )['show'] );
 	}
 
 	/**
@@ -107,7 +107,7 @@ final class BlockAccessTest extends TestCase {
 	public function test_post_classes(): void {
 		$this->assertSame( [], Badges::classes( new EffectiveRule( [], 'Default' ), false ) );
 		$this->assertSame(
-			[ 'wp2-gated', 'is-locked', 'requires-gold', 'requires-silver' ],
+			[ 'redeemid-gated', 'is-locked', 'requires-gold', 'requires-silver' ],
 			Badges::classes( new EffectiveRule( [ [ 'gold' ], [ 'silver', 'gold' ] ], 'Category: X' ), true )
 		);
 		$this->assertContains( 'is-unlocked', Badges::classes( new EffectiveRule( [ [ 'gold' ] ], 'Item' ), false ) );

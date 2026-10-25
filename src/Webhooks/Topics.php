@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Webhooks;
+namespace RedeemID\Webhooks;
 
 /**
  * Webhook topics verified against Shopify API 2026-10 on 2026-10-23

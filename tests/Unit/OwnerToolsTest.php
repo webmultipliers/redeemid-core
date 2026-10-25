@@ -1,13 +1,13 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Access\Levels;
-use WP2_Shopify\Admin\Activation;
-use WP2_Shopify\Admin\Reports;
-use WP2_Shopify\Admin\Setup;
-use WP2_Shopify\Support\Stats;
+use RedeemID\Access\Levels;
+use RedeemID\Admin\Activation;
+use RedeemID\Admin\Reports;
+use RedeemID\Admin\Setup;
+use RedeemID\Support\Stats;
 
 final class OwnerToolsTest extends TestCase {
 	private function levels(): Levels {

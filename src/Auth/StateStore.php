@@ -1,6 +1,6 @@
 <?php
 
-namespace WP2_Shopify\Auth;
+namespace RedeemID\Auth;
 
 /**
  * Server-side storage for an in-flight sign-in, keyed by the OAuth state.
@@ -11,7 +11,7 @@ namespace WP2_Shopify\Auth;
  * callback to the browser that started the flow.
  */
 final class StateStore {
-	public const COOKIE = 'wp2_shopify_oauth_state';
+	public const COOKIE = 'redeemid_oauth_state';
 	private const TTL   = 10 * MINUTE_IN_SECONDS;
 
 	public static function create( array $data ): string {
@@ -26,7 +26,7 @@ final class StateStore {
 			[
 				'expires'  => time() + self::TTL,
 				'path'     => COOKIEPATH ?: '/',
-				'domain'   => \WP2_Shopify\Config::cookie_domain(),
+				'domain'   => \RedeemID\Config::cookie_domain(),
 				'secure'   => is_ssl(),
 				'httponly' => true,
 				// Lax, not Strict: the callback is a cross-site top-level navigation from Shopify.
@@ -66,7 +66,7 @@ final class StateStore {
 			[
 				'expires'  => time() - DAY_IN_SECONDS,
 				'path'     => COOKIEPATH ?: '/',
-				'domain'   => \WP2_Shopify\Config::cookie_domain(),
+				'domain'   => \RedeemID\Config::cookie_domain(),
 				'secure'   => is_ssl(),
 				'httponly' => true,
 				'samesite' => 'Lax',
@@ -78,6 +78,6 @@ final class StateStore {
 	// phpcs:enable
 
 	private static function key( string $state ): string {
-		return 'wp2s_oauth_' . substr( hash( 'sha256', $state ), 0, 40 );
+		return 'redeemid_oauth_' . substr( hash( 'sha256', $state ), 0, 40 );
 	}
 }

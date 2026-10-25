@@ -1,10 +1,10 @@
 <?php
 
-namespace WP2_Shopify\Tests\Unit;
+namespace RedeemID\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use WP2_Shopify\Integrations\OfficialPlugin;
+use RedeemID\Integrations\OfficialPlugin;
 
 final class OfficialPluginTest extends TestCase {
 	public static function states(): array {
@@ -14,7 +14,7 @@ final class OfficialPluginTest extends TestCase {
 			'same store'                 => [ '1.0.0', 'example-store.myshopify.com', 'example-store.myshopify.com', OfficialPlugin::SAME_STORE ],
 			'same store, other spelling' => [ '1.0.0', 'https://EXAMPLE-STORE.myshopify.com/', 'example-store.myshopify.com', OfficialPlugin::SAME_STORE ],
 			'other store'                => [ '1.0.0', 'another-store.myshopify.com', 'example-store.myshopify.com', OfficialPlugin::OTHER_STORE ],
-			'WP2 not configured'         => [ '1.0.0', 'example-store.myshopify.com', '', OfficialPlugin::SAME_STORE ],
+			'RedeemID not configured'         => [ '1.0.0', 'example-store.myshopify.com', '', OfficialPlugin::SAME_STORE ],
 		];
 	}
 

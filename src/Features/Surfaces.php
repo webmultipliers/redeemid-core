@@ -1,28 +1,28 @@
 <?php
 
-namespace WP2_Shopify\Features;
+namespace RedeemID\Features;
 
-use WP2_Shopify\Rest\Routes;
+use RedeemID\Rest\Routes;
 
 /**
  * Where features reach templates and front ends, all decided on the server
  * by Registry::has() for the current visitor in the same request:
  *
- * - (a) PHP: wp2_shopify_has_feature() / wp2_shopify_granted_features();
+ * - (a) PHP: redeemid_has_feature() / redeemid_granted_features();
  * - (b) block visibility: Access\BlockAccess (a feature setting on every block);
- * - (c) body signal: a wp2-feature-<slug> class for granted features that
+ * - (c) body signal: a redeemid-feature-<slug> class for granted features that
  *   declare "body". It names the feature, never the tag that granted it;
- * - (d) REST: GET wp2-shopify/v1/features and the wp2_features field on
+ * - (d) REST: GET redeemid/v1/features and the redeemid_features field on
  *   /wp/v2/users/me, current user only, features that declare "rest";
- * - (e) shortcode: [wp2_feature slug="..."]...[/wp2_feature], with not="1"
+ * - (e) shortcode: [redeemid_feature slug="..."]...[/redeemid_feature], with not="1"
  *   for "only when not held";
- * - JS signal: window.wp2ShopifyFeatures, slug => boolean, only for
+ * - JS signal: window.redeemidFeatures, slug => boolean, only for
  *   features registered with js => true. Presentation only: it can be
  *   flipped in dev tools, so it never unlocks anything.
  */
 final class Surfaces {
-	public const SHORTCODE = 'wp2_feature';
-	public const FIELD     = 'wp2_features';
+	public const SHORTCODE = 'redeemid_feature';
+	public const FIELD     = 'redeemid_features';
 
 	public static function register(): void {
 		add_action( 'template_redirect', [ self::class, 'prepare' ], 2 );
@@ -64,7 +64,7 @@ final class Surfaces {
 
 		foreach ( $features as $slug => $feature ) {
 			if ( $feature->uses( Feature::BODY ) && in_array( $slug, $granted, true ) ) {
-				$classes[] = 'wp2-feature-' . Feature::css( $slug );
+				$classes[] = 'redeemid-feature-' . Feature::css( $slug );
 			}
 		}
 
@@ -104,7 +104,7 @@ final class Surfaces {
 		$values = self::js_values( Registry::features(), [ Registry::class, 'has' ] );
 
 		if ( $values ) {
-			wp_print_inline_script_tag( 'window.wp2ShopifyFeatures = Object.freeze(' . wp_json_encode( (object) $values ) . ');' );
+			wp_print_inline_script_tag( 'window.redeemidFeatures = Object.freeze(' . wp_json_encode( (object) $values ) . ');' );
 		}
 	}
 
@@ -141,7 +141,7 @@ final class Surfaces {
 				// Only ever the current user's own set; null on any other user.
 				'get_callback' => static fn( $user ) => (int) ( $user['id'] ?? 0 ) === get_current_user_id() && get_current_user_id() > 0 ? self::rest_slugs() : null,
 				'schema'       => [
-					'description' => __( 'Feature slugs the current user holds. Present on your own user only.', 'wp2-shopify' ),
+					'description' => __( 'Feature slugs the current user holds. Present on your own user only.', 'redeemid' ),
 					'type'        => [ 'array', 'null' ],
 					'items'       => [ 'type' => 'string' ],
 					'context'     => [ 'view', 'edit' ],
@@ -152,8 +152,8 @@ final class Surfaces {
 	}
 
 	/**
-	 * [wp2_feature slug="early-access"]Shown to holders[/wp2_feature]
-	 * [wp2_feature slug="early-access" not="1"]Shown to everyone else[/wp2_feature]
+	 * [redeemid_feature slug="early-access"]Shown to holders[/redeemid_feature]
+	 * [redeemid_feature slug="early-access" not="1"]Shown to everyone else[/redeemid_feature]
 	 *
 	 * Takes a registered slug only, never a condition.
 	 */
