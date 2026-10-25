@@ -32,9 +32,6 @@ jobs:
   standards:
     name: Coding standards
     runs-on: ubuntu-latest
-    # Six findings on development wait on owner decisions; until they are
-    # settled this job annotates pull requests without blocking a merge.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -43,5 +40,14 @@ jobs:
           coverage: none
           tools: cs2pr
       - run: composer install --prefer-dist --no-interaction --no-progress
+      # Six findings on development wait on owner decisions. Until they are
+      # settled every finding is annotated, but only a new one fails the job.
       - name: PHPCS
-        run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
+        env:
+          BASELINE: 6
+        run: |
+          vendor/bin/phpcs -q --report=checkstyle > "$RUNNER_TEMP/phpcs-report.xml" || true
+          cs2pr --graceful-warnings "$RUNNER_TEMP/phpcs-report.xml" || true
+          found=$(grep -c '<error ' "$RUNNER_TEMP/phpcs-report.xml" || true)
+          echo "PHPCS findings: $found (baseline $BASELINE)"
+          test "$found" -le "$BASELINE"
