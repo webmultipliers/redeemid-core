@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RedeemID 2.0.0-alpha.1\n"
-"Report-Msgid-Bugs-To: https://github.com/webmultipliers/redeemid/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/webmultipliers/redeemid-core/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: redeemid.php
-msgid "https://github.com/webmultipliers/redeemid"
+msgid "https://github.com/webmultipliers/redeemid-core"
 msgstr ""
 
 #. Description of the plugin
