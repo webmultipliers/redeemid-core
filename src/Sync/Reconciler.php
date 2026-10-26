@@ -13,9 +13,6 @@ use RedeemID\Support\Logger;
  * (BulkResync) when they need everyone re-read.
  */
 final class Reconciler {
-	/** Retired scheduled sweep: its cron hook and options are cleared on upgrade. */
-	public const RETIRED_HOOK    = 'redeemid_reconcile';
-	public const RETIRED_OPTIONS = [ 'redeemid_reconcile_stats', 'redeemid_reconcile_cursor' ];
 	private const BATCH          = 50;
 
 	/**

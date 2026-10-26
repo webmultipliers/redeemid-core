@@ -67,15 +67,6 @@ Changing the WordPress salts or `REDEEMID_ENCRYPTION_KEY` makes secrets saved in
 | `REDEEMID_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same Headless channel. When set it replaces the public token for every Storefront call, and buy-now and cart calls send the buyer's IP (`Shopify-Storefront-Buyer-IP`), as Shopify asks of server-side callers. Without it every visitor looks like your server's one IP, so Shopify may throttle checkout creation. |
 | `REDEEMID_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
 
-`WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, with an admin notice. Rename it to `REDEEMID_CLIENT_SECRET`.
-
-These constants are no longer read. If one is still defined, every admin screen shows a notice and Debug says what replaced it:
-
-- `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
-- `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
-- `WP2_SHOPIFY_API_VERSION`: the API version is pinned to `2026-10`.
-- `WP2_SHOPIFY_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
-
 ## Admin screens
 
 Everything lives under the top-level **RedeemID** menu:
@@ -398,30 +389,6 @@ Rules that follow from it:
   - `redeemid_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `redeemid_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `redeemid_checkout_banner` (`bool`); `redeemid_offer_existing_account` (`bool`)
   - `redeemid_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
-
-## Upgrading from WP2 Shopify
-
-RedeemID was called WP2 Shopify. The plugin's main file is now `redeemid.php`, so WordPress deactivates the old entry once the new code is in place: activate RedeemID again. On activation (or the next admin page load) it moves everything stored under the old names, once:
-
-- Settings, the webhook and event tables, linked customers' data, access rules and levels on items and terms, the bypass capability and signed-in sessions.
-- Blocks saved in posts, templates, patterns and block widgets (`wp2-shopify/…` becomes `redeemid/…`) and the Log in / Log out menu items.
-- Secrets saved in Settings are sealed again under the new key label. Older sealed values still open.
-
-What you do by hand:
-
-- **Register the webhooks again** from RedeemID → Webhooks. Their address is now `/wp-json/redeemid/v1/webhooks/events`, and Shopify keeps calling the old one until then. An admin notice reminds you.
-- **Rename `WP2_SHOPIFY_*` constants** in `wp-config.php` to `REDEEMID_*`. The old names keep working, with an admin notice, until you do.
-- Code that used the old hooks, REST routes, CSS classes or `WP2_Shopify` classes must use the new names (`redeemid_*`, `/redeemid/v1/`, `redeemid-*`, `RedeemID\`). There are no aliases. The old shortcodes (`[wp2_shopify_login]`, `[wp2_feature]`) still render, with a deprecation notice.
-
-## Upgrading from 1.x
-
-The upgrade runs once on activation or load:
-
-- Shadow users and their customer IDs are kept, and numeric IDs are backfilled.
-- Stored refresh tokens were plaintext in 1.x, so they are discarded. **Every linked customer signs in once more.**
-- Options that held full webhook payloads, and the old encryption key, are removed.
-- **Re-register webhooks** to `/wp-json/redeemid/v1/webhooks/events`. The old path is gone.
-- The `[wp2_shopify_identity]` shortcode still works, but is deprecated. Use the block.
 
 ## Uninstall
 

@@ -6,8 +6,7 @@ use RedeemID\Config;
 use RedeemID\Support\Logger;
 
 /**
- * POST /wp-json/redeemid/v1/webhooks/events. Replaces the POC's
- * misspelled /iwebhooks/events; the old path is not kept.
+ * POST /wp-json/redeemid/v1/webhooks/events.
  */
 final class Endpoint {
 	public const HOOK = 'redeemid_process_webhook';

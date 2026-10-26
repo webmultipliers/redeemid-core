@@ -72,7 +72,6 @@ final class Plugin {
 		BuyNow::register();
 		CartBridge::register();
 		Privacy::register();
-		Compat::register();
 		EventLog::register();
 		Stats::register();
 
@@ -81,11 +80,9 @@ final class Plugin {
 		add_action( 'init', static fn() => load_plugin_textdomain( 'redeemid', false, dirname( plugin_basename( REDEEMID_FILE ) ) . '/languages' ) );
 		add_action( 'rest_api_init', [ Routes::class, 'register' ] );
 		add_action( Endpoint::HOOK, [ Processor::class, 'process' ] );
-		add_action( 'admin_init', [ Lifecycle::class, 'retire_reconciliation' ] );
 		add_action( 'redeemid_prune', [ WpdbInboxStore::class, 'prune' ] );
 		add_action( 'redeemid_prune', [ EventLog::class, 'prune' ] );
 		add_action( 'admin_init', [ EventLog::class, 'maybe_install' ] );
-		add_action( 'admin_init', [ Migration::class, 'maybe_run' ] );
 
 		if ( is_admin() ) {
 			Menu::register();

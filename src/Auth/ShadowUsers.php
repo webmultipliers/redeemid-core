@@ -12,9 +12,8 @@ use RedeemID\Sync\Mirror;
  * sign-in; linking an existing account is the explicit flow in Linking.
  */
 final class ShadowUsers {
-	public const ROLE          = 'shopify_customer';
-	public const EMAIL_DOMAIN  = 'shadow.redeemid.invalid';
-	private const LEGACY_EMAIL = '@shadow.shopify-identity.local';
+	public const ROLE         = 'shopify_customer';
+	public const EMAIL_DOMAIN = 'shadow.redeemid.invalid';
 
 	public static function register(): void {
 		add_filter( 'allow_password_reset', [ self::class, 'block_password_reset' ], 10, 2 );
@@ -122,7 +121,7 @@ final class ShadowUsers {
 		foreach ( $to as $address ) {
 			$address = trim( (string) $address );
 
-			if ( ! str_ends_with( $address, '@' . self::EMAIL_DOMAIN ) && ! str_ends_with( $address, self::LEGACY_EMAIL ) ) {
+			if ( ! str_ends_with( $address, '@' . self::EMAIL_DOMAIN ) ) {
 				$out[] = $address;
 				continue;
 			}

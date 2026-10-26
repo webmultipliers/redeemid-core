@@ -1911,14 +1911,6 @@ msgstr ""
 msgid "What it is for"
 msgstr ""
 
-#: src/Admin/Debug.php:120
-msgid "Defined but ignored"
-msgstr ""
-
-#: src/Admin/Debug.php:120
-msgid "Remove these from wp-config.php."
-msgstr ""
-
 #: src/Admin/Debug.php:130
 msgid "Platform"
 msgstr ""
@@ -2310,10 +2302,6 @@ msgid "Shopify"
 msgstr ""
 
 #: src/Admin/Menu.php:54
-msgid "Shopify overview"
-msgstr ""
-
-#: src/Admin/Menu.php:54
 #: src/Admin/Overview.php:87
 msgid "Overview"
 msgstr ""
@@ -2345,28 +2333,8 @@ msgstr ""
 msgid "Reports"
 msgstr ""
 
-#: src/Admin/Menu.php:61
-msgid "Shopify access"
-msgstr ""
-
-#: src/Admin/Menu.php:119
-msgid "RedeemID: REDEEMID_PRIVATE_ACCESS_TOKEN is deprecated. Rename it to REDEEMID_CLIENT_SECRET in wp-config.php."
-msgstr ""
-
-#. translators: %s: constant names
-#: src/Admin/Menu.php:127
-#, php-format
-msgid "RedeemID no longer reads %s from wp-config.php."
-msgstr ""
-
 #: src/Admin/Menu.php:129
 msgid "See Debug."
-msgstr ""
-
-#. translators: %d: number of linked users
-#: src/Admin/Menu.php:142
-#, php-format
-msgid "RedeemID 2.0 upgrade: stored Shopify sessions were discarded for security, so linked customers sign in once more. Re-register your Shopify webhooks from RedeemID → Webhooks (the old /iwebhooks path is gone). %d linked users were updated."
 msgstr ""
 
 #: src/Admin/Menu.php:147
@@ -2811,10 +2779,6 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:236
 msgid "paste the value without spaces or line breaks."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:251
-msgid "This plugin no longer adds or removes tags when an order is paid, cancelled or refunded. Tags it already added stay in Shopify. Set up the same rules in Shopify Flow (see docs/shopify-flow.md) before new orders arrive. Your old product map, for reference:"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:257
@@ -3496,10 +3460,6 @@ msgstr ""
 
 #: src/Support/Health.php:74
 msgid "not set (optional)"
-msgstr ""
-
-#: src/Support/Health.php:79
-msgid "defined but ignored: remove it from wp-config.php"
 msgstr ""
 
 #: src/Support/Health.php:89

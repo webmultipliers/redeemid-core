@@ -7,7 +7,6 @@ use RedeemID\Auth\Flow;
 use RedeemID\Auth\ShadowUsers;
 use RedeemID\Support\EventLog;
 use RedeemID\Sync\BulkResync;
-use RedeemID\Sync\Reconciler;
 use RedeemID\Webhooks\Monitor;
 use RedeemID\Webhooks\WpdbInboxStore;
 
@@ -24,26 +23,9 @@ final class Lifecycle {
 		}
 
 		Monitor::ensure_scheduled();
-
-		Migration::maybe_run();
-	}
-
-	/**
-	 * Earlier versions re-read every linked customer twice a day. Syncs are now
-	 * per customer and on demand, so drop that event and its bookkeeping.
-	 */
-	public static function retire_reconciliation(): void {
-		if ( wp_next_scheduled( Reconciler::RETIRED_HOOK ) ) {
-			wp_clear_scheduled_hook( Reconciler::RETIRED_HOOK );
-
-			foreach ( Reconciler::RETIRED_OPTIONS as $option ) {
-				delete_option( $option );
-			}
-		}
 	}
 
 	public static function deactivate(): void {
-		wp_clear_scheduled_hook( Reconciler::RETIRED_HOOK );
 		wp_clear_scheduled_hook( 'redeemid_prune' );
 		Monitor::unschedule();
 		BulkResync::unschedule();

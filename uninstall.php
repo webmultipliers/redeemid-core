@@ -18,9 +18,8 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 global $wpdb;
 
 $redeemid_options = [
-	'redeemid_settings', 'redeemid_config', 'redeemid_db_version', 'redeemid_migrated', 'redeemid_upgrade_notice',
-	'redeemid_discovery_last_good', 'redeemid_discovery_fetched_at', 'redeemid_reconcile_stats',
-	'redeemid_reconcile_cursor', 'redeemid_block_registration', 'redeemid_webhook_rejected',
+	'redeemid_settings', 'redeemid_config', 'redeemid_db_version',
+	'redeemid_discovery_last_good', 'redeemid_discovery_fetched_at', 'redeemid_block_registration', 'redeemid_webhook_rejected',
 	'redeemid_app_uninstalled', 'redeemid_admin_token_error', 'redeemid_admin_token_scopes', 'redeemid_webhook_registration',
 	'redeemid_events_db_version', 'redeemid_cart_bridge', 'redeemid_access_levels',
 	'redeemid_access_rules', 'redeemid_access_rules_version',
@@ -38,7 +37,6 @@ $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}redeemid_events" ); // phpcs:
 // The per-item rule cache and access index are derived data. The access rules editors set on items and terms stay.
 $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ( '_redeemid_access_effective', '_redeemid_access_search', '_redeemid_access_locked', '_redeemid_access_next' )" );
 
-wp_clear_scheduled_hook( 'redeemid_reconcile' );
 wp_clear_scheduled_hook( 'redeemid_prune' );
 wp_clear_scheduled_hook( 'redeemid_monitor' );
 wp_clear_scheduled_hook( 'redeemid_bulk_resync' );
@@ -47,8 +45,8 @@ wp_clear_scheduled_hook( 'redeemid_access_timed' );
 // Queued webhook processing carries a row ID per event, so clear every instance.
 wp_unschedule_hook( 'redeemid_process_webhook' );
 
-// Collect a stable list of user IDs first, then act on it. (The POC paged
-// through users while deleting them, which skipped every other page.)
+// Collect a stable list of user IDs first, then act on it: paging through
+// users while deleting them would skip every other page.
 $redeemid_session_users = array_map( 'intval', $wpdb->get_col( "SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key = 'session_tokens' AND meta_value LIKE '%redeemid%'" ) );
 
 foreach ( $redeemid_session_users as $redeemid_user_id ) {
@@ -62,7 +60,7 @@ foreach ( $redeemid_session_users as $redeemid_user_id ) {
 	}
 }
 
-$redeemid_delete_data = defined( 'REDEEMID_UNINSTALL_DELETE_DATA' ) ? REDEEMID_UNINSTALL_DELETE_DATA : ( defined( 'WP2_SHOPIFY_UNINSTALL_DELETE_DATA' ) && WP2_SHOPIFY_UNINSTALL_DELETE_DATA );
+$redeemid_delete_data = defined( 'REDEEMID_UNINSTALL_DELETE_DATA' ) && REDEEMID_UNINSTALL_DELETE_DATA;
 
 if ( true !== $redeemid_delete_data ) {
 	return;
@@ -78,6 +76,6 @@ foreach ( $redeemid_shadows as $redeemid_user_id ) {
 	wp_delete_user( $redeemid_user_id, $redeemid_reassign );
 }
 
-$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE '\\_redeemid\\_%' OR meta_key = '_redeemid_poc_last_sync'" );
+$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE '\\_redeemid\\_%'" );
 
 remove_role( 'shopify_customer' );

@@ -50,7 +50,3 @@ In Shopify, Settings → Checkout → Order status page → Additional scripts, 
 - RedeemID → Customers in WordPress shows each linked customer's synced tags and the webhook that last changed them.
 - RedeemID → Access → Test shows what a given tag set or user gets on any item.
 - A signed-in customer who has just paid can use the **Refresh Membership** block instead of waiting for the webhook.
-
-## Upgrading from a version with "Membership products"
-
-Earlier versions added and removed tags themselves from a product map in RedeemID → Settings. That is gone. Tags it already added stay on the customers in Shopify. RedeemID → Settings shows the old map until you next save the membership settings, so you can rebuild it as workflows before new orders arrive. Existing `orders/paid`, `orders/cancelled` and `refunds/create` webhook subscriptions are acknowledged and ignored, and you can delete them from the app. The `read_orders` scope is no longer needed.

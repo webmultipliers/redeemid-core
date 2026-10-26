@@ -8,8 +8,8 @@ namespace RedeemID\Webhooks;
  *
  * Note: tags left the customers/* payloads in 2025-01; tag changes arrive only
  * on customer.tags_added / customer.tags_removed, so those two must stay
- * subscribed. The POC's customers/add_tags and customers/remove_tags
- * do not exist and are not mapped.
+ * subscribed. There are no customers/add_tags or customers/remove_tags
+ * topics.
  */
 final class Topics {
 	public const PROFILE    = 'profile';
@@ -44,11 +44,6 @@ final class Topics {
 		'customers/redact'                          => self::COMPLIANCE,
 		'shop/redact'                               => self::COMPLIANCE,
 		'app/uninstalled'                           => self::UNINSTALL,
-		// Subscribed by earlier versions for purchase-to-tag, now done in Shopify Flow
-		// or another app. Acknowledged so old subscriptions don't dead-letter.
-		'orders/paid'                               => self::IGNORED,
-		'orders/cancelled'                          => self::IGNORED,
-		'refunds/create'                            => self::IGNORED,
 	];
 
 	public static function kind( string $topic ): ?string {

@@ -3,7 +3,6 @@
 namespace RedeemID\Admin;
 
 use RedeemID\Config;
-use RedeemID\Legacy;
 use RedeemID\Settings;
 
 /**
@@ -33,8 +32,6 @@ final class Menu {
 
 		add_action( 'admin_menu', [ self::class, 'menu' ] );
 		add_action( 'admin_init', [ self::class, 'settings' ] );
-		add_action( 'admin_init', [ self::class, 'redirect_old_page' ] );
-		add_action( 'admin_notices', [ self::class, 'notices' ] );
 		add_action( 'admin_enqueue_scripts', [ self::class, 'enqueue' ] );
 		// Runs before admin_menu, so it is added here.
 		add_filter( 'set_screen_option_redeemid_per_page', static fn( $keep, $option, $value ) => max( 10, min( 500, (int) $value ) ), 10, 3 );
@@ -97,81 +94,6 @@ final class Menu {
 
 	public static function url( string $page = self::SLUG, array $args = [] ): string {
 		return add_query_arg( array_merge( [ 'page' => $page ], $args ), admin_url( 'admin.php' ) );
-	}
-
-	/**
-	 * Settings → Shopify moved to the top-level menu; keep old bookmarks working.
-	 */
-	public static function redirect_old_page(): void {
-		global $pagenow;
-
-		if ( 'options-general.php' === $pagenow && self::SLUG === sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			wp_safe_redirect( self::url() );
-			exit;
-		}
-	}
-
-	public static function notices(): void {
-		if ( ! current_user_can( self::CAP ) ) {
-			return;
-		}
-
-		if ( get_option( Legacy::NOTICE_OPTION ) ) {
-			printf(
-				'<div class="notice notice-info"><p>%s <a href="%s">%s</a></p>',
-				esc_html__( 'WP2 Shopify is now RedeemID. Settings, linked customers, access rules and blocks were moved to the new names. Shopify still sends webhooks to the old address, so register them again.', 'redeemid' ),
-				esc_url( self::url( Webhooks::PAGE ) ),
-				esc_html__( 'Open Webhooks.', 'redeemid' )
-			);
-			self::action_button( Debug::ACTION, 'dismiss_rename', __( 'Dismiss', 'redeemid' ) );
-			echo '</div>';
-		}
-
-		$old_constants = Legacy::constants_in_use( array_keys( Config::definitions() ) );
-
-		if ( Config::uses_deprecated_secret_name() ) {
-			$old_constants[ Config::DEPRECATED_SECRET ] = 'REDEEMID_CLIENT_SECRET';
-		}
-
-		if ( $old_constants ) {
-			$renames = array_map( static fn ( string $old, string $new ): string => "{$old} → {$new}", array_keys( $old_constants ), $old_constants );
-			echo '<div class="notice notice-warning"><p>' . esc_html(
-				sprintf(
-					/* translators: %s: list of "OLD_NAME → NEW_NAME" pairs */
-					__( 'RedeemID still reads these wp-config.php constants under their old names. Rename them: %s.', 'redeemid' ),
-					implode( ', ', $renames )
-				)
-			) . '</p></div>';
-		}
-
-		$retired = array_filter( array_keys( Config::retired() ), 'defined' );
-
-		if ( $retired ) {
-			printf(
-				'<div class="notice notice-warning"><p>%s <a href="%s">%s</a></p></div>',
-				esc_html( sprintf( /* translators: %s: constant names */ __( 'RedeemID no longer reads %s from wp-config.php.', 'redeemid' ), implode( ', ', $retired ) ) ),
-				esc_url( self::url( Debug::PAGE ) ),
-				esc_html__( 'See Debug.', 'redeemid' )
-			);
-		}
-
-		$upgrade = get_option( 'redeemid_upgrade_notice' );
-
-		if ( is_array( $upgrade ) ) {
-			// Dismissal is stored by Debug's dismiss_upgrade action; a script-only dismiss would come back on the next page.
-			printf(
-				'<div class="notice notice-info"><p>%s</p>',
-				esc_html(
-					sprintf(
-						/* translators: %d: number of linked users */
-						__( 'RedeemID 2.0 upgrade: stored Shopify sessions were discarded for security, so linked customers sign in once more. Re-register your Shopify webhooks from RedeemID → Webhooks (the old /iwebhooks path is gone). %d linked users were updated.', 'redeemid' ),
-						(int) $upgrade['backfilled']
-					)
-				)
-			);
-			self::action_button( Debug::ACTION, 'dismiss_upgrade', __( 'Dismiss', 'redeemid' ) );
-			echo '</div>';
-		}
 	}
 
 	/**
