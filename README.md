@@ -12,7 +12,7 @@ Shopify stays the single source of truth. A purchase adds a tag to the customer 
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 2.0.0-alpha.1.** Sign-in, linking, webhooks, membership tagging, gates, access rules, features, plan cards and the bridge to Shopify's own cart are in place. A server-rendered account card is planned. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 2.0.0.
+> **Status: 0.0.1, early development.** Sign-in, linking, webhooks, gates, access rules, features, plan cards, the member account card and the bridge to Shopify's own cart are in place. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
@@ -71,21 +71,21 @@ Changing the WordPress salts or `REDEEMID_ENCRYPTION_KEY` makes secrets saved in
 
 These constants are no longer read. If one is still defined, every admin screen shows a notice and Debug says what replaced it:
 
-- `REDEEMID_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
-- `REDEEMID_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
-- `REDEEMID_API_VERSION`: the API version is pinned to `2026-10`.
-- `REDEEMID_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
+- `WP2_SHOPIFY_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
+- `WP2_SHOPIFY_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
+- `WP2_SHOPIFY_API_VERSION`: the API version is pinned to `2026-10`.
+- `WP2_SHOPIFY_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
 
 ## Admin screens
 
-Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
+Everything lives under the top-level **RedeemID** menu:
 
 - **Overview:** a setup checklist (connect the store, **Test connection**, permalinks, **Create the page** for the sign-in callback, register webhooks, define levels, tag members with Flow), folded away once everything is done, then status cards for configuration, sign-in, the Admin API, webhook delivery health, linked customers and failures in the last 24 hours. The levels step compares each level's tags with the tags Shopify's customers actually have and lists any no customer has, which is usually a typo.
 - **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked), the membership settings (shared devices) and webhook alerts (the silence warning and the alert email).
 - **Customers:** every WordPress user linked to a Shopify customer, with their levels, search (WordPress name and email, the Shopify email and name, or a customer ID), filters for level, disabled customers and failed syncs, **Export CSV** of the filtered list, and bulk disconnect. The **Activation** panel compares, per level, the customers Shopify tags for it with those who have signed in here (Shopify's `customersCount`, cached for an hour). **Resync all customers** starts a paced background resync of everyone (see [Resyncing customers](#resyncing-customers)). Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the **Delivery health** panel (see [Delivery health](#delivery-health)) with a **Check now** button, the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
-- **Reports:** levels joined and left, purchases that unlocked access, plan card checkouts and sign-ins for the last 30 days; joined and left by week for 12 weeks; and per level, members now and joined and left over 30 days and 12 months. The plugin counts these by day from when this version is installed and keeps 400 days; no user IDs are kept with the counts.
+- **Reports:** levels joined and left, purchases that unlocked access, plan card checkouts and sign-ins for the last 30 days; joined and left by week for 12 weeks; and per level, members now and joined and left over 30 days and 12 months. The plugin counts these by day from when it is installed and keeps 400 days; no user IDs are kept with the counts.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
 - **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token, and the dry-run entitlement check.
 

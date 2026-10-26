@@ -7,7 +7,7 @@ use RedeemID\Legacy;
 use RedeemID\Settings;
 
 /**
- * The top-level Shopify menu:
+ * The top-level RedeemID menu:
  *
  * - Overview: connection summary.
  * - Settings: the Shopify credentials (wp-config.php constants win) and the

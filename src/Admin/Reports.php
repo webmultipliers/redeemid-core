@@ -7,7 +7,7 @@ use RedeemID\Support\Stats;
 
 /**
  * RedeemID → Reports: members gained and lost, sign-ins and purchases, from
- * the daily counters in Support\Stats. Counting starts when this version is
+ * the daily counters in Support\Stats. Counting starts when the plugin is
  * installed; nothing is reconstructed from the past.
  */
 final class Reports {
