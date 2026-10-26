@@ -18,7 +18,6 @@ final class Registration {
 		add_filter( 'blockstudio/blocks/attributes', [ self::class, 'product_picker_url' ], 10, 2 );
 		add_action( 'init', [ self::class, 'init_blocks' ], 9 );
 		add_action( 'init', [ Gate::class, 'register' ] );
-		add_filter( 'render_block_data', [ Upgrade::class, 'block' ], 5, 1 );
 	}
 
 	/**
