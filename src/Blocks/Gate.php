@@ -43,7 +43,6 @@ final class Gate {
 	}
 
 	public static function values( array $attrs ): array {
-		$attrs  = Upgrade::block( [ 'blockName' => self::PARENT, 'attrs' => $attrs ] )['attrs'];
 		$values = function_exists( 'bs_block_values' ) ? bs_block_values( self::PARENT, $attrs ) : null;
 
 		// Fail closed if Blockstudio cannot resolve the attributes: an empty rule still requires sign-in.
@@ -88,15 +87,15 @@ final class Gate {
 
 	/**
 	 * A select value as a string. Blockstudio stores selects as {value, label};
-	 * content written by hand or by older versions may hold a bare string.
+	 * content written by hand may hold a bare string.
 	 */
 	public static function option( mixed $value, string $fallback ): string {
 		return is_array( $value ) ? (string) ( $value['value'] ?? $fallback ) : ( $value ? (string) $value : $fallback );
 	}
 
 	/**
-	 * A Blockstudio link field value ({url, title, ...}) as a URL. Plain strings,
-	 * from content saved before these fields became link fields, still work.
+	 * A Blockstudio link field value ({url, title, ...}) as a URL. A plain
+	 * string, from content written by hand, also works.
 	 */
 	public static function url( mixed $value ): string {
 		return trim( (string) ( is_array( $value ) ? ( $value['url'] ?? '' ) : ( is_string( $value ) ? $value : '' ) ) );

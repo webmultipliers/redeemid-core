@@ -7,7 +7,6 @@ use RedeemID\Commerce\CartBridge;
 use RedeemID\Config;
 use RedeemID\Entitlement\Rule;
 use RedeemID\Integrations\OfficialPlugin;
-use RedeemID\Legacy;
 use RedeemID\Requirements;
 use RedeemID\Settings;
 use RedeemID\Shopify\Admin as AdminApi;
@@ -49,12 +48,6 @@ final class Debug {
 				Discovery::flush();
 				$result = Discovery::available() ? 'discovery_ok' : 'discovery_error';
 				break;
-			case 'dismiss_upgrade':
-				delete_option( 'redeemid_upgrade_notice' );
-				break;
-			case 'dismiss_rename':
-				delete_option( Legacy::NOTICE_OPTION );
-				break;
 			case 'dryrun':
 				$query = [
 					'dry_customer' => sanitize_text_field( wp_unslash( $_POST['customer'] ?? '' ) ),
@@ -74,7 +67,6 @@ final class Debug {
 		$blocks    = get_option( Registration::STATUS_OPTION );
 		$problems  = Requirements::problems();
 		$token_err = get_option( 'redeemid_admin_token_error' );
-		$retired   = array_filter( Config::retired(), 'defined', ARRAY_FILTER_USE_KEY );
 		$ok        = [ Menu::class, 'dot' ];
 		$fmt_time  = [ Menu::class, 'time' ];
 		Menu::page_start( __( 'Debug', 'redeemid' ), __( 'Shopify debug', 'redeemid' ), '', __( 'Where each config value comes from, platform and connection checks, and maintenance tools. Secret values are never shown, only whether they are present.', 'redeemid' ) );
@@ -119,16 +111,6 @@ final class Debug {
 					</table>
 				</div>
 			<?php Menu::panel_end(); ?>
-
-			<?php if ( $retired ) : ?>
-				<?php Menu::panel_start( __( 'Defined but ignored', 'redeemid' ), __( 'Remove these from wp-config.php.', 'redeemid' ) ); ?>
-					<ul class="redeemid-checks">
-						<?php foreach ( $retired as $name => $why ) : ?>
-							<li><span class="redeemid-checks__label"><?php echo $ok( false ); // phpcs:ignore WordPress.Security.EscapeOutput ?><code class="redeemid-code-small"><?php echo esc_html( $name ); ?></code></span><span class="redeemid-checks__detail"><?php echo esc_html( $why ); ?></span></li>
-						<?php endforeach; ?>
-					</ul>
-				<?php Menu::panel_end(); ?>
-			<?php endif; ?>
 
 			<div class="redeemid-columns">
 				<?php Menu::panel_start( __( 'Platform', 'redeemid' ) ); ?>

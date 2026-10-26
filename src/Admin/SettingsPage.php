@@ -242,16 +242,7 @@ final class SettingsPage {
 	 */
 	private static function behaviour(): void {
 		$settings = Settings::all();
-		$saved    = get_option( Settings::OPTION, [] );
-		// Left by versions that tagged purchases themselves; the next save drops it.
-		$old_map  = is_array( $saved ) ? trim( (string) ( $saved['membership_map'] ?? '' ) ) : '';
 		?>
-		<?php if ( '' !== $old_map ) : ?>
-			<div class="notice notice-warning inline">
-				<p><?php esc_html_e( 'This plugin no longer adds or removes tags when an order is paid, cancelled or refunded. Tags it already added stay in Shopify. Set up the same rules in Shopify Flow (see docs/shopify-flow.md) before new orders arrive. Your old product map, for reference:', 'redeemid' ); ?></p>
-				<pre><?php echo esc_html( $old_map ); ?></pre>
-			</div>
-		<?php endif; ?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'redeemid' ); ?>
 			<?php Menu::panel_start( __( 'Membership', 'redeemid' ), __( 'How members sign in and come back from checkout, what happens on sign-out, and when to warn you about webhooks.', 'redeemid' ) ); ?>

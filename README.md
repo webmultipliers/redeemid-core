@@ -12,7 +12,7 @@ Shopify stays the single source of truth. A purchase adds a tag to the customer 
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 2.0.0-alpha.1.** Sign-in, linking, webhooks, membership tagging, gates, access rules, features, plan cards and the bridge to Shopify's own cart are in place. A server-rendered account card is planned. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 2.0.0.
+> **Status: 0.0.1, early development.** Sign-in, linking, webhooks, gates, access rules, features, plan cards, the member account card and the bridge to Shopify's own cart are in place. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
@@ -67,25 +67,16 @@ Changing the WordPress salts or `REDEEMID_ENCRYPTION_KEY` makes secrets saved in
 | `REDEEMID_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same Headless channel. When set it replaces the public token for every Storefront call, and buy-now and cart calls send the buyer's IP (`Shopify-Storefront-Buyer-IP`), as Shopify asks of server-side callers. Without it every visitor looks like your server's one IP, so Shopify may throttle checkout creation. |
 | `REDEEMID_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
 
-`WP2_SHOPIFY_PRIVATE_ACCESS_TOKEN` from 1.x still works as an alias for the client secret, with an admin notice. Rename it to `REDEEMID_CLIENT_SECRET`.
-
-These constants are no longer read. If one is still defined, every admin screen shows a notice and Debug says what replaced it:
-
-- `REDEEMID_ADMIN_ACCESS_TOKEN` (legacy permanent Admin token): use the Dev Dashboard app constants above.
-- `REDEEMID_WEBHOOK_SIGNING_SECRET`: the plugin registers its own webhooks, signed with the app's client secret.
-- `REDEEMID_API_VERSION`: the API version is pinned to `2026-10`.
-- `REDEEMID_COOKIE_DOMAIN`: WordPress' own `COOKIE_DOMAIN` is used.
-
 ## Admin screens
 
-Everything lives under the top-level **Shopify** menu (Settings → Shopify redirects there):
+Everything lives under the top-level **RedeemID** menu:
 
 - **Overview:** a setup checklist (connect the store, **Test connection**, permalinks, **Create the page** for the sign-in callback, register webhooks, define levels, tag members with Flow), folded away once everything is done, then status cards for configuration, sign-in, the Admin API, webhook delivery health, linked customers and failures in the last 24 hours. The levels step compares each level's tags with the tags Shopify's customers actually have and lists any no customer has, which is usually a typo.
 - **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked), the membership settings (shared devices) and webhook alerts (the silence warning and the alert email).
 - **Customers:** every WordPress user linked to a Shopify customer, with their levels, search (WordPress name and email, the Shopify email and name, or a customer ID), filters for level, disabled customers and failed syncs, **Export CSV** of the filtered list, and bulk disconnect. The **Activation** panel compares, per level, the customers Shopify tags for it with those who have signed in here (Shopify's `customersCount`, cached for an hour). **Resync all customers** starts a paced background resync of everyone (see [Resyncing customers](#resyncing-customers)). Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the **Delivery health** panel (see [Delivery health](#delivery-health)) with a **Check now** button, the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
-- **Reports:** levels joined and left, purchases that unlocked access, plan card checkouts and sign-ins for the last 30 days; joined and left by week for 12 weeks; and per level, members now and joined and left over 30 days and 12 months. The plugin counts these by day from when this version is installed and keeps 400 days; no user IDs are kept with the counts.
+- **Reports:** levels joined and left, purchases that unlocked access, plan card checkouts and sign-ins for the last 30 days; joined and left by week for 12 weeks; and per level, members now and joined and left over 30 days and 12 months. The plugin counts these by day from when it is installed and keeps 400 days; no user IDs are kept with the counts.
 - **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
 - **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token, and the dry-run entitlement check.
 
@@ -366,7 +357,7 @@ What the plugin uses, and where:
 Rules that follow from it:
 
 - Use the field type that fits (select, link, toggle, repeater) and read the value as Blockstudio returns it. Selects return `{value, label}` and links `{url, ...}`: read them with `Gate::option()` and `Gate::url()`.
-- Changing a field's type changes how it is stored. Add the field to `Blocks\Upgrade::FIELDS` so content saved before keeps rendering.
+- Changing a field's type changes how it is stored, and content saved in the old shape stops carrying the value. Don't change a field's type once a block has shipped; add a new field instead.
 - In a block template, `return;` means "this block renders nothing" to Blockstudio, which then also skips the block's stylesheet and scripts, even if markup was printed before the `return`. Use early returns only for branches that print nothing (or editor-only branches); branches that print markup end with `if`/`else`, as in Plan Card and Shopify Sign-in.
 - Blockstudio's `populate` function type only accepts global functions. Put a thin wrapper in `src/functions.php` and keep the logic in a class.
 - Register blocks with `Blockstudio\Build::init()` (see `Blocks\Registration`), never the `blockstudio/path` filter, which would hide the theme's blocks.
@@ -398,30 +389,6 @@ Rules that follow from it:
   - `redeemid_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `redeemid_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `redeemid_checkout_banner` (`bool`); `redeemid_offer_existing_account` (`bool`)
   - `redeemid_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
-
-## Upgrading from WP2 Shopify
-
-RedeemID was called WP2 Shopify. The plugin's main file is now `redeemid.php`, so WordPress deactivates the old entry once the new code is in place: activate RedeemID again. On activation (or the next admin page load) it moves everything stored under the old names, once:
-
-- Settings, the webhook and event tables, linked customers' data, access rules and levels on items and terms, the bypass capability and signed-in sessions.
-- Blocks saved in posts, templates, patterns and block widgets (`wp2-shopify/…` becomes `redeemid/…`) and the Log in / Log out menu items.
-- Secrets saved in Settings are sealed again under the new key label. Older sealed values still open.
-
-What you do by hand:
-
-- **Register the webhooks again** from RedeemID → Webhooks. Their address is now `/wp-json/redeemid/v1/webhooks/events`, and Shopify keeps calling the old one until then. An admin notice reminds you.
-- **Rename `WP2_SHOPIFY_*` constants** in `wp-config.php` to `REDEEMID_*`. The old names keep working, with an admin notice, until you do.
-- Code that used the old hooks, REST routes, CSS classes or `WP2_Shopify` classes must use the new names (`redeemid_*`, `/redeemid/v1/`, `redeemid-*`, `RedeemID\`). There are no aliases. The old shortcodes (`[wp2_shopify_login]`, `[wp2_feature]`) still render, with a deprecation notice.
-
-## Upgrading from 1.x
-
-The upgrade runs once on activation or load:
-
-- Shadow users and their customer IDs are kept, and numeric IDs are backfilled.
-- Stored refresh tokens were plaintext in 1.x, so they are discarded. **Every linked customer signs in once more.**
-- Options that held full webhook payloads, and the old encryption key, are removed.
-- **Re-register webhooks** to `/wp-json/redeemid/v1/webhooks/events`. The old path is gone.
-- The `[wp2_shopify_identity]` shortcode still works, but is deprecated. Use the block.
 
 ## Uninstall
 

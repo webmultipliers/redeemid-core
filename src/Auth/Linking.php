@@ -7,8 +7,7 @@ use RedeemID\Support\Logger;
 /**
  * Linking an existing WordPress account to a Shopify customer.
  *
- * The POC set a link-user cookie in JavaScript that the server never read.
- * Here the server issues a short-lived, single-use token, hashed at rest and
+ * The server issues a short-lived, single-use token, hashed at rest and
  * bound to the user and their WordPress session; the OAuth state carries only
  * that token, never a raw user ID.
  */

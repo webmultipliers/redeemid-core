@@ -16,9 +16,6 @@ final class Config {
 	/** Values saved from RedeemID → Settings. Secrets are stored as ciphertext. */
 	public const OPTION = 'redeemid_config';
 
-	/** The 1.x name of the client secret, still read with an admin notice. */
-	public const DEPRECATED_SECRET = Legacy::CONSTANT_PREFIX . 'PRIVATE_ACCESS_TOKEN';
-
 	private static ?ConfigValues $values = null;
 
 	/** Pinned Shopify API version for every surface (Storefront, Customer Account, Admin, webhooks). */
@@ -89,23 +86,6 @@ final class Config {
 		];
 	}
 
-	/**
-	 * Constants earlier builds read and this one ignores, with what replaced them.
-	 * The Debug page warns when one is still defined.
-	 *
-	 * @return array<string, string>
-	 */
-	public static function retired(): array {
-		$old = Legacy::CONSTANT_PREFIX;
-
-		return [
-			$old . 'ADMIN_ACCESS_TOKEN'     => 'Legacy permanent Admin tokens are no longer used. Set REDEEMID_ADMIN_CLIENT_ID and REDEEMID_ADMIN_CLIENT_SECRET for a Dev Dashboard app.',
-			$old . 'WEBHOOK_SIGNING_SECRET' => 'Webhooks are registered by the plugin through the app and verified with REDEEMID_ADMIN_CLIENT_SECRET. Delete webhooks created in Settings → Notifications.',
-			$old . 'API_VERSION'            => 'The API version is pinned to ' . self::API_VERSION . ' by the plugin.',
-			$old . 'COOKIE_DOMAIN'          => 'The plugin uses WordPress\' COOKIE_DOMAIN.',
-		];
-	}
-
 	public static function get( string $name ): string {
 		return self::values()->resolve( $name )['value'];
 	}
@@ -153,21 +133,10 @@ final class Config {
 	}
 
 	/**
-	 * The constant that sets a value, if one is defined: its own name, then its
-	 * name from before the rename (Legacy), then the 1.x alias of the secret.
+	 * The constant that sets a value, if one is defined.
 	 */
 	public static function constant_name( string $name ): ?string {
-		foreach ( [ $name, Legacy::constant_name( $name ) ] as $candidate ) {
-			if ( null !== $candidate && defined( $candidate ) ) {
-				return $candidate;
-			}
-		}
-
-		if ( 'REDEEMID_CLIENT_SECRET' === $name && defined( self::DEPRECATED_SECRET ) ) {
-			return self::DEPRECATED_SECRET;
-		}
-
-		return null;
+		return defined( $name ) ? $name : null;
 	}
 
 	private static function constant( string $name ): ?string {
@@ -188,10 +157,6 @@ final class Config {
 		return '' !== self::get( $name );
 	}
 
-	public static function uses_deprecated_secret_name(): bool {
-		return self::DEPRECATED_SECRET === self::constant_name( 'REDEEMID_CLIENT_SECRET' );
-	}
-
 	public static function api_version(): string {
 		return self::API_VERSION;
 	}
@@ -208,7 +173,7 @@ final class Config {
 
 	/**
 	 * Cookie domain for the plugin's own cookies. Never derived from the
-	 * request's Host header (POC defect: HTTP_HOST is client-controlled).
+	 * request's Host header (HTTP_HOST is client-controlled).
 	 */
 	public static function cookie_domain(): string {
 		return defined( 'COOKIE_DOMAIN' ) && COOKIE_DOMAIN ? (string) COOKIE_DOMAIN : '';

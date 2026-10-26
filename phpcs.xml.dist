@@ -33,15 +33,7 @@
 	<rule ref="WordPress.DB.DirectDatabaseQuery">
 		<exclude-pattern>/src/Webhooks/WpdbInboxStore\.php</exclude-pattern>
 		<exclude-pattern>/src/Support/EventLog\.php</exclude-pattern>
-		<exclude-pattern>/src/Migration\.php</exclude-pattern>
-		<exclude-pattern>/src/Legacy\.php</exclude-pattern>
 		<exclude-pattern>/uninstall\.php</exclude-pattern>
-	</rule>
-
-	<!-- The rename migration loops over core meta tables, so their names are
-	     interpolated; every value still goes through prepare(). -->
-	<rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
-		<exclude-pattern>/src/Legacy\.php</exclude-pattern>
 	</rule>
 
 	<!-- Unit tests run without WordPress loaded. -->

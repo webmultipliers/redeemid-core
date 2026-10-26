@@ -9,8 +9,6 @@ use RedeemID\Support\Logger;
 /**
  * The WordPress-side mirror of a Shopify customer. Shopify stays the
  * record; this is display and gating data, stamped with when and how it synced.
- *
- * Meta keys keep the POC names where they already existed.
  */
 final class Mirror {
 	public const GID         = '_redeemid_customer_id';
@@ -38,9 +36,6 @@ final class Mirror {
 		self::GID, self::NUMERIC, self::TAGS, self::STATUS, self::EMAIL, self::FIRST_NAME, self::LAST_NAME,
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
 		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::HISTORY,
-		// Legacy POC keys removed on disconnect / erasure.
-		\RedeemID\Legacy::POC_LAST_SYNC, '_redeemid_real_email', '_redeemid_refresh_token', '_redeemid_customer_payload',
-		'_redeemid_default_address', '_redeemid_addresses', '_redeemid_phone_number', '_redeemid_deleted_at',
 	];
 
 	public static function find_user( CustomerId $id ): ?\WP_User {
@@ -57,26 +52,7 @@ final class Mirror {
 			Logger::log( 'mirror.duplicate_link', [ 'customer' => $id->numeric ] );
 		}
 
-		if ( $users ) {
-			return $users[0];
-		}
-
-		// Legacy users that have only the GID (backfilled by the migration, but be tolerant).
-		$users = get_users(
-			[
-				'meta_key'    => self::GID, // phpcs:ignore WordPress.DB.SlowDBQuery
-				'meta_value'  => $id->gid(), // phpcs:ignore WordPress.DB.SlowDBQuery
-				'number'      => 1,
-				'count_total' => false,
-			]
-		);
-
-		if ( $users ) {
-			update_user_meta( $users[0]->ID, self::NUMERIC, $id->numeric );
-			return $users[0];
-		}
-
-		return null;
+		return $users[0] ?? null;
 	}
 
 	/**

@@ -34,8 +34,7 @@ final class CryptoAndPkceTest extends TestCase {
 		Crypto::from_config( base64_encode( 'short' ), '' );
 	}
 
-	public function test_poc_style_key_is_rejected_loudly(): void {
-		// The POC stored base64(random 32 bytes) and handed it to Defuse, which failed silently.
+	public function test_short_salts_are_rejected_loudly(): void {
 		$this->expectException( \InvalidArgumentException::class );
 		Crypto::from_config( '', 'short' );
 	}

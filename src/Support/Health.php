@@ -75,10 +75,6 @@ final class Health {
 			);
 		}
 
-		foreach ( array_keys( array_filter( Config::retired(), 'defined', ARRAY_FILTER_USE_KEY ) ) as $name ) {
-			$add( $name, self::WARN, __( 'defined but ignored: remove it from wp-config.php', 'redeemid' ) );
-		}
-
 		$official = OfficialPlugin::info();
 		$states   = [
 			OfficialPlugin::ABSENT      => self::INFO,
