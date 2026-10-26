@@ -52,9 +52,12 @@ final class Extractor {
 				break;
 
 			case Topics::MERGE:
-				// The surviving and merged-away customers. Field names verified at build time; both spellings accepted.
-				$data['survivor'] = CustomerId::parse( $payload['customer_kept_id'] ?? $payload['customerKeptId'] ?? null )?->numeric;
-				$data['merged']   = CustomerId::parse( $payload['customer_deleted_id'] ?? $payload['customerDeletedId'] ?? null )?->numeric;
+				// The surviving and merged-away customers, as GIDs (2026-10 sample payload). A failed merge changes nothing.
+				if ( 'failed' === ( $payload['status'] ?? '' ) ) {
+					break;
+				}
+				$data['survivor'] = CustomerId::parse( $payload['admin_graphql_api_customer_kept_id'] ?? null )?->numeric;
+				$data['merged']   = CustomerId::parse( $payload['admin_graphql_api_customer_deleted_id'] ?? null )?->numeric;
 				break;
 
 			case Topics::COMPLIANCE:

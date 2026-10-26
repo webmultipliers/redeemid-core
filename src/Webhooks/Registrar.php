@@ -18,6 +18,12 @@ final class Registrar {
 	private const API_UNSUPPORTED = [ 'customers/data_request', 'customers/redact', 'shop/redact' ];
 
 	/**
+	 * Topics that need an Admin scope beyond read_customers. Without it Shopify
+	 * refuses the subscription, so the topic is skipped with a hint, not failed.
+	 */
+	public const SCOPED = [ 'customers/merge' => 'read_customer_merge' ];
+
+	/**
 	 * Shopify's GraphQL enum for a topic: customer.tags_added → CUSTOMER_TAGS_ADDED.
 	 */
 	public static function enum( string $topic ): string {
@@ -50,11 +56,25 @@ final class Registrar {
 	}
 
 	/**
-	 * @return array{at: int, created: string[], existing: int, failed: array<string, string>, error: string}
+	 * The scope $topic needs that the granted scopes lack, or '' when nothing is missing.
+	 * An empty $granted means the scopes aren't known, so nothing is assumed missing.
+	 */
+	public static function missing_scope( string $topic, string $granted ): string {
+		$scope = self::SCOPED[ $topic ] ?? '';
+
+		if ( '' === $scope || '' === trim( $granted ) ) {
+			return '';
+		}
+
+		return in_array( $scope, array_map( 'trim', explode( ',', $granted ) ), true ) ? '' : $scope;
+	}
+
+	/**
+	 * @return array{at: int, created: string[], existing: int, failed: array<string, string>, skipped: array<string, string>, error: string}
 	 */
 	public static function sync(): array {
 		$uri    = rest_url( 'redeemid/v1/webhooks/events' );
-		$result = [ 'at' => time(), 'created' => [], 'existing' => 0, 'failed' => [], 'error' => '' ];
+		$result = [ 'at' => time(), 'created' => [], 'existing' => 0, 'failed' => [], 'skipped' => [], 'error' => '' ];
 		$data   = Admin::query( 'query RedeemIDWebhooks { webhookSubscriptions(first: 100) { nodes { topic uri } } }', [], 'admin.webhooks' );
 
 		if ( is_wp_error( $data ) ) {
@@ -73,7 +93,16 @@ final class Registrar {
 		$missing            = self::missing( $existing, $uri );
 		$result['existing'] = count( self::topics() ) - count( $missing );
 
+		$granted = (string) get_option( 'redeemid_admin_token_scopes', '' );
+
 		foreach ( $missing as $topic ) {
+			$scope = self::missing_scope( $topic, $granted );
+
+			if ( '' !== $scope ) {
+				$result['skipped'][ $topic ] = $scope;
+				continue;
+			}
+
 			$created = Admin::query(
 				'mutation RedeemIDWebhookCreate($topic: WebhookSubscriptionTopic!, $sub: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: $topic, webhookSubscription: $sub) { webhookSubscription { id } userErrors { field message } } }',
 				[ 'topic' => self::enum( $topic ), 'sub' => [ 'uri' => $uri, 'format' => 'JSON' ] ],
@@ -84,6 +113,9 @@ final class Registrar {
 
 			if ( '' === $error ) {
 				$result['created'][] = $topic;
+			} elseif ( isset( self::SCOPED[ $topic ] ) && ! is_wp_error( $created ) ) {
+				// Shopify's refusal doesn't name the scope; the granted list may be stale.
+				$result['skipped'][ $topic ] = self::SCOPED[ $topic ];
 			} else {
 				$result['failed'][ $topic ] = $error;
 			}
