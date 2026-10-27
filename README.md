@@ -99,7 +99,7 @@ RedeemID → Debug prints the exact values for your site:
 
 New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopify admin no longer creates them. Create one in the same organization as the store, with:
 
-- **Admin API scopes:** `read_customers` and `write_customers`.
+- **Admin API scopes:** `read_customers`, `write_customers` and `read_customer_merge`. The last is needed only for `customers/merge`; without it the plugin skips that topic.
 - **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
 
 Install it on the store, then enter its client ID and secret in RedeemID → Settings (or define `REDEEMID_ADMIN_CLIENT_ID` and `REDEEMID_ADMIN_CLIENT_SECRET`). RedeemID → Debug shows the scopes Shopify granted.
@@ -112,7 +112,7 @@ The topics:
 
 - `customers/create`, `customers/update`, `customers/delete`, `customers/enable`, `customers/disable` and `customers/merge`
 - `customer.tags_added` and `customer.tags_removed`
-- `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customer_purchasing_summary/create`
+- `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customers/purchasing_summary`
 - `app/uninstalled`
 - the compliance topics `customers/data_request`, `customers/redact` and `shop/redact`. Shopify doesn't allow these through the API; they come only to apps that declare them in their app configuration.
 

@@ -119,6 +119,10 @@ final class Webhooks {
 								foreach ( $hooks['failed'] as $topic => $message ) {
 									echo '<br><code>' . esc_html( $topic ) . '</code>: ' . esc_html( $message ); // phpcs:ignore WordPress.Security.EscapeOutput
 								}
+								foreach ( (array) ( $hooks['skipped'] ?? [] ) as $topic => $scope ) {
+									/* translators: 1: webhook topic 2: Admin API scope */
+									echo '<br>' . wp_kses( sprintf( __( '%1$s skipped: add the %2$s scope to the Admin app, release a new version, then register again.', 'redeemid' ), '<code>' . esc_html( $topic ) . '</code>', '<code>' . esc_html( $scope ) . '</code>' ), [ 'code' => [] ] ); // phpcs:ignore WordPress.Security.EscapeOutput
+								}
 							} else {
 								esc_html_e( 'Not registered yet.', 'redeemid' );
 							}

@@ -56,7 +56,7 @@ final class Config {
 				'label'    => 'Admin app client ID',
 				'secret'   => false,
 				'required' => true,
-				'help'     => 'The Dev Dashboard app installed on the store. The plugin requests 24-hour Admin tokens with the client credentials grant and renews them itself. Scopes: read_customers, write_customers. Powers reconciliation, resync, tag editing and webhook registration.',
+				'help'     => 'The Dev Dashboard app installed on the store. The plugin requests 24-hour Admin tokens with the client credentials grant and renews them itself. Scopes: read_customers, write_customers, read_customer_merge. Powers reconciliation, resync, tag editing and webhook registration.',
 			],
 			'REDEEMID_ADMIN_CLIENT_SECRET' => [
 				'label'    => 'Admin app client secret',
