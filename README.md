@@ -17,7 +17,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 ## Requirements
 
 - PHP 8.2+ with `sodium`
-- WordPress 6.7+
+- WordPress 6.7+ (6.9+ for [abilities](docs/abilities.md))
 - **Pretty permalinks**, for sign-in only. Shopify sends customers back to one exact callback address that you register in the app, and RedeemID builds it as `https://your-site/auth-callback/`, a rewrite rule that WordPress only honours with pretty permalinks. REST routes and webhooks work either way.
 - A Shopify store with a headless or custom app that has Customer Account API access
 
@@ -343,6 +343,10 @@ For plugins that build on RedeemID (a course, a forum, a download manager) inste
 - `redeemid_has_feature( string $slug, int|WP_User|null $user = null ): bool`, `redeemid_granted_features()` and `redeemid_menu_features()`: see [Features](#features).
 
 None of them return Shopify tags or the customer record. Each reads the synced mirror, so it costs no Shopify call. Pages that show member-only output from these should not be served from a shared page cache (see [Caching](#caching)).
+
+## Abilities and MCP
+
+On WordPress 6.9+, RedeemID registers read-only abilities with the Abilities API, so AI agents can use them through the [MCP Adapter](https://github.com/WordPress/mcp-adapter) plugin. Staff abilities (`manage_options`) explain access to an item for any viewer, explain features, list levels and rules, read one member's synced record, report health and list level changes. Member abilities (`redeemid/my-membership`, `redeemid/can-i-read`) answer only for the signed-in caller. None of them grants access or calls Shopify. See [docs/abilities.md](docs/abilities.md).
 
 ## REST API
 

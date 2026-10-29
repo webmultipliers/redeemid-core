@@ -60,7 +60,7 @@ final class Reader {
 	 * WordPress's own visibility first: drafts, private items and password
 	 * protected items stay with the people WordPress lets edit them.
 	 */
-	private static function visible( \WP_Post $post, int $user_id ): bool {
+	public static function visible( \WP_Post $post, int $user_id ): bool {
 		$public = 'publish' === $post->post_status && is_post_type_viewable( $post->post_type ) && '' === $post->post_password;
 
 		return $public || ( $user_id > 0 && user_can( $user_id, 'edit_post', $post->ID ) ) || ( 'private' === $post->post_status && $user_id > 0 && user_can( $user_id, 'read_post', $post->ID ) );
