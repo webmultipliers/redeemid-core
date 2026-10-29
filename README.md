@@ -18,10 +18,10 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 
 - PHP 8.2+ with `sodium`
 - WordPress 6.7+
-- **Pretty permalinks.** The sign-in callback is a front-end route.
+- **Pretty permalinks**, for sign-in only. Shopify sends customers back to one exact callback address that you register in the app, and RedeemID builds it as `https://your-site/auth-callback/`, a rewrite rule that WordPress only honours with pretty permalinks. REST routes and webhooks work either way.
 - A Shopify store with a headless or custom app that has Customer Account API access
 
-If a requirement is missing, activation stops with a notice. It does not fatal.
+If PHP, WordPress or `sodium` is missing, activation stops with a notice. It does not fatal. Permalinks aren't checked at activation; the Overview checklist, Debug and the Health block flag them.
 
 ## Install
 
