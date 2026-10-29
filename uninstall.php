@@ -24,7 +24,7 @@ $redeemid_options = [
 	'redeemid_events_db_version', 'redeemid_cart_bridge', 'redeemid_access_levels',
 	'redeemid_access_rules', 'redeemid_access_rules_version',
 	'redeemid_access_reindex_cursor', 'redeemid_access_index_version', 'redeemid_feature_conditions',
-	'redeemid_bulk_resync', 'redeemid_monitor', 'redeemid_stats', 'redeemid_connection_test',
+	'redeemid_bulk_resync', 'redeemid_monitor', 'redeemid_stats', 'redeemid_connection_test', 'redeemid_files_probe',
 ];
 
 foreach ( $redeemid_options as $redeemid_option ) {

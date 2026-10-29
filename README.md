@@ -223,7 +223,7 @@ Whole items can be gated without a block, by rules on four layers. The strongest
 
 When several terms require different levels, the site combines them **most restrictively** (every term must pass, after level inclusion is counted), **least restrictively**, or **by priority**. Dates are checked on every request, so an embargo ends or a free window closes with no edit.
 
-A locked item shows its teaser and a wall everywhere it renders: the page, query loops, REST, feeds, oEmbed, excerpts and WPGraphQL. The teaser ends at a **Paywall break** block if the item has one, otherwise follows the post type's setting. Locked items carry `isAccessibleForFree: false` markup and get teaser-only descriptions in Yoast SEO and Rank Math. Search crawlers see what a locked visitor sees. Files linked from a gated item, such as PDFs, keep public URLs.
+A locked item shows its teaser and a wall everywhere it renders: the page, query loops, REST, feeds, oEmbed, excerpts and WPGraphQL. The teaser ends at a **Paywall break** block if the item has one, otherwise follows the post type's setting. Locked items carry `isAccessibleForFree: false` markup and get teaser-only descriptions in Yoast SEO and Rank Math. Search crawlers see what a locked visitor sees. Files linked from a gated item keep public URLs unless you protect them (see [Protected files](#protected-files)).
 
 - **Search** matches locked items, and items holding a membership gate, on their public text only (title, excerpt and teaser), for every visitor. A locked phrase never finds its item, and result counts stay exact. The public text is indexed in post meta and rebuilt in the background after a rule change; until then each result is checked again in PHP.
 - **Comments** on a locked item are shown only to visitors who can read it, by default: others see no comments, no count and no form, in templates, REST and comment feeds. A post type can show them to everyone instead.
@@ -252,6 +252,10 @@ To show access on cards and pages:
 From the command line, `wp redeemid access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp redeemid access recompute` rebuilds every item's cached rule and search text. `wp redeemid access changes [--since=<date>] [--level=<slug>] [--format=table|csv|json]` lists who joined or left a level (default: the last 7 days), and `wp redeemid access export [--post_type=<type>] [--format=csv|json|table]` writes every gated item's effective rule for an audit. `wp redeemid settings export [--file=<path>]` and `wp redeemid settings import <file> [--sections=levels,rules,term_rules,features,settings] [--dry-run]` move settings between sites, as the **Export / import** tab does.
 
 Each item's rule layers are cached in `_redeemid_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
+
+### Protected files
+
+Set **Who can download** on a media item to protect it: whoever can read the item it's attached to, members holding a level, or members with a feature. The file moves to `uploads/redeemid-protected/`, and every address WordPress builds for it checks access on every download. The web server must refuse that folder: Apache is handled by an `.htaccess`, nginx needs a three-line rule, and Site Health checks it. See [docs/protected-files.md](docs/protected-files.md).
 
 ### Features
 
@@ -408,6 +412,7 @@ Rules that follow from it:
   - `redeemid_context_country` (`string $country`), an ISO code that prices plan cards and checkout in that country's currency
   - `redeemid_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `redeemid_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `redeemid_checkout_banner` (`bool`); `redeemid_offer_existing_account` (`bool`)
+  - `redeemid_file_sendfile` (`string $mode, string $path`): hand protected downloads to the web server with `x-accel-redirect` (nginx) or `x-sendfile` (Apache, LiteSpeed); see [docs/protected-files.md](docs/protected-files.md)
   - `redeemid_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
 
 ## Uninstall
