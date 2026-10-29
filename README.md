@@ -12,7 +12,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 0.0.1, early development. No release has been published yet.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 1.0.0.
+> **Status: 0.0.1, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
@@ -25,7 +25,9 @@ If a requirement is missing, activation stops with a notice. It does not fatal.
 
 ## Install
 
-No release zip has been published yet, so build from source. A release zip will include `vendor/`.
+Download `redeemid-core.zip` from the [latest release](https://github.com/webmultipliers/redeemid-core/releases/latest) and upload it in Plugins → Add New → Upload Plugin. The zip already includes `vendor/`. It installs to `wp-content/plugins/redeemid-core/`.
+
+To build from source instead:
 
 ```sh
 composer install            # development
@@ -447,7 +449,7 @@ composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
 
-GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
+GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings. To release, bump `Version:` in `redeemid.php` and `REDEEMID_VERSION` together; when that reaches `main`, GitHub Actions builds `redeemid-core.zip` and publishes release `v<version>`. A version with a suffix such as `0.1.0-beta.1` is published as a pre-release. Files listed in `.distignore` stay out of the zip. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
 
 - **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
 - **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.
