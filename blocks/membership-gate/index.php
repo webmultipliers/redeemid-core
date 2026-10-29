@@ -34,15 +34,15 @@ if ( $isEditor ) {
 				$redeemid_effective = $redeemid_post instanceof \WP_Post ? \RedeemID\Access\Gatekeeper::rule( $redeemid_post ) : null;
 				echo esc_html(
 					$redeemid_effective && ! $redeemid_effective->open()
-						/* translators: %s: the item's rule and where it comes from */
-						? sprintf( __( 'Members only: this item\'s rule, %s.', 'redeemid' ), $redeemid_effective->explain( \RedeemID\Access\LevelStore::levels() ) )
-						: __( 'This item\'s rule is open now, so everyone will see the Members only area. Set a rule in the Access box.', 'redeemid' )
+						/* translators: %s: levels, such as "Gold or Silver" */
+						? sprintf( __( 'Members only: readers with %s, as set in the post\'s "Who can read this" box.', 'redeemid' ), $redeemid_effective->readers( \RedeemID\Access\LevelStore::levels() ) )
+						: __( 'This post is free to everyone right now, so everyone will see the Members only area. Choose levels in the "Who can read this" box.', 'redeemid' )
 				);
 			} elseif ( \RedeemID\Blocks\Gate::RULE_LEVEL === $redeemid_source ) {
 				echo esc_html(
 					$redeemid_level
 						/* translators: %s: access level label, such as Gold */
-						? sprintf( __( 'Members only: visitors with the %s level.', 'redeemid' ), $redeemid_level->label )
+						? sprintf( __( 'Members only: readers with the %s level.', 'redeemid' ), $redeemid_level->label )
 						: __( 'Choose an access level. Until then nobody sees the Members only area.', 'redeemid' )
 				);
 			} elseif ( $redeemid_rule->required_tags ) {
@@ -53,7 +53,7 @@ if ( $isEditor ) {
 					esc_html( implode( ', ', $redeemid_rule->required_tags ) )
 				);
 			} elseif ( $redeemid_rule->require_login ) {
-				esc_html_e( 'Members only: any signed-in visitor.', 'redeemid' );
+				esc_html_e( 'Members only: anyone signed in.', 'redeemid' );
 			} else {
 				esc_html_e( 'No rule set: everyone will see the Members only area.', 'redeemid' );
 			}

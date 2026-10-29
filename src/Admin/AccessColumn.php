@@ -72,10 +72,10 @@ final class AccessColumn {
 
 		$levels = array_filter( LevelStore::levels()->all(), static fn( Level $l ) => Level::PUBLIC !== $l->slug );
 		$modes  = [
-			Context::ITEM_INHERIT => __( 'Inherit', 'redeemid' ),
-			Context::ITEM_PUBLIC  => __( 'Public', 'redeemid' ),
-			Context::ITEM_LEVEL   => __( 'These levels instead', 'redeemid' ),
-			Context::ITEM_ADD     => __( 'Inherited, plus these levels', 'redeemid' ),
+			Context::ITEM_INHERIT => __( 'Site rules', 'redeemid' ),
+			Context::ITEM_PUBLIC  => __( 'Free to everyone', 'redeemid' ),
+			Context::ITEM_LEVEL   => __( 'Only these levels', 'redeemid' ),
+			Context::ITEM_ADD     => __( 'Site rules, and also these levels', 'redeemid' ),
 		];
 
 		if ( ! $bulk ) {

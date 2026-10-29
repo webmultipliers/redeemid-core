@@ -35,7 +35,7 @@ final class EffectiveRule {
 	}
 
 	/**
-	 * Provenance in words, for the editor panel, list column and WP-CLI:
+	 * Provenance in words, for the list column, Access → Test and WP-CLI:
 	 * "gold, from Category: Investigations (also Category: Culture)".
 	 */
 	public function explain( ?Levels $levels = null ): string {
@@ -43,11 +43,19 @@ final class EffectiveRule {
 			return 'Open, from ' . $this->source;
 		}
 
-		$label   = static fn( string $slug ) => $levels?->get( $slug )?->label ?? $slug;
-		$need    = implode( ' and ', array_map( static fn( array $c ) => implode( ' or ', array_map( $label, $c ) ), $this->clauses ) );
-		$others  = array_values( array_diff( $this->contributing, explode( ' + ', $this->source ) ) );
-		$suffix  = $others ? ' (also ' . implode( ', ', $others ) . ')' : '';
+		$others = array_values( array_diff( $this->contributing, explode( ' + ', $this->source ) ) );
+		$suffix = $others ? ' (also ' . implode( ', ', $others ) . ')' : '';
 
-		return $need . ', from ' . $this->source . $suffix;
+		return $this->readers( $levels ) . ', from ' . $this->source . $suffix;
+	}
+
+	/**
+	 * Just the levels a reader needs, by label, for editors: "Gold or Silver".
+	 * Empty when the item is open.
+	 */
+	public function readers( ?Levels $levels = null ): string {
+		$label = static fn( string $slug ) => $levels?->get( $slug )?->label ?? $slug;
+
+		return implode( ' and ', array_map( static fn( array $c ) => implode( ' or ', array_map( $label, $c ) ), $this->clauses ) );
 	}
 }

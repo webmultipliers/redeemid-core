@@ -67,6 +67,14 @@ Changing the WordPress salts or `REDEEMID_ENCRYPTION_KEY` makes secrets saved in
 | `REDEEMID_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same Headless channel. When set it replaces the public token for every Storefront call, and buy-now and cart calls send the buyer's IP (`Shopify-Storefront-Buyer-IP`), as Shopify asks of server-side callers. Without it every visitor looks like your server's one IP, so Shopify may throttle checkout creation. |
 | `REDEEMID_ENCRYPTION_KEY` | no | Base64 32-byte key for token encryption. By default a key is derived from the WordPress salts. Set this if you rotate salts. |
 
+## Guides
+
+The site docs at [redeemid.com/docs](https://www.redeemid.com/docs/) cover setup step by step. Three are written for people who don't read code:
+
+- [Editor's guide](https://www.redeemid.com/docs/editors/): who can read a post and why, for writers and editors.
+- [How changes reach WordPress](https://www.redeemid.com/docs/sync/): the path from a Shopify change to a page, and what slows it.
+- [Works with](https://www.redeemid.com/docs/compatibility/): page caches, SEO, ads, newsletters and analytics alongside RedeemID.
+
 ## Admin screens
 
 Everything lives under the top-level **RedeemID** menu:
@@ -206,7 +214,7 @@ The panel locked visitors see, for a gate and for a locked item's wall, is the `
 
 Whole items can be gated without a block, by rules on four layers. The strongest layer that has a rule wins:
 
-1. **The item** (the Access box in the editor, or quick and bulk edit on the post list): inherit, Public, these levels instead, or the inherited rule plus these levels. Optional dates: locked until (embargo) and free until.
+1. **The item** (the **Who can read this** box in the editor, or quick and bulk edit on the post list): follow the site rules, free to everyone, only the ticked levels, or the site rules and also a ticked level. Optional dates: locked until, then free (an embargo), and free until, then locked.
 2. **Its terms** (each term's edit screen): *Requires* one of some levels, or *free to everyone until* a date. A free-until rule must have an end date and beats every Requires term until then. In a hierarchical taxonomy a child term with no rule takes its nearest ancestor's.
 3. **Its post type** (Access → Content rules): the levels every item needs, the teaser locked visitors see, and an optional number of days after publishing when items open.
 4. **The site default** (Access → Content rules).
@@ -239,7 +247,7 @@ To show access on cards and pages:
 - **Access Badge** block (`redeemid/access-badge`): the level an item needs, in the level's badge colour and always with its label, with a lock for visitors it locks out. In a query loop it describes each post. It reads the item's access rule or, for an item without one, the first Membership Gate in its content that is set to an access level (custom-tag gates have no level to name). Set **Label for free items** (for example `Free`) to mark items anyone can read too, so a list shows free and paid stories side by side; leave it empty to show nothing on them. Items gated inline also get the `redeemid-gated`, `requires-{level}` and `is-locked`/`is-unlocked` post classes, and the `redeemid/access` binding names their gate's level instead of calling them free.
 - **Block bindings:** bind a paragraph, heading or button to the `redeemid/access` source with a `key` of `level`, `levels`, `state` (Free to read, Locked, Included with your membership), `message`, `cta_label` or `cta_url`.
 
-From the command line, `wp redeemid access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp redeemid access recompute` rebuilds every item's cached rule and search text.
+From the command line, `wp redeemid access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp redeemid access recompute` rebuilds every item's cached rule and search text. `wp redeemid access changes [--since=<date>] [--level=<slug>] [--format=table|csv|json]` lists who joined or left a level (default: the last 7 days), and `wp redeemid access export [--post_type=<type>] [--format=csv|json|table]` writes every gated item's effective rule for an audit.
 
 Each item's rule layers are cached in `_redeemid_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
 
@@ -279,7 +287,7 @@ Access arrives when Shopify's tag webhook does, usually within seconds. A custom
 
 The locked panel a gate shows reads the visitor's situation: sign in, connect a Shopify account, "finishing up" after checkout, renew a level that lapsed, upgrade from a lower level, or join. Each has its own wording and button, which the `redeemid_locked_panel` filter can change.
 
-**Drip.** The Access box on an item has "Drip: members can read it after N days of membership". A member who passes the item's rule but joined more recently sees when it opens for them instead. A member's start is the `membership.member_since` metafield when Shopify keeps one, otherwise when they first held a level they hold now (as WordPress saw it), otherwise when they linked. Search listings don't apply drip.
+**Drip.** The **Who can read this** box on an item has "Members can read it after N days of membership". A member who passes the item's rule but joined more recently sees when it opens for them instead. A member's start is the `membership.member_since` metafield when Shopify keeps one, otherwise when they first held a level they hold now (as WordPress saw it), otherwise when they linked. Search listings don't apply drip.
 
 **Members' home.** A level can name a members' home page (Access → Levels). A member who logs in with Shopify from the home page or a plain login link lands there; logging in from an article returns them to the article. The `redeemid_sign_in_redirect` filter can change either.
 

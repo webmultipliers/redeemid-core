@@ -108,6 +108,30 @@ final class LevelHistory {
 	}
 
 	/**
+	 * Joins and departures at or after $cutoff, oldest first. Pure.
+	 *
+	 * @param array<string, array{since: int, until: int}> $history
+	 * @return list<array{level: string, change: string, at: int}>
+	 */
+	public static function changes( array $history, int $cutoff ): array {
+		$rows = [];
+
+		foreach ( $history as $slug => $entry ) {
+			foreach ( [ 'since' => 'joined', 'until' => 'left' ] as $key => $change ) {
+				$at = (int) ( $entry[ $key ] ?? 0 );
+
+				if ( $at > 0 && $at >= $cutoff ) {
+					$rows[] = [ 'level' => (string) $slug, 'change' => $change, 'at' => $at ];
+				}
+			}
+		}
+
+		usort( $rows, static fn( array $a, array $b ) => $a['at'] <=> $b['at'] );
+
+		return $rows;
+	}
+
+	/**
 	 * Whether the customer held $slug before and no longer does.
 	 */
 	public static function lapsed( int $user_id, string $slug ): bool {

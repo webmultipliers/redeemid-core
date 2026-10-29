@@ -1,0 +1,11 @@
+{
+  "data": {
+    "customer": {
+      "id": "gid://shopify/Customer/706405506930370084",
+      "firstName": "Bob",
+      "lastName": "Biller",
+      "emailAddress": { "emailAddress": "bob@biller.com" },
+      "tags": ["gold", "newsletter"]
+    }
+  }
+}

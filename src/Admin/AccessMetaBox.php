@@ -26,7 +26,7 @@ final class AccessMetaBox {
 
 	public static function add(): void {
 		foreach ( ItemRule::post_types() as $type ) {
-			add_meta_box( 'redeemid-access', __( 'Access', 'redeemid' ), [ self::class, 'render' ], $type, 'side', 'high' );
+			add_meta_box( 'redeemid-access', __( 'Who can read this', 'redeemid' ), [ self::class, 'render' ], $type, 'side', 'high' );
 		}
 	}
 
@@ -35,16 +35,33 @@ final class AccessMetaBox {
 		$levels = LevelStore::levels();
 		$custom = array_filter( $levels->all(), static fn( Level $l ) => Level::PUBLIC !== $l->slug );
 		$modes  = [
-			Context::ITEM_INHERIT => __( 'Inherit (terms, then post type)', 'redeemid' ),
-			Context::ITEM_PUBLIC  => __( 'Public: open this item', 'redeemid' ),
-			Context::ITEM_LEVEL   => __( 'Require these levels instead', 'redeemid' ),
-			Context::ITEM_ADD     => __( 'Inherited rule, plus these levels', 'redeemid' ),
+			Context::ITEM_INHERIT => __( 'Follow the site rules (category, then post type)', 'redeemid' ),
+			Context::ITEM_PUBLIC  => __( 'Free to everyone', 'redeemid' ),
+			Context::ITEM_LEVEL   => __( 'Only the levels ticked below', 'redeemid' ),
+			Context::ITEM_ADD     => __( 'The site rules, and also a level ticked below', 'redeemid' ),
 		];
 		$local  = static fn( ?int $t ) => $t ? wp_date( 'Y-m-d\TH:i', $t ) : '';
 
 		wp_nonce_field( self::NONCE, self::NONCE );
 		?>
-		<p><strong><?php esc_html_e( 'Now:', 'redeemid' ); ?></strong> <?php echo esc_html( Gatekeeper::rule( $post )->explain( $levels ) ); ?></p>
+		<?php $effective = Gatekeeper::rule( $post ); ?>
+		<p>
+			<strong>
+				<?php
+				echo esc_html(
+					$effective->open()
+						? __( 'Right now: free to everyone.', 'redeemid' )
+						/* translators: %s: levels, such as "Gold or Silver" */
+						: sprintf( __( 'Right now: readers need %s.', 'redeemid' ), $effective->readers( $levels ) )
+				);
+				?>
+			</strong>
+			<br>
+			<?php
+			/* translators: %s: where the rule comes from, such as "Category: Investigations" */
+			echo esc_html( sprintf( __( 'Set by: %s', 'redeemid' ), $effective->source ) );
+			?>
+		</p>
 		<?php $next = Index::next_change( Gatekeeper::context( $post ), time() ); ?>
 		<?php if ( $next ) : ?>
 			<p>
@@ -69,7 +86,7 @@ final class AccessMetaBox {
 		<?php endforeach; ?>
 
 		<p>
-			<label for="redeemid-access-mode"><?php esc_html_e( 'This item', 'redeemid' ); ?></label><br>
+			<label for="redeemid-access-mode"><?php esc_html_e( 'Who can read it', 'redeemid' ); ?></label><br>
 			<select id="redeemid-access-mode" name="redeemid_access[mode]" style="width:100%">
 				<?php foreach ( $modes as $value => $label ) : ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $rule['mode'], $value ); ?>><?php echo esc_html( $label ); ?></option>
@@ -78,31 +95,31 @@ final class AccessMetaBox {
 		</p>
 
 		<fieldset>
-			<legend><?php esc_html_e( 'Levels (any one passes)', 'redeemid' ); ?></legend>
+			<legend><?php esc_html_e( 'Levels (a reader needs any one)', 'redeemid' ); ?></legend>
 			<?php foreach ( $custom as $slug => $level ) : ?>
 				<label style="display:block"><input type="checkbox" name="redeemid_access[levels][]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $rule['levels'], true ) ); ?>> <?php echo esc_html( $level->label ); ?></label>
 			<?php endforeach; ?>
-			<p class="description"><?php esc_html_e( 'Used by the last two choices. Blocks inside the item can only narrow its rule, never widen it.', 'redeemid' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Used by the last two choices. A members-only block inside the post can hide more of it, never open it to more readers.', 'redeemid' ); ?></p>
 		</fieldset>
 
 		<p>
-			<label for="redeemid-access-locked-until"><?php esc_html_e( 'Embargo: locked until', 'redeemid' ); ?></label>
+			<label for="redeemid-access-locked-until"><?php esc_html_e( 'Locked until, then free to everyone', 'redeemid' ); ?></label>
 			<input id="redeemid-access-locked-until" type="datetime-local" name="redeemid_access[locked_until]" value="<?php echo esc_attr( $local( $rule['locked_until'] ) ); ?>" style="width:100%">
 		</p>
 		<p>
 			<label for="redeemid-access-public-until"><?php esc_html_e( 'Free until, then locked', 'redeemid' ); ?></label>
 			<input id="redeemid-access-public-until" type="datetime-local" name="redeemid_access[public_until]" value="<?php echo esc_attr( $local( $rule['public_until'] ) ); ?>" style="width:100%">
-			<span class="description"><?php esc_html_e( 'Dates are publish-date embargoes, the same for everyone. Site time zone.', 'redeemid' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Fixed dates, the same for every reader, in the site time zone.', 'redeemid' ); ?></span>
 		</p>
 		<p>
-			<label for="redeemid-access-drip"><?php esc_html_e( 'Drip: members can read it after', 'redeemid' ); ?></label>
+			<label for="redeemid-access-drip"><?php esc_html_e( 'Members can read it after', 'redeemid' ); ?></label>
 			<input id="redeemid-access-drip" type="number" min="0" max="3650" step="1" name="redeemid_access[drip_days]" value="<?php echo (int) $rule['drip_days']; ?>" style="width:6em"> <?php esc_html_e( 'days of membership', 'redeemid' ); ?>
-			<span class="description"><?php esc_html_e( 'Counted from when each member joined. 0 for no drip.', 'redeemid' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Counted from when each member joined. 0 means straight away.', 'redeemid' ); ?></span>
 		</p>
 		<p>
 			<label><input type="checkbox" name="redeemid_access[meter_exempt]" value="1" <?php checked( $rule['meter_exempt'] ); ?>> <?php esc_html_e( 'Never count toward a meter', 'redeemid' ); ?></label>
 		</p>
-		<p class="description"><?php esc_html_e( 'Gating protects this item\'s text. Files linked from it, such as PDFs and images, keep public URLs.', 'redeemid' ); ?></p>
+		<p class="description"><?php esc_html_e( 'This locks the post\'s text. Files linked from it, such as PDFs and images, can still be opened by anyone with the link.', 'redeemid' ); ?></p>
 		<?php
 	}
 
