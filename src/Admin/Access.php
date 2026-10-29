@@ -227,7 +227,7 @@ final class Access {
 						<tr>
 							<td>
 								<?php if ( $level->badge ) : ?>
-									<span class="redeemid-chip redeemid-chip--solid" style="background:<?php echo esc_attr( $level->badge ); ?>"><?php echo esc_html( $level->label ); ?></span>
+									<span class="redeemid-chip redeemid-chip--solid" style="background:<?php echo esc_attr( $level->badge ); ?>;color:<?php echo esc_attr( \RedeemID\Access\Badges::ink( $level->badge ) ); ?>"><?php echo esc_html( $level->label ); ?></span>
 								<?php else : ?>
 									<strong><?php echo esc_html( $level->label ); ?></strong>
 								<?php endif; ?>

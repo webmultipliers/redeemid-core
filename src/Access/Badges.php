@@ -93,6 +93,34 @@ final class Badges {
 	}
 
 	/**
+	 * The text colour for a badge filled with this colour: black or white,
+	 * whichever contrasts more (WCAG relative luminance), so a level's badge
+	 * stays readable whatever colour it is given. Pure.
+	 */
+	public static function ink( string $hex ): string {
+		$hex = ltrim( $hex, '#' );
+
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+
+		if ( ! preg_match( '/^[0-9a-f]{6}$/i', $hex ) ) {
+			return '#fff';
+		}
+
+		$channel = static function ( string $pair ): float {
+			$c = hexdec( $pair ) / 255;
+
+			return $c <= 0.03928 ? $c / 12.92 : ( ( $c + 0.055 ) / 1.055 ) ** 2.4;
+		};
+
+		$luminance = 0.2126 * $channel( substr( $hex, 0, 2 ) ) + 0.7152 * $channel( substr( $hex, 2, 2 ) ) + 0.0722 * $channel( substr( $hex, 4, 2 ) );
+
+		// White gives (1.05 / (L + 0.05)), black ((L + 0.05) / 0.05): equal at L ≈ 0.179.
+		return $luminance > 0.179 ? '#000' : '#fff';
+	}
+
+	/**
 	 * One binding value for an item. Every value is public: labels, the
 	 * visitor's own state and the level's wall copy, never item content.
 	 */

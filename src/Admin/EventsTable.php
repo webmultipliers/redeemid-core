@@ -95,7 +95,8 @@ final class EventsTable extends \WP_List_Table {
 		$filters = self::filters();
 		?>
 		<div class="alignleft actions">
-			<select name="event">
+			<label class="screen-reader-text" for="redeemid-filter-event"><?php esc_html_e( 'Filter by event', 'redeemid' ); ?></label>
+			<select name="event" id="redeemid-filter-event">
 				<option value=""><?php esc_html_e( 'All events', 'redeemid' ); ?></option>
 				<?php foreach ( EventLog::events() as $event ) : ?>
 					<option value="<?php echo esc_attr( $event ); ?>" <?php selected( $filters['event'], $event ); ?>><?php echo esc_html( $event ); ?></option>

@@ -3,7 +3,8 @@
  * Access badge: the level an item needs, for the item the block sits in or
  * for each post of a query loop: items gated by their access rule, and items
  * whose body sits in a Membership Gate set to an access level. Colour is
- * always paired with the label. With a free label set, items anyone can read
+ * always paired with the label, and the text is black or white, whichever
+ * reads better on the level's colour. With a free label set, items anyone can read
  * get a plain badge with that label instead of nothing.
  *
  * @var array $a       Block attributes.
@@ -33,7 +34,7 @@ if ( $redeemid_show ) {
 		? $redeemid_state
 		: ( $redeemid_level?->label ?? __( 'Members', 'redeemid' ) );
 	$redeemid_color = $redeemid_level && '' !== $redeemid_level->badge ? sanitize_hex_color( $redeemid_level->badge ) : '';
-	$redeemid_style = $redeemid_color ? '--redeemid-badge:' . $redeemid_color : '';
+	$redeemid_style = $redeemid_color ? '--redeemid-badge:' . $redeemid_color . ';--redeemid-badge-ink:' . \RedeemID\Access\Badges::ink( $redeemid_color ) : '';
 }
 ?>
 <?php if ( $redeemid_show ) : ?>

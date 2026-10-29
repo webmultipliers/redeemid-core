@@ -370,7 +370,7 @@ final class Customers {
 					echo esc_html( sprintf( __( 'Started %s', 'redeemid' ), wp_date( 'Y-m-d H:i', (int) $job['started_at'] ) ) );
 					?>
 				</p>
-				<progress class="redeemid-progress" max="100" value="<?php echo (int) $view['percent']; ?>"><?php echo (int) $view['percent']; ?>%</progress>
+				<progress class="redeemid-progress" max="100" aria-label="<?php esc_attr_e( 'Resync progress', 'redeemid' ); ?>" value="<?php echo (int) $view['percent']; ?>"><?php echo (int) $view['percent']; ?>%</progress>
 				<p class="redeemid-bulk__line"><?php echo esc_html( $view['line'] ); ?></p>
 				<p class="redeemid-bulk__error"<?php echo '' === $view['error'] ? ' hidden' : ''; ?>><strong><?php esc_html_e( 'Last error:', 'redeemid' ); ?></strong> <span><?php echo esc_html( $view['error'] ); ?></span></p>
 			</div>

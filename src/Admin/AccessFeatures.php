@@ -218,8 +218,9 @@ final class AccessFeatures {
 				<input type="hidden" name="do" value="save_feature">
 				<input type="hidden" name="slug" value="<?php echo esc_attr( $edit->slug ); ?>">
 				<?php wp_nonce_field( self::ACTION ); ?>
-				<textarea name="routes" rows="4" class="large-text code" placeholder="gold&#10;Add-on purchase = tag:ad-free-addon"><?php echo esc_textarea( Route::format( $edit->routes ) ); ?></textarea>
-				<p class="description">
+				<label class="screen-reader-text" for="redeemid-feature-routes"><?php esc_html_e( 'Routes', 'redeemid' ); ?></label>
+				<textarea name="routes" id="redeemid-feature-routes" aria-describedby="redeemid-feature-routes-help" rows="4" class="large-text code" placeholder="gold&#10;Add-on purchase = tag:ad-free-addon"><?php echo esc_textarea( Route::format( $edit->routes ) ); ?></textarea>
+				<p class="description" id="redeemid-feature-routes-help">
 					<?php esc_html_e( 'One route per line; every test in a line must pass, and any line grants the feature. A test is a level slug (gold), tag:<tag>, or test:<name> for a custom test. Start a line with "Label = " to name the route on the account card ("Add-on purchase = tag:ad-free-addon"); otherwise it is named after its level. public and signed-in are levels too. Empty: nobody gets it.', 'redeemid' ); ?>
 				</p>
 				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Features are site-wide: saving changes behaviour on every page that uses this feature, and caches are told to purge the whole site.', 'redeemid' ); ?></p></div>
