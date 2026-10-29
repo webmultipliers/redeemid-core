@@ -1,10 +1,14 @@
 name: Release
 
-# Cuts a GitHub release when a push to main changes the Version header in
-# redeemid.php. Run it by hand to publish the current version if its release
-# is missing (for example the first one).
+# Every push to main asks whether to cut a release: it does when the Version
+# header in redeemid.php changed. Pull requests into main run the same check
+# and report what merging would do, without publishing. Run it by hand to
+# publish the current version if its release is missing (for example the
+# first one).
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
   workflow_dispatch:
 
@@ -12,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: release
+  group: release-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
   cancel-in-progress: false
 
 env:
@@ -47,8 +51,8 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-          # The commit main pointed at before this push.
-          before="${{ github.event.before }}"
+          # The commit main pointed at before this push, or the PR's base.
+          before="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$before" 2>/dev/null; then
             before=$(git rev-parse HEAD^ 2>/dev/null || true)
           fi
@@ -67,14 +71,19 @@ jobs:
           PREVIOUS: ${{ steps.version.outputs.previous }}
         run: |
           if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            echo "Release v$VERSION already exists."
-            echo "release=false" >> "$GITHUB_OUTPUT"
+            release=false; note="Release v$VERSION already exists, so no release."
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$VERSION" != "$PREVIOUS" ]; then
-            echo "release=true" >> "$GITHUB_OUTPUT"
+            release=true; note="Version ${PREVIOUS:-none} -> $VERSION: releasing v$VERSION."
           else
-            echo "Version not bumped."
-            echo "release=false" >> "$GITHUB_OUTPUT"
+            release=false; note="Version $VERSION not bumped, so no release."
           fi
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            [ "$release" = true ] && note="Merging this will release v$VERSION." || note="Merging this will not release: $note"
+            release=false
+          fi
+          echo "::notice::$note"
+          echo "$note" >> "$GITHUB_STEP_SUMMARY"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
 
   release:
     name: Build and release
