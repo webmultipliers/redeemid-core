@@ -10,6 +10,8 @@ use RedeemID\Support\CustomerId;
  * editing and webhook registration. Never called with credentials from the browser.
  */
 final class Admin {
+	public const RECONCILE_QUERY = 'query RedeemIDReconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }';
+
 	public static function available(): bool {
 		return AdminToken::configured() && '' !== Config::store_domain();
 	}
@@ -54,15 +56,21 @@ final class Admin {
 	 */
 	public static function customers( array $ids ): array|\WP_Error {
 		$data = self::query(
-			'query RedeemIDReconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags state since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }',
+			self::RECONCILE_QUERY,
 			[ 'ids' => array_map( static fn( CustomerId $id ) => $id->gid(), array_slice( $ids, 0, 50 ) ) ],
 			'admin.customers'
 		);
 
-		if ( is_wp_error( $data ) ) {
-			return $data;
-		}
+		return is_wp_error( $data ) ? $data : self::parse_customers( $data );
+	}
 
+	/**
+	 * The reconcile query's data, keyed by numeric ID. Pure; the contract
+	 * tests feed it a recorded response.
+	 *
+	 * @return array<string, array{tags: string[], state: string, since: ?string, renews: ?string}>
+	 */
+	public static function parse_customers( array $data ): array {
 		$out = [];
 
 		foreach ( (array) ( $data['nodes'] ?? [] ) as $node ) {

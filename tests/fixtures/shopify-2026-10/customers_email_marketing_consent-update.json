@@ -1,0 +1,9 @@
+{
+  "customer_id": 706405506930370084,
+  "email_address": "bob@biller.com",
+  "email_marketing_consent": {
+    "state": "not_subscribed",
+    "opt_in_level": null,
+    "consent_updated_at": null
+  }
+}

@@ -44,10 +44,13 @@ final class Extractor {
 				break;
 
 			case Topics::SUMMARY:
-				$data += [
-					'orders_count' => isset( $payload['number_of_orders'] ) ? (int) $payload['number_of_orders'] : ( isset( $payload['orders_count'] ) ? (int) $payload['orders_count'] : null ),
-					'amount_spent' => self::str( $payload['amount_spent']['amount'] ?? $payload['total_spent'] ?? null ),
-					'currency'     => self::str( $payload['amount_spent']['currency_code'] ?? $payload['currency'] ?? null ),
+				// The 2026-10 payload is camelCase (numberOfOrders, amountSpent.currencyCode); snake_case kept for older ones.
+				$orders = $payload['numberOfOrders'] ?? $payload['number_of_orders'] ?? $payload['orders_count'] ?? null;
+				$spent  = $payload['amountSpent'] ?? $payload['amount_spent'] ?? null;
+				$data  += [
+					'orders_count' => is_numeric( $orders ) ? (int) $orders : null,
+					'amount_spent' => self::str( is_array( $spent ) ? ( $spent['amount'] ?? null ) : ( $payload['total_spent'] ?? null ) ),
+					'currency'     => self::str( is_array( $spent ) ? ( $spent['currencyCode'] ?? $spent['currency_code'] ?? null ) : ( $payload['currency'] ?? null ) ),
 				];
 				break;
 

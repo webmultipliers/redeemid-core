@@ -9,7 +9,7 @@ final class CustomerAccount {
 	/**
 	 * Field names verified at build time against the pinned version.
 	 */
-	private const IDENTITY_QUERY = <<<'GRAPHQL'
+	public const IDENTITY_QUERY = <<<'GRAPHQL'
 query RedeemIDIdentity {
   customer {
     id
@@ -34,10 +34,20 @@ GRAPHQL;
 			return $data;
 		}
 
+		return self::parse_identity( $data ) ?? new \WP_Error( 'shopify_no_customer', 'Shopify did not return a customer.' );
+	}
+
+	/**
+	 * The identity query's data, or null when it holds no customer. Pure; the
+	 * contract tests feed it a recorded response.
+	 *
+	 * @return array{id: string, first_name: string, last_name: string, email: string, tags: array}|null
+	 */
+	public static function parse_identity( array $data ): ?array {
 		$customer = $data['customer'] ?? null;
 
 		if ( ! is_array( $customer ) || empty( $customer['id'] ) ) {
-			return new \WP_Error( 'shopify_no_customer', 'Shopify did not return a customer.' );
+			return null;
 		}
 
 		return [
