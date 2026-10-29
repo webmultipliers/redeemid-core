@@ -16,10 +16,11 @@ use RedeemID\Sync\Mirror;
  * per visitor, so guests get the wall and a nudge to sign in.
  *
  * An item counts once per period, when the reader opens its own page: never
- * from a loop, feed, REST, search or embed, and never in a staff preview. The
- * count lives in the reader's user meta. Items marked "Never count toward a
- * meter" and open items are never metered. Drip is for members, so the meter
- * never opens an item a member is still waiting for.
+ * from a loop, feed, REST, search or embed, and never for staff who bypass
+ * gates or preview a view. The count lives in the reader's user meta. Items
+ * marked "Never count toward a meter" and open items are never metered. Drip
+ * is for members, so the meter never opens an item a member is still waiting
+ * for.
  *
  * period_key() and consume() are pure.
  */
@@ -100,6 +101,7 @@ final class Meter {
 			|| ! $rule->meter_eligible
 			|| $user_id < 1
 			|| null !== Viewer::preview_as()
+			|| Viewer::can_bypass()
 			|| in_array( $verdict->decision->reason, [ Decision::DRIP, Decision::BAD_RULE, Decision::DISABLED ], true )
 			|| 'disabled' === get_user_meta( $user_id, Mirror::STATUS, true )
 			|| ! self::reading( $post )
