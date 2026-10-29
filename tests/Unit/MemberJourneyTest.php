@@ -105,4 +105,20 @@ final class MemberJourneyTest extends TestCase {
 	public function test_drip_shows_its_own_panel(): void {
 		$this->assertSame( PanelKind::DRIP, PanelKind::for( Decision::DRIP ) );
 	}
+
+	public function test_level_changes_since_a_date(): void {
+		$history = [
+			'gold'   => [ 'since' => 100, 'until' => 500 ],
+			'silver' => [ 'since' => 400, 'until' => 0 ],
+			'bronze' => [ 'since' => 50, 'until' => 0 ],
+		];
+
+		$this->assertSame(
+			[
+				[ 'level' => 'silver', 'change' => 'joined', 'at' => 400 ],
+				[ 'level' => 'gold', 'change' => 'left', 'at' => 500 ],
+			],
+			LevelHistory::changes( $history, 300 )
+		);
+	}
 }

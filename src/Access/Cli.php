@@ -2,12 +2,17 @@
 
 namespace RedeemID\Access;
 
+use RedeemID\Sync\LevelHistory;
+use RedeemID\Sync\Mirror;
+
 /**
  * Access rules from the command line.
  *
  *     wp redeemid access explain <post> [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
  *     wp redeemid access features [--as=<viewer>] [--tags=<tags>] [--user=<id>] [--format=<format>]
  *     wp redeemid access recompute
+ *     wp redeemid access changes [--since=<date>] [--level=<slug>] [--format=<format>]
+ *     wp redeemid access export [--post_type=<type>] [--format=<format>]
  */
 final class Cli {
 	public static function register(): void {
@@ -133,6 +138,153 @@ final class Cli {
 		RuleStore::bump();
 		Index::schedule_reindex();
 		\WP_CLI::success( 'Rules version bumped and a reindex scheduled. Run `wp cron event run ' . Index::REINDEX . '` to start it now.' );
+	}
+
+	/**
+	 * Who joined or left a level since a date, from each member's level history.
+	 *
+	 * History is display-only and is cleared when a customer is unlinked, so
+	 * unlinked customers drop out of this list.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--since=<date>]
+	 * : Anything strtotime() reads, such as 2026-10-01 or "7 days ago".
+	 * ---
+	 * default: 7 days ago
+	 * ---
+	 *
+	 * [--level=<slug>]
+	 * : Only this level.
+	 *
+	 * [--format=<format>]
+	 * : table, csv or json.
+	 * ---
+	 * default: table
+	 * ---
+	 *
+	 * @param string[]             $args
+	 * @param array<string, mixed> $assoc
+	 */
+	public function changes( array $args, array $assoc ): void {
+		$cutoff = strtotime( (string) ( $assoc['since'] ?? '7 days ago' ) );
+
+		if ( false === $cutoff ) {
+			\WP_CLI::error( 'Could not read --since.' );
+		}
+
+		$only   = (string) ( $assoc['level'] ?? '' );
+		$levels = LevelStore::levels();
+		$rows   = [];
+		$users  = get_users(
+			[
+				'meta_key' => LevelHistory::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'fields'   => [ 'ID', 'display_name' ],
+				'number'   => -1,
+			]
+		);
+
+		foreach ( $users as $user ) {
+			foreach ( LevelHistory::changes( LevelHistory::get( (int) $user->ID ), (int) $cutoff ) as $row ) {
+				if ( '' !== $only && $only !== $row['level'] ) {
+					continue;
+				}
+
+				$rows[] = [
+					'date'   => wp_date( 'Y-m-d H:i', $row['at'] ),
+					'change' => $row['change'],
+					'level'  => $levels->get( $row['level'] )?->label ?? $row['level'],
+					'user'   => (int) $user->ID,
+					'name'   => (string) $user->display_name,
+					'email'  => (string) get_user_meta( (int) $user->ID, Mirror::EMAIL, true ),
+				];
+			}
+		}
+
+		usort( $rows, static fn( array $a, array $b ) => strcmp( $a['date'], $b['date'] ) );
+
+		if ( ! $rows && 'table' === ( $assoc['format'] ?? 'table' ) ) {
+			\WP_CLI::line( 'Nobody joined or left a level since ' . wp_date( 'Y-m-d H:i', (int) $cutoff ) . '.' );
+			return;
+		}
+
+		\WP_CLI\Utils\format_items( (string) ( $assoc['format'] ?? 'table' ), $rows, [ 'date', 'change', 'level', 'user', 'name', 'email' ] );
+	}
+
+	/**
+	 * Every gated item's effective rule, for an audit or a spreadsheet.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--post_type=<type>]
+	 * : Only this post type.
+	 *
+	 * [--format=<format>]
+	 * : csv, json or table.
+	 * ---
+	 * default: csv
+	 * ---
+	 *
+	 * @param string[]             $args
+	 * @param array<string, mixed> $assoc
+	 */
+	public function export( array $args, array $assoc ): void {
+		$types = ItemRule::post_types();
+
+		if ( isset( $assoc['post_type'] ) ) {
+			if ( ! in_array( $assoc['post_type'], $types, true ) ) {
+				\WP_CLI::error( 'That post type is not gated.' );
+			}
+
+			$types = [ (string) $assoc['post_type'] ];
+		}
+
+		$levels = LevelStore::levels();
+		$rows   = [];
+		$page   = 1;
+
+		do {
+			$ids = get_posts(
+				[
+					'post_type'      => $types,
+					'post_status'    => [ 'publish', 'future', 'draft', 'pending', 'private' ],
+					'posts_per_page' => 100,
+					'paged'          => $page++,
+					'orderby'        => 'ID',
+					'order'          => 'ASC',
+					'fields'         => 'ids',
+				]
+			);
+
+			foreach ( $ids as $id ) {
+				$post = get_post( $id );
+
+				if ( ! $post instanceof \WP_Post ) {
+					continue;
+				}
+
+				$rule = Gatekeeper::rule( $post );
+				$item = ItemRule::get( $post );
+
+				$rows[] = [
+					'id'           => $post->ID,
+					'type'         => $post->post_type,
+					'status'       => $post->post_status,
+					'title'        => get_the_title( $post ),
+					'readers'      => $rule->open() ? 'everyone' : $rule->readers( $levels ),
+					'set_by'       => $rule->source,
+					'item_mode'    => $item['mode'],
+					'item_levels'  => implode( ',', $item['levels'] ),
+					'locked_until' => $item['locked_until'] ? wp_date( 'Y-m-d H:i', (int) $item['locked_until'] ) : '',
+					'public_until' => $item['public_until'] ? wp_date( 'Y-m-d H:i', (int) $item['public_until'] ) : '',
+					'drip_days'    => (int) $item['drip_days'],
+				];
+			}
+
+			wp_cache_flush_runtime();
+		} while ( count( $ids ) === 100 );
+
+		\WP_CLI\Utils\format_items( (string) ( $assoc['format'] ?? 'csv' ), $rows, [ 'id', 'type', 'status', 'title', 'readers', 'set_by', 'item_mode', 'item_levels', 'locked_until', 'public_until', 'drip_days' ] );
 	}
 
 	/**
