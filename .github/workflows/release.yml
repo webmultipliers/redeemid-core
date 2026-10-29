@@ -1,0 +1,131 @@
+name: Release
+
+# Every push to main asks whether to cut a release: it does when the Version
+# header in redeemid.php changed. Pull requests into main run the same check
+# and report what merging would do, without publishing. Run it by hand to
+# publish the current version if its release is missing (for example the
+# first one).
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: false
+
+env:
+  ENTRY_FILE: redeemid.php
+  SLUG: redeemid-core
+
+jobs:
+  check:
+    name: Check version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release: ${{ steps.decide.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          read_version() { grep -oP '^\s*\*?\s*Version:\s*\K[0-9A-Za-z.+-]+' | head -1; }
+          version=$(read_version < "$ENTRY_FILE")
+          if [ -z "$version" ]; then
+            echo "::error file=$ENTRY_FILE::Version header not found."
+            exit 1
+          fi
+          constant=$(grep -oP "define\(\s*'REDEEMID_VERSION',\s*'\K[^']+" "$ENTRY_FILE")
+          if [ "$constant" != "$version" ]; then
+            echo "::error file=$ENTRY_FILE::Version header ($version) and REDEEMID_VERSION ($constant) differ."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          # The commit main pointed at before this push, or the PR's base.
+          before="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$before" 2>/dev/null; then
+            before=$(git rev-parse HEAD^ 2>/dev/null || true)
+          fi
+          previous=""
+          if [ -n "$before" ]; then
+            previous=$(git show "$before:$ENTRY_FILE" 2>/dev/null | read_version || true)
+          fi
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          echo "Version $version (was ${previous:-none})"
+
+      - name: Decide
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+        run: |
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            release=false; note="Release v$VERSION already exists, so no release."
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$VERSION" != "$PREVIOUS" ]; then
+            release=true; note="Version ${PREVIOUS:-none} -> $VERSION: releasing v$VERSION."
+          else
+            release=false; note="Version $VERSION not bumped, so no release."
+          fi
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            [ "$release" = true ] && note="Merging this will release v$VERSION." || note="Merging this will not release: $note"
+            release=false
+          fi
+          echo "::notice::$note"
+          echo "$note" >> "$GITHUB_STEP_SUMMARY"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Build and release
+    needs: check
+    if: needs.check.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: sodium
+          coverage: none
+          tools: composer
+
+      - name: Install production dependencies
+        run: composer build-prod
+
+      - name: Bundle
+        run: |
+          stage="$RUNNER_TEMP/stage"
+          mkdir -p "$stage/$SLUG"
+          rsync -a --exclude-from=.distignore ./ "$stage/$SLUG/"
+          test -f "$stage/$SLUG/$ENTRY_FILE"
+          test -f "$stage/$SLUG/vendor/autoload.php"
+          (cd "$stage" && zip -rqX "$GITHUB_WORKSPACE/$SLUG.zip" "$SLUG")
+          sha256sum "$SLUG.zip" | tee "$SLUG.zip.sha256"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=(--latest)
+          case "$VERSION" in *-*) flags=(--prerelease --latest=false) ;; esac
+          gh release create "v$VERSION" "$SLUG.zip" "$SLUG.zip.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "RedeemID $VERSION" \
+            --generate-notes \
+            "${flags[@]}"
