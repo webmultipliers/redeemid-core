@@ -36,7 +36,7 @@ final class AccessTest {
 		);
 		$viewers = [
 			Explain::AS_GUEST     => __( 'A guest', 'redeemid' ),
-			Explain::AS_SIGNED_IN => __( 'A signed-in customer with no tags', 'redeemid' ),
+			Explain::AS_SIGNED_IN => __( 'A signed-in reader with no membership', 'redeemid' ),
 		];
 
 		foreach ( $levels as $slug => $level ) {
@@ -50,7 +50,7 @@ final class AccessTest {
 		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 			<input type="hidden" name="page" value="<?php echo esc_attr( Access::PAGE ); ?>">
 			<input type="hidden" name="tab" value="test">
-			<?php Menu::panel_start( __( 'Explain access', 'redeemid' ) ); ?>
+			<?php Menu::panel_start( __( 'Who can read this, and why', 'redeemid' ) ); ?>
 			<div class="redeemid-panel__body redeemid-panel__body--flush">
 			<table class="form-table" role="presentation">
 				<tr>
@@ -83,7 +83,7 @@ final class AccessTest {
 			</table>
 			</div>
 			<div class="redeemid-panel__footer">
-				<?php submit_button( __( 'Explain', 'redeemid' ), 'primary', '', false ); ?>
+				<?php submit_button( __( 'Check', 'redeemid' ), 'primary', '', false ); ?>
 			</div>
 			<?php Menu::panel_end(); ?>
 		</form>
@@ -180,7 +180,7 @@ final class AccessTest {
 					<td><ol class="redeemid-trace-list"><?php foreach ( $t['layers'] as $line ) : ?><li><?php echo esc_html( $line ); ?></li><?php endforeach; ?></ol></td>
 				</tr>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Effective rule', 'redeemid' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Who can read it', 'redeemid' ); ?></th>
 					<td>
 						<strong><?php echo esc_html( $t['rule'] ); ?></strong>
 						<?php if ( $t['meter_eligible'] ) : ?>

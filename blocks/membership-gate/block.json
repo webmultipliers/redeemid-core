@@ -5,7 +5,7 @@
 	"title": "Membership Gate",
 	"category": "widgets",
 	"icon": "lock",
-	"description": "Releases its Members only area to entitled members. The decision is made on the server; locked content is never sent to anyone else.",
+	"description": "Shows its Members only area to readers who qualify and its Non-members area to everyone else. The hidden part never reaches their browser.",
 	"keywords": [ "members", "paywall", "gate", "shopify", "tags" ],
 	"textdomain": "redeemid",
 	"supports": { "align": [ "wide", "full" ], "html": false },
@@ -14,14 +14,14 @@
 		{
 			"name": "level",
 			"title": "Membership Gate: access level",
-			"description": "Releases its Members only area to visitors who hold an access level.",
+			"description": "Shows its Members only area to readers who hold an access level.",
 			"attributes": { "ruleSource": { "value": "level" } },
 			"scope": [ "inserter", "transform" ]
 		},
 		{
 			"name": "item",
 			"title": "Membership Gate: this item's rule",
-			"description": "Releases its Members only area to whoever the post's Access box lets in.",
+			"description": "Shows its Members only area to whoever the post's \"Who can read this\" box lets in.",
 			"attributes": { "ruleSource": { "value": "item" } },
 			"scope": [ "inserter", "transform" ]
 		}
@@ -33,7 +33,7 @@
 				"type": "select",
 				"label": "Rule",
 				"default": "custom",
-				"help": "An access level and this item's rule come from RedeemID → Access. This item's rule follows the post's Access box. Whatever you pick, a gate only narrows the item's rule.",
+				"help": "Levels are set up under RedeemID → Access. \"This item's access rule\" follows the post's \"Who can read this\" box. A gate can hide more of a post, never open a locked post to more readers.",
 				"options": [
 					{ "value": "custom", "label": "Custom tags (below)" },
 					{ "value": "level", "label": "An access level" },
@@ -44,7 +44,7 @@
 				"id": "level",
 				"type": "select",
 				"label": "Access level",
-				"help": "Visitors who hold this level, or one that includes it, see the Members only area. Levels are managed under RedeemID → Access.",
+				"help": "Readers who hold this level, or one that includes it, see the Members only area.",
 				"populate": { "type": "function", "function": "redeemid_level_options" },
 				"conditions": [ [ { "id": "ruleSource", "operator": "==", "value": "level" } ] ]
 			},
