@@ -289,7 +289,7 @@ All five are dynamic islands (see [Caching](#caching)), so they never put person
 
 ### Membership tags
 
-The plugin doesn't tag customers. Shopify Flow, or a subscription or membership app, adds a tag when a membership starts and removes it when it ends; levels under RedeemID → Access point at those tags. [docs/shopify-flow.md](docs/shopify-flow.md) has workflows for one-time purchases, fixed terms, subscriptions and complimentary access.
+The plugin doesn't tag customers. Shopify Flow, or a subscription or membership app, adds a tag when a membership starts and removes it when it ends; levels under RedeemID → Access point at those tags. [docs/shopify-flow.md](docs/shopify-flow.md) has workflows for one-time purchases, fixed terms, subscriptions and complimentary access. Membership emails (welcome, renewal, cancellation) belong in Flow or Shopify Email too; [docs/member-emails.md](docs/member-emails.md) covers the WordPress-side ones, built on `redeemid_levels_changed`. Team seats and gifts aren't built yet; [docs/seats-and-gifts.md](docs/seats-and-gifts.md) is the design note.
 
 Access arrives when Shopify's tag webhook does, usually within seconds. A customer who is already signed in can pull it sooner with the **Refresh Membership** block.
 
