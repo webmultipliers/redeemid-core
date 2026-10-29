@@ -308,6 +308,28 @@ final class Registry {
 		return true;
 	}
 
+	/**
+	 * Replace every stored mapping at once (a settings import). Mappings
+	 * for features this site doesn't register are kept, like any orphan,
+	 * and apply once the feature is registered.
+	 *
+	 * @param array<string, array{routes: array}> $stored
+	 */
+	public static function replace( array $stored ): void {
+		$clean = [];
+
+		foreach ( $stored as $slug => $row ) {
+			$slug = Feature::slug( (string) $slug );
+
+			if ( '' !== $slug && is_array( $row['routes'] ?? null ) ) {
+				$clean[ $slug ] = [ 'routes' => array_values( array_map( static fn( $r ) => Route::from_array( is_array( $r ) ? $r : [] )->to_array(), $row['routes'] ) ) ];
+			}
+		}
+
+		ksort( $clean );
+		self::write( $clean, array_values( array_unique( array_merge( array_keys( self::stored() ), array_keys( $clean ) ) ) ) );
+	}
+
 	public static function forget( string $slug ): void {
 		$stored = self::stored();
 		unset( $stored[ $slug ] );

@@ -85,7 +85,7 @@ Everything lives under the top-level **RedeemID** menu:
 - **Webhooks:** the **Delivery health** panel (see [Delivery health](#delivery-health)) with a **Check now** button, the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
 - **Reports:** levels joined and left, purchases that unlocked access, plan card checkouts and sign-ins for the last 30 days; joined and left by week for 12 weeks; and per level, members now and joined and left over 30 days and 12 months. The plugin counts these by day from when it is installed and keeps 400 days; no user IDs are kept with the counts.
-- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. See [Access rules](#access-rules).
+- **Access:** the **Levels** tab holds named access levels (customer-tag conditions that rules point at), with a health check and a count of matching customers. The **Content rules** tab holds the site default, how term rules combine, and the controls for each post type and taxonomy. The **Features** tab lists the registered [features](docs/features.md) and maps who gets each one (levels, tags or custom tests), with a preview for a tag set or user. The **Test** tab takes an item and a viewer (a guest, a level, a set of tags or a real user) and shows every rule layer, the effective rule and its source, what that viewer gets, which blocks they see, and every feature that viewer holds with the route that grants it. The **Export / import** tab downloads levels, content rules, term rules, feature mappings and membership settings as one JSON file, and loads a file from another site: it shows what each section would add, change and remove, and imports only the sections you tick. Files never hold customers, item settings, Shopify credentials or tokens, and addresses on the exporting site are rewritten to this one. See [Access rules](#access-rules).
 - **Debug:** the values above and where each comes from (`wp-config.php`, Settings, or unreadable), platform checks (PHP, WordPress, Blockstudio, plugin blocks, pretty permalinks), the Shopify connection and granted scopes, buttons to refresh discovery, request a fresh Admin token, and the dry-run entitlement check.
 
 Other code can add pages under the menu: `add_submenu_page( REDEEMID_ADMIN_MENU, ... )` on `admin_menu` after priority 10. Two filters help test setups:
@@ -134,7 +134,7 @@ Each delivery is checked and stored, then processed:
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
 - Failures retry, then are dead-lettered. RedeemID → Webhooks lists every delivery and its outcome.
 
-A customer's record is refreshed by these webhooks, at sign-in, by the member's own **Refresh Membership**, or by a staff resync on RedeemID → Customers. Until then the last tags Shopify sent stay in force.
+A customer's record is refreshed by these webhooks, at sign-in (tags from the sign-in itself; with the Admin API, also account status and membership dates), by the member's own **Refresh Membership**, or by a staff resync on RedeemID → Customers. Until then the last tags Shopify sent stay in force.
 
 ### Delivery health
 
@@ -168,6 +168,8 @@ From the command line: `wp redeemid resync user <id>...`, `wp redeemid resync al
    If Shopify's verified email belongs to an existing, unlinked WordPress account that isn't an administrator, the visitor is asked first: **Sign in to my account** (they sign in to WordPress, and the accounts are linked) or **No thanks, use a separate account**. Nothing is linked on email alone. Return false from `redeemid_offer_existing_account` to skip the question.
 5. Tokens are stored encrypted inside the WordPress session, and refresh on demand. No endpoint returns a token.
 6. **Sign out** goes through Shopify's end-session endpoint, so both sessions end. WordPress's own logout link ends only the WordPress session.
+
+Signing in with Shopify, or linking an account, refreshes the member's record: the tags come with the sign-in, and when the Admin API is configured the plugin also reads the account status and the `member_since` and `renews_on` dates. A visitor who comes back while still signed in to WordPress is not synced again; their record changes when Shopify sends a webhook, when they press **Refresh Membership**, or when staff resync them.
 
 If Shopify revokes the session:
 
@@ -247,7 +249,7 @@ To show access on cards and pages:
 - **Access Badge** block (`redeemid/access-badge`): the level an item needs, in the level's badge colour and always with its label, with a lock for visitors it locks out. In a query loop it describes each post. It reads the item's access rule or, for an item without one, the first Membership Gate in its content that is set to an access level (custom-tag gates have no level to name). Set **Label for free items** (for example `Free`) to mark items anyone can read too, so a list shows free and paid stories side by side; leave it empty to show nothing on them. Items gated inline also get the `redeemid-gated`, `requires-{level}` and `is-locked`/`is-unlocked` post classes, and the `redeemid/access` binding names their gate's level instead of calling them free.
 - **Block bindings:** bind a paragraph, heading or button to the `redeemid/access` source with a `key` of `level`, `levels`, `state` (Free to read, Locked, Included with your membership), `message`, `cta_label` or `cta_url`.
 
-From the command line, `wp redeemid access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp redeemid access recompute` rebuilds every item's cached rule and search text. `wp redeemid access changes [--since=<date>] [--level=<slug>] [--format=table|csv|json]` lists who joined or left a level (default: the last 7 days), and `wp redeemid access export [--post_type=<type>] [--format=csv|json|table]` writes every gated item's effective rule for an audit.
+From the command line, `wp redeemid access explain <post> --as=<guest|signed-in|level|tags|user> [--tags=a,b] [--user=<id>] [--format=json]` prints the same trace as the Test tab, and `wp redeemid access recompute` rebuilds every item's cached rule and search text. `wp redeemid access changes [--since=<date>] [--level=<slug>] [--format=table|csv|json]` lists who joined or left a level (default: the last 7 days), and `wp redeemid access export [--post_type=<type>] [--format=csv|json|table]` writes every gated item's effective rule for an audit. `wp redeemid settings export [--file=<path>]` and `wp redeemid settings import <file> [--sections=levels,rules,term_rules,features,settings] [--dry-run]` move settings between sites, as the **Export / import** tab does.
 
 Each item's rule layers are cached in `_redeemid_access_effective`, stamped with a rules version. Editing a term rule, a term's parent, or the content rules bumps the version; editing an item or its terms clears that item.
 
@@ -323,6 +325,16 @@ RedeemID works with or without it:
 - **Limits.** The bridge reads `localStorage['__shopify:cartId']`, which the official cart component uses but doesn't document. If Shopify changes it, the bridge stops attaching and the cart keeps working as a guest cart. Debug shows the last attach and the last failure. A visitor who adds to the cart and reaches checkout within a second or two may get there before the attach finishes.
 
 See [docs/official-plugin.md](docs/official-plugin.md) for the decision record.
+
+## PHP API
+
+For plugins that build on RedeemID (a course, a forum, a download manager) instead of running their own membership layer:
+
+- `redeemid_can_read( int|WP_Post $post, int|WP_User|null $user = null ): bool`: can this user read the item in full? It goes through every layer the gate uses (site default, post type, terms, the item's own rule, time and archive windows, drip) after WordPress's own status checks (drafts, private and password-protected items only for people who can edit them). It never uses the editor bypass. With no user it answers for the current visitor, including a staff "preview as".
+- `redeemid_user_levels( int|WP_User|null $user = null ): string[]`: slugs of the paid levels the user holds, including levels held through another (Gold includes Silver).
+- `redeemid_has_feature( string $slug, int|WP_User|null $user = null ): bool`, `redeemid_granted_features()` and `redeemid_menu_features()`: see [Features](#features).
+
+None of them return Shopify tags or the customer record. Each reads the synced mirror, so it costs no Shopify call. Pages that show member-only output from these should not be served from a shared page cache (see [Caching](#caching)).
 
 ## REST API
 

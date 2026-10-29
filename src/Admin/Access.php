@@ -141,11 +141,12 @@ final class Access {
 
 	public static function render(): void {
 		$tab = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$tab = in_array( $tab, [ 'rules', 'features', 'test' ], true ) ? $tab : 'levels';
+		$tab = in_array( $tab, [ 'rules', 'features', 'test', 'transfer' ], true ) ? $tab : 'levels';
 		$intros = [
 			'levels'   => __( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'redeemid' ),
 			'rules'    => __( 'The rule an item gets, from strongest to weakest: the item\'s own setting, then its terms, then its post type, then the site default. Leave every level unticked for "no rule here". Blocks inside an item can only narrow its rule.', 'redeemid' ),
 			'features' => __( 'A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost.', 'redeemid' ),
+			'transfer' => __( 'Move a set-up site\'s access settings to another site, such as staging to production, or keep a copy before a big change.', 'redeemid' ),
 			'test'     => __( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'redeemid' ),
 		];
 
@@ -156,6 +157,7 @@ final class Access {
 				<a class="nav-tab <?php echo 'rules' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Content rules', 'redeemid' ); ?></a>
 				<a class="nav-tab <?php echo 'features' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'features' ] ) ); ?>"><?php esc_html_e( 'Features', 'redeemid' ); ?></a>
 				<a class="nav-tab <?php echo 'test' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'test' ] ) ); ?>"><?php esc_html_e( 'Test', 'redeemid' ); ?></a>
+				<a class="nav-tab <?php echo 'transfer' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'transfer' ] ) ); ?>"><?php esc_html_e( 'Export / import', 'redeemid' ); ?></a>
 			</nav>
 			<?php
 			echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
@@ -170,13 +172,14 @@ final class Access {
 					'rules_saved'       => [ 'success', __( 'Content rules saved. Every item picks them up on its next view.', 'redeemid' ) ],
 					'feature_saved'     => [ 'success', __( 'Feature mapping saved. It applies on every page from the next request.', 'redeemid' ) ],
 					'feature_forgotten' => [ 'success', __( 'Stored condition removed.', 'redeemid' ) ],
-				]
+				] + AccessTransfer::messages()
 			);
 
 			match ( $tab ) {
 				'rules'    => AccessRules::render(),
 				'features' => AccessFeatures::render(),
 				'test'     => AccessTest::render(),
+				'transfer' => AccessTransfer::render(),
 				default    => self::render_levels(),
 			};
 

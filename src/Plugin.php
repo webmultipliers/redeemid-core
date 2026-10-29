@@ -32,6 +32,7 @@ use RedeemID\Rest\Status;
 use RedeemID\Support\Crypto;
 use RedeemID\Support\EventLog;
 use RedeemID\Support\Stats;
+use RedeemID\Support\TransferCli;
 use RedeemID\Sync\BulkResync;
 use RedeemID\Sync\Cli as SyncCli;
 use RedeemID\Sync\LevelHistory;
@@ -66,6 +67,7 @@ final class Plugin {
 		Badges::register();
 		Cli::register();
 		SyncCli::register();
+		TransferCli::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		OfficialCartToggle::register();
