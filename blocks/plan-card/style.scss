@@ -49,6 +49,20 @@
 		font-weight: 600;
 	}
 
+	&__member {
+		margin: 0;
+		font-weight: 600;
+	}
+
+	&__manage {
+		justify-self: start;
+	}
+
+	&.is-member-current,
+	&.is-member-included {
+		border-style: dashed;
+	}
+
 	&.is-unavailable {
 		opacity: 0.8;
 	}

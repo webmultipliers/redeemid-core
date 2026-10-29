@@ -44,6 +44,7 @@ final class Menu {
 		Access::register();
 		AccessRules::register();
 		AccessFeatures::register();
+		AccessTransfer::register();
 		Debug::register();
 	}
 

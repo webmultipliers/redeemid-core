@@ -269,6 +269,8 @@ final class Flow {
 		TokenVault::store( $user->ID, $tokens );
 		self::apply_identity( $user->ID, $identity, 'login' );
 
+		self::full_sync( $user->ID, 'login' );
+
 		Logger::log( 'auth.signed_in', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
 		do_action( 'redeemid_signed_in', $user->ID, $id );
 
@@ -359,6 +361,7 @@ final class Flow {
 
 		Mirror::link( $user_id, $id );
 		self::apply_identity( $user_id, (array) $pending['identity'], 'link' );
+		self::full_sync( $user_id, 'link' );
 
 		$tokens = json_decode( (string) Plugin::crypto()->decrypt( (string) $pending['tokens'] ), true );
 
@@ -495,6 +498,18 @@ final class Flow {
 	}
 
 	// ------------------------------------------------------------- Helpers
+
+	/**
+	 * The identity from sign-in carries tags only. With the Admin API, signing
+	 * in or linking is a full sync: account status and the membership dates
+	 * too. A failure is recorded and never blocks the sign-in. A visitor who
+	 * comes back to a WordPress session that is still signed in doesn't sync.
+	 */
+	private static function full_sync( int $user_id, string $source ): void {
+		if ( Admin::available() ) {
+			Reconciler::sync_user( $user_id, $source );
+		}
+	}
 
 	public static function apply_identity( int $user_id, array $identity, string $source ): void {
 		Mirror::set_profile(

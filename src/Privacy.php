@@ -2,6 +2,7 @@
 
 namespace RedeemID;
 
+use RedeemID\Access\Meter;
 use RedeemID\Auth\TokenVault;
 use RedeemID\Sync\Mirror;
 
@@ -77,6 +78,15 @@ final class Privacy {
 			}
 		}
 
+		$meter = $user ? get_user_meta( $user->ID, Meter::META, true ) : null;
+
+		if ( is_array( $meter ) && ! empty( $meter['items'] ) ) {
+			$data[] = [
+				'name'  => __( 'Free stories read this period (post IDs)', 'redeemid' ),
+				'value' => implode( ', ', array_map( 'intval', (array) $meter['items'] ) ),
+			];
+		}
+
 		return [
 			'data' => $data ? [ [ 'group_id' => 'redeemid', 'group_label' => __( 'Shopify', 'redeemid' ), 'item_id' => 'shopify-' . $user->ID, 'data' => $data ] ] : [],
 			'done' => true,
@@ -89,6 +99,7 @@ final class Privacy {
 		if ( $user ) {
 			TokenVault::forget_all( $user->ID );
 			Mirror::unlink( $user->ID );
+			delete_user_meta( $user->ID, Meter::META );
 		}
 
 		return [

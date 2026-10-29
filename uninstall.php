@@ -24,7 +24,7 @@ $redeemid_options = [
 	'redeemid_events_db_version', 'redeemid_cart_bridge', 'redeemid_access_levels',
 	'redeemid_access_rules', 'redeemid_access_rules_version',
 	'redeemid_access_reindex_cursor', 'redeemid_access_index_version', 'redeemid_feature_conditions',
-	'redeemid_bulk_resync', 'redeemid_monitor', 'redeemid_stats', 'redeemid_connection_test',
+	'redeemid_bulk_resync', 'redeemid_monitor', 'redeemid_stats', 'redeemid_connection_test', 'redeemid_files_probe',
 ];
 
 foreach ( $redeemid_options as $redeemid_option ) {
@@ -36,6 +36,7 @@ $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}redeemid_webhooks" ); // phpc
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}redeemid_events" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
 // The per-item rule cache and access index are derived data. The access rules editors set on items and terms stay.
 $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ( '_redeemid_access_effective', '_redeemid_access_search', '_redeemid_access_locked', '_redeemid_access_next' )" );
+$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = '_redeemid_meter'" );
 
 wp_clear_scheduled_hook( 'redeemid_prune' );
 wp_clear_scheduled_hook( 'redeemid_monitor' );

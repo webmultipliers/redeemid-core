@@ -52,3 +52,30 @@ function redeemid_granted_features( int|\WP_User|null $user = null ): array {
 function redeemid_menu_features( int|\WP_User|null $user = null ): array {
 	return \RedeemID\Features\Registry::menu( $user );
 }
+
+/**
+ * Can this user read this item in full? Goes through every layer the gate
+ * uses (site default, post type, terms, the item's own rule, time windows,
+ * archive windows and drip) and WordPress's own status checks. Never uses
+ * the editor bypass and never exposes tags. No user: the current visitor.
+ *
+ * @param int|WP_Post      $post
+ * @param int|WP_User|null $user
+ */
+function redeemid_can_read( int|\WP_Post $post, int|\WP_User|null $user = null ): bool {
+	$post = get_post( $post );
+
+	return $post instanceof \WP_Post && \RedeemID\Access\Reader::can( $post, $user );
+}
+
+/**
+ * Slugs of the paid levels a user holds (the current visitor by default),
+ * including levels held through another ("gold" includes "silver"). Level
+ * slugs only, never Shopify tags.
+ *
+ * @param int|WP_User|null $user
+ * @return string[]
+ */
+function redeemid_user_levels( int|\WP_User|null $user = null ): array {
+	return \RedeemID\Access\Reader::levels( $user );
+}

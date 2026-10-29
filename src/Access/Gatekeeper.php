@@ -66,12 +66,20 @@ final class Gatekeeper {
 	public static function verdict( \WP_Post $post ): Verdict {
 		$key = $post->ID . ':' . Viewer::key();
 
-		if ( ! isset( self::$verdicts[ $key ] ) ) {
-			$checker                = new Checker( LevelStore::levels(), Settings::evaluator() );
-			self::$verdicts[ $key ] = Drip::apply( $checker->check( self::rule( $post ), Viewer::member(), time() ), $post, self::rule( $post ) );
+		if ( isset( self::$verdicts[ $key ] ) ) {
+			return self::$verdicts[ $key ];
 		}
 
-		return self::$verdicts[ $key ];
+		$checker = new Checker( LevelStore::levels(), Settings::evaluator() );
+		$verdict = $checker->check( self::rule( $post ), Viewer::member(), time() );
+		$verdict = $verdict->granted() ? Drip::apply( $verdict, $post, self::rule( $post ) ) : Meter::apply( $verdict, $post, self::rule( $post ) );
+
+		// Before the main query is done the meter can't tell which page is being read, so a denial then isn't final.
+		if ( $verdict->granted() || did_action( 'wp' ) || ! Meter::on() ) {
+			self::$verdicts[ $key ] = $verdict;
+		}
+
+		return $verdict;
 	}
 
 	public static function teaser( \WP_Post $post ): Teaser {
@@ -105,6 +113,10 @@ final class Gatekeeper {
 				define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
 			}
 
+			if ( Decision::METERED === $verdict->decision->reason && ! doing_filter( 'get_the_excerpt' ) ) {
+				$content = "<!-- wp:html -->\n" . self::meter_note( $verdict, $rule, true ) . "\n<!-- /wp:html -->\n\n" . $content;
+			}
+
 			return $content;
 		}
 
@@ -134,8 +146,28 @@ final class Gatekeeper {
 		];
 
 		return '<div class="redeemid-paywall" data-redeemid-level="' . esc_attr( (string) $verdict->next_level ) . '">'
+			. self::meter_note( $verdict, self::rule( $post ), false )
 			. Gate::fallback_panel( $a, $verdict->decision, (string) $verdict->next_level )
 			. '</div>';
+	}
+
+	/**
+	 * The meter's line: "Free story 2 of 3 this month" above a metered item,
+	 * with the level's call to action, or the meter's state at the wall.
+	 */
+	private static function meter_note( Verdict $verdict, EffectiveRule $rule, bool $with_cta ): string {
+		$note = Meter::note( $verdict, $rule );
+
+		if ( '' === $note ) {
+			return '';
+		}
+
+		$level = $with_cta && $verdict->next_level ? LevelStore::levels()->get( $verdict->next_level ) : null;
+		$cta   = $level && '' !== $level->cta_url
+			? ' <a href="' . esc_url( $level->cta_url ) . '">' . esc_html( '' !== $level->cta_label ? $level->cta_label : sprintf( /* translators: %s: level label */ __( 'Become a %s member', 'redeemid' ), $level->label ) ) . '</a>'
+			: '';
+
+		return '<p class="redeemid-meter">' . esc_html( $note ) . $cta . '</p>';
 	}
 
 	/**

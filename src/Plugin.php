@@ -17,6 +17,7 @@ use RedeemID\Features\Surfaces as FeatureSurfaces;
 use RedeemID\Admin\AccessColumn;
 use RedeemID\Admin\AccessMetaBox;
 use RedeemID\Admin\AccessTermFields;
+use RedeemID\Admin\FileFields;
 use RedeemID\Admin\Menu;
 use RedeemID\Admin\UserProfile;
 use RedeemID\Auth\Flow;
@@ -25,6 +26,7 @@ use RedeemID\Auth\SignInLinks;
 use RedeemID\Blocks\Registration;
 use RedeemID\Commerce\BuyNow;
 use RedeemID\Commerce\CartBridge;
+use RedeemID\Files\ProtectedFiles;
 use RedeemID\Integrations\OfficialCartToggle;
 use RedeemID\Integrations\SeoPlugins;
 use RedeemID\Rest\Routes;
@@ -32,6 +34,7 @@ use RedeemID\Rest\Status;
 use RedeemID\Support\Crypto;
 use RedeemID\Support\EventLog;
 use RedeemID\Support\Stats;
+use RedeemID\Support\TransferCli;
 use RedeemID\Sync\BulkResync;
 use RedeemID\Sync\Cli as SyncCli;
 use RedeemID\Sync\LevelHistory;
@@ -66,11 +69,13 @@ final class Plugin {
 		Badges::register();
 		Cli::register();
 		SyncCli::register();
+		TransferCli::register();
 		Surfaces::register();
 		SeoPlugins::register();
 		OfficialCartToggle::register();
 		BuyNow::register();
 		CartBridge::register();
+		ProtectedFiles::register();
 		Privacy::register();
 		EventLog::register();
 		Stats::register();
@@ -90,6 +95,7 @@ final class Plugin {
 			AccessColumn::register();
 			AccessTermFields::register();
 			UserProfile::register();
+			FileFields::register();
 		}
 	}
 

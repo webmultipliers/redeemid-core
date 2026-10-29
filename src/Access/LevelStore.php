@@ -60,6 +60,26 @@ final class LevelStore {
 		self::write( $saved );
 	}
 
+	/**
+	 * Replace every saved level at once (a settings import).
+	 *
+	 * @param array<string, array> $levels slug => level config.
+	 */
+	public static function replace( array $levels ): void {
+		$saved = [];
+
+		foreach ( $levels as $slug => $level ) {
+			$slug = Level::slug( (string) $slug );
+
+			if ( '' !== $slug && ! in_array( $slug, [ Level::PUBLIC, Level::SIGNED_IN ], true ) && is_array( $level ) ) {
+				$saved[ $slug ] = Level::from_array( $slug, $level )->to_array();
+			}
+		}
+
+		ksort( $saved );
+		self::write( $saved );
+	}
+
 	public static function delete( string $slug ): void {
 		$saved = self::saved();
 		unset( $saved[ $slug ] );

@@ -131,4 +131,4 @@ When a mapping changes, `redeemid_features_mapping_changed` (`string[] $slugs`) 
 
 ## Not in v1
 
-No feature pricing, seats or gifts, no time-bound features (tags carry no start date), no per-feature reporting, and no WordPress-side manual grants.
+No feature pricing, seats or gifts (see [seats-and-gifts.md](seats-and-gifts.md) for how they could work), no time-bound features (tags carry no start date), no per-feature reporting, and no WordPress-side manual grants.

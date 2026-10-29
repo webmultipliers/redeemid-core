@@ -64,6 +64,7 @@ final class AccessRules {
 					'conflict'    => sanitize_key( (string) ( $post['conflict'] ?? '' ) ),
 					'types'       => $types,
 					'taxonomies'  => $taxonomies,
+					'meter'       => [ 'limit' => (int) ( $post['meter_limit'] ?? 0 ), 'period' => sanitize_key( (string) ( $post['meter_period'] ?? '' ) ) ],
 				]
 			)
 		);
@@ -162,6 +163,17 @@ final class AccessRules {
 							<label class="redeemid-block-label"><input type="radio" name="conflict" value="<?php echo esc_attr( $value ); ?>" <?php checked( $rules->conflict, $value ); ?> <?php echo esc_attr( $disabled ); ?>> <?php echo esc_html( $label ); ?></label>
 						<?php endforeach; ?>
 						<p class="description"><?php esc_html_e( 'Level inclusion counts first: an item in a Silver term and a Gold term needs Gold when Gold includes Silver. An unexpired "open until" term always wins.', 'redeemid' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="redeemid-meter-limit"><?php esc_html_e( 'Meter', 'redeemid' ); ?></label></th>
+					<td>
+						<input type="number" id="redeemid-meter-limit" name="meter_limit" min="0" max="100" class="small-text" value="<?php echo esc_attr( (string) $rules->meter['limit'] ); ?>" <?php echo esc_attr( $disabled ); ?>>
+						<select name="meter_period" aria-label="<?php esc_attr_e( 'Meter period', 'redeemid' ); ?>" <?php echo esc_attr( $disabled ); ?>>
+							<option value="<?php echo esc_attr( Rules::METER_MONTH ); ?>" <?php selected( $rules->meter['period'], Rules::METER_MONTH ); ?>><?php esc_html_e( 'free stories a month', 'redeemid' ); ?></option>
+							<option value="<?php echo esc_attr( Rules::METER_WEEK ); ?>" <?php selected( $rules->meter['period'], Rules::METER_WEEK ); ?>><?php esc_html_e( 'free stories a week', 'redeemid' ); ?></option>
+						</select>
+						<p class="description"><?php esc_html_e( 'Signed-in readers without access can open this many locked items per period; 0 turns the meter off. Guests are asked to sign in instead. An item counts once, when its own page is opened. Items marked "Never count toward a meter" stay locked. The meter grants no level, and nothing about it goes to Shopify.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
 			</table>
