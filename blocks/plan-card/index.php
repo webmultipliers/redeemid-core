@@ -77,6 +77,21 @@ $redeemid_image       = ! empty( $a['showImage'] ) ? $redeemid_product['image'] 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 $redeemid_notice = $isEditor ? '' : \RedeemID\Commerce\BuyNow::message( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) );
 $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \RedeemID\Blocks\Gate::current_url() );
+
+// What this card says to a signed-in member, from the level whose Shopify products include this one.
+$redeemid_member = $isEditor || empty( $a['memberAware'] ) ? [ 'state' => '', 'via' => '' ] : \RedeemID\Commerce\PlanState::viewer( $redeemid_handle );
+$redeemid_via    = '' !== $redeemid_member['via'] ? ( \RedeemID\Access\LevelStore::levels()->get( $redeemid_member['via'] )?->label ?? '' ) : '';
+$redeemid_manage = (string) \RedeemID\Settings::get( 'subscription_url' );
+
+if ( \RedeemID\Commerce\PlanState::UPGRADE === $redeemid_member['state'] ) {
+	/* translators: %s: plan title */
+	$redeemid_button = (string) ( $a['upgradeLabel'] ?? '' ) ?: sprintf( __( 'Upgrade to %s', 'redeemid' ), $redeemid_title );
+} elseif ( \RedeemID\Commerce\PlanState::ADD === $redeemid_member['state'] ) {
+	/* translators: %s: plan title */
+	$redeemid_button = (string) ( $a['addLabel'] ?? '' ) ?: sprintf( __( 'Add %s', 'redeemid' ), $redeemid_title );
+}
+
+$redeemid_classes .= '' !== $redeemid_member['state'] ? ' is-member-' . $redeemid_member['state'] : '';
 ?>
 <div useBlockProps class="<?php echo esc_attr( $redeemid_classes ); ?>">
 	<?php if ( $redeemid_image ) : ?>
@@ -117,7 +132,25 @@ $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \Redeem
 		<p class="redeemid-plan__notice" role="alert"><?php echo esc_html( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
-	<?php if ( ! $redeemid_variant['available'] ) : ?>
+	<?php if ( \RedeemID\Commerce\PlanState::UPGRADE === $redeemid_member['state'] && '' !== $redeemid_via ) : ?>
+		<p class="redeemid-plan__member"><?php echo esc_html( sprintf( /* translators: %s: the level the member holds now */ __( 'You have %s now.', 'redeemid' ), $redeemid_via ) ); ?></p>
+	<?php endif; ?>
+
+	<?php if ( in_array( $redeemid_member['state'], [ \RedeemID\Commerce\PlanState::CURRENT, \RedeemID\Commerce\PlanState::INCLUDED ], true ) ) : ?>
+		<p class="redeemid-plan__member">
+			<?php
+			echo esc_html(
+				\RedeemID\Commerce\PlanState::INCLUDED === $redeemid_member['state'] && '' !== $redeemid_via
+					/* translators: %s: the level that includes this plan */
+					? sprintf( __( 'Included in your %s membership.', 'redeemid' ), $redeemid_via )
+					: __( 'This is your plan.', 'redeemid' )
+			);
+			?>
+		</p>
+		<?php if ( '' !== $redeemid_manage ) : ?>
+			<a class="wp-element-button redeemid-plan__manage" href="<?php echo esc_url( $redeemid_manage ); ?>"><?php esc_html_e( 'Manage membership', 'redeemid' ); ?></a>
+		<?php endif; ?>
+	<?php elseif ( ! $redeemid_variant['available'] ) : ?>
 		<button type="button" class="wp-element-button" disabled><?php esc_html_e( 'Sold out', 'redeemid' ); ?></button>
 	<?php elseif ( $isEditor ) : ?>
 		<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>

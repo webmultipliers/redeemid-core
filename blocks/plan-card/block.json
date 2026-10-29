@@ -47,7 +47,16 @@
 			{ "id": "buttonLabel", "type": "text", "label": "Button label", "default": "Join now" },
 			{ "id": "showImage", "type": "toggle", "label": "Show product image", "default": false },
 			{ "id": "showCompareAt", "type": "toggle", "label": "Show compare-at price", "default": true },
-			{ "id": "highlight", "type": "toggle", "label": "Highlight this plan", "default": false }
+			{ "id": "highlight", "type": "toggle", "label": "Highlight this plan", "default": false },
+			{
+				"id": "memberAware",
+				"type": "toggle",
+				"label": "Change for members",
+				"default": true,
+				"help": "When a level lists this product (RedeemID → Access → Levels → Shopify products), signed-in members see \"Your plan\", \"Included\", an upgrade or an add-on button instead of the same card as everyone. Guests always see the plain card."
+			},
+			{ "id": "upgradeLabel", "type": "text", "label": "Upgrade button label", "help": "For members whose level this plan includes. Leave empty for \"Upgrade to <plan>\"." },
+			{ "id": "addLabel", "type": "text", "label": "Add-on button label", "help": "For members of other, unrelated levels. Leave empty for \"Add <plan>\"." }
 		]
 	}
 }

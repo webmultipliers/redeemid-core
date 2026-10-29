@@ -19,6 +19,7 @@ final class Level {
 	/**
 	 * @param Rule[]   $groups   Any one group passing grants the level.
 	 * @param string[] $includes Slugs of levels this one also opens (Gold includes Silver).
+	 * @param string[] $products Handles of the Shopify products whose purchase leads to this level (Flow tags the buyer). Display only: plan cards use it to tell a member "your plan", "upgrade" or "add". It grants nothing.
 	 */
 	public function __construct(
 		public readonly string $slug,
@@ -30,6 +31,7 @@ final class Level {
 		public readonly string $cta_label = '',
 		public readonly string $cta_url = '',
 		public readonly string $home_url = '',
+		public readonly array $products = [],
 	) {}
 
 	public static function public(): self {
@@ -103,6 +105,7 @@ final class Level {
 			trim( (string) ( $a['cta_label'] ?? '' ) ),
 			trim( (string) ( $a['cta_url'] ?? '' ) ),
 			trim( (string) ( $a['home_url'] ?? '' ) ),
+			self::handles( $a['products'] ?? [] ),
 		);
 	}
 
@@ -116,7 +119,19 @@ final class Level {
 			'cta_label' => $this->cta_label,
 			'cta_url'   => $this->cta_url,
 			'home_url'  => $this->home_url,
+			'products'  => $this->products,
 		];
+	}
+
+	/**
+	 * Clean Shopify product handles: lower case, letters, digits and dashes, unique.
+	 *
+	 * @return string[]
+	 */
+	public static function handles( mixed $handles ): array {
+		$handles = is_string( $handles ) ? explode( ',', $handles ) : (array) $handles;
+
+		return array_values( array_unique( array_filter( array_map( [ self::class, 'slug' ], $handles ) ) ) );
 	}
 
 	/**

@@ -58,6 +58,7 @@ final class Access {
 						'cta_label' => sanitize_text_field( wp_unslash( $_POST['cta_label'] ?? '' ) ),
 						'cta_url'   => esc_url_raw( wp_unslash( $_POST['cta_url'] ?? '' ) ),
 						'home_url'  => esc_url_raw( wp_unslash( $_POST['home_url'] ?? '' ) ),
+						'products'  => sanitize_text_field( wp_unslash( $_POST['products'] ?? '' ) ),
 					]
 				);
 				LevelStore::known_tags( true );
@@ -353,6 +354,13 @@ final class Access {
 							<td>
 								<input type="text" id="redeemid-level-home" name="home_url" class="regular-text" placeholder="/members/gold/" value="<?php echo esc_attr( $edit->home_url ?? '' ); ?>">
 								<p class="description"><?php esc_html_e( 'Where members of this level land after logging in with Shopify from the home page or a plain login link. Logging in from an article returns them to it.', 'redeemid' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="redeemid-level-products"><?php esc_html_e( 'Shopify products', 'redeemid' ); ?></label></th>
+							<td>
+								<input type="text" id="redeemid-level-products" name="products" class="regular-text code" placeholder="gold-membership" value="<?php echo esc_attr( implode( ', ', $edit->products ?? [] ) ); ?>">
+								<p class="description"><?php esc_html_e( 'Handles of the Shopify products that lead to this level, separated by commas. Plan cards selling one of them show signed-in members "Your plan", "Included" or "Upgrade" instead of the same buy button for everyone. This only changes what the card says: Shopify still decides who holds the level.', 'redeemid' ); ?></p>
 							</td>
 						</tr>
 						<?php $redeemid_features = array_filter( Registry::features(), static fn( Feature $f ) => ! $f->managed ); ?>
