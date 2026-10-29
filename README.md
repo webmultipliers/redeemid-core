@@ -1,8 +1,8 @@
 # RedeemID
 
-Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, and what they bought in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
+Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, the same one they use in your store, and what that account holds in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
 
-Shopify stays the single source of truth. A purchase adds a tag to the customer in Shopify (through Shopify Flow or a subscription or membership app), WordPress mirrors those tags, and every access decision is made on the server from that mirror. WordPress never grants access that Shopify doesn't know about.
+Shopify stays the single source of truth. RedeemID links each Shopify customer account to a WordPress user and mirrors it there: name, email, account status, and the tags Shopify Flow or a subscription or membership app sets. Every access decision is made on the server from that mirror. A customer disabled in Shopify loses members-only access, and WordPress never grants access that Shopify doesn't know about.
 
 - **Sign in with Shopify.** OAuth with PKCE against the Customer Account API, shadow users for new customers, and optional linking of existing WordPress accounts.
 - **Memberships from Shopify tags.** Shopify Flow or your subscription app tags customers and keeps that state; renewals, cancellations and fixed terms stay in Shopify. See [docs/shopify-flow.md](docs/shopify-flow.md).
@@ -12,7 +12,7 @@ Shopify stays the single source of truth. A purchase adds a tag to the customer 
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 0.0.1, early development.** Sign-in, linking, webhooks, gates, access rules, features, plan cards, the member account card and the bridge to Shopify's own cart are in place. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 1.0.0.
+> **Status: 0.0.1, early development. No release has been published yet.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. Catalog blocks (product grids, collections, a cart) are deliberately left to Shopify's plugin; see [docs/official-plugin.md](docs/official-plugin.md). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ If a requirement is missing, activation stops with a notice. It does not fatal.
 
 ## Install
 
-Release zips include `vendor/`. To build from source:
+No release zip has been published yet, so build from source. A release zip will include `vendor/`.
 
 ```sh
 composer install            # development
@@ -80,7 +80,7 @@ The site docs at [redeemid.com/docs](https://www.redeemid.com/docs/) cover setup
 Everything lives under the top-level **RedeemID** menu:
 
 - **Overview:** a setup checklist (connect the store, **Test connection**, permalinks, **Create the page** for the sign-in callback, register webhooks, define levels, tag members with Flow), folded away once everything is done, then status cards for configuration, sign-in, the Admin API, webhook delivery health, linked customers and failures in the last 24 hours. The levels step compares each level's tags with the tags Shopify's customers actually have and lists any no customer has, which is usually a typo.
-- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked), the membership settings (shared devices) and webhook alerts (the silence warning and the alert email).
+- **Settings:** the Shopify connection (every value above; fields set in `wp-config.php` are locked), and the membership settings: sign-in links, subscription management link, the return link for Shopify's order pages, shared devices, and webhook alerts (the silence warning and the alert email).
 - **Customers:** every WordPress user linked to a Shopify customer, with their levels, search (WordPress name and email, the Shopify email and name, or a customer ID), filters for level, disabled customers and failed syncs, **Export CSV** of the filtered list, and bulk disconnect. The **Activation** panel compares, per level, the customers Shopify tags for it with those who have signed in here (Shopify's `customersCount`, cached for an hour). **Resync all customers** starts a paced background resync of everyone (see [Resyncing customers](#resyncing-customers)). Row actions open the customer in the Shopify admin, edit the WordPress user, resync, or switch to the user when the User Switching plugin is active. Each customer's page shows the synced data, edits tags (written to Shopify with `tagsAdd`/`tagsRemove`, then read back), and lists that customer's recent events and webhooks.
 - **Webhooks:** the **Delivery health** panel (see [Delivery health](#delivery-health)) with a **Check now** button, the endpoint, whether the signing secret is set, the registration result, a **Register webhooks with Shopify** button, rejected deliveries, and every delivery received with its outcome. Dead-lettered deliveries can be retried.
 - **App events:** a log of every call the plugin made to Shopify (label, endpoint, HTTP status, duration) and what it did: resyncs, sign-ins, linking, webhook outcomes and admin actions, with who triggered each and from where (cron, REST, admin, site). No request or response bodies, tokens or secrets are recorded. Kept 30 days, capped at 20,000 rows.
@@ -143,7 +143,7 @@ Because access changes only when a webhook lands, the plugin watches the chain:
 - **Once a day** it lists the app's webhook subscriptions in Shopify (one Admin API call, no customer data) and re-creates any that are missing. Shopify removes a subscription after its deliveries fail for several hours, so a re-created one is reported.
 - **On every admin screen** it checks, without calling Shopify: deliveries rejected in the last day (wrong signing secret), deliveries waiting more than 10 minutes (WP-Cron or Action Scheduler not running), dead-lettered deliveries, WP-Cron running late, and no delivery at all for the number of days set in Settings (7 by default, 0 to turn off) while customers are linked.
 
-Problems appear in an admin notice (failures on the Dashboard and Plugins screens too), in Tools → Site Health, in the Shopify Health block and on RedeemID → Webhooks. With **Alerts** ticked in Settings, the site admin gets an email: at once when something new breaks, then at most daily while it lasts.
+Problems appear in an admin notice (failures on the Dashboard and Plugins screens too), in Tools → Site Health, in the Shopify Health block and on RedeemID → Webhooks. With **Alerts** ticked in Settings, the daily check (and **Check now**) emails the site admin when it finds a new problem, then at most once a day while it lasts.
 
 ### Resyncing customers
 
@@ -353,6 +353,7 @@ The namespace is `redeemid/v1`. Every write route needs the `wp_rest` nonce.
 | `POST /auth/logout` | Returns `{redirect}`, the Shopify end-session URL |
 | `POST /auth/refresh` | Refreshes the Shopify session and returns status, never tokens |
 | `POST /auth/disconnect` | Unlinks the Shopify customer from the current user |
+| `GET /account` | The caller's own membership, as the Member Account block shows it (levels, dates, features, account links); guests get the guest shape |
 | `POST /account/sync` | Re-syncs the current user's mirror (rate-limited) |
 | `POST /cart/identity` | Attaches the signed-in, linked customer to the official plugin's cart, `{cartId}` → `{attached}` (rate-limited; only when that plugin serves the same store) |
 | `POST /webhooks/events` | Shopify webhooks (HMAC-verified) |
@@ -371,7 +372,7 @@ What the plugin uses, and where:
 |---|---|---|
 | Show a sidebar field only when another field has a value | [Conditional logic](https://blockstudio.dev/docs/blocks/attributes/conditional-logic) (`conditions`) | Membership Gate, Shopify Sign-in |
 | Fill a select from site data or an API | [Populate options](https://blockstudio.dev/docs/blocks/attributes/populating-options): `function` for site data, `fetch` for a search endpoint | Gate's level picker (`redeemid_level_options()`), Plan Card's product picker |
-| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in, Refresh Membership, Shopify Account Status, Shopify Health, Membership Features |
+| Personal output on a cacheable page | [Dynamic islands](https://blockstudio.dev/docs/blocks/islands) | Shopify Sign-in, Member Account, Refresh Membership, Shopify Account Status, Shopify Health, Membership Features |
 | Shared markup the plugin renders, that themes can restyle or replace | [Components](https://blockstudio.dev/docs/blocks/components) and [overrides](https://blockstudio.dev/docs/blocks/overrides) | `locked-panel`, rendered by `Gate::fallback_panel()` |
 | Several inserter entries for one block | [Variations](https://blockstudio.dev/docs/blocks/variations) | Shopify Sign-in, Membership Gate |
 | URL fields with a page picker | [`link` field](https://blockstudio.dev/docs/blocks/attributes/field-types) | Gate CTA and redirect, sign-in redirects |
@@ -424,6 +425,10 @@ By default, uninstalling keeps WordPress users and their content. It removes:
 - plugin options and transients
 - the webhook and app event tables
 - Shopify tokens inside sessions
+- the cached rule and search text on each item, and each reader's meter count
+- the plugin's scheduled jobs
+
+Access rules editors set on items and terms stay. Protected files stay in `uploads/redeemid-protected/`; uninstalling doesn't move them back.
 
 To also delete shadow users and every linked field, add `define( 'REDEEMID_UNINSTALL_DELETE_DATA', true );` before uninstalling. Their content is reassigned to the first administrator, not deleted.
 
