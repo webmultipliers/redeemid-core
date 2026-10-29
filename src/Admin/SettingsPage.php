@@ -28,10 +28,21 @@ final class SettingsPage {
 
 	public static function save(): void {
 		Menu::guard( self::ACTION );
-		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
+		wp_safe_redirect( Menu::url( self::PAGE, self::result_args( self::store_posted() ) ) );
+		exit;
+	}
 
+	/**
+	 * Save the posted config[] and clear[] fields. The caller checks the nonce.
+	 * Setup (the wizard) saves its steps' fields through here too.
+	 *
+	 * @return array{stored: array, changed: string[], errors: array<string, string>}
+	 */
+	public static function store_posted(): array {
+		// phpcs:disable WordPress.Security.NonceVerification -- checked by the caller.
 		$input  = wp_unslash( $_POST['config'] ?? [] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- ConfigValues::apply validates each field.
 		$clear  = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['clear'] ?? [] ) );
+		// phpcs:enable WordPress.Security.NonceVerification
 		$result = Config::values()->apply( is_array( $input ) ? $input : [], $clear );
 
 		update_option( Config::OPTION, $result['stored'], true );
@@ -43,15 +54,39 @@ final class SettingsPage {
 			Logger::log( 'admin.config_saved', [ 'changed' => implode( ',', $result['changed'] ) ] );
 		}
 
+		return $result;
+	}
+
+	/**
+	 * The query args a page shows a save's outcome from: result, n and invalid.
+	 *
+	 * @param array{changed: string[], errors: array<string, string>} $result From store_posted().
+	 * @return array<string, string|int>
+	 */
+	public static function result_args( array $result ): array {
 		$args = [ 'result' => $result['errors'] ? 'config_invalid' : 'config_saved', 'n' => count( $result['changed'] ) ];
 
 		if ( $result['errors'] ) {
 			$args['invalid'] = implode( ',', array_map( static fn( $name, $code ) => $name . ':' . $code, array_keys( $result['errors'] ), $result['errors'] ) );
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, $args ) );
-		exit;
-		// phpcs:enable WordPress.Security.NonceVerification
+		return $args;
+	}
+
+	/**
+	 * Why the last save refused each field, from the invalid query arg.
+	 *
+	 * @return array<string, string> Config name => ConfigValues code.
+	 */
+	public static function invalid_fields(): array {
+		$invalid = [];
+
+		foreach ( explode( ',', sanitize_text_field( wp_unslash( $_GET['invalid'] ?? '' ) ) ) as $pair ) { // phpcs:ignore WordPress.Security.NonceVerification
+			[ $name, $code ] = array_pad( explode( ':', $pair, 2 ), 2, '' );
+			$invalid[ $name ] = sanitize_key( $code );
+		}
+
+		return $invalid;
 	}
 
 	/**
@@ -73,12 +108,7 @@ final class SettingsPage {
 	}
 
 	public static function render(): void {
-		$invalid = [];
-
-		foreach ( explode( ',', sanitize_text_field( wp_unslash( $_GET['invalid'] ?? '' ) ) ) as $pair ) { // phpcs:ignore WordPress.Security.NonceVerification
-			[ $name, $code ] = array_pad( explode( ':', $pair, 2 ), 2, '' );
-			$invalid[ $name ] = sanitize_key( $code );
-		}
+		$invalid = self::invalid_fields();
 		Menu::page_start( __( 'Settings', 'redeemid' ), __( 'Shopify settings', 'redeemid' ) );
 		Menu::result_notice(
 			[
@@ -168,7 +198,7 @@ final class SettingsPage {
 	 * @param array{label: string, secret: bool, required: bool, help: string, editable?: bool} $def
 	 * @param string                                                                            $invalid Why the last save refused this field (a ConfigValues code), or ''.
 	 */
-	private static function field( string $name, array $def, string $invalid ): void {
+	public static function field( string $name, array $def, string $invalid ): void {
 		$id       = 'redeemid-' . strtolower( str_replace( '_', '-', $name ) );
 		$source   = Config::source( $name );
 		$locked   = Config::locked( $name );

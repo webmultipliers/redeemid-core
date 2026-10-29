@@ -188,6 +188,11 @@ final class Overview {
 					</li>
 				<?php endforeach; ?>
 			</ol>
+			<?php if ( $left ) : ?>
+				<div class="redeemid-panel__footer">
+					<a class="button button-primary" href="<?php echo esc_url( Wizard::url() ); ?>"><?php esc_html_e( 'Set up step by step', 'redeemid' ); ?></a>
+				</div>
+			<?php endif; ?>
 		</details>
 		<?php
 	}

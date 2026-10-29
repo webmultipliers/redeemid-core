@@ -3,6 +3,7 @@
 namespace RedeemID;
 
 use RedeemID\Access\Index;
+use RedeemID\Admin\Wizard;
 use RedeemID\Auth\Flow;
 use RedeemID\Auth\ShadowUsers;
 use RedeemID\Support\EventLog;
@@ -23,6 +24,11 @@ final class Lifecycle {
 		}
 
 		Monitor::ensure_scheduled();
+
+		// A site that isn't connected yet opens the setup wizard on the next admin page.
+		if ( ! Config::has( 'REDEEMID_STORE_DOMAIN' ) ) {
+			set_transient( Wizard::REDIRECT, 1, MINUTE_IN_SECONDS );
+		}
 	}
 
 	public static function deactivate(): void {
