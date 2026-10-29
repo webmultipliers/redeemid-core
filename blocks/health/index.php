@@ -17,6 +17,8 @@ $redeemid_title  = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['
 $redeemid_admin  = ( $isEditor || $isIslandFragment ) && current_user_can( 'manage_options' );
 $redeemid_checks = $redeemid_admin ? \RedeemID\Support\Health::checks() : [];
 $redeemid_marks  = [ 'ok' => '✓', 'warn' => '!', 'fail' => '✗', 'info' => '·' ];
+// The mark is hidden from screen readers, so the state is said in words too.
+$redeemid_states = [ 'ok' => __( 'OK:', 'redeemid' ), 'warn' => __( 'Warning:', 'redeemid' ), 'fail' => __( 'Problem:', 'redeemid' ), 'info' => __( 'Note:', 'redeemid' ) ];
 ?>
 <div useBlockProps class="redeemid-health">
 	<p class="redeemid-health__title"><?php echo esc_html( $redeemid_title ); ?></p>
@@ -25,7 +27,7 @@ $redeemid_marks  = [ 'ok' => '✓', 'warn' => '!', 'fail' => '✗', 'info' => '�
 			<?php foreach ( $redeemid_checks as $redeemid_check ) : ?>
 				<li class="redeemid-health__item is-<?php echo esc_attr( $redeemid_check['state'] ); ?>">
 					<span class="redeemid-health__state" aria-hidden="true"><?php echo esc_html( $redeemid_marks[ $redeemid_check['state'] ] ); ?></span>
-					<span class="redeemid-health__label"><?php echo esc_html( $redeemid_check['label'] ); ?></span>
+					<span class="redeemid-health__label"><span class="screen-reader-text"><?php echo esc_html( $redeemid_states[ $redeemid_check['state'] ] ?? '' ); ?></span> <?php echo esc_html( $redeemid_check['label'] ); ?></span>
 					<span class="redeemid-health__detail"><?php echo esc_html( (string) ( $redeemid_check['detail'] ?? '' ) ); ?></span>
 				</li>
 			<?php endforeach; ?>

@@ -26,6 +26,14 @@ $redeemid_note   = $redeemid_sync
 	? sprintf( __( 'Synced from Shopify %s ago.', 'redeemid' ), human_time_diff( $redeemid_sync ) )
 	: __( 'Not synced yet.', 'redeemid' );
 
+// What script.view.js says while and after it refreshes, translated here.
+$redeemid_messages = [
+	'checking'    => __( 'Checking with Shopify…', 'redeemid' ),
+	'synced'      => __( 'Membership updated. Reloading…', 'redeemid' ),
+	'sync_wait'   => __( 'You just refreshed. Try again in a minute.', 'redeemid' ),
+	'sync_failed' => __( 'Shopify could not be reached. Try again later.', 'redeemid' ),
+];
+
 // No early return: Blockstudio reads a template that returns as one that rendered nothing and skips script.view.js.
 if ( $isEditor ) :
 	?>
@@ -39,7 +47,8 @@ if ( $isEditor ) :
 <?php else : ?>
 	<div useBlockProps class="<?php echo esc_attr( $redeemid_class ); ?>"
 		data-redeemid-refresh-endpoint="<?php echo esc_url( rest_url( \RedeemID\Rest\Routes::NS . '/account/sync' ) ); ?>"
-		data-redeemid-refresh-nonce="<?php echo esc_attr( $redeemid_status['nonces']['rest'] ); ?>">
+		data-redeemid-refresh-nonce="<?php echo esc_attr( $redeemid_status['nonces']['rest'] ); ?>"
+		data-redeemid-refresh-messages="<?php echo esc_attr( (string) wp_json_encode( $redeemid_messages ) ); ?>">
 		<button type="button" class="wp-element-button redeemid-refresh__button"><?php echo esc_html( $redeemid_label ); ?></button>
 		<span class="redeemid-refresh__message" aria-live="polite"><?php echo empty( $a['compact'] ) ? esc_html( $redeemid_note ) : ''; ?></span>
 	</div>

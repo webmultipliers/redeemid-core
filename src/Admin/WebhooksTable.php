@@ -77,13 +77,15 @@ final class WebhooksTable extends \WP_List_Table {
 		$filters = self::filters();
 		?>
 		<div class="alignleft actions">
-			<select name="topic">
+			<label class="screen-reader-text" for="redeemid-filter-topic"><?php esc_html_e( 'Filter by topic', 'redeemid' ); ?></label>
+			<select name="topic" id="redeemid-filter-topic">
 				<option value=""><?php esc_html_e( 'All topics', 'redeemid' ); ?></option>
 				<?php foreach ( $this->store->topics() as $topic ) : ?>
 					<option value="<?php echo esc_attr( $topic ); ?>" <?php selected( $filters['topic'], $topic ); ?>><?php echo esc_html( $topic ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<input type="text" name="customer" placeholder="<?php esc_attr_e( 'Customer ID', 'redeemid' ); ?>" value="<?php echo esc_attr( $filters['customer'] ); ?>" class="redeemid-filter-customer">
+			<label class="screen-reader-text" for="redeemid-filter-customer"><?php esc_html_e( 'Filter by customer ID', 'redeemid' ); ?></label>
+			<input type="text" name="customer" id="redeemid-filter-customer" placeholder="<?php esc_attr_e( 'Customer ID', 'redeemid' ); ?>" value="<?php echo esc_attr( $filters['customer'] ); ?>" class="redeemid-filter-customer">
 			<?php submit_button( __( 'Filter', 'redeemid' ), '', 'filter_action', false ); ?>
 		</div>
 		<?php

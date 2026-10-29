@@ -277,9 +277,9 @@ final class SettingsPage {
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Return link for Shopify', 'redeemid' ); ?></th>
+					<th scope="row"><label for="redeemid-return-url"><?php esc_html_e( 'Return link for Shopify', 'redeemid' ); ?></label></th>
 					<td>
-						<input type="text" class="regular-text code" readonly value="<?php echo esc_attr( \RedeemID\Sync\PostCheckout::return_url() ); ?>" onfocus="this.select()">
+						<input type="text" id="redeemid-return-url" class="regular-text code" readonly value="<?php echo esc_attr( \RedeemID\Sync\PostCheckout::return_url() ); ?>" onfocus="this.select()">
 						<p class="description"><?php esc_html_e( 'Add this as a "Return to the site" link on Shopify\'s order status page and in the order confirmation email. Signed-in buyers go back to the page they bought from; guests are asked to log in with the email from their order.', 'redeemid' ); ?></p>
 					</td>
 				</tr>

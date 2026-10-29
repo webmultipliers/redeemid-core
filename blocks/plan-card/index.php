@@ -102,9 +102,13 @@ $redeemid_classes .= '' !== $redeemid_member['state'] ? ' is-member-' . $redeemi
 
 	<?php if ( '' !== $redeemid_price ) : ?>
 		<p class="redeemid-plan__price">
+			<?php if ( '' !== $redeemid_compare ) : ?>
+				<span class="screen-reader-text"><?php esc_html_e( 'Price:', 'redeemid' ); ?></span>
+			<?php endif; ?>
 			<?php echo esc_html( $redeemid_price ); ?>
 			<?php if ( '' !== $redeemid_compare ) : ?>
-				<s class="redeemid-plan__compare"><?php echo esc_html( $redeemid_compare ); ?></s>
+				<?php // Screen readers don't announce strikethrough, so the old price says what it is. ?>
+				<s class="redeemid-plan__compare"><span class="screen-reader-text"><?php esc_html_e( 'Regular price:', 'redeemid' ); ?></span> <?php echo esc_html( $redeemid_compare ); ?></s>
 			<?php endif; ?>
 		</p>
 	<?php endif; ?>

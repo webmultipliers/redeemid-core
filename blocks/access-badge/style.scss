@@ -5,7 +5,7 @@
 	padding: 0.1em 0.55em;
 	border-radius: 999px;
 	background: var(--redeemid-badge, currentColor);
-	color: #fff;
+	color: var(--redeemid-badge-ink, #fff);
 	font-size: var(--wp--preset--font-size--small, 0.75rem);
 	font-weight: 700;
 	line-height: 1.6;

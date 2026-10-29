@@ -101,7 +101,12 @@ final class CustomersTable extends \WP_List_Table {
 	}
 
 	protected function column_cb( $item ): string {
-		return sprintf( '<input type="checkbox" name="users[]" value="%d">', (int) $item->ID );
+		return sprintf(
+			'<label class="screen-reader-text" for="redeemid-customer-%1$d">%2$s</label><input type="checkbox" id="redeemid-customer-%1$d" name="users[]" value="%1$d">',
+			(int) $item->ID,
+			/* translators: %s: customer name */
+			esc_html( sprintf( __( 'Select %s', 'redeemid' ), $item->display_name ?: $item->user_login ) )
+		);
 	}
 
 	protected function column_name( \WP_User $user ): string {

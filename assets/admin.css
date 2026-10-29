@@ -440,7 +440,12 @@ a.redeemid-card:focus {
 	border-color: var(--redeemid-accent);
 	box-shadow: 0 0 0 1px var(--redeemid-accent);
 	color: inherit;
-	outline: none;
+	/* Transparent, not none: forced-colors mode drops the box-shadow and paints this outline instead. */
+	outline: 2px solid transparent;
+}
+
+a.redeemid-card:focus-visible {
+	box-shadow: 0 0 0 2px var(--redeemid-accent);
 }
 
 .redeemid-card__head {
