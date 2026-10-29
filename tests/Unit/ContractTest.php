@@ -19,8 +19,12 @@ use RedeemID\Webhooks\Topics;
 final class ContractTest extends TestCase {
 	private const DIR = __DIR__ . '/../fixtures/shopify-2026-10/';
 
+	private static function fixture( string $file ): array {
+		return json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/shopify-2026-10/' . $file ), true );
+	}
+
 	private static function load( string $topic ): array {
-		return json_decode( (string) file_get_contents( self::DIR . str_replace( [ '/', '.' ], '-', $topic ) . '.json' ), true );
+		return self::fixture( str_replace( [ '/', '.' ], '-', $topic ) . '.json' );
 	}
 
 	private static function extract( string $topic, ?array $payload = null ): array {
@@ -130,7 +134,7 @@ final class ContractTest extends TestCase {
 			$this->assertStringContainsString( $field, Admin::RECONCILE_QUERY );
 		}
 
-		$out = Admin::parse_customers( json_decode( (string) file_get_contents( self::DIR . 'admin-reconcile.json' ), true )['data'] );
+		$out = Admin::parse_customers( self::fixture( 'admin-reconcile.json' )['data'] );
 
 		$this->assertSame( [ '706405506930370084', '706405506930370085' ], array_map( 'strval', array_keys( $out ) ) );
 		$this->assertSame( [ 'gold', 'newsletter' ], $out['706405506930370084']['tags'] );
@@ -145,7 +149,7 @@ final class ContractTest extends TestCase {
 			$this->assertStringContainsString( $field, CustomerAccount::IDENTITY_QUERY );
 		}
 
-		$out = CustomerAccount::parse_identity( json_decode( (string) file_get_contents( self::DIR . 'customer-account-identity.json' ), true )['data'] );
+		$out = CustomerAccount::parse_identity( self::fixture( 'customer-account-identity.json' )['data'] );
 
 		$this->assertSame( 'gid://shopify/Customer/706405506930370084', $out['id'] );
 		$this->assertSame( 'bob@biller.com', $out['email'] );
