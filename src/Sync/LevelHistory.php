@@ -132,6 +132,47 @@ final class LevelHistory {
 	}
 
 	/**
+	 * Every member's joins and departures at or after $cutoff, oldest first,
+	 * optionally for one level. For `wp redeemid access changes` and the
+	 * redeemid/level-changes ability.
+	 *
+	 * @return list<array{at: int, change: string, level: string, label: string, user: int, name: string, email: string}>
+	 */
+	public static function report( int $cutoff, string $only = '' ): array {
+		$levels = LevelStore::levels();
+		$rows   = [];
+		$users  = get_users(
+			[
+				'meta_key' => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'fields'   => [ 'ID', 'display_name' ],
+				'number'   => -1,
+			]
+		);
+
+		foreach ( $users as $user ) {
+			foreach ( self::changes( self::get( (int) $user->ID ), $cutoff ) as $row ) {
+				if ( '' !== $only && $only !== $row['level'] ) {
+					continue;
+				}
+
+				$rows[] = [
+					'at'     => $row['at'],
+					'change' => $row['change'],
+					'level'  => $row['level'],
+					'label'  => $levels->get( $row['level'] )?->label ?? $row['level'],
+					'user'   => (int) $user->ID,
+					'name'   => (string) $user->display_name,
+					'email'  => (string) get_user_meta( (int) $user->ID, Mirror::EMAIL, true ),
+				];
+			}
+		}
+
+		usort( $rows, static fn( array $a, array $b ) => $a['at'] <=> $b['at'] );
+
+		return $rows;
+	}
+
+	/**
 	 * Whether the customer held $slug before and no longer does.
 	 */
 	public static function lapsed( int $user_id, string $slug ): bool {

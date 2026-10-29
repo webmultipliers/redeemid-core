@@ -295,7 +295,7 @@ final class Transfer {
 	 *
 	 * @return array<string, array<string, array>>
 	 */
-	private static function term_rules(): array {
+	public static function term_rules(): array {
 		$out   = [];
 		$terms = get_terms(
 			[

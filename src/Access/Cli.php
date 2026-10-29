@@ -3,7 +3,6 @@
 namespace RedeemID\Access;
 
 use RedeemID\Sync\LevelHistory;
-use RedeemID\Sync\Mirror;
 
 /**
  * Access rules from the command line.
@@ -173,35 +172,17 @@ final class Cli {
 			\WP_CLI::error( 'Could not read --since.' );
 		}
 
-		$only   = (string) ( $assoc['level'] ?? '' );
-		$levels = LevelStore::levels();
-		$rows   = [];
-		$users  = get_users(
-			[
-				'meta_key' => LevelHistory::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'fields'   => [ 'ID', 'display_name' ],
-				'number'   => -1,
-			]
+		$rows = array_map(
+			static fn( array $row ) => [
+				'date'   => wp_date( 'Y-m-d H:i', $row['at'] ),
+				'change' => $row['change'],
+				'level'  => $row['label'],
+				'user'   => $row['user'],
+				'name'   => $row['name'],
+				'email'  => $row['email'],
+			],
+			LevelHistory::report( (int) $cutoff, (string) ( $assoc['level'] ?? '' ) )
 		);
-
-		foreach ( $users as $user ) {
-			foreach ( LevelHistory::changes( LevelHistory::get( (int) $user->ID ), (int) $cutoff ) as $row ) {
-				if ( '' !== $only && $only !== $row['level'] ) {
-					continue;
-				}
-
-				$rows[] = [
-					'date'   => wp_date( 'Y-m-d H:i', $row['at'] ),
-					'change' => $row['change'],
-					'level'  => $levels->get( $row['level'] )?->label ?? $row['level'],
-					'user'   => (int) $user->ID,
-					'name'   => (string) $user->display_name,
-					'email'  => (string) get_user_meta( (int) $user->ID, Mirror::EMAIL, true ),
-				];
-			}
-		}
-
-		usort( $rows, static fn( array $a, array $b ) => strcmp( $a['date'], $b['date'] ) );
 
 		if ( ! $rows && 'table' === ( $assoc['format'] ?? 'table' ) ) {
 			\WP_CLI::line( 'Nobody joined or left a level since ' . wp_date( 'Y-m-d H:i', (int) $cutoff ) . '.' );
