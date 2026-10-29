@@ -184,7 +184,7 @@ final class AccessTest {
 					<td>
 						<strong><?php echo esc_html( $t['rule'] ); ?></strong>
 						<?php if ( $t['meter_eligible'] ) : ?>
-							<br><span class="description"><?php esc_html_e( 'Meter-eligible: a future meter could open it.', 'redeemid' ); ?></span>
+							<br><span class="description"><?php echo esc_html( \RedeemID\Access\Meter::on() ? __( 'Metered: a signed-in reader without access can open it as one of their free stories.', 'redeemid' ) : __( 'Meter-eligible: it would count if you set a meter on Content rules.', 'redeemid' ) ); ?></span>
 						<?php endif; ?>
 					</td>
 				</tr>

@@ -15,6 +15,9 @@ namespace RedeemID\Access;
  * A taxonomy row: whether its term rules count, whether a term with no rule
  * of its own takes its nearest ancestor's, and a priority for the priority
  * conflict mode.
+ *
+ * The meter: how many locked items a signed-in reader without access may
+ * open each month or week (0: no meter). See Meter.
  */
 final class Rules {
 	public const CONFLICTS = [ Context::CONFLICT_MOST, Context::CONFLICT_LEAST, Context::CONFLICT_PRIORITY ];
@@ -22,6 +25,9 @@ final class Rules {
 	/** Comments on a locked item: shown only to visitors who can read it, or to everyone. */
 	public const COMMENTS_MEMBERS  = 'members';
 	public const COMMENTS_EVERYONE = 'everyone';
+
+	public const METER_MONTH = 'month';
+	public const METER_WEEK  = 'week';
 
 	/**
 	 * @param string[]                                                                                      $site_levels
@@ -33,6 +39,7 @@ final class Rules {
 		public readonly string $conflict = Context::CONFLICT_MOST,
 		public readonly array $types = [],
 		public readonly array $taxonomies = [],
+		public readonly array $meter = [ 'limit' => 0, 'period' => self::METER_MONTH ],
 	) {}
 
 	public static function from_array( array $a ): self {
@@ -58,6 +65,7 @@ final class Rules {
 			in_array( $conflict, self::CONFLICTS, true ) ? $conflict : Context::CONFLICT_MOST,
 			$types,
 			$taxonomies,
+			self::meter_row( is_array( $a['meter'] ?? null ) ? $a['meter'] : [] ),
 		);
 	}
 
@@ -67,6 +75,7 @@ final class Rules {
 			'conflict'    => $this->conflict,
 			'types'       => $this->types,
 			'taxonomies'  => $this->taxonomies,
+			'meter'       => $this->meter,
 		];
 	}
 
@@ -93,6 +102,16 @@ final class Rules {
 			'public_after_days' => max( 0, min( 36500, (int) ( $row['public_after_days'] ?? 0 ) ) ),
 			'comments'          => self::COMMENTS_EVERYONE === ( $row['comments'] ?? '' ) ? self::COMMENTS_EVERYONE : self::COMMENTS_MEMBERS,
 			'noindex'           => ! empty( $row['noindex'] ),
+		];
+	}
+
+	/**
+	 * @return array{limit: int, period: string}
+	 */
+	public static function meter_row( array $row ): array {
+		return [
+			'limit'  => max( 0, min( 100, (int) ( $row['limit'] ?? 0 ) ) ),
+			'period' => self::METER_WEEK === ( $row['period'] ?? '' ) ? self::METER_WEEK : self::METER_MONTH,
 		];
 	}
 

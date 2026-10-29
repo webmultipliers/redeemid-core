@@ -112,6 +112,9 @@ final class Explain {
 				Rules::COMMENTS_EVERYONE === $type_row['comments']
 					? __( 'Comments: shown to everyone.', 'redeemid' )
 					: __( 'Comments: on a locked item, shown only to visitors who can read it.', 'redeemid' ),
+				Meter::on() && $rule->meter_eligible
+					? __( 'Meter: a signed-in reader without access can open it as one of their free stories.', 'redeemid' )
+					: __( 'Meter: not metered.', 'redeemid' ),
 				$type_row['noindex'] && ! $rule->open()
 					? __( 'Search engines: noindex, and left out of sitemaps.', 'redeemid' )
 					: __( 'Search engines: indexed and in sitemaps. Locked items show crawlers the teaser only.', 'redeemid' ),

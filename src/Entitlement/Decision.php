@@ -11,6 +11,7 @@ final class Decision {
 	public const NO_MIRROR    = 'no_mirror';
 	public const BAD_RULE     = 'bad_rule';
 	public const DRIP         = 'drip';
+	public const METERED      = 'metered';
 
 	private function __construct(
 		public readonly bool $granted,
@@ -19,6 +20,13 @@ final class Decision {
 
 	public static function grant(): self {
 		return new self( true, self::GRANTED );
+	}
+
+	/**
+	 * Read as one of the signed-in reader's metered items, not through a level.
+	 */
+	public static function metered(): self {
+		return new self( true, self::METERED );
 	}
 
 	public static function deny( string $reason ): self {
