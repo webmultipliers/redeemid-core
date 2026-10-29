@@ -8,7 +8,8 @@ use RedeemID\Settings;
 /**
  * The top-level RedeemID menu:
  *
- * - Overview: connection summary.
+ * - Overview: connection summary and the setup checklist.
+ * - Setup: the checklist as a step-by-step wizard, opened once after first activation.
  * - Settings: the Shopify credentials (wp-config.php constants win) and the
  *   membership settings.
  * - Customers: linked customers, with resync, tag editing and Shopify admin links.
@@ -40,6 +41,7 @@ final class Menu {
 		Customers::register();
 		Webhooks::register();
 		Setup::register();
+		Wizard::register();
 		Events::register();
 		Access::register();
 		AccessRules::register();
@@ -51,6 +53,7 @@ final class Menu {
 	public static function menu(): void { // phpcs:ignore Generic.NamingConventions.ConstructorName -- not a constructor in a namespaced class.
 		add_menu_page( __( 'RedeemID', 'redeemid' ), __( 'RedeemID', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'dashicons-cart', 58 );
 		add_submenu_page( self::SLUG, __( 'RedeemID overview', 'redeemid' ), __( 'Overview', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID settings', 'redeemid' ), __( 'Settings', 'redeemid' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
 
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'redeemid' ), __( 'Customers', 'redeemid' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
@@ -78,7 +81,7 @@ final class Menu {
 	 * @return string[]
 	 */
 	public static function pages(): array {
-		return [ self::SLUG, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
+		return [ self::SLUG, Wizard::PAGE, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
 	}
 
 	public static function enqueue(): void {

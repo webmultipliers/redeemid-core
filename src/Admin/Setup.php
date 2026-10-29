@@ -42,7 +42,7 @@ final class Setup {
 		} elseif ( 'callback' === $do ) {
 			$result = self::create_callback_page() ? 'callback_created' : 'callback_failed';
 		} elseif ( 'tags' === $do ) {
-			delete_transient( self::TAGS );
+			self::forget_shop_tags();
 			$result = 'tags_checked';
 		}
 
@@ -119,12 +119,12 @@ final class Setup {
 	}
 
 	/**
-	 * Level tags no customer in Shopify has. Null when Shopify's list can't be
-	 * read, or has 250 tags or more and so may be incomplete.
+	 * Tags Shopify's customers have, up to 250, kept for an hour. Null when
+	 * the list can't be read.
 	 *
 	 * @return string[]|null
 	 */
-	private static function unknown_tags(): ?array {
+	public static function shop_tags(): ?array {
 		$shop = get_transient( self::TAGS );
 
 		if ( ! is_array( $shop ) ) {
@@ -133,7 +133,23 @@ final class Setup {
 			set_transient( self::TAGS, $shop, HOUR_IN_SECONDS );
 		}
 
-		if ( isset( $shop['error'] ) || count( $shop ) >= 250 ) {
+		return isset( $shop['error'] ) ? null : $shop;
+	}
+
+	public static function forget_shop_tags(): void {
+		delete_transient( self::TAGS );
+	}
+
+	/**
+	 * Level tags no customer in Shopify has. Null when Shopify's list can't be
+	 * read, or has 250 tags or more and so may be incomplete.
+	 *
+	 * @return string[]|null
+	 */
+	private static function unknown_tags(): ?array {
+		$shop = self::shop_tags();
+
+		if ( null === $shop || count( $shop ) >= 250 ) {
 			return null;
 		}
 
