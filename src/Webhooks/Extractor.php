@@ -13,6 +13,12 @@ final class Extractor {
 		$customer = CustomerId::from_payload( $payload, $topic );
 		$data     = [ 'customer' => $customer?->numeric ];
 
+		// Customer.updated_at orders profile and status webhooks; Shopify may deliver them out of order.
+		if ( in_array( $kind, [ Topics::PROFILE, Topics::STATUS ], true ) ) {
+			$updated            = is_string( $payload['updated_at'] ?? null ) ? strtotime( $payload['updated_at'] ) : false;
+			$data['updated_at'] = $updated ?: null;
+		}
+
 		switch ( $kind ) {
 			case Topics::PROFILE:
 				$data += [

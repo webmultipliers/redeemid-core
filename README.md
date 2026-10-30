@@ -129,6 +129,8 @@ The topics:
 
 Since API 2025-01, `customers/update` no longer carries tags, so the two `customer.tags_*` topics are needed for tag changes to arrive quickly.
 
+Shopify doesn't promise delivery order. Profile and status webhooks carry the customer's `updated_at`, and one older than the last applied of the same kind is ignored, so a late `customers/disable` can't undo a newer `customers/enable`.
+
 Each delivery is checked and stored, then processed:
 
 - The HMAC is checked first.

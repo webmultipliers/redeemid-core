@@ -79,6 +79,20 @@ final class Processor {
 			return InboxStore::UNMATCHED;
 		}
 
+		if ( in_array( $kind, [ Topics::PROFILE, Topics::STATUS ], true ) ) {
+			// Ordered per kind: a profile edit must not hide an earlier disable.
+			$key     = Topics::STATUS === $kind ? Mirror::STATUS_AT : Mirror::PROFILE_AT;
+			$updated = (int) ( $data['updated_at'] ?? 0 );
+
+			if ( Mirror::is_older( $updated, (int) get_user_meta( $user->ID, $key, true ) ) ) {
+				return InboxStore::IGNORED;
+			}
+
+			if ( $updated > 0 ) {
+				update_user_meta( $user->ID, $key, $updated );
+			}
+		}
+
 		switch ( $kind ) {
 			case Topics::PROFILE:
 				Mirror::set_profile( $user->ID, $data );
