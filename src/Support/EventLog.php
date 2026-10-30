@@ -142,6 +142,75 @@ final class EventLog {
 		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::table() . ' WHERE event = %s AND created_at >= %d', $event, $since ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
+	/**
+	 * A person's rows, newest first, for a privacy export: by user ID, and by
+	 * customer number when one is known.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function for_person( int $user_id, string $customer, int $per_page, int $page ): array {
+		global $wpdb;
+
+		[ $where, $args ] = self::person_where( $user_id, $customer );
+
+		if ( '' === $where ) {
+			return [];
+		}
+
+		$table = self::table();
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is built from placeholders only.
+		return (array) $wpdb->get_results( $wpdb->prepare( "SELECT id, created_at, event, label, status FROM {$table} WHERE {$where} ORDER BY id DESC LIMIT %d OFFSET %d", ...[ ...$args, $per_page, max( 0, ( $page - 1 ) * $per_page ) ] ), ARRAY_A );
+	}
+
+	/**
+	 * Keep a person's rows, so counts stay right, but drop everything that
+	 * points to them: the user ID, the customer number and the context.
+	 */
+	public static function anonymise( int $user_id, string $customer ): int {
+		global $wpdb;
+
+		[ $where, $args ] = self::person_where( $user_id, $customer );
+
+		if ( '' === $where ) {
+			return 0;
+		}
+
+		$table = self::table();
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is built from placeholders only.
+		return (int) $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET user_id = 0, customer = '', context = NULL WHERE {$where}", ...$args ) );
+	}
+
+	/**
+	 * Clear every customer number, for shop/redact.
+	 */
+	public static function anonymise_all_customers(): void {
+		global $wpdb;
+
+		$wpdb->query( 'UPDATE ' . self::table() . " SET customer = '', context = NULL WHERE customer <> ''" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
+	 * @return array{0: string, 1: array<int, mixed>} Empty where when there is no one to match.
+	 */
+	public static function person_where( int $user_id, string $customer ): array {
+		$where = [];
+		$args  = [];
+
+		if ( $user_id > 0 ) {
+			$where[] = 'user_id = %d';
+			$args[]  = $user_id;
+		}
+
+		if ( '' !== $customer ) {
+			$where[] = 'customer = %s';
+			$args[]  = $customer;
+		}
+
+		return [ $where ? '(' . implode( ' OR ', $where ) . ')' : '', $args ];
+	}
+
 	public static function clear(): void {
 		global $wpdb;
 

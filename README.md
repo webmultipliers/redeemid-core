@@ -110,7 +110,7 @@ RedeemID → Debug prints the exact values for your site:
 
 New custom apps are made in Shopify's Dev Dashboard; since 2026-01-01 the Shopify admin no longer creates them. Create one in the same organization as the store, with:
 
-- **Admin API scopes:** `read_customers`, `write_customers` and `read_customer_merge`. The last is needed only for `customers/merge`; without it the plugin skips that topic.
+- **Admin API scopes:** `read_customers`, `write_customers` and `read_customer_merge`. The last is needed only for `customers/merge`; without it the plugin skips that topic. Optionally add `write_customer_data_erasure`, so staff can ask Shopify to erase a customer from Tools → Erase Personal Data (see [Privacy](#privacy)).
 - **Redirect URL:** your site's home URL. The client credentials grant doesn't use it, but the form requires one.
 
 Install it on the store, then enter its client ID and secret in RedeemID → Settings (or define `REDEEMID_ADMIN_CLIENT_ID` and `REDEEMID_ADMIN_CLIENT_SECRET`). RedeemID → Debug shows the scopes Shopify granted.
@@ -125,7 +125,7 @@ The topics:
 - `customer.tags_added` and `customer.tags_removed`
 - `customers_email_marketing_consent/update`, `customers_marketing_consent/update` and `customers/purchasing_summary`
 - `app/uninstalled`
-- the compliance topics `customers/data_request`, `customers/redact` and `shop/redact`. Shopify doesn't allow these through the API; they come only to apps that declare them in their app configuration.
+- the compliance topics `customers/data_request`, `customers/redact` and `shop/redact`. Shopify doesn't allow these through the API; they come only to apps that declare them in their app configuration. The setup wizard's Webhooks step shows the lines to add, with this site's URL.
 
 Since API 2025-01, `customers/update` no longer carries tags, so the two `customer.tags_*` topics are needed for tag changes to arrive quickly.
 
@@ -304,7 +304,7 @@ It needs `REDEEMID_STOREFRONT_PRIVATE_TOKEN` (recommended) or `REDEEMID_PUBLIC_A
 
 ### Account blocks
 
-- **Member Account** (`redeemid/member-account`): the "my membership" card. It shows the member's levels and when each started, the renewal date, past levels, their features, when it last synced, and links to their Shopify account and subscription management (RedeemID → Settings → Subscription management). Guests get a sign-in button, unlinked accounts a connect button, and a lapsed member a join link. Start and renewal dates come from the `membership.member_since` and `membership.renews_on` customer metafields when Flow or an app sets them, otherwise from the level history the plugin keeps.
+- **Member Account** (`redeemid/member-account`): the "my membership" card. It shows the member's levels and when each started, the renewal date, past levels, their features, when it last synced, links to their Shopify account and subscription management (RedeemID → Settings → Subscription management), and **Download my data** and **Delete my data**, which create WordPress privacy requests the member confirms by email (turn them off with "Offer Download my data and Delete my data"). Guests get a sign-in button, unlinked accounts a connect button, and a lapsed member a join link. Start and renewal dates come from the `membership.member_since` and `membership.renews_on` customer metafields when Flow or an app sets them, otherwise from the level history the plugin keeps.
 - **Refresh Membership** (`redeemid/membership-refresh`): a button for signed-in, linked customers that re-syncs their membership from Shopify through `POST /account/sync` and reloads the page, so gates open as soon as a new tag lands. Guests and unlinked accounts see nothing. Put it in a paywall's teaser or the header.
 - **Shopify Account Status** (`redeemid/account-status`): tells the visitor whether they are signed in, linked to a Shopify customer, when their membership last synced, and whether Shopify sign-in is available. "Show the raw status response" adds the `GET /auth/status` payload, nonces redacted, for troubleshooting.
 - **Membership Features** (`redeemid/member-features`): the visitor's granted features and where each comes from ("Download access, from Add-on purchase"), for the account page. A menu mode shows only the features registered as primary, at most three, for a header.
@@ -434,11 +434,13 @@ Rules that follow from it:
   - `redeemid_access_changed` (`int[] $post_ids`), `redeemid_access_levels_changed` and `redeemid_access_locked_changed` (`int $post_id, bool $locked`)
   - `redeemid_levels_changed` (`int $user_id, string[] $added, string[] $removed`), level slugs, after a sync
   - `redeemid_features_changed` (`int $user_id, string[] $added, string[] $removed`) and `redeemid_features_mapping_changed` (`string[] $slugs`); see [docs/features.md](docs/features.md#hooks)
+  - `redeemid_shopify_erasure_requested` (`int $request_id, string $customer_gid`), after staff asked Shopify to erase a customer from an erase request
 - Filters:
   - `redeemid_auth_callback_slug`, `redeemid_default_redirect` and `redeemid_customer_admin_redirect`
   - `redeemid_setting_{key}`
   - `redeemid_official_state`, which overrides the detected state of Shopify's own plugin
   - `redeemid_reassign_user`, which picks who receives content when a Shopify redaction deletes a shadow user
+  - `redeemid_redact_opens_wp_request` (`bool $open, string $email`): when Shopify redacts a customer whose WordPress account stays, RedeemID leaves a confirmed erase request for staff to finish; return false to record it as completed instead
   - `redeemid_access_levels` and `redeemid_access_rules`, which set levels and content rules from code (the admin screens then show them read-only)
   - `redeemid_gated_post_types`, `redeemid_access_context`, `redeemid_effective_rule`, `redeemid_teaser_settings` and `redeemid_paywall_schema`
   - `redeemid_pre_sync_now` (`null|string $result, int $user_id`), which answers a "sync now" without asking Shopify: return `synced`, `sync_wait` or `sync_failed`. For customers Shopify doesn't know, such as a test site's simulated accounts
@@ -459,7 +461,8 @@ By default, uninstalling keeps WordPress users and their content. It removes:
 - plugin options and transients
 - the webhook and app event tables
 - Shopify tokens inside sessions
-- the cached rule and search text on each item, and each reader's meter count
+- the cached rule and search text on each item, each reader's meter count and cart pointer
+- what RedeemID added to privacy requests (the requests themselves are WordPress's and stay)
 - the plugin's scheduled jobs
 
 Access rules editors set on items and terms stay. Protected files stay in `uploads/redeemid-protected/`; uninstalling doesn't move them back.
@@ -468,7 +471,14 @@ To also delete shadow users and every linked field, add `define( 'REDEEMID_UNINS
 
 ## Privacy
 
-The plugin registers a personal data exporter and an eraser for the Shopify fields it mirrors. With Shopify's plugin active, the cart bridge stores two flags in the visitor's `localStorage` (`redeemid:attachedCart` and `redeemid:signedInCart`) and keeps no cart IDs on the server. Shopify's `customers/data_request` creates a WordPress export request. `customers/redact` deletes or unlinks the account.
+WordPress's own privacy tools, **Tools → Export Personal Data** and **Tools → Erase Personal Data**, are where every privacy request for a member is handled, whether it started in WordPress, in the Member Account block or in Shopify. See [docs/privacy-requests.md](docs/privacy-requests.md) for the staff walkthrough.
+
+- **Export** ("Shopify link and synced data") adds the synced Shopify fields, the meter, the checkout record and any cart in progress, then the person's rows in the activity log and the webhook deliveries about their customer number.
+- **Erase** removes the Shopify link, synced fields, tokens, meter and cart, and strips the person from both logs (the rows stay, so counts stay right). The WordPress account stays.
+- **A Shopify column** on both screens shows the linked customer with a link to Shopify admin. On an erase request, staff can press **Also request erasure in Shopify** (needs the optional `write_customer_data_erasure` scope; never automatic, refused for test fixtures). Shopify queues it and can still cancel it, then sends `customers/redact`, which removes what is left here. Shopify has no API to start its own customer data report, so export requests point to Shopify admin's Request customer data.
+- **Shopify's compliance webhooks** land in the same list: `customers/data_request` creates a confirmed export request marked with Shopify's request number, for staff to send to the store owner. `customers/redact` erases RedeemID's data at once, deletes a shadow user, and records the redaction as an erase request (left confirmed when the WordPress account stays, so staff decide on the rest). `shop/redact` unlinks every account and clears customer numbers from both logs.
+- **Suggested policy text** for Settings → Privacy → Policy Guide covers what is mirrored, the 30-day logs and the cookies: `redeemid_oauth_state`, `redeemid_cart`, `redeemid_cart_count` and `redeemid_fset`. With Shopify's plugin active, the cart bridge also stores two flags in the visitor's `localStorage` (`redeemid:attachedCart` and `redeemid:signedInCart`).
+- **RedeemID → Customers** shows each person's privacy requests, and RedeemID → Debug has rows for the erasure scope and the last Shopify privacy webhook.
 
 ## Contributing
 

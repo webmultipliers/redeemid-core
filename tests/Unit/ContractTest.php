@@ -156,6 +156,16 @@ final class ContractTest extends TestCase {
 	public function test_compliance_topics(): void {
 		$this->assertSame( '{shop}.myshopify.com', self::extract( 'customers/redact' )['shop'] );
 		$this->assertSame( '{shop}.myshopify.com', self::extract( 'shop/redact' )['shop'] );
+		$this->assertSame( '9999', self::extract( 'customers/data_request' )['request'] );
+		$this->assertArrayNotHasKey( 'request', self::extract( 'customers/redact' ) );
+	}
+
+	public function test_erasure_mutations(): void {
+		foreach ( [ 'customerRequestDataErasure', 'customerCancelDataErasure' ] as $mutation ) {
+			$document = Admin::erasure_document( $mutation );
+			$this->assertStringContainsString( $mutation . '(customerId: $id)', $document );
+			$this->assertStringContainsString( 'userErrors', $document );
+		}
 	}
 
 	public function test_admin_reconcile_response(): void {

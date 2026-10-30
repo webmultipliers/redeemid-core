@@ -183,6 +183,54 @@ final class WpdbInboxStore implements InboxStore {
 		return (bool) $wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table() . ' SET status = %s, attempts = 0, error = \'\' WHERE id = %d AND status = %s', self::QUEUED, $id, self::DEAD ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
+	/**
+	 * When the newest delivery of any of these topics arrived, or 0.
+	 *
+	 * @param string[] $topics
+	 */
+	public function last_of( array $topics ): int {
+		global $wpdb;
+
+		if ( ! $topics ) {
+			return 0;
+		}
+
+		$in = implode( ', ', array_fill( 0, count( $topics ), '%s' ) );
+
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MAX(received_at) FROM ' . self::table() . " WHERE topic IN ({$in})", ...array_values( $topics ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $in is placeholders only.
+	}
+
+	/**
+	 * A customer's deliveries, newest first, for a privacy export.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function for_customer( string $customer, int $per_page, int $page ): array {
+		global $wpdb;
+
+		if ( '' === $customer ) {
+			return [];
+		}
+
+		return (array) $wpdb->get_results( $wpdb->prepare( 'SELECT id, topic, status, received_at FROM ' . self::table() . ' WHERE customer = %s ORDER BY id DESC LIMIT %d OFFSET %d', $customer, $per_page, max( 0, ( $page - 1 ) * $per_page ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
+	 * Keep a customer's rows, for delivery counts, but drop the customer
+	 * number and any extracted data still held. An empty customer clears
+	 * every row (shop/redact). Rows still queued lose their data too: they
+	 * would only have re-applied what is being erased.
+	 */
+	public function anonymise( string $customer ): int {
+		global $wpdb;
+
+		if ( '' === $customer ) {
+			return (int) $wpdb->query( 'UPDATE ' . self::table() . " SET customer = '', data = NULL WHERE customer <> '' OR data IS NOT NULL" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		}
+
+		return (int) $wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table() . " SET customer = '', data = NULL WHERE customer = %s", $customer ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
 	public static function prune(): void {
 		global $wpdb;
 

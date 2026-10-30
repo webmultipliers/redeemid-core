@@ -182,4 +182,64 @@ final class Admin {
 
 		return $errors ? new \WP_Error( 'shopify_user_error', (string) ( $errors[0]['message'] ?? 'Tag update rejected.' ) ) : true;
 	}
+
+	public const ERASURE_SCOPE = 'write_customer_data_erasure';
+
+	/**
+	 * Ask Shopify to erase a customer's personal data. Shopify queues it (it
+	 * can be cancelled meanwhile), then sends customers/redact, which removes
+	 * what WordPress still holds. Needs the optional write_customer_data_erasure scope.
+	 */
+	public static function request_erasure( CustomerId $id ): true|\WP_Error {
+		return self::erasure_mutation( 'customerRequestDataErasure', $id );
+	}
+
+	public static function cancel_erasure( CustomerId $id ): true|\WP_Error {
+		return self::erasure_mutation( 'customerCancelDataErasure', $id );
+	}
+
+	/**
+	 * The GraphQL document for an erasure mutation. Pure.
+	 */
+	public static function erasure_document( string $mutation ): string {
+		return "mutation RedeemIDErasure(\$id: ID!) { {$mutation}(customerId: \$id) { customerId userErrors { field message code } } }";
+	}
+
+	private static function erasure_mutation( string $mutation, CustomerId $id ): true|\WP_Error {
+		$data = self::query( self::erasure_document( $mutation ), [ 'id' => $id->gid() ], 'admin.' . $mutation );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$errors = $data[ $mutation ]['userErrors'] ?? [];
+
+		return $errors ? new \WP_Error( 'shopify_user_error', (string) ( $errors[0]['message'] ?? 'Shopify refused the request.' ) ) : true;
+	}
+
+	/**
+	 * Whether the Admin token was granted the erasure scope: true, false, or
+	 * null when no token has been requested yet, so the scopes aren't known.
+	 */
+	public static function erasure_scope(): ?bool {
+		if ( ! self::available() ) {
+			return false;
+		}
+
+		$granted = trim( (string) get_option( 'redeemid_admin_token_scopes', '' ) );
+
+		return '' === $granted ? null : in_array( self::ERASURE_SCOPE, array_map( 'trim', explode( ',', $granted ) ), true );
+	}
+
+	/**
+	 * Whether staff can ask Shopify to erase a customer. Asks Shopify for a
+	 * token first when the granted scopes aren't known yet.
+	 */
+	public static function can_request_erasure(): bool {
+		if ( null === self::erasure_scope() ) {
+			AdminToken::get();
+		}
+
+		return true === self::erasure_scope();
+	}
 }

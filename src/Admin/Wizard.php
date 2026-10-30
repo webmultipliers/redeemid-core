@@ -41,6 +41,15 @@ final class Wizard {
 	/** What the Admin app needs: reconciliation and resync, tag editing, the merge webhook. */
 	public const SCOPES = [ 'read_customers', 'write_customers', 'read_customer_merge' ];
 
+	/**
+	 * Scopes that switch on extras and are never reported as missing:
+	 * write_customer_data_erasure lets staff ask Shopify to erase a customer
+	 * from Tools → Erase Personal Data.
+	 */
+	public const OPTIONAL_SCOPES = [ 'write_customer_data_erasure' ];
+
+	public const COMPLIANCE_TOPICS = [ 'customers/data_request', 'customers/redact', 'shop/redact' ];
+
 	public const KEYS = [ 'site', 'sign_in', 'admin', 'storefront', 'webhooks', 'callback', 'level', 'lock', 'flow', 'try' ];
 
 	/** Steps a site can do without. */
@@ -676,6 +685,7 @@ final class Wizard {
 		<p><?php esc_html_e( 'An app on the store lets WordPress read customers\' tags, resync members, edit tags in Shopify for you and register webhooks. It never runs a scheduled bulk sync.', 'redeemid' ); ?></p>
 		<ol class="redeemid-wizard__howto">
 			<li><?php esc_html_e( 'In Shopify\'s Dev Dashboard, create an app and give it these Admin API scopes:', 'redeemid' ); ?> <code><?php echo esc_html( implode( ', ', self::SCOPES ) ); ?></code></li>
+			<li><?php esc_html_e( 'Optional: add this scope too, so staff can ask Shopify to erase a customer from Tools → Erase Personal Data:', 'redeemid' ); ?> <code><?php echo esc_html( implode( ', ', self::OPTIONAL_SCOPES ) ); ?></code></li>
 			<li><?php esc_html_e( 'Release a version and install the app on this store.', 'redeemid' ); ?></li>
 			<li><?php esc_html_e( 'Copy the app\'s client ID and secret into the fields below.', 'redeemid' ); ?></li>
 		</ol>
@@ -752,8 +762,20 @@ final class Wizard {
 				</li>
 			</ul>
 		<?php endif; ?>
+		<p><?php esc_html_e( 'Shopify sends its privacy requests (a customer asking for their data, or for it to be erased) only to apps that declare them in the app version. Add the compliance webhooks to your Dev Dashboard app with this URL, or put this in shopify.app.toml, then release a new version. RedeemID turns each one into a request under Tools → Export / Erase Personal Data.', 'redeemid' ); ?></p>
+		<div class="redeemid-wizard__snippet">
+			<textarea id="redeemid-snippet-compliance" class="large-text code" rows="3" readonly><?php echo esc_textarea( self::compliance_snippet( rest_url( 'redeemid/v1/webhooks/events' ) ) ); ?></textarea>
+			<button type="button" class="button" data-redeemid-copy="redeemid-snippet-compliance" data-copied="<?php esc_attr_e( 'Copied', 'redeemid' ); ?>"><?php esc_html_e( 'Copy', 'redeemid' ); ?></button>
+		</div>
 		<p class="description"><a href="<?php echo esc_url( Menu::url( Webhooks::PAGE ) ); ?>"><?php esc_html_e( 'Every delivery is listed under RedeemID → Webhooks.', 'redeemid' ); ?></a></p>
 		<?php
+	}
+
+	/**
+	 * The shopify.app.toml lines that declare the compliance topics. Pure.
+	 */
+	public static function compliance_snippet( string $uri ): string {
+		return "[[webhooks.subscriptions]]\ncompliance_topics = [ \"" . implode( '", "', self::COMPLIANCE_TOPICS ) . "\" ]\nuri = \"" . $uri . '"';
 	}
 
 	/**

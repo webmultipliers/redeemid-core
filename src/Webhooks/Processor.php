@@ -4,8 +4,11 @@ namespace RedeemID\Webhooks;
 
 use RedeemID\Auth\ShadowUsers;
 use RedeemID\Auth\TokenVault;
+use RedeemID\Privacy\Eraser;
+use RedeemID\Privacy\Requests;
 use RedeemID\Shopify\Admin;
 use RedeemID\Support\CustomerId;
+use RedeemID\Support\EventLog;
 use RedeemID\Support\Logger;
 use RedeemID\Sync\Mirror;
 use RedeemID\Sync\Reconciler;
@@ -50,7 +53,10 @@ final class Processor {
 
 		$store->finish( $row_id, $outcome );
 
-		Logger::log( 'webhook.processed', [ 'row' => $row_id, 'topic' => $row['topic'], 'status' => $outcome, 'customer' => (string) $row['customer'] ] );
+		// A redaction has just removed this customer's number from the logs: don't write it back.
+		$named = ! in_array( (string) $row['topic'], [ 'customers/redact', 'customers/delete', 'shop/redact' ], true );
+
+		Logger::log( 'webhook.processed', [ 'row' => $row_id, 'topic' => $row['topic'], 'status' => $outcome ] + ( $named ? [ 'customer' => (string) $row['customer'] ] : [] ) );
 	}
 
 	/**
@@ -62,7 +68,7 @@ final class Processor {
 
 		switch ( $kind ) {
 			case Topics::COMPLIANCE:
-				return self::compliance( $topic, $user );
+				return self::compliance( $topic, $user, $id, (string) ( $data['request'] ?? '' ) );
 
 			case Topics::UNINSTALL:
 				update_option( 'redeemid_app_uninstalled', time(), false );
@@ -163,18 +169,23 @@ final class Processor {
 	 * customers/delete and customers/redact actually remove data.
 	 * Shadow users are deleted, with their content reassigned, not deleted.
 	 * Linked regular accounts keep the WordPress account and lose
-	 * every Shopify-linked field.
+	 * every Shopify-linked field. The logs keep their rows without the person.
+	 *
+	 * @return bool Whether the WordPress account was kept.
 	 */
-	public static function erase( \WP_User $user ): void {
-		TokenVault::forget_all( $user->ID );
-		Mirror::unlink( $user->ID );
+	public static function erase( \WP_User $user ): bool {
+		$shadow = ShadowUsers::is_shadow( $user->ID );
 
-		if ( ShadowUsers::is_shadow( $user->ID ) ) {
+		Eraser::local( $user );
+
+		if ( $shadow ) {
 			require_once ABSPATH . 'wp-admin/includes/user.php';
 			wp_delete_user( $user->ID, self::reassign_target() );
 		}
 
-		Logger::log( 'customer.erased', [ 'user' => $user->ID ] );
+		Logger::log( 'customer.erased', [ 'user' => 0, 'status' => $shadow ? 'deleted' : 'kept' ] );
+
+		return ! $shadow;
 	}
 
 	public static function reassign_target(): ?int {
@@ -188,19 +199,32 @@ final class Processor {
 		return null === $target ? null : (int) $target;
 	}
 
-	private static function compliance( string $topic, ?\WP_User $user ): string {
+	/**
+	 * Shopify's compliance topics. Each leaves a request in Tools → Export /
+	 * Erase Personal Data, so staff handle every privacy request in one place.
+	 */
+	private static function compliance( string $topic, ?\WP_User $user, ?CustomerId $id, string $request ): string {
 		switch ( $topic ) {
 			case 'customers/redact':
-				if ( $user ) {
-					self::erase( $user );
+				if ( $id ) {
+					// Deliveries and events that name the customer, even one never linked here.
+					Eraser::forget_logs( 0, $id->numeric );
 				}
-				return $user ? InboxStore::PROCESSED : InboxStore::UNMATCHED;
+
+				if ( ! $user ) {
+					return InboxStore::UNMATCHED;
+				}
+
+				$email = $user->user_email ?: (string) get_user_meta( $user->ID, Mirror::EMAIL, true );
+				$kept  = self::erase( $user );
+				Requests::record_redaction( $email, (string) $id?->numeric, $kept );
+
+				return InboxStore::PROCESSED;
 
 			case 'customers/data_request':
 				if ( $user ) {
 					$email = (string) get_user_meta( $user->ID, Mirror::EMAIL, true ) ?: $user->user_email;
-					// Hand the request to WordPress' privacy tools; our exporter supplies the Shopify fields.
-					wp_create_user_request( $email, 'export_personal_data' );
+					Requests::from_shopify_data_request( $email, (string) $id?->numeric, $request );
 				}
 				return $user ? InboxStore::PROCESSED : InboxStore::UNMATCHED;
 
@@ -209,6 +233,10 @@ final class Processor {
 					TokenVault::forget_all( (int) $user_id );
 					Mirror::unlink( (int) $user_id );
 				}
+
+				EventLog::anonymise_all_customers();
+				( new WpdbInboxStore() )->anonymise( '' );
+
 				return InboxStore::PROCESSED;
 		}
 
