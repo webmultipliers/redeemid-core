@@ -58,6 +58,29 @@
 		margin: 0;
 	}
 
+	&__notice {
+		margin: 0 0 1rem;
+		padding: 0.5rem 0.75rem;
+		border-left: 3px solid currentColor;
+	}
+
+	&__privacy {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.25rem 1rem;
+		margin-top: 1.25rem;
+		padding-top: 1rem;
+		border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+		font-size: 0.9em;
+
+		p {
+			flex-basis: 100%;
+			margin: 0;
+			opacity: 0.75;
+		}
+	}
+
 	.redeemid-link-button {
 		padding: 0;
 		border: 0;

@@ -34,6 +34,8 @@ final class Cart {
 	public const KEY_COOKIE   = 'redeemid_cart';
 	public const COUNT_COOKIE = 'redeemid_cart_count';
 	public const LIFETIME     = 14 * DAY_IN_SECONDS;
+	/** User meta: the cart key of a signed-in visitor's cart, so privacy export and erasure can find it. */
+	public const USER_META    = '_redeemid_cart_key';
 	public const MAX_QUANTITY = 99;
 	private const PER_MINUTE  = 30;
 
@@ -317,6 +319,13 @@ final class Cart {
 		}
 
 		set_transient( self::store_key( $key ), [ 'id' => $cart['id'], 'buyer' => $buyer ], self::LIFETIME );
+
+		$owner = $buyer ?: get_current_user_id();
+
+		if ( $owner > 0 ) {
+			update_user_meta( $owner, self::USER_META, $key );
+		}
+
 		self::cookie( self::KEY_COOKIE, $key, true );
 		self::cookie( self::COUNT_COOKIE, (string) $cart['count'], false );
 		self::$current = $cart;
@@ -332,9 +341,35 @@ final class Cart {
 			delete_transient( self::store_key( $key ) );
 		}
 
+		if ( is_user_logged_in() ) {
+			delete_user_meta( get_current_user_id(), self::USER_META );
+		}
+
 		self::cookie( self::KEY_COOKIE, '', true, -1 );
 		self::cookie( self::COUNT_COOKIE, '', false, -1 );
 		self::$current = null;
+	}
+
+	/**
+	 * The cart a member last used here, for a privacy export: its Shopify ID,
+	 * or null when there is none (or it has expired).
+	 *
+	 * @return array{id: string, buyer: int}|null
+	 */
+	public static function for_user( int $user_id ): ?array {
+		return self::stored( self::clean_key( (string) get_user_meta( $user_id, self::USER_META, true ) ) );
+	}
+
+	/**
+	 * Drop the cart a member last used here, for privacy erasure. Their
+	 * browser's cookie then points at nothing, which reads as no cart.
+	 */
+	public static function erase_for_user( int $user_id ): bool {
+		$key = self::clean_key( (string) get_user_meta( $user_id, self::USER_META, true ) );
+
+		delete_user_meta( $user_id, self::USER_META );
+
+		return '' !== $key && delete_transient( self::store_key( $key ) );
 	}
 
 	/**

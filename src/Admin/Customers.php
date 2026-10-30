@@ -6,6 +6,8 @@ use RedeemID\Access\LevelStore;
 use RedeemID\Access\Membership;
 use RedeemID\Auth\TokenVault;
 use RedeemID\Config;
+use RedeemID\Privacy\Requests;
+use RedeemID\Privacy\ShopifyErasure;
 use RedeemID\Shopify\Admin as AdminApi;
 use RedeemID\Support\EventLog;
 use RedeemID\Support\Logger;
@@ -624,6 +626,65 @@ final class Customers {
 				</div>
 			<?php Menu::panel_end(); ?>
 		</div>
+
+		<?php self::privacy_panel( $user ); ?>
 		<?php
+	}
+
+	/**
+	 * Privacy requests for this person, from Tools → Export / Erase Personal
+	 * Data, matched on their WordPress and Shopify emails.
+	 */
+	private static function privacy_panel( \WP_User $user ): void {
+		$requests = Requests::for_emails( [ $user->user_email, (string) get_user_meta( $user->ID, Mirror::EMAIL, true ) ] );
+		$actions  = sprintf(
+			'<a class="button button-small" href="%s">%s</a> <a class="button button-small" href="%s">%s</a>',
+			esc_url( Requests::screen_url( Requests::EXPORT ) ),
+			esc_html__( 'Export Personal Data', 'redeemid' ),
+			esc_url( Requests::screen_url( Requests::ERASE ) ),
+			esc_html__( 'Erase Personal Data', 'redeemid' )
+		);
+		$statuses = [
+			'request-pending'   => __( 'Waiting for confirmation', 'redeemid' ),
+			'request-confirmed' => __( 'Confirmed', 'redeemid' ),
+			'request-failed'    => __( 'Failed', 'redeemid' ),
+			'request-completed' => __( 'Completed', 'redeemid' ),
+		];
+
+		Menu::panel_start( __( 'Privacy requests', 'redeemid' ), __( 'Handled in WordPress\'s privacy tools, with a Shopify column on each request.', 'redeemid' ), $actions );
+		?>
+			<div class="redeemid-panel__body redeemid-panel__body--flush">
+				<table class="widefat striped">
+					<?php foreach ( $requests as $request ) : ?>
+						<?php $erasure = ShopifyErasure::state( $request->ID ); ?>
+						<tr>
+							<td><?php echo Menu::ago( $request->created_timestamp ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
+							<td><a href="<?php echo esc_url( Requests::screen_url( $request->action_name ) ); ?>"><?php echo esc_html( Requests::EXPORT === $request->action_name ? __( 'Export', 'redeemid' ) : __( 'Erase', 'redeemid' ) ); ?></a></td>
+							<td><?php echo esc_html( $statuses[ $request->status ] ?? $request->status ); ?></td>
+							<td>
+								<?php
+								echo esc_html(
+									implode(
+										' · ',
+										array_filter(
+											[
+												'shopify' === get_post_meta( $request->ID, Requests::SOURCE, true ) ? __( 'from Shopify', 'redeemid' ) : '',
+												'member' === get_post_meta( $request->ID, Requests::SOURCE, true ) ? __( 'from the Member Account block', 'redeemid' ) : '',
+												$erasure && ShopifyErasure::REQUESTED === $erasure['state'] ? __( 'erasure requested in Shopify', 'redeemid' ) : '',
+											]
+										)
+									)
+								);
+								?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					<?php if ( ! $requests ) : ?>
+						<tr><td><?php esc_html_e( 'No privacy requests for this person.', 'redeemid' ); ?></td></tr>
+					<?php endif; ?>
+				</table>
+			</div>
+		<?php
+		Menu::panel_end();
 	}
 }

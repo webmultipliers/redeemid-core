@@ -556,6 +556,11 @@ final class Flow {
 			'sync_failed'                                                                                    => __( 'Your details could not be refreshed right now. Please try again later.', 'redeemid' ),
 			'sync_wait'                                                                                      => __( 'Your details were refreshed a moment ago.', 'redeemid' ),
 			'existing_expired'                                                                               => __( 'That sign-in expired. Please log in with Shopify again.', 'redeemid' ),
+			'privacy_export_sent'                                                                            => __( 'Check your email: confirm the request and we will send you a copy of your data.', 'redeemid' ),
+			'privacy_erase_sent'                                                                             => __( 'Check your email: confirm the request and we will erase your data here.', 'redeemid' ),
+			'privacy_pending'                                                                                => __( 'You already have a request waiting. Check your email for the confirmation link.', 'redeemid' ),
+			'privacy_received'                                                                               => __( 'We have your request, but could not email you a confirmation link. We will be in touch.', 'redeemid' ),
+			'privacy_failed'                                                                                 => __( 'Your request could not be sent. Please contact us instead.', 'redeemid' ),
 			default                                                                                          => '',
 		};
 	}

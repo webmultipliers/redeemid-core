@@ -71,7 +71,8 @@ final class Extractor {
 				break;
 
 			case Topics::COMPLIANCE:
-				$data['shop'] = self::str( $payload['shop_domain'] ?? null );
+				$data['shop']    = self::str( $payload['shop_domain'] ?? null );
+				$data['request'] = isset( $payload['data_request']['id'] ) && is_scalar( $payload['data_request']['id'] ) ? (string) $payload['data_request']['id'] : null;
 				break;
 		}
 

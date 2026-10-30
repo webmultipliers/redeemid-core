@@ -36,7 +36,9 @@ $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}redeemid_webhooks" ); // phpc
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}redeemid_events" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
 // The per-item rule cache and access index are derived data. The access rules editors set on items and terms stay.
 $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ( '_redeemid_access_effective', '_redeemid_access_search', '_redeemid_access_locked', '_redeemid_access_next' )" );
-$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = '_redeemid_meter'" );
+$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key IN ( '_redeemid_meter', '_redeemid_cart_key' )" );
+// What RedeemID added to privacy requests (source, customer number, Shopify erasure state). The requests themselves are WordPress's and stay.
+$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ( '_redeemid_source', '_redeemid_shopify_request', '_redeemid_customer', '_redeemid_fixture', '_redeemid_redacted_at', '_redeemid_shopify_erasure' )" );
 
 wp_clear_scheduled_hook( 'redeemid_prune' );
 wp_clear_scheduled_hook( 'redeemid_monitor' );

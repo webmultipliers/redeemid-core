@@ -5,7 +5,7 @@
 	"title": "Member Account",
 	"category": "widgets",
 	"icon": "id-alt",
-	"description": "A customer's own membership: their levels, when they joined and renew, what they get, when it last synced (with a refresh), and links to manage their Shopify account and subscription. Guests get a sign-in link. A Blockstudio dynamic island: the cached page carries a placeholder and each visitor's fragment fills it in.",
+	"description": "A customer's own membership: their levels, when they joined and renew, what they get, when it last synced (with a refresh), links to manage their Shopify account and subscription, and requests for a copy or erasure of their data. Guests get a sign-in link. A Blockstudio dynamic island: the cached page carries a placeholder and each visitor's fragment fills it in.",
 	"keywords": [ "shopify", "account", "membership", "profile", "subscription" ],
 	"textdomain": "redeemid",
 	"supports": { "align": [ "wide" ], "html": false },
@@ -14,7 +14,8 @@
 		"attributes": [
 			{ "id": "title", "type": "text", "label": "Title", "default": "Your membership" },
 			{ "id": "showFeatures", "type": "toggle", "label": "List what the membership includes", "default": true },
-			{ "id": "joinUrl", "type": "link", "label": "Join page, for customers without a membership" }
+			{ "id": "joinUrl", "type": "link", "label": "Join page, for customers without a membership" },
+			{ "id": "showPrivacyLinks", "type": "toggle", "label": "Offer Download my data and Delete my data", "default": true }
 		],
 		"island": { "mode": "dynamic" }
 	}

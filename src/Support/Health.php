@@ -2,12 +2,15 @@
 
 namespace RedeemID\Support;
 
+use RedeemID\Admin\Wizard;
 use RedeemID\Blocks\Registration;
 use RedeemID\Commerce\CartBridge;
 use RedeemID\Commerce\Pages;
 use RedeemID\Config;
 use RedeemID\Integrations\OfficialPlugin;
+use RedeemID\Shopify\Admin;
 use RedeemID\Shopify\Discovery;
+use RedeemID\Webhooks\WpdbInboxStore;
 
 /**
  * A short yes/no checklist of what the plugin needs, for the Shopify Health
@@ -129,6 +132,30 @@ final class Health {
 					: __( 'off: needs the same store and a Storefront token', 'redeemid' )
 			);
 		}
+
+		if ( Admin::available() ) {
+			$relay = Admin::erasure_scope();
+			$add(
+				__( 'Shopify erasure from Tools', 'redeemid' ),
+				true === $relay ? self::OK : self::INFO,
+				match ( $relay ) {
+					true    => __( 'staff can ask Shopify to erase a customer from Tools → Erase Personal Data', 'redeemid' ),
+					null    => __( 'not known until the Admin app gets its first token', 'redeemid' ),
+					/* translators: %s: Admin API scope */
+					default => sprintf( __( 'optional: give the Admin app the %s scope to ask Shopify from Tools → Erase Personal Data', 'redeemid' ), Admin::ERASURE_SCOPE ),
+				}
+			);
+		}
+
+		$compliance = ( new WpdbInboxStore() )->last_of( Wizard::COMPLIANCE_TOPICS );
+		$add(
+			__( 'Shopify privacy webhooks', 'redeemid' ),
+			self::INFO,
+			$compliance
+				/* translators: %s: date and time */
+				? sprintf( __( 'last request from Shopify %s; each becomes a request in Tools → Export / Erase Personal Data', 'redeemid' ), wp_date( 'Y-m-d H:i', $compliance ) )
+				: __( 'none received in the last 30 days; declare the compliance topics in the Dev Dashboard app (setup wizard, Webhooks step)', 'redeemid' )
+		);
 
 		/**
 		 * Rows to add to the health checklist, such as a theme's own checks.

@@ -4,6 +4,9 @@
  * a neutral placeholder for everyone, and each visitor's own fragment (never
  * cached) fills in their membership from RedeemID\Blocks\Account::view().
  *
+ * Download my data and Delete my data (showPrivacyLinks) create WordPress
+ * privacy requests through RedeemID\Privacy\SelfService.
+ *
  * @var array $a                Block attributes.
  * @var bool  $isEditor         Rendering inside the block editor.
  * @var bool  $isIslandFragment Rendering the visitor's own fragment.
@@ -16,6 +19,10 @@ use RedeemID\Blocks\Gate;
 
 $redeemid_title = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your membership', 'redeemid' );
 $redeemid_here  = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
+$redeemid_query = [];
+wp_parse_str( (string) wp_parse_url( $redeemid_here, PHP_URL_QUERY ), $redeemid_query );
+$redeemid_said  = ! $isEditor && $isIslandFragment ? \RedeemID\Auth\Flow::message( sanitize_key( (string) ( $redeemid_query['redeemid_notice'] ?? '' ) ) ) : '';
+$redeemid_here  = remove_query_arg( 'redeemid_notice', $redeemid_here );
 $redeemid_join  = Gate::url( $a['joinUrl'] ?? '' );
 $redeemid_view  = ! $isEditor && $isIslandFragment ? Account::view( get_current_user_id() ) : null;
 
@@ -32,6 +39,10 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 ?>
 <section useBlockProps class="redeemid-account<?php echo $redeemid_view ? ' is-' . esc_attr( $redeemid_view['state'] ) : ''; ?>" aria-live="polite">
 	<h2 class="redeemid-account__title"><?php echo esc_html( $redeemid_title ); ?></h2>
+
+	<?php if ( '' !== $redeemid_said ) : ?>
+		<p class="redeemid-account__notice" role="status"><?php echo esc_html( $redeemid_said ); ?></p>
+	<?php endif; ?>
 
 	<?php if ( $isEditor ) : ?>
 		<p><?php esc_html_e( 'Each customer sees their own levels, dates, features and account links here.', 'redeemid' ); ?></p>
@@ -115,5 +126,20 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 			<?php endif; ?>
 			<?php $redeemid_form( 'redeemid_logout', __( 'Log out', 'redeemid' ), 'redeemid-link-button' ); ?>
 		</div>
+
+		<?php if ( ! empty( $a['showPrivacyLinks'] ) ) : ?>
+			<div class="redeemid-account__privacy">
+				<p><?php esc_html_e( 'Your data: we will email you to confirm either request.', 'redeemid' ); ?></p>
+				<?php foreach ( [ 'export' => __( 'Download my data', 'redeemid' ), 'erase' => __( 'Delete my data', 'redeemid' ) ] as $redeemid_type => $redeemid_label ) : ?>
+					<form class="redeemid-account__form" method="post" action="<?php echo esc_url( \RedeemID\Auth\Flow::action_url() ); ?>">
+						<input type="hidden" name="action" value="<?php echo esc_attr( \RedeemID\Privacy\SelfService::ACTION ); ?>">
+						<input type="hidden" name="type" value="<?php echo esc_attr( $redeemid_type ); ?>">
+						<?php wp_nonce_field( \RedeemID\Privacy\SelfService::ACTION, '_wpnonce', false ); ?>
+						<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redeemid_here ); ?>">
+						<button type="submit" class="redeemid-link-button"><?php echo esc_html( $redeemid_label ); ?></button>
+					</form>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
 	<?php endif; ?>
 </section>
