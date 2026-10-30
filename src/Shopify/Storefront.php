@@ -68,6 +68,7 @@ GRAPHQL;
 	private const COLLECTION_QUERY = <<<'GRAPHQL'
 query RedeemIDCollection($handle: String!, $first: Int, $after: String, $last: Int, $before: String) {
   collection(handle: $handle) {
+    id
     handle
     title
     description
@@ -291,6 +292,7 @@ GRAPHQL;
 		$page = $raw['products']['pageInfo'] ?? [];
 
 		return [
+			'id'          => (string) ( $raw['id'] ?? '' ),
 			'handle'      => (string) ( $raw['handle'] ?? '' ),
 			'title'       => (string) ( $raw['title'] ?? '' ),
 			'description' => (string) ( $raw['description'] ?? '' ),
