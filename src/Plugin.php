@@ -18,6 +18,7 @@ use RedeemID\Features\Surfaces as FeatureSurfaces;
 use RedeemID\Admin\AccessColumn;
 use RedeemID\Admin\AccessMetaBox;
 use RedeemID\Admin\AccessTermFields;
+use RedeemID\Admin\AdminBar;
 use RedeemID\Admin\FileFields;
 use RedeemID\Admin\Menu;
 use RedeemID\Admin\UserProfile;
@@ -80,6 +81,7 @@ final class Plugin {
 		CartBridge::register();
 		Cart::register();
 		Pages::register();
+		AdminBar::register();
 		ProtectedFiles::register();
 		Privacy::register();
 		EventLog::register();
