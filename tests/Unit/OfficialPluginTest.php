@@ -27,4 +27,11 @@ final class OfficialPluginTest extends TestCase {
 		$this->assertSame( 'shop.myshopify.com', OfficialPlugin::normalise( ' HTTPS://Shop.myshopify.com/admin ' ) );
 		$this->assertSame( '', OfficialPlugin::normalise( '' ) );
 	}
+
+	public function test_advisories_cover_versions_up_to_the_affected_one(): void {
+		$this->assertSame( [ 'CVE-2026-57748' ], array_column( OfficialPlugin::advisories( '1.0.0' ), 'id' ) );
+		$this->assertSame( [ 'CVE-2026-57748' ], array_column( OfficialPlugin::advisories( '0.9.1' ), 'id' ) );
+		$this->assertSame( [], OfficialPlugin::advisories( '1.0.1' ) );
+		$this->assertSame( [], OfficialPlugin::advisories( '' ), 'not installed' );
+	}
 }

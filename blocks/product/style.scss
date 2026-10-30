@@ -1,0 +1,64 @@
+.redeemid-product {
+	display: grid;
+	gap: var(--wp--preset--spacing--20, 0.75rem);
+	align-content: start;
+
+	&__title,
+	&__description,
+	&__price,
+	&__terms,
+	&__notice,
+	&__field,
+	&__form {
+		margin: 0;
+	}
+
+	&__price {
+		font-size: var(--wp--preset--font-size--large, 1.5rem);
+		font-weight: 600;
+	}
+
+	&__compare {
+		margin-inline-start: 0.5rem;
+		font-size: var(--wp--preset--font-size--small, 0.8125rem);
+		font-weight: 400;
+		opacity: 0.7;
+	}
+
+	&__terms {
+		font-size: var(--wp--preset--font-size--small, 0.8125rem);
+		opacity: 0.8;
+	}
+
+	&__image {
+		width: 100%;
+		height: auto;
+		border-radius: 0.25rem;
+	}
+
+	&__notice {
+		font-weight: 600;
+	}
+
+	&__form {
+		display: grid;
+		gap: var(--wp--preset--spacing--20, 0.75rem);
+		justify-items: start;
+	}
+
+	&__field {
+		display: grid;
+		gap: 0.25rem;
+
+		select,
+		input {
+			min-height: 2.75rem;
+			padding: 0.25rem 0.5rem;
+			font: inherit;
+		}
+
+		input {
+			width: 6rem;
+		}
+	}
+}

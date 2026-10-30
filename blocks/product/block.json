@@ -1,0 +1,35 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "redeemid/product",
+	"title": "Shopify Product",
+	"category": "widgets",
+	"icon": "products",
+	"description": "One Shopify product with its live price, an options picker, a quantity field and a buy button that goes straight to Shopify checkout. Rendered on the server, works without JavaScript and without Shopify's own plugin.",
+	"keywords": [ "product", "shop", "store", "buy", "shopify", "checkout" ],
+	"textdomain": "redeemid",
+	"supports": { "align": false, "html": false },
+	"example": {
+		"attributes": { "buttonLabel": "Buy now" }
+	},
+	"blockstudio": {
+		"attributes": [
+			{
+				"id": "productHandle",
+				"type": "select",
+				"label": "Shopify product",
+				"help": "Search your Shopify products by title.",
+				"populate": {
+					"type": "fetch",
+					"arguments": { "urlSearch": "/wp-json/redeemid/v1/editor/products?search=" },
+					"returnFormat": { "value": "handle", "label": "title" }
+				}
+			},
+			{ "id": "buttonLabel", "type": "text", "label": "Button label", "default": "Buy now" },
+			{ "id": "showImage", "type": "toggle", "label": "Show product image", "default": true },
+			{ "id": "showDescription", "type": "toggle", "label": "Show description", "default": true },
+			{ "id": "showQuantity", "type": "toggle", "label": "Show quantity field", "default": true },
+			{ "id": "showCompareAt", "type": "toggle", "label": "Show compare-at price", "default": true }
+		]
+	}
+}

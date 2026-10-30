@@ -20,14 +20,22 @@ final class Registration {
 		add_action( 'init', [ Gate::class, 'register' ] );
 	}
 
+	/** Picker attribute IDs and the editor REST route each one searches. */
+	public const PICKERS = [
+		'productHandle'    => '/editor/products',
+		'collectionHandle' => '/editor/collections',
+	];
+
 	/**
-	 * Point the Plan Card's product picker (a Blockstudio "fetch" populate) at
-	 * this site's REST route. block.json can only hold a fixed URL, and the
-	 * REST root differs per site.
+	 * Point the Shopify product and collection pickers (Blockstudio "fetch"
+	 * populates) at this site's REST routes. block.json can only hold a fixed
+	 * URL, and the REST root differs per site.
 	 */
 	public static function product_picker_url( mixed $attribute, mixed $block ): mixed {
-		if ( is_array( $attribute ) && 'productHandle' === ( $attribute['id'] ?? '' ) && 'fetch' === ( $attribute['populate']['type'] ?? '' ) ) {
-			$url = rest_url( \RedeemID\Rest\Routes::NS . '/editor/products' );
+		$route = is_array( $attribute ) ? ( self::PICKERS[ $attribute['id'] ?? '' ] ?? '' ) : '';
+
+		if ( '' !== $route && 'fetch' === ( $attribute['populate']['type'] ?? '' ) ) {
+			$url = rest_url( \RedeemID\Rest\Routes::NS . $route );
 
 			// Blockstudio appends the search term to this URL as is.
 			$attribute['populate']['arguments']['urlSearch'] = $url . ( str_contains( $url, '?' ) ? '&' : '?' ) . 'search=';

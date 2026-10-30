@@ -29,6 +29,7 @@ query RedeemIDPlanProduct($handle: String!) {
     description
     requiresSellingPlan
     featuredImage { url altText width height }
+    options { name }
     variants(first: 25) {
       nodes {
         id
@@ -55,6 +56,41 @@ query RedeemIDProductSearch($query: String) {
   }
 }
 GRAPHQL;
+
+	private const COLLECTION_SEARCH = <<<'GRAPHQL'
+query RedeemIDCollectionSearch($query: String) {
+  collections(first: 20, query: $query, sortKey: TITLE) {
+    nodes { handle title }
+  }
+}
+GRAPHQL;
+
+	private const COLLECTION_QUERY = <<<'GRAPHQL'
+query RedeemIDCollection($handle: String!, $first: Int, $after: String, $last: Int, $before: String) {
+  collection(handle: $handle) {
+    handle
+    title
+    description
+    products(first: $first, after: $after, last: $last, before: $before) {
+      nodes {
+        handle
+        title
+        availableForSale
+        requiresSellingPlan
+        onlineStoreUrl
+        featuredImage { url altText width height }
+        priceRange { minVariantPrice { amount currencyCode } maxVariantPrice { amount currencyCode } }
+        compareAtPriceRange { minVariantPrice { amount currencyCode } }
+        variants(first: 2) { nodes { id availableForSale } }
+      }
+      pageInfo { hasNextPage hasPreviousPage startCursor endCursor }
+    }
+  }
+}
+GRAPHQL;
+
+	/** Most products a collection block shows per page. */
+	public const MAX_PER_PAGE = 48;
 
 	private const CART_CREATE = <<<'GRAPHQL'
 mutation RedeemIDBuyNow($input: CartInput!) {
@@ -118,6 +154,153 @@ GRAPHQL;
 		set_transient( $key, $products, self::CACHE_TTL );
 
 		return $products;
+	}
+
+	/**
+	 * Collections whose title matches a search, for the Collection block's
+	 * picker in the editor. Cached like the product search.
+	 *
+	 * @return array<int, array{handle: string, title: string}>|\WP_Error
+	 */
+	public static function search_collections( string $search ): array|\WP_Error {
+		$search = trim( preg_replace( '/[^\p{L}\p{N} _-]+/u', ' ', $search ) ?? '' );
+		$key    = 'redeemid_sf_csearch_' . md5( Config::store_domain() . '|' . strtolower( $search ) );
+		$cached = get_transient( $key );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		if ( ! self::available() ) {
+			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
+		}
+
+		$data = Http::graphql( self::endpoint(), self::headers(), self::COLLECTION_SEARCH, [ 'query' => self::title_query( $search ) ], 'storefront.collection_search' );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$collections = [];
+
+		foreach ( (array) ( $data['collections']['nodes'] ?? [] ) as $node ) {
+			if ( is_array( $node ) && ! empty( $node['handle'] ) ) {
+				$collections[] = [ 'handle' => (string) $node['handle'], 'title' => (string) ( $node['title'] ?? $node['handle'] ) ];
+			}
+		}
+
+		set_transient( $key, $collections, self::CACHE_TTL );
+
+		return $collections;
+	}
+
+	/**
+	 * One page of a collection's products, from cache when fresh. $after and
+	 * $before are cursors from an earlier page; give at most one. Null when
+	 * the handle does not resolve; WP_Error when Shopify could not be asked.
+	 *
+	 * @return array{handle: string, title: string, description: string, products: array, next: string, previous: string}|null|\WP_Error
+	 */
+	public static function collection( string $handle, int $per_page, string $after = '', string $before = '' ): array|null|\WP_Error {
+		$handle   = sanitize_title( $handle );
+		$per_page = max( 1, min( self::MAX_PER_PAGE, $per_page ) );
+		$after    = self::cursor( $after );
+		$before   = '' === $after ? self::cursor( $before ) : '';
+
+		if ( '' === $handle ) {
+			return null;
+		}
+
+		$country = self::country();
+		$key     = 'redeemid_sf_collection_' . md5( implode( '|', [ Config::store_domain(), $handle, $per_page, $after, $before, $country ] ) );
+		$cached  = get_transient( $key );
+
+		if ( is_array( $cached ) ) {
+			return ! empty( $cached['error'] ) ? new \WP_Error( 'shopify_unreachable', 'Shopify was unreachable a moment ago.' ) : $cached['collection'];
+		}
+
+		if ( ! self::available() ) {
+			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
+		}
+
+		$vars = [ 'handle' => $handle ] + ( '' !== $before ? [ 'last' => $per_page, 'before' => $before ] : [ 'first' => $per_page ] + ( '' !== $after ? [ 'after' => $after ] : [] ) );
+		$data = Http::graphql( self::endpoint(), self::headers(), self::in_context( self::COLLECTION_QUERY, $country ), $vars, 'storefront.collection' );
+
+		if ( is_wp_error( $data ) ) {
+			// Back off on the first page only: a bad cursor in a URL must not stand in for an outage.
+			if ( '' === $after && '' === $before ) {
+				set_transient( $key, [ 'error' => true ], MINUTE_IN_SECONDS );
+			}
+
+			return $data;
+		}
+
+		$collection = is_array( $data['collection'] ?? null ) ? self::shape_collection( $data['collection'] ) : null;
+
+		set_transient( $key, [ 'collection' => $collection ], self::CACHE_TTL );
+
+		return $collection;
+	}
+
+	/**
+	 * Keep only what the collection block renders. Pure.
+	 */
+	public static function shape_collection( array $raw ): array {
+		$products = [];
+
+		foreach ( $raw['products']['nodes'] ?? [] as $node ) {
+			if ( is_array( $node ) && ! empty( $node['handle'] ) ) {
+				$products[] = self::shape_summary( $node );
+			}
+		}
+
+		$page = $raw['products']['pageInfo'] ?? [];
+
+		return [
+			'handle'      => (string) ( $raw['handle'] ?? '' ),
+			'title'       => (string) ( $raw['title'] ?? '' ),
+			'description' => (string) ( $raw['description'] ?? '' ),
+			'products'    => $products,
+			'next'        => ! empty( $page['hasNextPage'] ) ? self::cursor( (string) ( $page['endCursor'] ?? '' ) ) : '',
+			'previous'    => ! empty( $page['hasPreviousPage'] ) ? self::cursor( (string) ( $page['startCursor'] ?? '' ) ) : '',
+		];
+	}
+
+	/**
+	 * A product as a card in a list: its lowest price, and the one variant
+	 * buy-now can sell straight from the card when there is no choice to make
+	 * ('' when the buyer must pick options or a selling plan first). Pure.
+	 */
+	public static function shape_summary( array $node ): array {
+		$image    = is_array( $node['featuredImage'] ?? null ) ? $node['featuredImage'] : null;
+		$variants = array_values( array_filter( (array) ( $node['variants']['nodes'] ?? [] ), static fn( $v ) => is_array( $v ) && ! empty( $v['id'] ) ) );
+		$min      = self::money( $node['priceRange']['minVariantPrice'] ?? null );
+		$max      = self::money( $node['priceRange']['maxVariantPrice'] ?? null );
+		$compare  = self::money( $node['compareAtPriceRange']['minVariantPrice'] ?? null );
+		$single   = 1 === count( $variants ) && empty( $node['requiresSellingPlan'] );
+		$url      = (string) ( $node['onlineStoreUrl'] ?? '' );
+
+		return [
+			'handle'    => (string) $node['handle'],
+			'title'     => (string) ( $node['title'] ?? '' ),
+			'available' => ! empty( $node['availableForSale'] ),
+			'image'     => $image ? [ 'url' => (string) $image['url'], 'alt' => (string) ( $image['altText'] ?? '' ), 'width' => (int) ( $image['width'] ?? 0 ), 'height' => (int) ( $image['height'] ?? 0 ) ] : null,
+			'price'     => $min,
+			'from'      => $min && $max && (float) $max['amount'] > (float) $min['amount'],
+			'compareAt' => $compare && $min && (float) $compare['amount'] > (float) $min['amount'] ? $compare : null,
+			'variant'   => $single && ! empty( $variants[0]['availableForSale'] ) ? (string) $variants[0]['id'] : '',
+			'url'       => str_starts_with( $url, 'https://' ) ? $url : '',
+		];
+	}
+
+	/**
+	 * A pagination cursor from a URL, or '' when it isn't one. Shopify's
+	 * cursors are opaque base64 strings. Pure.
+	 */
+	public static function cursor( string $raw ): string {
+		$raw = trim( $raw );
+
+		return strlen( $raw ) <= 512 && preg_match( '#^[A-Za-z0-9+/=_-]+$#', $raw ) ? $raw : '';
 	}
 
 	/**
@@ -192,7 +375,14 @@ GRAPHQL;
 			];
 		}
 
-		$image = is_array( $raw['featuredImage'] ?? null ) ? $raw['featuredImage'] : null;
+		$image   = is_array( $raw['featuredImage'] ?? null ) ? $raw['featuredImage'] : null;
+		$options = [];
+
+		foreach ( (array) ( $raw['options'] ?? [] ) as $option ) {
+			if ( is_array( $option ) && '' !== (string) ( $option['name'] ?? '' ) ) {
+				$options[] = (string) $option['name'];
+			}
+		}
 
 		return [
 			'id'            => (string) ( $raw['id'] ?? '' ),
@@ -202,6 +392,8 @@ GRAPHQL;
 			'requires_plan' => ! empty( $raw['requiresSellingPlan'] ),
 			'image'         => $image ? [ 'url' => (string) $image['url'], 'alt' => (string) ( $image['altText'] ?? '' ), 'width' => (int) ( $image['width'] ?? 0 ), 'height' => (int) ( $image['height'] ?? 0 ) ] : null,
 			'variants'      => $variants,
+			// Shopify gives a product with no options one "Title" option holding one "Default Title" value.
+			'has_options'   => count( $variants ) > 1 || ( $options && [ 'Title' ] !== $options ),
 		];
 	}
 

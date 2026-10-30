@@ -115,6 +115,17 @@ final class Routes {
 			]
 		);
 
+		register_rest_route(
+			self::NS,
+			'/editor/collections',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ self::class, 'collections' ],
+				'permission_callback' => [ self::class, 'can_pick_products' ],
+				'args'                => [ 'search' => [ 'type' => 'string', 'default' => '' ] ],
+			]
+		);
+
 		Endpoint::register_routes();
 	}
 
@@ -160,6 +171,16 @@ final class Routes {
 		}
 
 		return self::no_cache( $products );
+	}
+
+	public static function collections( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$collections = Storefront::search_collections( (string) $request->get_param( 'search' ) );
+
+		if ( is_wp_error( $collections ) ) {
+			return new \WP_Error( $collections->get_error_code(), $collections->get_error_message(), [ 'status' => 503 ] );
+		}
+
+		return self::no_cache( $collections );
 	}
 
 	/**
