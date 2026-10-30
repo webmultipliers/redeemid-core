@@ -85,6 +85,21 @@ final class Health {
 		$add( __( 'Shopify’s WordPress plugin', 'redeemid' ), $states[ $official['state'] ] ?? self::WARN, OfficialPlugin::summary() );
 
 		if ( OfficialPlugin::ABSENT !== $official['state'] ) {
+			$advisories = OfficialPlugin::advisories( $official['version'] );
+
+			if ( $advisories ) {
+				$add(
+					__( 'Shopify’s plugin security', 'redeemid' ),
+					self::WARN,
+					sprintf(
+						/* translators: 1: version 2: advisory IDs */
+						__( 'Version %1$s is named in %2$s with no fixed release. RedeemID’s Shopify Product and Shopify Collection blocks replace its catalog blocks, so you can deactivate it once your pages use them.', 'redeemid' ),
+						$official['version'],
+						implode( ', ', array_column( $advisories, 'id' ) )
+					)
+				);
+			}
+
 			$add( __( '/cart owner', 'redeemid' ), self::INFO, $official['owns_cart'] ? __( 'Shopify’s plugin (its rewrite rule wins over pages)', 'redeemid' ) : __( 'nobody yet: flush permalinks', 'redeemid' ) );
 
 			$bridge = CartBridge::enabled();

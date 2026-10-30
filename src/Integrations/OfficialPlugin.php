@@ -23,6 +23,15 @@ final class OfficialPlugin {
 	public const SAME_STORE  = 'same_store';
 	public const OTHER_STORE = 'other_store';
 
+	/**
+	 * Published security advisories for Shopify's plugin, each affecting every
+	 * version up to and including `through`. Shown on Overview and Debug so a
+	 * site still running it knows, since Shopify has shipped no fix.
+	 */
+	public const ADVISORIES = [
+		[ 'id' => 'CVE-2026-57748', 'through' => '1.0.0', 'kind' => 'local file inclusion' ],
+	];
+
 	/** @var array{state: string, version: string, store_domain: string, owns_cart: bool, product_routes: bool}|null */
 	private static ?array $info = null;
 
@@ -87,6 +96,19 @@ final class OfficialPlugin {
 		return self::$info;
 	}
 
+	/**
+	 * The advisories that cover $version. Pure.
+	 *
+	 * @return array<int, array{id: string, through: string, kind: string}>
+	 */
+	public static function advisories( string $version ): array {
+		if ( '' === $version ) {
+			return [];
+		}
+
+		return array_values( array_filter( self::ADVISORIES, static fn( array $advisory ) => version_compare( $version, $advisory['through'], '<=' ) ) );
+	}
+
 	public static function state(): string {
 		return self::info()['state'];
 	}
@@ -117,7 +139,7 @@ final class OfficialPlugin {
 		$info = self::info();
 
 		return match ( $info['state'] ) {
-			self::ABSENT      => __( 'Not installed. RedeemID runs on its own; add it for a full storefront.', 'redeemid' ),
+			self::ABSENT      => __( 'Not installed. RedeemID runs on its own; its product and collection blocks replace Shopify’s catalog blocks.', 'redeemid' ),
 			self::UNCONNECTED => sprintf( /* translators: %s: version */ __( 'Version %s is active but not connected to a store yet.', 'redeemid' ), $info['version'] ),
 			self::SAME_STORE  => sprintf( /* translators: 1: version 2: store domain */ __( 'Version %1$s, connected to %2$s, the same store as RedeemID.', 'redeemid' ), $info['version'], $info['store_domain'] ?: Config::store_domain() ),
 			default           => sprintf( /* translators: 1: version 2: their store 3: our store */ __( 'Version %1$s is connected to %2$s, but RedeemID is set up for %3$s. Purchases there will not unlock content here.', 'redeemid' ), $info['version'], $info['store_domain'], Config::store_domain() ),
