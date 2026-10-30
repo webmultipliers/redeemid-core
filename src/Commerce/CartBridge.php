@@ -38,7 +38,8 @@ final class CartBridge {
 	}
 
 	public static function enabled(): bool {
-		return OfficialPlugin::serves_storefront() && Storefront::available();
+		// When RedeemID runs the cart itself, there is no Shopify-plugin cart to sign in.
+		return OfficialPlugin::serves_storefront() && Storefront::available() && ! Pages::serves( Pages::CART );
 	}
 
 	public static function enqueue(): void {

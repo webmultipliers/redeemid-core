@@ -1,6 +1,6 @@
 # Replacing Shopify's WordPress plugin
 
-Shopify publishes its own WordPress plugin for the Sell on WordPress sales channel. Version 1.0.0 (built 2026-03-20) is the only release, it is not on wordpress.org, and it is named in a published security advisory (CVE-2026-57748, local file inclusion, versions up to and including 1.0.0) with no fixed release. RedeemID is growing its own storefront so a site can remove it and lose nothing, while running beside it without conflict until then. The [README](../README.md#shopifys-wordpress-plugin) covers the settings and behaviour.
+Shopify publishes its own WordPress plugin for the Sell on WordPress sales channel. Version 1.0.0 (built 2026-03-20) is the only release, it is not on wordpress.org, and it is named in a published security advisory (CVE-2026-57748, local file inclusion, versions up to and including 1.0.0) with no fixed release. RedeemID covers everything it does, so a site can remove it and lose nothing, and runs beside it without conflict until then. The [README](../README.md#shopifys-wordpress-plugin) covers the settings and behaviour.
 
 ## What it does, and what covers it
 
@@ -10,9 +10,9 @@ Shopify publishes its own WordPress plugin for the Sell on WordPress sales chann
 | Product block | **Shopify Product** (`redeemid/product`): live price, options, quantity, buy-now, no JavaScript | Covered |
 | Collection block with pagination | **Shopify Collection** (`redeemid/collection`): server-rendered grid, link-based pages | Covered |
 | Membership or plan purchase | **Shopify Plan Card** (`redeemid/plan-card`), member-aware, selling plans | Covered (RedeemID only) |
-| Cart toggle block, cart drawer, discount code field | A server-held cart and a cart link block | Planned |
-| `/cart`, `/products/{handle}`, `/collections/{handle}` pages | The same paths, rendered by RedeemID blocks | Planned |
-| SEO title, description and social tags on those pages | The same, plus Product structured data, deferring to an SEO plugin | Planned with the pages |
+| Cart toggle block, cart drawer, discount code field | **Shopify Cart** (`redeemid/cart`) and **Shopify Cart Link** (`redeemid/cart-link`): a server-held cart with quantities, discount code and signed-in checkout, no JavaScript | Covered |
+| `/cart`, `/products/{handle}`, `/collections/{handle}` pages | The same paths by default, or any paths the site sets, as editable templates | Covered |
+| SEO title, description and social tags on those pages | The same, plus canonical links and Product structured data, deferring to Yoast SEO or Rank Math | Covered |
 | Admin bar links to Shopify products and collections | One staff-only Shopify admin node | Planned |
 | Pageview and install analytics sent to Shopify | Not replicated; RedeemID keeps its own local stats | Not planned |
 
@@ -22,17 +22,15 @@ Until a site removes Shopify's plugin, RedeemID follows these rules so the two n
 
 - **Names.** RedeemID's blocks are `redeemid/*`, its options `redeemid_*`, its CSS `.redeemid-*` and its query vars `redeemid_*`. Shopify's plugin uses `shopify-product/*`, `shopify-collection/*`, `create-block/*`, `shopify_*` options and `shopify_*` query vars.
 - **No web components.** RedeemID renders on the server and prints no `<shopify-store>`, `<shopify-cart>` or other Storefront Web Components, so nothing collides with the ones Shopify's plugin prints on every page.
-- **URLs.** Shopify's plugin prepends its rewrite rules, so while it is active it always wins `/cart` and, unless turned off, `/products/*` and `/collections/*`. RedeemID will use the same paths, so links survive the switch, and register each one only while Shopify's plugin doesn't own it. Health shows the owner.
-- **One cart.** While Shopify's plugin owns `/cart`, RedeemID keeps signing its cart in for linked customers (`Commerce\CartBridge`, `POST /cart/identity`) and shows no cart of its own. The bridge and the toggle keyboard fix switch off by themselves when the plugin is gone.
+- **URLs.** Shopify's plugin prepends its rewrite rules for `/cart` (always) and `/products/*` and `/collections/*` (unless turned off). RedeemID uses the same paths by default, so links survive the switch. By default it stands down on any path Shopify's plugin has claimed. A site can give RedeemID other paths (Settings → Storefront pages), and then the two never meet, or turn on **RedeemID takes precedence**: RedeemID then adds its rules after Shopify's plugin has added its own, so RedeemID's win, through every permalink flush. Health shows who answers each path.
+- **One cart.** While Shopify's plugin answers the cart path, RedeemID's cart and cart link switch off and RedeemID keeps signing that plugin's cart in for linked customers (`Commerce\CartBridge`, `POST /cart/identity`). When RedeemID answers it, the bridge switches off. The toggle keyboard fix switches off when the plugin is gone.
 - **Credentials.** RedeemID never reads its Storefront token (`shopify_api_key`). It reads only `shopify_store_url`, to check both plugins use the same store; a different store is an error on Overview.
 
 ## Moving off it
 
 1. Publish the products and collections your pages show to the sales channel of RedeemID's Storefront token (usually Headless). Shopify's plugin reads the Sell on WordPress channel, so a product published only there shows as unavailable in RedeemID's blocks.
-2. Replace its product and collection blocks with Shopify Product and Shopify Collection.
-3. Deactivate Shopify's plugin, then save Settings → Permalinks once so its rewrite rules are dropped.
-
-Until RedeemID's cart ships, a site that removes Shopify's plugin sells through buy-now (straight to checkout) only.
+2. Replace its product, collection and cart toggle blocks with Shopify Product, Shopify Collection and Shopify Cart Link.
+3. Deactivate Shopify's plugin, then save Settings → Permalinks once so its rewrite rules are dropped. RedeemID's pages take over the same paths. To switch before removing it, turn on **RedeemID takes precedence**.
 
 ## Trade-offs while it is active
 

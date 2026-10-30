@@ -170,7 +170,7 @@ final class Transfer {
 		return $out;
 	}
 
-	private const SETTING_KEYS = [ 'clear_cart_on_logout', 'quiet_days', 'alert_email', 'login_button', 'shopify_login_links', 'subscription_url' ];
+	private const SETTING_KEYS = [ 'clear_cart_on_logout', 'quiet_days', 'alert_email', 'login_button', 'shopify_login_links', 'subscription_url', 'storefront_pages', 'product_path', 'collection_path', 'cart_path', 'storefront_first' ];
 
 	/**
 	 * Rebase absolute URLs on the exporting site to this one: a level's
@@ -278,7 +278,8 @@ final class Transfer {
 					array_filter( Registry::features(), static fn( Feature $f ) => $f->managed && isset( $data[ $f->slug ] ) ) && $report['managed'][] = $section;
 					break;
 				case self::SETTINGS:
-					update_option( Settings::OPTION, Settings::sanitize( $data ), true );
+					// A setting the file doesn't hold (an older export) keeps its current value.
+					update_option( Settings::OPTION, Settings::sanitize( $data + Settings::all() ), true );
 					break;
 			}
 

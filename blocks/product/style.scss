@@ -46,6 +46,19 @@
 		justify-items: start;
 	}
 
+	&__buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0;
+
+		.is-secondary {
+			border: 1px solid currentColor;
+			background: transparent;
+			color: inherit;
+		}
+	}
+
 	&__field {
 		display: grid;
 		gap: 0.25rem;

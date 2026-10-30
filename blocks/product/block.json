@@ -5,7 +5,7 @@
 	"title": "Shopify Product",
 	"category": "widgets",
 	"icon": "products",
-	"description": "One Shopify product with its live price, an options picker, a quantity field and a buy button that goes straight to Shopify checkout. Rendered on the server, works without JavaScript and without Shopify's own plugin.",
+	"description": "One Shopify product with its live price, an options picker, a quantity field, Add to cart and a buy button that goes straight to Shopify checkout. Rendered on the server, works without JavaScript and without Shopify's own plugin.",
 	"keywords": [ "product", "shop", "store", "buy", "shopify", "checkout" ],
 	"textdomain": "redeemid",
 	"supports": { "align": false, "html": false },
@@ -18,14 +18,16 @@
 				"id": "productHandle",
 				"type": "select",
 				"label": "Shopify product",
-				"help": "Search your Shopify products by title.",
+				"help": "Search your Shopify products by title. Leave empty on RedeemID's product page template to show the product in the URL.",
 				"populate": {
 					"type": "fetch",
 					"arguments": { "urlSearch": "/wp-json/redeemid/v1/editor/products?search=" },
 					"returnFormat": { "value": "handle", "label": "title" }
 				}
 			},
-			{ "id": "buttonLabel", "type": "text", "label": "Button label", "default": "Buy now" },
+			{ "id": "cartLabel", "type": "text", "label": "Add to cart label", "default": "Add to cart", "help": "Shown when RedeemID's cart is on (it is off while Shopify's own plugin runs the cart)." },
+			{ "id": "showBuyNow", "type": "toggle", "label": "Show buy-now button next to Add to cart", "default": true },
+			{ "id": "buttonLabel", "type": "text", "label": "Buy-now label", "default": "Buy now" },
 			{ "id": "showImage", "type": "toggle", "label": "Show product image", "default": true },
 			{ "id": "showDescription", "type": "toggle", "label": "Show description", "default": true },
 			{ "id": "showQuantity", "type": "toggle", "label": "Show quantity field", "default": true },

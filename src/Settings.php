@@ -18,6 +18,11 @@ final class Settings {
 		'login_button'         => true,
 		'shopify_login_links'  => false,
 		'subscription_url'     => '',
+		'storefront_pages'     => true,
+		'product_path'         => 'products',
+		'collection_path'      => 'collections',
+		'cart_path'            => 'cart',
+		'storefront_first'     => false,
 	];
 
 	public static function all(): array {
@@ -40,6 +45,11 @@ final class Settings {
 			'login_button'         => ! empty( $input['login_button'] ),
 			'shopify_login_links'  => ! empty( $input['shopify_login_links'] ),
 			'subscription_url'     => esc_url_raw( trim( (string) ( $input['subscription_url'] ?? '' ) ), [ 'https', 'http' ] ),
+			'storefront_pages'     => ! empty( $input['storefront_pages'] ),
+			'product_path'         => \RedeemID\Commerce\Pages::clean_path( (string) ( $input['product_path'] ?? '' ) ) ?: self::DEFAULTS['product_path'],
+			'collection_path'      => \RedeemID\Commerce\Pages::clean_path( (string) ( $input['collection_path'] ?? '' ) ) ?: self::DEFAULTS['collection_path'],
+			'cart_path'            => \RedeemID\Commerce\Pages::clean_path( (string) ( $input['cart_path'] ?? '' ) ) ?: self::DEFAULTS['cart_path'],
+			'storefront_first'     => ! empty( $input['storefront_first'] ),
 		];
 	}
 

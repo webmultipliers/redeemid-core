@@ -17,8 +17,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$redeemid_handle = sanitize_title( \RedeemID\Blocks\Gate::option( $a['productHandle'] ?? '', '' ) );
+$redeemid_chosen = sanitize_title( \RedeemID\Blocks\Gate::option( $a['productHandle'] ?? '', '' ) );
+$redeemid_handle = \RedeemID\Commerce\Pages::handle_for( \RedeemID\Commerce\Pages::PRODUCT, $redeemid_chosen );
 $redeemid_button = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Buy now', 'redeemid' );
+$redeemid_cart   = \RedeemID\Commerce\Cart::enabled();
+$redeemid_add    = (string) ( $a['cartLabel'] ?? '' ) ?: __( 'Add to cart', 'redeemid' );
+$redeemid_tag    = \RedeemID\Commerce\Pages::is_page_block( \RedeemID\Commerce\Pages::PRODUCT, $redeemid_chosen ) ? 'h1' : 'h3';
 
 // Every branch that prints markup runs to the end of the file; see the plan card.
 $redeemid_product = null;
@@ -66,7 +70,7 @@ $redeemid_image    = ! empty( $a['showImage'] ) ? $redeemid_product['image'] : n
 $redeemid_field    = wp_unique_id( 'redeemid-product-' );
 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-$redeemid_notice = $isEditor ? '' : \RedeemID\Commerce\BuyNow::message( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) );
+$redeemid_notice = $isEditor ? '' : \RedeemID\Commerce\Cart::notice_html( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) );
 $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \RedeemID\Blocks\Gate::current_url() );
 ?>
 <div useBlockProps class="redeemid-product">
@@ -74,7 +78,7 @@ $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \Redeem
 		<img class="redeemid-product__image" src="<?php echo esc_url( $redeemid_image['url'] ); ?>" alt="<?php echo esc_attr( $redeemid_image['alt'] ); ?>" <?php echo $redeemid_image['width'] ? 'width="' . (int) $redeemid_image['width'] . '" height="' . (int) $redeemid_image['height'] . '"' : ''; ?> loading="lazy">
 	<?php endif; ?>
 
-	<h3 class="redeemid-product__title"><?php echo esc_html( $redeemid_product['title'] ); ?></h3>
+	<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-product__title"><?php echo esc_html( $redeemid_product['title'] ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 
 	<?php // With options at different prices, each option names its price, so the headline price would mislead. ?>
 	<?php if ( count( $redeemid_prices ) <= 1 ) : ?>
@@ -98,14 +102,15 @@ $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \Redeem
 	<?php endif; ?>
 
 	<?php if ( '' !== $redeemid_notice ) : ?>
-		<p class="redeemid-product__notice" role="alert"><?php echo esc_html( $redeemid_notice ); ?></p>
+		<p class="redeemid-product__notice" role="status"><?php echo wp_kses_post( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
 	<?php if ( ! $redeemid_sellable ) : ?>
 		<button type="button" class="wp-element-button" disabled><?php esc_html_e( 'Sold out', 'redeemid' ); ?></button>
 	<?php else : ?>
 		<form class="redeemid-product__form" method="post" action="<?php echo esc_url( \RedeemID\Commerce\BuyNow::form_url() ); ?>">
-			<input type="hidden" name="action" value="<?php echo esc_attr( \RedeemID\Commerce\BuyNow::ACTION ); ?>">
+			<?php // The buttons name the action, so one form can add to the cart or buy now; Enter adds to the cart. ?>
+			<input type="hidden" name="op" value="add">
 			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redeemid_return ); ?>">
 			<?php if ( $redeemid_plan ) : ?>
 				<input type="hidden" name="selling_plan" value="<?php echo esc_attr( $redeemid_plan['id'] ); ?>">
@@ -139,11 +144,23 @@ $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \Redeem
 				</p>
 			<?php endif; ?>
 
-			<?php if ( $isEditor ) : ?>
-				<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>
-			<?php else : ?>
-				<button type="submit" class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></button>
-			<?php endif; ?>
+			<p class="redeemid-product__buttons">
+				<?php if ( $isEditor ) : ?>
+					<?php if ( $redeemid_cart ) : ?>
+						<span class="wp-element-button"><?php echo esc_html( $redeemid_add ); ?></span>
+					<?php endif; ?>
+					<?php if ( ! $redeemid_cart || ! empty( $a['showBuyNow'] ) ) : ?>
+						<span class="wp-element-button<?php echo $redeemid_cart ? ' is-secondary' : ''; ?>"><?php echo esc_html( $redeemid_button ); ?></span>
+					<?php endif; ?>
+				<?php else : ?>
+					<?php if ( $redeemid_cart ) : ?>
+						<button type="submit" class="wp-element-button" name="action" value="<?php echo esc_attr( \RedeemID\Commerce\Cart::ACTION ); ?>"><?php echo esc_html( $redeemid_add ); ?></button>
+					<?php endif; ?>
+					<?php if ( ! $redeemid_cart || ! empty( $a['showBuyNow'] ) ) : ?>
+						<button type="submit" class="wp-element-button<?php echo $redeemid_cart ? ' is-secondary' : ''; ?>" name="action" value="<?php echo esc_attr( \RedeemID\Commerce\BuyNow::ACTION ); ?>"><?php echo esc_html( $redeemid_button ); ?></button>
+					<?php endif; ?>
+				<?php endif; ?>
+			</p>
 		</form>
 	<?php endif; ?>
 </div>

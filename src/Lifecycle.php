@@ -37,6 +37,10 @@ final class Lifecycle {
 		BulkResync::unschedule();
 		wp_clear_scheduled_hook( Index::REINDEX );
 		wp_clear_scheduled_hook( Index::TIMED );
+		// Drop the storefront pages' rules with the plugin.
+		remove_filter( 'rewrite_rules_array', [ \RedeemID\Commerce\Pages::class, 'rules' ], 5 );
+		remove_filter( 'rewrite_rules_array', [ \RedeemID\Commerce\Pages::class, 'rules' ], 20 );
+		delete_option( 'redeemid_storefront_rules' );
 		flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules -- deactivation hook only.
 	}
 }

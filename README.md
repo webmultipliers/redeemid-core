@@ -12,7 +12,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 0.0.2, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, product and collection blocks, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. RedeemID is growing its own storefront so a site can run without Shopify's plugin; a cart and `/products`, `/collections` and `/cart` pages are next (see [docs/official-plugin.md](docs/official-plugin.md)). Expect breaking changes before 1.0.0.
+> **Status: 0.0.2, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, product, collection and cart blocks with storefront pages, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. RedeemID now has its own storefront (product, collection and cart blocks and pages), so a site can run without Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
@@ -280,11 +280,21 @@ Add **Shopify Plan Card** (`redeemid/plan-card`) and pick a product: the sidebar
 - **Prices by country.** Return an ISO country code from the `redeemid_context_country` filter (for example from your CDN's country header) and plan cards and checkout use that country's price and currency through Shopify Markets. Pages with plan cards then differ by country, so the page cache must vary on that header.
 - **Independent of Shopify's plugin.** It works the same whether that plugin is installed or not, and never touches its cart.
 
-### Products and collections
+### Products, collections and the cart
 
-**Shopify Product** (`redeemid/product`) shows one product with its live price, an **Option** picker when it has variants (each option names its price, and sold-out ones are disabled), a quantity field and a buy-now button. **Shopify Collection** (`redeemid/collection`) shows one page of a collection as a grid: price (or "From" the lowest), compare-at price, sold-out state and a buy-now button on products with nothing to choose. A product with options or a required selling plan links to its product page instead (Shopify's online store page by default; return another URL from the `redeemid_product_url` filter). **Next** and **Previous** are plain links carrying Shopify's cursor (`?redeemid_list=<handle>&redeemid_after=…`), so paging works without JavaScript and each page has its own URL.
+**Shopify Product** (`redeemid/product`) shows one product with its live price, an **Option** picker when it has variants (each option names its price, and sold-out ones are disabled), a quantity field, **Add to cart** and **Buy now**. **Shopify Collection** (`redeemid/collection`) shows one page of a collection as a grid: price (or "From" the lowest), compare-at price, sold-out state and **Add to cart** on products with nothing to choose. A product with options or a required selling plan links to its product page instead. **Next** and **Previous** are plain links carrying Shopify's cursor (`?redeemid_list=<handle>&redeemid_after=…`), so paging works without JavaScript and each page has its own URL. Both render on the server from the same five-minute Storefront cache as plan cards and carry no personal data.
 
-Both render on the server from the same five-minute Storefront cache as plan cards, carry no personal data, and buy through the same buy-now form. They replace the product and collection blocks of Shopify's plugin and work whether it is installed or not.
+**Shopify Cart** (`redeemid/cart`) shows the visitor's cart with quantities, **Remove**, a discount code and **Check out**. **Shopify Cart Link** (`redeemid/cart-link`) goes in a header: a link to the cart with the item count.
+
+- **The cart lives on the server.** It is a Shopify Storefront cart. The browser holds a random key in the HttpOnly `redeemid_cart` cookie, and the cart ID stays in a transient under that key (14 days). A readable `redeemid_cart_count` cookie holds only the item count, which the cart link shows on cached pages without a request.
+- **No JavaScript.** Every change is a form POST to `admin-post.php?action=redeemid_cart`. Like buy-now there is no nonce, since product forms sit in cached pages: requests a browser marks as cross-site are refused, and changes are limited to 30 a minute per buyer IP.
+- **Signed-in checkout.** At **Check out**, a linked customer is attached to the cart on the server, so checkout opens signed in and the purchase can unlock content. A cart signed in that way is dropped at sign-out; with **Clear the cart on sign-out**, every cart is.
+
+**Storefront pages** (RedeemID → Settings, on by default) serve a product page, a collection page and the cart page at `/products/{handle}/`, `/collections/{handle}/` and `/cart/`. Each path can be changed, for example to `/shop/p/` or `/basket/`, or with the `redeemid_storefront_path` filter. On block themes the pages are templates you can edit under Appearance → Editor → Templates (Shopify product, Shopify collection, Shopify cart); classic themes can override them with `redeemid-product.php`, `redeemid-collection.php` or `redeemid-cart.php`. Collection cards and cart lines link to the product page. A path a published WordPress page already uses is left alone, and a handle Shopify doesn't have is a 404.
+
+The pages have their own title, meta description, canonical link, Open Graph and Twitter tags, and Product structured data with one offer per variant. With Yoast SEO or Rank Math active, RedeemID gives them the title, description and canonical link and lets them print the tags. The cart page is `noindex` and never cached.
+
+Next to Shopify's own plugin, see [Shopify's WordPress plugin](#shopifys-wordpress-plugin) for who answers shared paths.
 
 After checkout, the plugin finishes the job for a signed-in customer: for 30 minutes it re-reads their tags at most once a minute while Shopify Flow tags them, shows a "finishing up" banner, then "Your membership is ready" once. Link Shopify's order status page and confirmation email to the return link shown under RedeemID → Settings (`/?redeemid_return=1`): it takes the customer back to the page they bought from, or asks a guest to log in with the email from their order. Turn the banner off with the `redeemid_checkout_banner` filter.
 
@@ -327,6 +337,7 @@ Cache rules should bypass or vary on these cookies:
 - `wordpress_logged_in_*`
 - `redeemid_oauth_state`
 - `redeemid_fset`, only when a [feature](docs/features.md#caching) declares the `vary` caching option: an opaque hash of the visitor's granted set
+- `redeemid_cart`, for the cart page only (it already sends `Cache-Control: private`). Pages with the cart link need no bypass: the count comes from `redeemid_cart_count` in the browser
 
 ## Shopify's WordPress plugin
 
@@ -336,8 +347,8 @@ RedeemID works with or without it:
 
 - **Detection.** Overview and Debug show one of four states: not installed, active but not connected, connected to the same store as `REDEEMID_STORE_DOMAIN`, or connected to another store. The last one is an error, because purchases there can't unlock content here. Other code can read the state with `RedeemID\Integrations\OfficialPlugin::state()` or change it with the `redeemid_official_state` filter.
 - **Credentials stay separate.** RedeemID reads only the official plugin's store domain, to compare it. It never reads its Storefront token.
-- **Routes.** When active, the official plugin always owns `/cart` and, by default, `/products/*`. RedeemID claims neither. Debug shows which ones it currently owns.
-- **Replacing it.** RedeemID's Shopify Product and Shopify Collection blocks cover its catalog blocks without web components or JavaScript. Version 1.0.0 is named in a published security advisory (CVE-2026-57748) with no fixed release, so Overview and Debug warn while it is active. See [docs/official-plugin.md](docs/official-plugin.md) for what is covered and what comes next.
+- **Routes.** When active, the official plugin always claims `/cart` and, by default, `/products/*` and `/collections/*`. By default RedeemID stands down on a path it has claimed: its cart and cart link switch off and it keeps signing that plugin's cart in. Give a storefront page a different path in Settings and the two never meet. Turn on **RedeemID takes precedence** and RedeemID's rules go after that plugin's, so RedeemID answers the shared paths, runs the cart, and stops the cart bridge. Debug shows who answers each path.
+- **Replacing it.** RedeemID's product, collection, cart and cart link blocks and its storefront pages cover what it does, without web components or JavaScript. Version 1.0.0 is named in a published security advisory (CVE-2026-57748) with no fixed release, so Overview and Debug warn while it is active. See [docs/official-plugin.md](docs/official-plugin.md) for what is covered and what comes next.
 - **Gating.** Official product and collection blocks can go inside a membership gate. The gate renders on the server, so non-members never receive the block's markup.
 - **Signed-in checkout from its cart.** When it serves the same store and a Storefront token is set, RedeemID adds a small script to front-end pages. If a linked customer is signed in and the official cart exists, the script sends the cart ID to `POST /cart/identity`, and RedeemID attaches the customer on the server with `cartBuyerIdentityUpdate`. Checkout then opens signed in, so purchases unlock content. The customer token never reaches the browser. Guests with no cart make no request.
 - **Keyboard access to its cart toggle.** Its 1.0.0 cart toggle is a link with no `href`, which a keyboard can't reach. RedeemID gives it a button role and a tab stop, and opens the cart on Enter or Space (`Integrations\OfficialCartToggle`).
@@ -432,7 +443,8 @@ Rules that follow from it:
   - `redeemid_features`, `redeemid_feature_tests` and `redeemid_feature_decision`, which register features and custom tests and can alter one decision (see [docs/features.md](docs/features.md))
   - `redeemid_sign_in_redirect` (`string $target, int $user_id, string $redirect_to`) and `redeemid_drip_days` (`int $days, WP_Post $post`)
   - `redeemid_context_country` (`string $country`), an ISO code that prices plan cards, product and collection blocks and checkout in that country's currency
-  - `redeemid_product_url` (`string $url, string $handle`), where a collection card links: Shopify's online store page by default, '' for none
+  - `redeemid_product_url` (`string $url, string $handle`), where a collection card or cart line links: RedeemID's product page when it serves one, else Shopify's online store page, '' for none
+  - `redeemid_storefront_path` (`string $path, string $kind`), the path of the `product`, `collection` or `cart` page; `redeemid_cart_enabled` (`bool`) turns RedeemID's cart on or off
   - `redeemid_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `redeemid_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `redeemid_checkout_banner` (`bool`); `redeemid_offer_existing_account` (`bool`)
   - `redeemid_file_sendfile` (`string $mode, string $path`): hand protected downloads to the web server with `x-accel-redirect` (nginx) or `x-sendfile` (Apache, LiteSpeed); see [docs/protected-files.md](docs/protected-files.md)
