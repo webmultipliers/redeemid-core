@@ -245,6 +245,40 @@ final class Levels {
 	}
 
 	/**
+	 * Tag hygiene: tags synced customers carry that no level (or feature tag
+	 * route) uses. A typo in Shopify Flow or a level never made shows up here.
+	 *
+	 * @param string[] $known_tags Tags seen in the mirror.
+	 * @param string[] $also_used  Tags used elsewhere, such as feature routes.
+	 * @return string[] Unused tags, as Shopify spells them, sorted.
+	 */
+	public function unused_tags( array $known_tags, array $also_used = [] ): array {
+		$used = [];
+
+		foreach ( $this->levels as $level ) {
+			array_push( $also_used, ...$level->tags() );
+		}
+
+		foreach ( $also_used as $tag ) {
+			$used[ Evaluator::normalize_tag( (string) $tag ) ] = true;
+		}
+
+		$out = [];
+
+		foreach ( $known_tags as $tag ) {
+			$key = Evaluator::normalize_tag( $tag );
+
+			if ( '' !== $key && ! isset( $used[ $key ] ) ) {
+				$out[ $key ] ??= $tag;
+			}
+		}
+
+		natcasesort( $out );
+
+		return array_values( $out );
+	}
+
+	/**
 	 * Level problems that make it grant nobody or behave unexpectedly.
 	 *
 	 * @param string[] $known_tags

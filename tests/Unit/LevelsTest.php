@@ -67,6 +67,14 @@ final class LevelsTest extends TestCase {
 		$this->assertSame( [], $levels->health( Level::PUBLIC, [] ) );
 	}
 
+	public function test_unused_tags_lists_tags_no_level_uses(): void {
+		$levels = $this->levels( [ 'gold' => [ 'groups' => [ [ 'tags' => [ 'Gold-Member' ] ] ] ] ] );
+
+		$this->assertSame( [ 'newsletter', 'VIP-typo' ], $levels->unused_tags( [ 'gold-member', 'VIP-typo', 'newsletter', 'Newsletter', ' ' ] ) );
+		$this->assertSame( [], $levels->unused_tags( [ 'GOLD-MEMBER' ] ) );
+		$this->assertSame( [ 'VIP-typo' ], $levels->unused_tags( [ 'VIP-typo', 'ad-free' ], [ 'Ad-Free' ] ) );
+	}
+
 	public function test_held_by_tags_counts_inclusion(): void {
 		$levels = $this->levels(
 			[
