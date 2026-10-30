@@ -24,6 +24,30 @@ final class InboxTest extends TestCase {
 		$this->assertCount( 1, $store->rows );
 	}
 
+	public function test_a_failed_write_is_not_reported_as_a_duplicate(): void {
+		$store = new class() implements InboxStore {
+			public function insert_if_new( string $dedupe_key, array $row ): ?int {
+				throw new \RuntimeException( 'inbox_write_failed' );
+			}
+
+			public function get( int $id ): ?array {
+				return null;
+			}
+
+			public function finish( int $id, string $status, string $error = '' ): void {}
+
+			public function counts(): array {
+				return [];
+			}
+		};
+
+		$result = ( new Inbox( $store ) )->accept( 'customer.tags_added', 'wh-3', '', '{}', [ 'id' => 1 ], 1 );
+
+		// Anything but 'failed' would be acknowledged, and Shopify would never send it again.
+		$this->assertSame( Inbox::FAILED, $result['status'] );
+		$this->assertNull( $result['id'] );
+	}
+
 	public function test_same_webhook_id_on_another_topic_is_new(): void {
 		$store = new MemoryInboxStore();
 		$inbox = new Inbox( $store );

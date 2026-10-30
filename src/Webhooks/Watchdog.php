@@ -21,7 +21,7 @@ final class Watchdog {
 	/** A scheduled event this overdue means WP-Cron isn't running. */
 	public const CRON_LATE_AFTER = 7200;
 
-	/** Rejected deliveries this recent are reported. */
+	/** Rejected or unsaved deliveries this recent are reported. */
 	public const RECENT = 86400;
 
 	/**
@@ -33,6 +33,7 @@ final class Watchdog {
 	 *     oldest_queued: int,
 	 *     dead_recent: int,
 	 *     rejected_at: int,
+	 *     store_failed_at?: int,
 	 *     registration: array{created?: string[], failed?: array<string, string>, error?: string, existing?: int}|null,
 	 *     cron_late: int,
 	 *     uninstalled_at?: int,
@@ -54,6 +55,10 @@ final class Watchdog {
 
 		if ( (int) $facts['rejected_at'] > $now - self::RECENT ) {
 			$problems['rejected'] = [ 'state' => self::FAIL, 'n' => 0 ];
+		}
+
+		if ( (int) ( $facts['store_failed_at'] ?? 0 ) > $now - self::RECENT ) {
+			$problems['store_failed'] = [ 'state' => self::FAIL, 'n' => 0 ];
 		}
 
 		if ( (int) $facts['oldest_queued'] > 0 && (int) $facts['oldest_queued'] < $now - self::BACKLOG_AFTER ) {

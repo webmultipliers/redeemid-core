@@ -16,6 +16,7 @@ interface InboxStore {
 	 * Insert a record unless one with the same dedupe key exists.
 	 *
 	 * @return int|null The new row ID, or null when the key was already seen.
+	 * @throws \RuntimeException When the record could not be written, so the caller can ask Shopify to retry.
 	 */
 	public function insert_if_new( string $dedupe_key, array $row ): ?int;
 
