@@ -90,6 +90,7 @@ final class OwnerToolsTest extends TestCase {
 
 	public function test_stats_keys_for_events(): void {
 		$this->assertSame( [ 'join:gold', 'join:vip', 'leave:silver' ], Stats::keys_for( 'level.changed', [ 'added' => 'gold, vip', 'removed' => 'silver' ] ) );
+		$this->assertSame( [ 'gain:ad-free', 'lose:forums' ], Stats::keys_for( 'feature.changed', [ 'user' => 7, 'added' => 'ad-free', 'removed' => 'forums' ] ) );
 		$this->assertSame( [ 'sign_in' ], Stats::keys_for( 'auth.signed_in', [] ) );
 		$this->assertSame( [], Stats::keys_for( 'shopify.http', [] ) );
 	}

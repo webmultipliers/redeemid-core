@@ -31,6 +31,8 @@ final class Mirror {
 	public const RENEWS      = '_redeemid_renews_on';
 	public const HISTORY     = '_redeemid_level_history';
 	public const STATUS_FROM = '_redeemid_status_source';
+	public const PROFILE_AT  = '_redeemid_profile_updated_at';
+	public const STATUS_AT   = '_redeemid_status_updated_at';
 
 	/** Where a status came from: Shopify's disable/enable webhooks, a resync that found no customer, or a resync. */
 	public const STATUS_WEBHOOK = 'webhook';
@@ -42,6 +44,7 @@ final class Mirror {
 		self::GID, self::NUMERIC, self::TAGS, self::STATUS, self::EMAIL, self::FIRST_NAME, self::LAST_NAME,
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
 		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::HISTORY, self::STATUS_FROM,
+		self::PROFILE_AT, self::STATUS_AT,
 	];
 
 	public static function find_user( CustomerId $id ): ?\WP_User {
@@ -101,6 +104,16 @@ final class Mirror {
 		$tags = get_user_meta( $user_id, self::TAGS, true );
 
 		return is_array( $tags ) ? array_values( array_filter( $tags, 'is_string' ) ) : [];
+	}
+
+	/**
+	 * Whether a webhook describes the customer as it was before a change already
+	 * applied. Shopify does not promise delivery order, so an old customers/update
+	 * or customers/disable can arrive after a newer one. Unknown times never count
+	 * as older.
+	 */
+	public static function is_older( int $incoming, int $stored ): bool {
+		return $incoming > 0 && $stored > 0 && $incoming < $stored;
 	}
 
 	public static function set_profile( int $user_id, array $fields ): void {

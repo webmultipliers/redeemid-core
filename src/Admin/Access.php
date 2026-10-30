@@ -7,6 +7,7 @@ use RedeemID\Access\LevelStore;
 use RedeemID\Entitlement\Rule;
 use RedeemID\Features\Feature;
 use RedeemID\Features\Registry;
+use RedeemID\Features\Route;
 
 /**
  * RedeemID → Access: the named access levels that gating rules point at.
@@ -118,6 +119,27 @@ final class Access {
 			"\n",
 			array_map( static fn( Rule $r ) => ( Rule::MATCH_ALL === $r->match_mode ? 'all: ' : '' ) . implode( ', ', $r->required_tags ), $level->groups )
 		);
+	}
+
+	/**
+	 * Tags named directly by a feature route, so tag hygiene doesn't list them.
+	 *
+	 * @return string[]
+	 */
+	private static function feature_tags(): array {
+		$tags = [];
+
+		foreach ( Registry::features() as $feature ) {
+			foreach ( $feature->routes as $route ) {
+				foreach ( $route->tests as $test ) {
+					if ( Route::TAG === $test['type'] ) {
+						$tags[] = $test['value'];
+					}
+				}
+			}
+		}
+
+		return $tags;
 	}
 
 	/**
@@ -287,6 +309,19 @@ final class Access {
 					);
 					?>
 				</span>
+				<?php $unused = $levels->unused_tags( $known, self::feature_tags() ); ?>
+				<?php if ( $unused ) : ?>
+					<details class="redeemid-unused-tags">
+						<summary>
+							<?php
+							/* translators: %d: number of tags */
+							echo esc_html( sprintf( _n( '%d customer tag no level uses', '%d customer tags no level uses', count( $unused ), 'redeemid' ), count( $unused ) ) );
+							?>
+						</summary>
+						<p class="description"><?php esc_html_e( 'Tags on synced customers that grant nothing here. Most are fine (order or marketing tags); a near-miss of a level tag usually means a typo in Shopify Flow.', 'redeemid' ); ?></p>
+						<p><?php echo implode( ' ', array_map( static fn( $tag ) => '<code class="redeemid-chip">' . esc_html( $tag ) . '</code>', $unused ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></p>
+					</details>
+				<?php endif; ?>
 			</div>
 		<?php Menu::panel_end(); ?>
 

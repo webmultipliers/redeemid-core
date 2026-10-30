@@ -3,6 +3,7 @@
 namespace RedeemID\Admin;
 
 use RedeemID\Access\LevelStore;
+use RedeemID\Features\Registry;
 use RedeemID\Support\Stats;
 
 /**
@@ -83,6 +84,32 @@ final class Reports {
 				</table>
 			</div>
 		<?php Menu::panel_end(); ?>
+
+		<?php if ( Registry::features() ) : ?>
+			<?php Menu::panel_start( __( 'By feature', 'redeemid' ), __( 'Customers who gained or lost a feature when Shopify changed their tags.', 'redeemid' ) ); ?>
+				<div class="redeemid-panel__body redeemid-panel__body--flush">
+					<table class="widefat striped">
+						<thead><tr>
+							<th><?php esc_html_e( 'Feature', 'redeemid' ); ?></th>
+							<th class="num"><?php esc_html_e( 'Gained, 30 days', 'redeemid' ); ?></th>
+							<th class="num"><?php esc_html_e( 'Lost, 30 days', 'redeemid' ); ?></th>
+							<th class="num"><?php esc_html_e( 'Gained, 12 months', 'redeemid' ); ?></th>
+							<th class="num"><?php esc_html_e( 'Lost, 12 months', 'redeemid' ); ?></th>
+						</tr></thead>
+						<tbody>
+							<?php foreach ( Registry::features() as $slug => $feature ) : ?>
+								<tr>
+									<td><?php echo esc_html( $feature->label ); ?></td>
+									<?php foreach ( [ [ 'gain:', 30 ], [ 'lose:', 30 ], [ 'gain:', 365 ], [ 'lose:', 365 ] ] as [ $kind, $days ] ) : ?>
+										<td class="num"><?php echo esc_html( number_format_i18n( Stats::total( $stats, $kind . $slug, $days, $now ) ) ); ?></td>
+									<?php endforeach; ?>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			<?php Menu::panel_end(); ?>
+		<?php endif; ?>
 		<?php
 		Menu::page_end();
 	}

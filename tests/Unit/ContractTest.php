@@ -88,6 +88,21 @@ final class ContractTest extends TestCase {
 	}
 
 	/**
+	 * Profile and status webhooks carry Customer.updated_at so an older one
+	 * arriving late is ignored.
+	 */
+	public function test_update_order_guard(): void {
+		$stamp = strtotime( '2021-12-31T19:00:00-05:00' );
+
+		$this->assertSame( $stamp, self::extract( 'customers/update' )['updated_at'] );
+		$this->assertSame( $stamp, self::extract( 'customers/disable' )['updated_at'] );
+		$this->assertTrue( \RedeemID\Sync\Mirror::is_older( $stamp - 1, $stamp ) );
+		$this->assertFalse( \RedeemID\Sync\Mirror::is_older( $stamp, $stamp ) );
+		$this->assertFalse( \RedeemID\Sync\Mirror::is_older( 0, $stamp ) );
+		$this->assertFalse( \RedeemID\Sync\Mirror::is_older( $stamp, 0 ) );
+	}
+
+	/**
 	 * A resync keeps a disable from Shopify's webhook and lifts any other.
 	 */
 	public function test_status_after_resync(): void {

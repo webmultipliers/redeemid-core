@@ -18,6 +18,21 @@ final class ProtectedFilesTest extends TestCase {
 		);
 	}
 
+	public function test_range_header_parsing(): void {
+		$this->assertNull( Download::range( null, 100 ) );
+		$this->assertNull( Download::range( 'bytes=0-1,5-6', 100 ) );
+		$this->assertNull( Download::range( 'bytes=-', 100 ) );
+		$this->assertSame( [ 0, 99 ], Download::range( 'bytes=0-', 100 ) );
+		$this->assertSame( [ 10, 19 ], Download::range( 'bytes=10-19', 100 ) );
+		$this->assertSame( [ 90, 99 ], Download::range( 'bytes=90-500', 100 ) );
+		$this->assertSame( [ 80, 99 ], Download::range( 'bytes=-20', 100 ) );
+		$this->assertSame( [ 0, 99 ], Download::range( 'bytes=-500', 100 ) );
+		$this->assertFalse( Download::range( 'bytes=100-', 100 ) );
+		$this->assertFalse( Download::range( 'bytes=20-10', 100 ) );
+		$this->assertFalse( Download::range( 'bytes=-0', 100 ) );
+		$this->assertFalse( Download::range( 'bytes=0-', 0 ) );
+	}
+
 	public function test_sanitize_returns_null_for_a_public_file(): void {
 		$this->assertNull( ProtectedFiles::sanitize( '' ) );
 		$this->assertNull( ProtectedFiles::sanitize( [ 'mode' => 'everyone' ] ) );

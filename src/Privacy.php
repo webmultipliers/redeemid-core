@@ -58,7 +58,7 @@ final class Privacy {
 		Mirror::GID, Mirror::NUMERIC, Mirror::EMAIL, Mirror::FIRST_NAME, Mirror::LAST_NAME, Mirror::VERIFIED,
 		Mirror::TAGS, Mirror::STATUS, Mirror::STATUS_FROM, Mirror::EMAIL_OPTIN, Mirror::SMS_OPTIN, Mirror::SUMMARY,
 		Mirror::SINCE, Mirror::RENEWS, Mirror::HISTORY, Mirror::LINKED_AT, Mirror::LAST_SYNC, Mirror::SYNC_SOURCE,
-		Mirror::SYNC_FAILED, Mirror::LAST_EVENT,
+		Mirror::SYNC_FAILED, Mirror::LAST_EVENT, Mirror::PROFILE_AT, Mirror::STATUS_AT,
 	];
 
 	/**
@@ -89,6 +89,8 @@ final class Privacy {
 			Mirror::SYNC_SOURCE => __( 'Last synced by', 'redeemid' ),
 			Mirror::SYNC_FAILED => __( 'Last failed sync', 'redeemid' ),
 			Mirror::LAST_EVENT  => __( 'Last Shopify event', 'redeemid' ),
+			Mirror::PROFILE_AT  => __( 'Profile last updated in Shopify', 'redeemid' ),
+			Mirror::STATUS_AT   => __( 'Status last changed in Shopify', 'redeemid' ),
 			default             => $key,
 		};
 	}
@@ -97,7 +99,7 @@ final class Privacy {
 	 * A stored value as text: timestamps as dates, level history as one line per level.
 	 */
 	private static function value( string $key, mixed $value ): string {
-		if ( in_array( $key, [ Mirror::LINKED_AT, Mirror::LAST_SYNC, Mirror::SYNC_FAILED ], true ) && is_numeric( $value ) ) {
+		if ( in_array( $key, [ Mirror::LINKED_AT, Mirror::LAST_SYNC, Mirror::SYNC_FAILED, Mirror::PROFILE_AT, Mirror::STATUS_AT ], true ) && is_numeric( $value ) ) {
 			return gmdate( 'Y-m-d H:i:s', (int) $value ) . ' UTC';
 		}
 

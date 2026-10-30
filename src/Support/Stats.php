@@ -11,7 +11,7 @@ use RedeemID\Webhooks\Monitor;
  *
  * The event log keeps 30 days, so it can't answer "how many joined Gold this
  * year". Stats counts a few low-frequency events as they are logged (a level
- * gained or lost, a sign-in, a new link, a buy-now checkout, a purchase that
+ * or feature gained or lost, a sign-in, a new link, a buy-now checkout, a purchase that
  * unlocked access) and, once a day, how many linked customers hold each
  * level. Nothing here is per page view, so it costs nothing on busy sites.
  *
@@ -57,6 +57,7 @@ final class Stats {
 
 		return match ( $event ) {
 			'level.changed'          => [ ...array_map( static fn( $s ) => 'join:' . $s, $split( $context['added'] ?? '' ) ), ...array_map( static fn( $s ) => 'leave:' . $s, $split( $context['removed'] ?? '' ) ) ],
+			'feature.changed'        => [ ...array_map( static fn( $s ) => 'gain:' . $s, $split( $context['added'] ?? '' ) ), ...array_map( static fn( $s ) => 'lose:' . $s, $split( $context['removed'] ?? '' ) ) ],
 			'auth.signed_in'         => [ 'sign_in' ],
 			'link.linked'            => [ 'linked' ],
 			'commerce.buy_now'       => [ 'checkout' ],

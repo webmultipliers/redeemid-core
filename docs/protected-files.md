@@ -65,7 +65,7 @@ add_filter( 'redeemid_file_sendfile', fn() => 'x-sendfile' );
 
 ## Limits
 
-- Byte ranges aren't supported when PHP streams the file, so seeking far into a long video waits for the download. Use one of the server modes above for media.
+- When PHP streams the file it answers single byte ranges, so audio and video can seek and downloads can resume, but PHP stays busy for the whole transfer. For large media, the server modes above are still faster.
 - Old direct links redirect for the original file only, not for an image's other sizes.
 - Plugins that move uploads to a CDN or object storage (S3 and similar) bypass this folder. Keep protected files on the server.
 - Uninstalling RedeemID leaves protected files where they are, still closed by the server rule. Set each one back to **Everyone** first if you want them public.
