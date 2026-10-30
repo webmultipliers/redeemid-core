@@ -35,6 +35,7 @@ final class Watchdog {
 	 *     rejected_at: int,
 	 *     registration: array{created?: string[], failed?: array<string, string>, error?: string, existing?: int}|null,
 	 *     cron_late: int,
+	 *     uninstalled_at?: int,
 	 * } $facts cron_late: seconds the plugin's daily event is overdue (0 when on time).
 	 * @return array<string, array{state: string, n: int}> By problem code, worst first.
 	 */
@@ -57,6 +58,10 @@ final class Watchdog {
 
 		if ( (int) $facts['oldest_queued'] > 0 && (int) $facts['oldest_queued'] < $now - self::BACKLOG_AFTER ) {
 			$problems['backlog'] = [ 'state' => self::FAIL, 'n' => (int) floor( ( $now - (int) $facts['oldest_queued'] ) / 60 ) ];
+		}
+
+		if ( (int) ( $facts['uninstalled_at'] ?? 0 ) > 0 ) {
+			$problems['uninstalled'] = [ 'state' => self::FAIL, 'n' => 0 ];
 		}
 
 		if ( (int) $facts['cron_late'] > self::CRON_LATE_AFTER ) {

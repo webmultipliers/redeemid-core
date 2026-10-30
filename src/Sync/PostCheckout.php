@@ -30,6 +30,9 @@ final class PostCheckout {
 	private const WINDOW    = 30 * MINUTE_IN_SECONDS;
 	private const INTERVAL  = MINUTE_IN_SECONDS;
 
+	/** Every user meta key this class writes, for privacy export and erasure. */
+	public const KEYS = [ self::META, self::ATTEMPT, self::BACK, self::READY, self::BASE ];
+
 	public static function register(): void {
 		add_action( 'template_redirect', [ self::class, 'maybe_return' ], 0 );
 		add_action( 'template_redirect', [ self::class, 'maybe_sync' ], 1 );

@@ -22,6 +22,13 @@ final class WatchdogTest extends TestCase {
 		];
 	}
 
+	public function test_an_uninstalled_app_is_a_failure(): void {
+		$problems = Watchdog::problems( $this->facts( [ 'uninstalled_at' => self::NOW - 60 ] ) );
+
+		$this->assertSame( Watchdog::FAIL, $problems['uninstalled']['state'] );
+		$this->assertArrayNotHasKey( 'uninstalled', Watchdog::problems( $this->facts( [ 'uninstalled_at' => 0 ] ) ) );
+	}
+
 	public function test_a_healthy_chain_has_no_problems(): void {
 		$this->assertSame( [], Watchdog::problems( $this->facts() ) );
 		$this->assertSame( '', Watchdog::worst( [] ) );

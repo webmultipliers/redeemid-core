@@ -56,6 +56,13 @@ final class ShadowUsers {
 			// A concurrent callback may have created it a moment ago.
 			$existing = Mirror::find_user( $id ) ?? get_user_by( 'login', 'shopify_' . $hash );
 
+			// Or it is this customer's own shadow account, left without its link by a
+			// privacy erasure, shop/redact or a merge: link it again, or the customer
+			// could never use their membership (Connect refuses a shadow account).
+			if ( $existing instanceof \WP_User && ! Mirror::customer_id( $existing->ID ) && self::is_shadow( $existing->ID ) ) {
+				Mirror::link( $existing->ID, $id );
+			}
+
 			return $existing ?: $user_id;
 		}
 
