@@ -50,7 +50,8 @@ final class InboxTest extends TestCase {
 		$data   = $store->rows[ $result['id'] ]['data'];
 
 		$this->assertSame( '706405506930370084', $data['customer'] );
-		$this->assertSame( 'disabled', $data['state'] );
+		// Customer.state is not kept: it only means something under classic accounts.
+		$this->assertArrayNotHasKey( 'state', $data );
 		$this->assertArrayNotHasKey( 'addresses', $data );
 		$this->assertArrayNotHasKey( 'note', $data );
 		// No tags in the payload must not become "tags removed".

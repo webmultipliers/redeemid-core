@@ -6,11 +6,17 @@ use RedeemID\Shopify\Admin;
 use RedeemID\Support\Logger;
 
 /**
- * On-demand resync of one linked customer's tags and status from the Admin
- * API: a member's own refresh, a staff resync on RedeemID → Customers, a tag
+ * On-demand resync of one linked customer's tags and membership dates from
+ * the Admin API: a member's own refresh, a staff resync on RedeemID → Customers, a tag
  * webhook, or the post-checkout check. There is no scheduled sweep; webhooks
  * keep the mirror current, and staff can start a paced bulk resync
  * (BulkResync) when they need everyone re-read.
+ *
+ * Account status is not read here (see Shopify\Admin::parse_customers()):
+ * it comes from the customers/disable and customers/enable webhooks. A resync
+ * only disables a customer Shopify no longer has, and lifts a disable that
+ * did not come from Shopify's disable webhook (a customer it can find again,
+ * or a status older releases derived from Customer.state).
  */
 final class Reconciler {
 	private const BATCH          = 50;
@@ -104,14 +110,14 @@ final class Reconciler {
 			if ( ! isset( $remote[ $id->numeric ] ) ) {
 				// Deleted in Shopify, or never existed: fail closed by disabling the mirror.
 				++$missing;
-				Mirror::set_status( $user_id, 'disabled' );
+				Mirror::set_status( $user_id, 'disabled', Mirror::STATUS_MISSING );
 				Logger::log( 'reconcile.customer_missing', [ 'customer' => $id->numeric, 'user' => $user_id ] );
 				continue;
 			}
 
 			$before = Mirror::tags( $user_id );
 			$after  = $remote[ $id->numeric ]['tags'];
-			$status = 'DISABLED' === strtoupper( $remote[ $id->numeric ]['state'] ) ? 'disabled' : 'enabled';
+			$status = Mirror::status_after_resync( (string) get_user_meta( $user_id, Mirror::STATUS, true ), (string) get_user_meta( $user_id, Mirror::STATUS_FROM, true ) );
 
 			sort( $before );
 			sort( $after );
@@ -121,7 +127,10 @@ final class Reconciler {
 			}
 
 			Mirror::set_tags( $user_id, $after );
-			Mirror::set_status( $user_id, $status );
+			if ( $status !== get_user_meta( $user_id, Mirror::STATUS, true ) ) {
+				Mirror::set_status( $user_id, $status, Mirror::STATUS_RESYNC );
+			}
+
 			Mirror::set_dates( $user_id, [ 'since' => $remote[ $id->numeric ]['since'] ?? null, 'renews' => $remote[ $id->numeric ]['renews'] ?? null ] );
 			Mirror::stamp( $user_id, $source );
 		}

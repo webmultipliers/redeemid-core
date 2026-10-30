@@ -82,6 +82,20 @@ final class ContractTest extends TestCase {
 		$this->assertTrue( $data['verified_email'] );
 		// Tags left customers/* payloads in 2025-01; their absence must not read as "no tags".
 		$this->assertArrayNotHasKey( 'tags', $data );
+		// Shopify's own sample says "state": "disabled" for a customer in good standing.
+		$this->assertArrayNotHasKey( 'state', $data );
+		$this->assertArrayNotHasKey( 'state', self::extract( 'customers/create' ) );
+	}
+
+	/**
+	 * A resync keeps a disable from Shopify's webhook and lifts any other.
+	 */
+	public function test_status_after_resync(): void {
+		$this->assertSame( 'disabled', \RedeemID\Sync\Mirror::status_after_resync( 'disabled', 'webhook' ) );
+		$this->assertSame( 'enabled', \RedeemID\Sync\Mirror::status_after_resync( 'disabled', 'missing' ) );
+		$this->assertSame( 'enabled', \RedeemID\Sync\Mirror::status_after_resync( 'disabled', '' ) );
+		$this->assertSame( 'enabled', \RedeemID\Sync\Mirror::status_after_resync( 'enabled', 'webhook' ) );
+		$this->assertSame( 'enabled', \RedeemID\Sync\Mirror::status_after_resync( '', '' ) );
 	}
 
 	public function test_status_topics(): void {
@@ -130,18 +144,20 @@ final class ContractTest extends TestCase {
 	}
 
 	public function test_admin_reconcile_response(): void {
-		foreach ( [ 'id', 'tags', 'state', 'member_since', 'renews_on' ] as $field ) {
+		foreach ( [ 'id', 'tags', 'member_since', 'renews_on' ] as $field ) {
 			$this->assertStringContainsString( $field, Admin::RECONCILE_QUERY );
 		}
+
+		// Customer.state only means something under classic accounts; it must not drive access.
+		$this->assertDoesNotMatchRegularExpression( '/\bstate\b/', Admin::RECONCILE_QUERY );
 
 		$out = Admin::parse_customers( self::fixture( 'admin-reconcile.json' )['data'] );
 
 		$this->assertSame( [ '706405506930370084', '706405506930370085' ], array_map( 'strval', array_keys( $out ) ) );
 		$this->assertSame( [ 'gold', 'newsletter' ], $out['706405506930370084']['tags'] );
-		$this->assertSame( 'ENABLED', $out['706405506930370084']['state'] );
+		$this->assertArrayNotHasKey( 'state', $out['706405506930370084'] );
 		$this->assertSame( '2026-01-15', $out['706405506930370084']['since'] );
 		$this->assertNull( $out['706405506930370084']['renews'] );
-		$this->assertSame( 'DISABLED', $out['706405506930370085']['state'] );
 	}
 
 	public function test_customer_account_identity_response(): void {

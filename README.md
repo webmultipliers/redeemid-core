@@ -137,7 +137,7 @@ Each delivery is checked and stored, then processed:
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
 - Failures retry, then are dead-lettered. RedeemID → Webhooks lists every delivery and its outcome.
 
-A customer's record is refreshed by these webhooks, at sign-in (tags from the sign-in itself; with the Admin API, also account status and membership dates), by the member's own **Refresh Membership**, or by a staff resync on RedeemID → Customers. Until then the last tags Shopify sent stay in force.
+A customer's record is refreshed by these webhooks, at sign-in (tags from the sign-in itself; with the Admin API, also the membership dates), by the member's own **Refresh Membership**, or by a staff resync on RedeemID → Customers. Until then the last tags Shopify sent stay in force.
 
 ### Delivery health
 
@@ -172,7 +172,9 @@ From the command line: `wp redeemid resync user <id>...`, `wp redeemid resync al
 5. Tokens are stored encrypted inside the WordPress session, and refresh on demand. No endpoint returns a token.
 6. **Sign out** goes through Shopify's end-session endpoint, so both sessions end. WordPress's own logout link ends only the WordPress session.
 
-Signing in with Shopify, or linking an account, refreshes the member's record: the tags come with the sign-in, and when the Admin API is configured the plugin also reads the account status and the `member_since` and `renews_on` dates. A visitor who comes back while still signed in to WordPress is not synced again; their record changes when Shopify sends a webhook, when they press **Refresh Membership**, or when staff resync them.
+Signing in with Shopify, or linking an account, refreshes the member's record: the tags come with the sign-in, and when the Admin API is configured the plugin also reads the `member_since` and `renews_on` dates.
+
+Account status comes only from Shopify's `customers/disable` and `customers/enable` webhooks, plus a resync that can't find the customer any more. The plugin does not read the customer's `state` field: Shopify documents it as meaningful only under classic customer accounts, and sign-in needs new customer accounts, where `state` can say `DISABLED` for a customer in good standing. A resync lifts any disable that didn't come from the disable webhook. (To confirm on a dev store: sign in a customer, then check that RedeemID → Customers doesn't show them as disabled.) A visitor who comes back while still signed in to WordPress is not synced again; their record changes when Shopify sends a webhook, when they press **Refresh Membership**, or when staff resync them.
 
 If Shopify revokes the session:
 
@@ -209,7 +211,7 @@ Gate settings (the sidebar only shows the ones that apply):
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor, and a Shopify-only account is signed out of WordPress; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. RedeemID → Debug has a dry run that shows the decision for any user.
+Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor, and when the disable webhook arrives a Shopify-only account is signed out of WordPress; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. RedeemID → Debug has a dry run that shows the decision for any user.
 
 A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
 
