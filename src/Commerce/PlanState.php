@@ -6,6 +6,7 @@ use RedeemID\Access\LevelStore;
 use RedeemID\Access\Levels;
 use RedeemID\Access\Membership;
 use RedeemID\Access\Viewer;
+use RedeemID\Features\Cache as PageCache;
 
 /**
  * What a plan card should say to a signed-in member, from which level its
@@ -92,8 +93,8 @@ final class PlanState {
 		$held  = Membership::held( $levels, Viewer::member(), time() );
 		$state = self::state( $levels, $level, $held, Membership::top( $levels, $held ) );
 
-		if ( '' !== $state['state'] && ! defined( 'DONOTCACHEPAGE' ) ) {
-			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+		if ( '' !== $state['state'] ) {
+			PageCache::private_page();
 		}
 
 		return $state;

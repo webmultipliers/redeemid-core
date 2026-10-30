@@ -13,7 +13,6 @@ final class Settings {
 
 	private const DEFAULTS = [
 		'clear_cart_on_logout' => false,
-		'cache_ttl_minutes'    => 10,
 		'quiet_days'           => 7,
 		'alert_email'          => false,
 		'login_button'         => true,
@@ -36,7 +35,6 @@ final class Settings {
 
 		return [
 			'clear_cart_on_logout' => ! empty( $input['clear_cart_on_logout'] ),
-			'cache_ttl_minutes'    => max( 1, min( 1440, (int) ( $input['cache_ttl_minutes'] ?? self::DEFAULTS['cache_ttl_minutes'] ) ) ),
 			'quiet_days'           => max( 0, min( 90, (int) ( $input['quiet_days'] ?? self::DEFAULTS['quiet_days'] ) ) ),
 			'alert_email'          => ! empty( $input['alert_email'] ),
 			'login_button'         => ! empty( $input['login_button'] ),

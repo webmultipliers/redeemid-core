@@ -137,7 +137,7 @@ Each delivery is checked and stored, then processed:
 - Processing runs in the background (Action Scheduler if present, otherwise WP-Cron).
 - Failures retry, then are dead-lettered. RedeemID → Webhooks lists every delivery and its outcome.
 
-A customer's record is refreshed by these webhooks, at sign-in (tags from the sign-in itself; with the Admin API, also account status and membership dates), by the member's own **Refresh Membership**, or by a staff resync on RedeemID → Customers. Until then the last tags Shopify sent stay in force.
+A customer's record is refreshed by these webhooks, at sign-in (tags from the sign-in itself; with the Admin API, also the membership dates), by the member's own **Refresh Membership**, or by a staff resync on RedeemID → Customers. Until then the last tags Shopify sent stay in force.
 
 ### Delivery health
 
@@ -172,7 +172,9 @@ From the command line: `wp redeemid resync user <id>...`, `wp redeemid resync al
 5. Tokens are stored encrypted inside the WordPress session, and refresh on demand. No endpoint returns a token.
 6. **Sign out** goes through Shopify's end-session endpoint, so both sessions end. WordPress's own logout link ends only the WordPress session.
 
-Signing in with Shopify, or linking an account, refreshes the member's record: the tags come with the sign-in, and when the Admin API is configured the plugin also reads the account status and the `member_since` and `renews_on` dates. A visitor who comes back while still signed in to WordPress is not synced again; their record changes when Shopify sends a webhook, when they press **Refresh Membership**, or when staff resync them.
+Signing in with Shopify, or linking an account, refreshes the member's record: the tags come with the sign-in, and when the Admin API is configured the plugin also reads the `member_since` and `renews_on` dates.
+
+Account status comes only from Shopify's `customers/disable` and `customers/enable` webhooks, plus a resync that can't find the customer any more. The plugin does not read the customer's `state` field: Shopify documents it as meaningful only under classic customer accounts, and sign-in needs new customer accounts, where `state` can say `DISABLED` for a customer in good standing. A resync lifts any disable that didn't come from the disable webhook. (To confirm on a dev store: sign in a customer, then check that RedeemID → Customers doesn't show them as disabled.) A visitor who comes back while still signed in to WordPress is not synced again; their record changes when Shopify sends a webhook, when they press **Refresh Membership**, or when staff resync them.
 
 If Shopify revokes the session:
 
@@ -209,7 +211,7 @@ Gate settings (the sidebar only shows the ones that apply):
   - the teaser blocks;
   - a redirect.
 
-Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor, and a Shopify-only account is signed out of WordPress; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. RedeemID → Debug has a dry run that shows the decision for any user.
+Rules fail closed for guests, unlinked accounts, customers disabled in Shopify and customers never synced. A customer disabled in Shopify is also kept out of content that only needs a signed-in visitor, and when the disable webhook arrives a Shopify-only account is signed out of WordPress; a WordPress account that was never linked is not affected. Synced tags never expire on their own: they apply until Shopify changes them. RedeemID → Debug has a dry run that shows the decision for any user.
 
 A gate can also follow **This item's rule** instead of its own tags (below). A gate can only narrow an item's rule, never widen it. The inserter offers both as variations: **Membership Gate: access level** and **Membership Gate: this item's rule**.
 
@@ -270,7 +272,7 @@ Features are site behaviours a customer unlocks through what Shopify already gra
 Add **Shopify Plan Card** (`redeemid/plan-card`) and pick a product: the sidebar searches your Shopify catalog by title. It shows the product's live Shopify price, cached for five minutes, and a button that goes straight to Shopify checkout. Put plan cards on the join page and in a gate's fallback.
 
 - **Buy-now is a plain form.** It posts to `admin-post.php?action=redeemid_buy_now`, so it works without JavaScript. The server creates a one-line cart, attaches the visitor's identity if they're signed in with Shopify, and redirects to a fresh checkout URL. If Shopify refuses the customer token, it retries as a guest checkout rather than block the purchase.
-- **Cache-safe.** For guests the card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per IP per minute.
+- **Cache-safe.** For guests the card has no personal data and no nonce. Buy-now is rate-limited to 10 attempts per buyer IP per minute. Behind a proxy or CDN that is the proxy's address, shared by every visitor, unless the `redeemid_buyer_ip` filter returns the visitor's own (the same IP goes to Shopify).
 - **Changes for members.** List a level's Shopify product handles under RedeemID → Access → Levels (**Shopify products**). A card selling one of them then tells a signed-in member where they stand: "This is your plan" (with a **Manage membership** link when the subscription link is set in Settings), "Included in your Gold membership", an **Upgrade to Gold** button for a Silver member, or an **Add Puzzles** button for a member of an unrelated level. Labels are editable per card, and **Change for members** turns it off. The mapping only changes the wording: Shopify still decides who holds a level. A card that says something personal keeps that page out of shared caches; guests always get the plain card.
 - **Subscriptions.** A product with selling plans (Shopify Subscriptions, Recharge, Appstle and others) shows the plan's price and name, such as "Billed yearly". Put a selling plan ID in the block to sell on that plan; the editor lists the variant's plans and IDs. A subscription-only product sells on its first plan.
 - **Prices by country.** Return an ISO country code from the `redeemid_context_country` filter (for example from your CDN's country header) and plan cards and checkout use that country's price and currency through Shopify Markets. Pages with plan cards then differ by country, so the page cache must vary on that header.
@@ -306,7 +308,7 @@ The plugin records when each level started and ended for each member (`level.cha
 
 ## Caching
 
-Gated pages are decided on the server, and send `DONOTCACHEPAGE` when they show members-only content. Singular items gated by access rules also send `X-RedeemID-Access: open|locked|granted|bypass`, and granted, bypass and preview responses are `Cache-Control: private`. The `redeemid_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
+Gated pages are decided on the server. Any response that shows members-only or personal content (a granted item, a Membership Gate's members area, a block with its own Access setting, a member-aware plan card, a locked panel with a form) sets `DONOTCACHEPAGE` for page-cache plugins and, while headers can still be sent, `Cache-Control: private, no-store` for CDNs and proxies that never see that constant. Block themes render before headers go out, so the header is always sent there; a classic theme that prints content after headers are sent gets the constant only. Singular items gated by access rules also send `X-RedeemID-Access: open|locked|granted|bypass`, and granted, bypass and preview responses are `Cache-Control: private`. The `redeemid_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
 
 Personal pieces, such as the sign-in control, are [Blockstudio dynamic islands](https://blockstudio.dev/docs/blocks/islands). The page carries a neutral placeholder that any page cache can store (the guest "Log in" link, so sign-in works without JavaScript). After load, Blockstudio renders every island on the page for the visitor in one same-origin request to `POST /wp-json/blockstudio/v1/island/render` and swaps the results in. That response is never cached, so it can carry the visitor's own nonces; Blockstudio only restores the signed-in user for same-origin requests, so another site cannot read it.
 

@@ -226,7 +226,13 @@ final class Processor {
 			Logger::log( 'customer.merge_retired', [ 'user' => $merged_user->ID, 'survivor_user' => $survivor_user->ID ] );
 		} else {
 			Mirror::link( $merged_user->ID, $survivor );
-			Mirror::stamp( $merged_user->ID, 'webhook' );
+
+			// The survivor's tags are not in the merge payload: read them, rather than mark the old ones fresh.
+			if ( Admin::available() ) {
+				Reconciler::sync_user( $merged_user->ID, 'webhook' );
+			} else {
+				Mirror::stamp( $merged_user->ID, 'webhook' );
+			}
 		}
 
 		return InboxStore::PROCESSED;

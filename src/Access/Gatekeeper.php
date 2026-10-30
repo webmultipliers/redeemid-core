@@ -5,6 +5,7 @@ namespace RedeemID\Access;
 use RedeemID\Blocks\Gate;
 use RedeemID\Entitlement\Decision;
 use RedeemID\Settings;
+use RedeemID\Features\Cache as PageCache;
 
 /**
  * The one teaser path. Every surface that renders an item's content goes
@@ -108,10 +109,8 @@ final class Gatekeeper {
 		$verdict = self::verdict( $post );
 
 		if ( $verdict->granted() || Viewer::bypassing( $post ) ) {
-			if ( ! defined( 'DONOTCACHEPAGE' ) ) {
-				// Entitled output must never land in a shared page cache.
-				define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
-			}
+			// Entitled output must never land in a shared page cache, or a CDN's.
+			PageCache::private_page();
 
 			if ( Decision::METERED === $verdict->decision->reason && ! doing_filter( 'get_the_excerpt' ) ) {
 				$content = "<!-- wp:html -->\n" . self::meter_note( $verdict, $rule, true ) . "\n<!-- /wp:html -->\n\n" . $content;

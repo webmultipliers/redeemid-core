@@ -102,6 +102,8 @@ final class AdminToken {
 		set_transient( self::CACHE, Plugin::crypto()->encrypt( $token ), self::ttl( $response ) );
 		update_option( 'redeemid_admin_token_scopes', (string) ( $response['scope'] ?? '' ), false );
 		delete_option( 'redeemid_admin_token_error' );
+		// A token for this app means it is installed again.
+		delete_option( 'redeemid_app_uninstalled' );
 
 		return $token;
 	}

@@ -109,15 +109,16 @@ final class Monitor {
 
 		self::$problems = Watchdog::problems(
 			[
-				'now'           => time(),
-				'linked'        => BulkResync::linked_count(),
-				'last_received' => $last ? (int) $last['received_at'] : 0,
-				'quiet_days'    => (int) Settings::get( 'quiet_days' ),
-				'oldest_queued' => $inbox->oldest_queued(),
-				'dead_recent'   => $inbox->count_since( InboxStore::DEAD, time() - DAY_IN_SECONDS ),
-				'rejected_at'   => (int) get_option( 'redeemid_webhook_rejected', 0 ),
-				'registration'  => is_array( $reg ) ? $reg : null,
-				'cron_late'     => $prune ? max( 0, time() - (int) $prune ) : 0,
+				'now'            => time(),
+				'linked'         => BulkResync::linked_count(),
+				'last_received'  => $last ? (int) $last['received_at'] : 0,
+				'quiet_days'     => (int) Settings::get( 'quiet_days' ),
+				'oldest_queued'  => $inbox->oldest_queued(),
+				'dead_recent'    => $inbox->count_since( InboxStore::DEAD, time() - DAY_IN_SECONDS ),
+				'rejected_at'    => (int) get_option( 'redeemid_webhook_rejected', 0 ),
+				'registration'   => is_array( $reg ) ? $reg : null,
+				'cron_late'      => $prune ? max( 0, time() - (int) $prune ) : 0,
+				'uninstalled_at' => (int) get_option( 'redeemid_app_uninstalled', 0 ),
 			]
 		);
 
@@ -129,6 +130,7 @@ final class Monitor {
 	 */
 	public static function message( string $code, int $n ): string {
 		return match ( $code ) {
+			'uninstalled'      => __( 'Shopify reported the Admin app as uninstalled, so webhooks and resyncs have stopped. Install the app on the store again; this clears once a new Admin token is issued.', 'redeemid' ),
 			'check_failed'     => __( 'The daily check could not list webhook subscriptions in Shopify. See App events for the failed call.', 'redeemid' ),
 			/* translators: %d: number of topics */
 			'subscribe_failed' => sprintf( _n( '%d webhook subscription could not be created in Shopify.', '%d webhook subscriptions could not be created in Shopify.', $n, 'redeemid' ), $n ),

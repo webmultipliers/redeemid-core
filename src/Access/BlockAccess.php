@@ -6,6 +6,7 @@ use RedeemID\Blocks\Gate;
 use RedeemID\Features\Feature;
 use RedeemID\Features\Registry;
 use RedeemID\Settings;
+use RedeemID\Features\Cache as PageCache;
 
 /**
  * Per-block visibility: an Access setting on every block, decided on the
@@ -182,9 +183,9 @@ final class BlockAccess {
 			return $pre;
 		}
 
-		if ( is_user_logged_in() && ! defined( 'DONOTCACHEPAGE' ) ) {
+		if ( is_user_logged_in() ) {
 			// What a signed-in visitor sees here depends on who they are.
-			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+			PageCache::private_page();
 		}
 
 		if ( self::EVERYONE === $setting['show'] ) {

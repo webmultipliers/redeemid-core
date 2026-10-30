@@ -24,7 +24,7 @@ final class Feature {
 
 	/** Do not store a page that depends on it in a shared cache. */
 	public const CACHE_PRIVATE = 'private';
-	/** A cache layer varies on the granted-feature set (X-RedeemID-Features). */
+	/** A cache layer varies on the granted-feature set (the redeemid_fset cookie, Features\Cache). */
 	public const CACHE_VARY = 'vary';
 	/** Only a fragment depends on it, rendered per visitor (an island). */
 	public const CACHE_FRAGMENT = 'fragment';

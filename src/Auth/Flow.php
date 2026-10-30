@@ -24,6 +24,9 @@ use RedeemID\Sync\Reconciler;
 final class Flow {
 	public const QUERY_VAR = 'redeemid_callback';
 
+	/** When the member last asked for a sync now (rate limit). */
+	public const SYNC_REQUEST = '_redeemid_last_sync_request';
+
 	public static function register(): void {
 		add_action( 'init', [ self::class, 'add_rewrite' ] );
 		add_filter( 'query_vars', static fn( $vars ) => array_merge( $vars, [ self::QUERY_VAR ] ) );
@@ -466,13 +469,13 @@ final class Flow {
 			return $pre;
 		}
 
-		$last =(int) get_user_meta( $user_id, '_redeemid_last_sync_request', true );
+		$last =(int) get_user_meta( $user_id, self::SYNC_REQUEST, true );
 
 		if ( time() - $last < MINUTE_IN_SECONDS ) {
 			return 'sync_wait';
 		}
 
-		update_user_meta( $user_id, '_redeemid_last_sync_request', time() );
+		update_user_meta( $user_id, self::SYNC_REQUEST, time() );
 
 		if ( Admin::available() ) {
 			return is_wp_error( Reconciler::sync_user( $user_id, 'sync_now' ) ) ? 'sync_failed' : 'synced';

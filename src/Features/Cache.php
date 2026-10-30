@@ -26,6 +26,13 @@ final class Cache {
 		self::private_page();
 	}
 
+	/**
+	 * Keep this response out of shared caches: DONOTCACHEPAGE for page-cache
+	 * plugins, and Cache-Control: private for CDNs and proxies that never
+	 * see that constant. Every personal render (granted items, gate areas,
+	 * per-block Access settings, member-aware plan cards, locked panels with
+	 * a nonce) calls this, not the constant alone.
+	 */
 	public static function private_page(): void {
 		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
 			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals

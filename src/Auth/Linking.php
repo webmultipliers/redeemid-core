@@ -12,7 +12,7 @@ use RedeemID\Support\Logger;
  * that token, never a raw user ID.
  */
 final class Linking {
-	private const META = '_redeemid_link_token';
+	public const META = '_redeemid_link_token';
 	private const TTL  = 10 * MINUTE_IN_SECONDS;
 
 	/** Pending confirmations after a verified email match. */

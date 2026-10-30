@@ -106,10 +106,13 @@ final class BuyNow {
 		exit;
 	}
 
+	/**
+	 * The buyer's IP as Storefront::buyer_ip() sees it, so a site behind a
+	 * proxy or CDN that sets the redeemid_buyer_ip filter gets a limit per
+	 * visitor, not one shared by everyone behind the proxy's address.
+	 */
 	private static function within_rate_limit(): bool {
-		// phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__ -- only hashed into a rate-limit key on an uncached POST.
-		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-		$key = 'redeemid_buy_' . md5( $ip );
+		$key = self::rate_key( Storefront::buyer_ip() );
 		$n   = (int) get_transient( $key );
 
 		if ( $n >= self::PER_MINUTE ) {
@@ -119,6 +122,13 @@ final class BuyNow {
 		set_transient( $key, $n + 1, MINUTE_IN_SECONDS );
 
 		return true;
+	}
+
+	/**
+	 * The transient key for one buyer's rate limit. Pure.
+	 */
+	public static function rate_key( string $ip ): string {
+		return 'redeemid_buy_' . md5( $ip );
 	}
 
 	private static function back( string $url, string $code ): never {

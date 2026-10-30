@@ -30,12 +30,18 @@ final class Mirror {
 	public const SINCE       = '_redeemid_member_since';
 	public const RENEWS      = '_redeemid_renews_on';
 	public const HISTORY     = '_redeemid_level_history';
+	public const STATUS_FROM = '_redeemid_status_source';
+
+	/** Where a status came from: Shopify's disable/enable webhooks, a resync that found no customer, or a resync. */
+	public const STATUS_WEBHOOK = 'webhook';
+	public const STATUS_MISSING = 'missing';
+	public const STATUS_RESYNC  = 'resync';
 
 	/** Every key this class writes, for privacy export, erasure and disconnect. */
 	public const ALL_KEYS = [
 		self::GID, self::NUMERIC, self::TAGS, self::STATUS, self::EMAIL, self::FIRST_NAME, self::LAST_NAME,
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
-		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::HISTORY,
+		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::HISTORY, self::STATUS_FROM,
 	];
 
 	public static function find_user( CustomerId $id ): ?\WP_User {
@@ -112,10 +118,8 @@ final class Mirror {
 			}
 		}
 
-		if ( isset( $fields['state'] ) ) {
-			// Shopify customer state: ENABLED / DISABLED / INVITED / DECLINED.
-			self::set_status( $user_id, 'disabled' === strtolower( (string) $fields['state'] ) ? 'disabled' : 'enabled' );
-		}
+		// No status here: Customer.state only means something under classic
+		// customer accounts. Status comes from the disable/enable webhooks.
 	}
 
 	/**
@@ -148,8 +152,20 @@ final class Mirror {
 		return is_string( $value ) && preg_match( '/^(\d{4}-\d{2}-\d{2})/', trim( $value ), $m ) && checkdate( (int) substr( $m[1], 5, 2 ), (int) substr( $m[1], 8, 2 ), (int) substr( $m[1], 0, 4 ) ) ? $m[1] : '';
 	}
 
-	public static function set_status( int $user_id, string $status ): void {
+	public static function set_status( int $user_id, string $status, string $from = self::STATUS_WEBHOOK ): void {
 		update_user_meta( $user_id, self::STATUS, 'disabled' === $status ? 'disabled' : 'enabled' );
+		update_user_meta( $user_id, self::STATUS_FROM, sanitize_key( $from ) );
+	}
+
+	/**
+	 * The status a resync leaves when Shopify still has the customer. A
+	 * disable from Shopify's customers/disable webhook stands until
+	 * customers/enable arrives; any other disable (a customer a resync could
+	 * not find, or one an older release read from Customer.state) is lifted.
+	 * Pure.
+	 */
+	public static function status_after_resync( string $status, string $from ): string {
+		return 'disabled' === $status && self::STATUS_WEBHOOK === $from ? 'disabled' : 'enabled';
 	}
 
 	public static function stamp( int $user_id, string $source ): void {

@@ -19,9 +19,10 @@ final class Extractor {
 					'first_name'     => self::str( $payload['first_name'] ?? null ),
 					'last_name'      => self::str( $payload['last_name'] ?? null ),
 					'email'          => self::str( $payload['email'] ?? null ),
-					'state'          => self::str( $payload['state'] ?? null ),
 					'verified_email' => isset( $payload['verified_email'] ) ? (bool) $payload['verified_email'] : null,
 				];
+				// Customer.state is left out on purpose: it only means something under
+				// classic customer accounts (status comes from customers/disable|enable).
 				// Older payloads may still carry tags; a missing field never means "tags removed".
 				if ( array_key_exists( 'tags', $payload ) ) {
 					$data['tags'] = self::tags( $payload['tags'] );
