@@ -14,6 +14,7 @@ use RedeemID\Entitlement\Rule;
 use RedeemID\Settings;
 use RedeemID\Sync\LevelHistory;
 use RedeemID\Sync\PostCheckout;
+use RedeemID\Features\Cache as PageCache;
 
 /**
  * Server-side gating for redeemid/membership-gate.
@@ -141,9 +142,9 @@ final class Gate {
 		$decision = self::decide( $a );
 		$teaser   = 'teaser-blocks' === self::option( $a['fallbackMode'] ?? '', 'message' );
 
-		if ( $decision->granted && ! defined( 'DONOTCACHEPAGE' ) ) {
-			// Member-only output must never land in a shared page cache.
-			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+		if ( $decision->granted ) {
+			// Member-only output must never land in a shared page cache, or a CDN's.
+			PageCache::private_page();
 		}
 
 		$keep_blocks  = [];
@@ -310,9 +311,7 @@ final class Gate {
 					: '';
 				$data['ctaLabel'] = '';
 				// Personal: the date is this member's own.
-				if ( ! defined( 'DONOTCACHEPAGE' ) ) {
-					define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
-				}
+				PageCache::private_page();
 				break;
 		}
 
@@ -320,9 +319,7 @@ final class Gate {
 			$data['formNonce'] = wp_create_nonce( $data['formAction'] );
 
 			// A nonce is per visitor: this page must not be cached.
-			if ( ! defined( 'DONOTCACHEPAGE' ) ) {
-				define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
-			}
+			PageCache::private_page();
 		}
 
 		/**
