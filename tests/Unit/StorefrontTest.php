@@ -59,6 +59,12 @@ final class StorefrontTest extends TestCase {
 		$this->assertSame( '', BuyNow::variant_gid( '' ) );
 	}
 
+	public function test_buy_now_rate_limit_is_per_buyer_ip(): void {
+		$this->assertNotSame( BuyNow::rate_key( '203.0.113.1' ), BuyNow::rate_key( '203.0.113.2' ) );
+		$this->assertSame( BuyNow::rate_key( '203.0.113.1' ), BuyNow::rate_key( '203.0.113.1' ) );
+		$this->assertLessThanOrEqual( 172, strlen( BuyNow::rate_key( '2001:db8::1' ) ), 'Transient names stay under the options table limit.' );
+	}
+
 	public function test_title_query_uses_prefix_terms(): void {
 		$this->assertNull( Storefront::title_query( '  ' ) );
 		$this->assertSame( 'title:gold*', Storefront::title_query( 'gold' ) );

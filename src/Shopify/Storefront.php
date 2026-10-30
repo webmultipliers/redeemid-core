@@ -404,9 +404,9 @@ GRAPHQL;
 	 * The visitor's IP as the web server saw it. Behind a proxy or CDN that is
 	 * the proxy's address; the redeemid_buyer_ip filter can return the real
 	 * one from a header the site trusts. Forwarded headers are not read here,
-	 * because a visitor can set them.
+	 * because a visitor can set them. Buy-now's rate limit keys on this too.
 	 */
-	private static function buyer_ip(): string {
+	public static function buyer_ip(): string {
 		// phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__ -- validated with FILTER_VALIDATE_IP below; read on uncached checkout calls.
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$ip = (string) apply_filters( 'redeemid_buyer_ip', $ip );
