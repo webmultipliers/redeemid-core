@@ -19,7 +19,7 @@ global $wpdb;
 
 $redeemid_options = [
 	'redeemid_settings', 'redeemid_config', 'redeemid_db_version',
-	'redeemid_discovery_last_good', 'redeemid_discovery_fetched_at', 'redeemid_block_registration', 'redeemid_webhook_rejected',
+	'redeemid_discovery_last_good', 'redeemid_discovery_fetched_at', 'redeemid_block_registration', 'redeemid_webhook_rejected', 'redeemid_webhook_store_failed',
 	'redeemid_app_uninstalled', 'redeemid_admin_token_error', 'redeemid_admin_token_scopes', 'redeemid_webhook_registration',
 	'redeemid_events_db_version', 'redeemid_cart_bridge', 'redeemid_access_levels',
 	'redeemid_access_rules', 'redeemid_access_rules_version',

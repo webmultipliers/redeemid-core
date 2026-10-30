@@ -55,6 +55,14 @@ final class Endpoint {
 			time()
 		);
 
+		if ( Inbox::FAILED === $result['status'] ) {
+			// Not stored, so not acknowledged: a 5xx makes Shopify retry (8 times over 4 hours).
+			Logger::log( 'webhook.store_failed', [ 'topic' => $topic, 'status' => 'fail' ] );
+			update_option( 'redeemid_webhook_store_failed', time(), false );
+
+			return new \WP_REST_Response( [ 'ok' => false ], 503 );
+		}
+
 		Logger::log( 'webhook.received', [ 'topic' => $topic, 'status' => $result['status'], 'row' => $result['id'], 'customer' => (string) ( $result['customer'] ?? '' ) ] );
 
 		if ( InboxStore::QUEUED === $result['status'] && $result['id'] ) {

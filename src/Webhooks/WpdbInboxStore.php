@@ -66,6 +66,11 @@ final class WpdbInboxStore implements InboxStore {
 			)
 		);
 
+		// 0 rows is a duplicate the unique key skipped; false is a failed write, which must not be acknowledged as one.
+		if ( false === $inserted ) {
+			throw new \RuntimeException( 'inbox_write_failed' );
+		}
+
 		return $inserted ? (int) $wpdb->insert_id : null;
 	}
 

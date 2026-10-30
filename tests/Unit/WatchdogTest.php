@@ -29,6 +29,13 @@ final class WatchdogTest extends TestCase {
 		$this->assertArrayNotHasKey( 'uninstalled', Watchdog::problems( $this->facts( [ 'uninstalled_at' => 0 ] ) ) );
 	}
 
+	public function test_an_unsaved_delivery_is_a_failure_for_a_day(): void {
+		$problems = Watchdog::problems( $this->facts( [ 'store_failed_at' => self::NOW - 60 ] ) );
+
+		$this->assertSame( Watchdog::FAIL, $problems['store_failed']['state'] );
+		$this->assertArrayNotHasKey( 'store_failed', Watchdog::problems( $this->facts( [ 'store_failed_at' => self::NOW - 2 * 86400 ] ) ) );
+	}
+
 	public function test_a_healthy_chain_has_no_problems(): void {
 		$this->assertSame( [], Watchdog::problems( $this->facts() ) );
 		$this->assertSame( '', Watchdog::worst( [] ) );

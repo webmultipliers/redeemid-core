@@ -7,6 +7,9 @@ namespace RedeemID\Webhooks;
  * plus topic, so a replayed delivery is accepted and changes nothing.
  */
 final class Inbox {
+	/** The delivery could not be stored. */
+	public const FAILED = 'failed';
+
 	public function __construct( private readonly InboxStore $store ) {}
 
 	public static function dedupe_key( string $topic, string $webhook_id, string $event_id, string $raw_body ): string {
@@ -27,7 +30,7 @@ final class Inbox {
 	/**
 	 * Record an inbound delivery.
 	 *
-	 * @return array{status: string, id: int|null, customer: string} status is 'queued', 'duplicate', 'ignored' or 'dead'.
+	 * @return array{status: string, id: int|null, customer: string} status is 'queued', 'duplicate', 'ignored', 'dead' or 'failed'.
 	 */
 	public function accept( string $topic, string $webhook_id, string $event_id, string $raw_body, array $payload, int $now ): array {
 		$kind = Topics::kind( $topic );
@@ -41,18 +44,23 @@ final class Inbox {
 
 		$data = null === $kind || Topics::IGNORED === $kind ? [] : Extractor::extract( $kind, $topic, $payload );
 
-		$id = $this->store->insert_if_new(
-			$key,
-			[
-				'topic'       => strtolower( trim( $topic ) ),
-				'webhook_id'  => $webhook_id,
-				'customer'    => $data['customer'] ?? '',
-				'status'      => $status,
-				'data'        => $data,
-				'error'       => null === $kind ? 'unknown_topic' : '',
-				'received_at' => $now,
-			]
-		);
+		try {
+			$id = $this->store->insert_if_new(
+				$key,
+				[
+					'topic'       => strtolower( trim( $topic ) ),
+					'webhook_id'  => $webhook_id,
+					'customer'    => $data['customer'] ?? '',
+					'status'      => $status,
+					'data'        => $data,
+					'error'       => null === $kind ? 'unknown_topic' : '',
+					'received_at' => $now,
+				]
+			);
+		} catch ( \RuntimeException ) {
+			// Not stored: the caller must not acknowledge it, so Shopify delivers it again.
+			return [ 'status' => self::FAILED, 'id' => null, 'customer' => $data['customer'] ?? '' ];
+		}
 
 		if ( null === $id ) {
 			return [ 'status' => 'duplicate', 'id' => null, 'customer' => $data['customer'] ?? '' ];
