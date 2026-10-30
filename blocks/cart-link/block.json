@@ -1,0 +1,19 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "redeemid/cart-link",
+	"title": "Shopify Cart Link",
+	"category": "widgets",
+	"icon": "cart",
+	"description": "A link to RedeemID's cart page with the number of items in the cart. The page stays cacheable: the count comes from a small cookie, read in the browser, and without JavaScript the link still works. Shows nothing while Shopify's own plugin runs the cart.",
+	"keywords": [ "cart", "basket", "bag", "shop", "shopify" ],
+	"textdomain": "redeemid",
+	"supports": { "align": false, "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "label", "type": "text", "label": "Label", "default": "Cart" },
+			{ "id": "showIcon", "type": "toggle", "label": "Show cart icon", "default": true }
+		]
+	}
+}

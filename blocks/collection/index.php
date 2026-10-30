@@ -6,7 +6,8 @@
  * data, so pages stay cacheable. Pages are plain links carrying Shopify's
  * cursor (redeemid_after or redeemid_before, scoped to this collection by
  * redeemid_list), so paging works without JavaScript and each page has its
- * own URL. A product with one variant gets a buy-now form; one with options
+ * own URL. A product with one variant gets an Add to cart form (buy-now while
+ * RedeemID's cart is off); one with options
  * or a required selling plan links to its product page instead, which the
  * redeemid_product_url filter can point anywhere (Shopify's own product page
  * by default, when the store has one).
@@ -18,10 +19,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$redeemid_handle   = sanitize_title( \RedeemID\Blocks\Gate::option( $a['collectionHandle'] ?? '', '' ) );
+$redeemid_chosen   = sanitize_title( \RedeemID\Blocks\Gate::option( $a['collectionHandle'] ?? '', '' ) );
+$redeemid_handle   = \RedeemID\Commerce\Pages::handle_for( \RedeemID\Commerce\Pages::COLLECTION, $redeemid_chosen );
+$redeemid_page_of  = \RedeemID\Commerce\Pages::is_page_block( \RedeemID\Commerce\Pages::COLLECTION, $redeemid_chosen );
+$redeemid_cart     = \RedeemID\Commerce\Cart::enabled();
 $redeemid_per_page = max( 1, min( \RedeemID\Shopify\Storefront::MAX_PER_PAGE, (int) ( $a['perPage'] ?? 12 ) ) );
 $redeemid_columns  = max( 1, min( 6, (int) ( $a['columns'] ?? 3 ) ) );
-$redeemid_button   = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Buy now', 'redeemid' );
+$redeemid_button   = $redeemid_cart ? ( (string) ( $a['cartLabel'] ?? '' ) ?: __( 'Add to cart', 'redeemid' ) ) : ( (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Buy now', 'redeemid' ) );
 
 // A cursor in the URL applies only to the collection it was made for.
 // phpcs:disable WordPress.Security.NonceVerification.Recommended -- display only; cursors are validated by Storefront::cursor().
@@ -77,17 +81,22 @@ elseif ( '' !== $redeemid_problem ) :
 else :
 $redeemid_here = $isEditor ? '' : remove_query_arg( [ 'redeemid_notice', 'redeemid_list', 'redeemid_after', 'redeemid_before' ], \RedeemID\Blocks\Gate::current_url() );
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-$redeemid_notice = $isEditor ? '' : \RedeemID\Commerce\BuyNow::message( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) );
+$redeemid_notice = $isEditor ? '' : \RedeemID\Commerce\Cart::notice_html( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) );
 $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \RedeemID\Blocks\Gate::current_url() );
 $redeemid_page   = static fn( string $key, string $cursor ): string => add_query_arg( [ 'redeemid_list' => $redeemid_handle, $key => rawurlencode( $cursor ) ], $redeemid_here );
 ?>
 <div useBlockProps class="redeemid-collection" style="<?php echo esc_attr( $redeemid_style ); ?>">
-	<?php if ( ! empty( $a['showTitle'] ) ) : ?>
+	<?php if ( $redeemid_page_of ) : ?>
+		<h1 class="redeemid-collection__title"><?php echo esc_html( $redeemid_collection['title'] ); ?></h1>
+		<?php if ( '' !== $redeemid_collection['description'] ) : ?>
+			<p class="redeemid-collection__description"><?php echo esc_html( $redeemid_collection['description'] ); ?></p>
+		<?php endif; ?>
+	<?php elseif ( ! empty( $a['showTitle'] ) ) : ?>
 		<h2 class="redeemid-collection__title"><?php echo esc_html( $redeemid_collection['title'] ); ?></h2>
 	<?php endif; ?>
 
 	<?php if ( '' !== $redeemid_notice ) : ?>
-		<p class="redeemid-collection__notice" role="alert"><?php echo esc_html( $redeemid_notice ); ?></p>
+		<p class="redeemid-collection__notice" role="status"><?php echo wp_kses_post( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
 	<ul class="redeemid-collection__grid">
@@ -133,7 +142,8 @@ $redeemid_page   = static fn( string $key, string $cursor ): string => add_query
 						<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>
 					<?php else : ?>
 						<form class="redeemid-collection__form" method="post" action="<?php echo esc_url( \RedeemID\Commerce\BuyNow::form_url() ); ?>">
-							<input type="hidden" name="action" value="<?php echo esc_attr( \RedeemID\Commerce\BuyNow::ACTION ); ?>">
+							<input type="hidden" name="action" value="<?php echo esc_attr( $redeemid_cart ? \RedeemID\Commerce\Cart::ACTION : \RedeemID\Commerce\BuyNow::ACTION ); ?>">
+							<input type="hidden" name="op" value="add">
 							<input type="hidden" name="variant" value="<?php echo esc_attr( $redeemid_item['variant'] ); ?>">
 							<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redeemid_return ); ?>">
 							<button type="submit" class="wp-element-button" aria-label="<?php echo esc_attr( sprintf( /* translators: 1: button label 2: product title */ __( '%1$s: %2$s', 'redeemid' ), $redeemid_button, $redeemid_item['title'] ) ); ?>"><?php echo esc_html( $redeemid_button ); ?></button>

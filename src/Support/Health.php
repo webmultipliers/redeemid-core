@@ -4,6 +4,7 @@ namespace RedeemID\Support;
 
 use RedeemID\Blocks\Registration;
 use RedeemID\Commerce\CartBridge;
+use RedeemID\Commerce\Pages;
 use RedeemID\Config;
 use RedeemID\Integrations\OfficialPlugin;
 use RedeemID\Shopify\Discovery;
@@ -75,6 +76,22 @@ final class Health {
 			);
 		}
 
+		foreach ( [ Pages::PRODUCT => __( 'Product pages', 'redeemid' ), Pages::COLLECTION => __( 'Collection pages', 'redeemid' ), Pages::CART => __( 'Cart page', 'redeemid' ) ] as $kind => $label ) {
+			$owner = Pages::owner( $kind );
+			$path  = '/' . Pages::path( $kind ) . ( Pages::CART === $kind ? '' : '/…' );
+
+			$add(
+				$label,
+				'redeemid' === $owner || ! Pages::enabled() ? self::INFO : self::WARN,
+				match ( true ) {
+					! Pages::enabled()     => __( 'off in Settings', 'redeemid' ),
+					'redeemid' === $owner => sprintf( /* translators: %s: path */ __( 'RedeemID, at %s', 'redeemid' ), $path ),
+					'shopify' === $owner  => sprintf( /* translators: %s: path */ __( '%s is Shopify’s plugin’s; RedeemID stands down (Settings → RedeemID takes precedence)', 'redeemid' ), $path ),
+					default               => sprintf( /* translators: %s: path */ __( 'not served at %s: a WordPress page uses it, or permalinks need saving', 'redeemid' ), $path ),
+				}
+			);
+		}
+
 		$official = OfficialPlugin::info();
 		$states   = [
 			OfficialPlugin::ABSENT      => self::INFO,
@@ -100,7 +117,6 @@ final class Health {
 				);
 			}
 
-			$add( __( '/cart owner', 'redeemid' ), self::INFO, $official['owns_cart'] ? __( 'Shopify’s plugin (its rewrite rule wins over pages)', 'redeemid' ) : __( 'nobody yet: flush permalinks', 'redeemid' ) );
 
 			$bridge = CartBridge::enabled();
 			$last   = CartBridge::last();

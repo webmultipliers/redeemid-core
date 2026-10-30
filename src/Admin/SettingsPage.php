@@ -327,6 +327,29 @@ final class SettingsPage {
 						<p class="description"><?php esc_html_e( 'Sent by the daily check: at once for a new problem, then at most once a day while it lasts.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Storefront pages', 'redeemid' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[storefront_pages]" value="1" <?php checked( ! empty( $settings['storefront_pages'] ) ); ?>> <?php esc_html_e( 'Serve product, collection and cart pages', 'redeemid' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Pages built from the Shopify Product, Shopify Collection and Shopify Cart blocks, with titles, descriptions and product structured data. Block themes can edit them under Appearance → Editor → Templates. A path a published WordPress page already uses is left alone.', 'redeemid' ); ?></p>
+						<?php
+						foreach (
+							[
+								'product_path'    => [ __( 'Product pages', 'redeemid' ), '/{handle}/' ],
+								'collection_path' => [ __( 'Collection pages', 'redeemid' ), '/{handle}/' ],
+								'cart_path'       => [ __( 'Cart page', 'redeemid' ), '/' ],
+							] as $redeemid_key => [ $redeemid_label, $redeemid_tail ]
+						) :
+							?>
+							<p>
+								<label for="redeemid-<?php echo esc_attr( $redeemid_key ); ?>"><?php echo esc_html( $redeemid_label ); ?></label><br>
+								<code><?php echo esc_html( untrailingslashit( home_url() ) ); ?>/</code><input type="text" id="redeemid-<?php echo esc_attr( $redeemid_key ); ?>" class="regular-text code" name="<?php echo esc_attr( Settings::OPTION ); ?>[<?php echo esc_attr( $redeemid_key ); ?>]" value="<?php echo esc_attr( (string) $settings[ $redeemid_key ] ); ?>"><code><?php echo esc_html( $redeemid_tail ); ?></code>
+							</p>
+						<?php endforeach; ?>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[storefront_first]" value="1" <?php checked( ! empty( $settings['storefront_first'] ) ); ?>> <?php esc_html_e( 'RedeemID takes precedence over Shopify’s WordPress plugin', 'redeemid' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Off: while Shopify’s plugin is active, RedeemID leaves any of these paths it has claimed (it always claims /cart) and its cart stays the only cart. On: RedeemID answers its paths and runs the cart, and stops signing in Shopify’s plugin’s cart. Paths that differ from Shopify’s never clash either way.', 'redeemid' ); ?></p>
+					</td>
+				</tr>
 			</table>
 			</div>
 			<div class="redeemid-panel__footer">

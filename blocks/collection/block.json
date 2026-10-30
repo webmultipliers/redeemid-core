@@ -5,7 +5,7 @@
 	"title": "Shopify Collection",
 	"category": "widgets",
 	"icon": "grid-view",
-	"description": "A grid of a Shopify collection's products with live prices, rendered on the server. Single-option products get a buy button that goes straight to checkout; Next and Previous are plain links, so it works without JavaScript and without Shopify's own plugin.",
+	"description": "A grid of a Shopify collection's products with live prices, rendered on the server. Single-option products get an Add to cart (or buy-now) button; Next and Previous are plain links, so it works without JavaScript and without Shopify's own plugin.",
 	"keywords": [ "collection", "products", "grid", "shop", "store", "shopify" ],
 	"textdomain": "redeemid",
 	"supports": { "align": [ "wide", "full" ], "html": false },
@@ -15,7 +15,7 @@
 				"id": "collectionHandle",
 				"type": "select",
 				"label": "Shopify collection",
-				"help": "Search your Shopify collections by title.",
+				"help": "Search your Shopify collections by title. Leave empty on RedeemID's collection page template to show the collection in the URL.",
 				"populate": {
 					"type": "fetch",
 					"arguments": { "urlSearch": "/wp-json/redeemid/v1/editor/collections?search=" },
@@ -26,7 +26,8 @@
 			{ "id": "columns", "type": "number", "label": "Columns on wide screens", "default": 3, "min": 1, "max": 6 },
 			{ "id": "showTitle", "type": "toggle", "label": "Show collection title", "default": false },
 			{ "id": "showBuy", "type": "toggle", "label": "Buy button on single-option products", "default": true },
-			{ "id": "buttonLabel", "type": "text", "label": "Buy button label", "default": "Buy now" },
+			{ "id": "buttonLabel", "type": "text", "label": "Buy button label", "default": "Buy now", "help": "Used while RedeemID's cart is off." },
+			{ "id": "cartLabel", "type": "text", "label": "Add to cart label", "default": "Add to cart", "help": "Used when RedeemID's cart is on." },
 			{ "id": "showPagination", "type": "toggle", "label": "Show Next and Previous links", "default": true }
 		]
 	}

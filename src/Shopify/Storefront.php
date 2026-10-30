@@ -110,6 +110,40 @@ mutation RedeemIDCartBuyer($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!
 }
 GRAPHQL;
 
+	/** The cart fields the cart block renders, shared by every cart query and mutation. */
+	private const CART_FIELDS = <<<'GRAPHQL'
+id
+checkoutUrl
+totalQuantity
+cost { subtotalAmount { amount currencyCode } totalAmount { amount currencyCode } }
+discountCodes { code applicable }
+lines(first: 100) {
+  nodes {
+    id
+    quantity
+    cost { totalAmount { amount currencyCode } }
+    sellingPlanAllocation { sellingPlan { name } }
+    merchandise {
+      ... on ProductVariant {
+        id
+        title
+        image { url altText width height }
+        product { handle title featuredImage { url altText width height } }
+      }
+    }
+  }
+}
+GRAPHQL;
+
+	/** Cart mutations by name: [GraphQL operation, response field, variable declarations, arguments]. */
+	private const CART_OPS = [
+		'create'    => [ 'cartCreate', '$input: CartInput!', 'input: $input' ],
+		'add'       => [ 'cartLinesAdd', '$cartId: ID!, $lines: [CartLineInput!]!', 'cartId: $cartId, lines: $lines' ],
+		'update'    => [ 'cartLinesUpdate', '$cartId: ID!, $lines: [CartLineUpdateInput!]!', 'cartId: $cartId, lines: $lines' ],
+		'remove'    => [ 'cartLinesRemove', '$cartId: ID!, $lineIds: [ID!]!', 'cartId: $cartId, lineIds: $lineIds' ],
+		'discounts' => [ 'cartDiscountCodesUpdate', '$cartId: ID!, $discountCodes: [String!]', 'cartId: $cartId, discountCodes: $discountCodes' ],
+	];
+
 	public static function available(): bool {
 		return '' !== Config::store_domain() && ( Config::has( 'REDEEMID_STOREFRONT_PRIVATE_TOKEN' ) || Config::has( 'REDEEMID_PUBLIC_ACCESS_TOKEN' ) );
 	}
@@ -555,6 +589,114 @@ GRAPHQL;
 		}
 
 		return empty( $data['cartBuyerIdentityUpdate']['cart']['id'] ) ? new \WP_Error( 'shopify_cart_missing', 'Shopify has no such cart.' ) : true;
+	}
+
+	/**
+	 * A cart as the cart block renders it. Null when Shopify no longer has it
+	 * (carts expire); WP_Error when Shopify could not be asked. Never cached:
+	 * a cart is one visitor's.
+	 */
+	public static function cart( string $cart_gid ): array|null|\WP_Error {
+		if ( ! self::available() ) {
+			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
+		}
+
+		$country = self::country();
+		$query   = "query RedeemIDCart(\$id: ID!) {\n  cart(id: \$id) {\n" . self::CART_FIELDS . "\n  }\n}";
+		$data    = Http::graphql( self::endpoint(), self::headers( true ), self::in_context( $query, $country ), [ 'id' => $cart_gid ], 'storefront.cart' );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		return is_array( $data['cart'] ?? null ) ? self::shape_cart( $data['cart'] ) : null;
+	}
+
+	/**
+	 * Run one cart mutation (create, add, update, remove, discounts) and
+	 * return the cart it leaves. Shopify's first user error becomes a
+	 * WP_Error; a cart Shopify no longer has is shopify_cart_missing.
+	 */
+	public static function cart_mutate( string $op, array $vars ): array|\WP_Error {
+		if ( ! isset( self::CART_OPS[ $op ] ) ) {
+			return new \WP_Error( 'shopify_cart', 'Unknown cart operation.' );
+		}
+
+		if ( ! self::available() ) {
+			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
+		}
+
+		[ $field, $declare, $args ] = self::CART_OPS[ $op ];
+
+		$country = self::country();
+		$query   = 'mutation RedeemIDCart' . ucfirst( $op ) . '(' . $declare . ") {\n  {$field}({$args}) {\n    cart {\n" . self::CART_FIELDS . "\n    }\n    userErrors { field message code }\n  }\n}";
+		$data    = Http::graphql( self::endpoint(), self::headers( true ), self::in_context( $query, $country ), $vars, 'storefront.cart_' . $op );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$errors = $data[ $field ]['userErrors'] ?? [];
+
+		if ( $errors ) {
+			$code = (string) ( $errors[0]['code'] ?? '' );
+
+			return new \WP_Error( 'INVALID' === $code && str_contains( strtolower( (string) ( $errors[0]['message'] ?? '' ) ), 'cart' ) ? 'shopify_cart_missing' : 'shopify_cart', (string) ( $errors[0]['message'] ?? 'Shopify refused the cart change.' ) );
+		}
+
+		$cart = $data[ $field ]['cart'] ?? null;
+
+		return is_array( $cart ) ? self::shape_cart( $cart ) : new \WP_Error( 'shopify_cart_missing', 'Shopify has no such cart.' );
+	}
+
+	/**
+	 * Keep only what the cart block renders. Pure.
+	 *
+	 * @return array{id: string, checkout: string, count: int, subtotal: ?array, total: ?array, codes: array, lines: array}
+	 */
+	public static function shape_cart( array $raw ): array {
+		$lines = [];
+
+		foreach ( $raw['lines']['nodes'] ?? [] as $node ) {
+			$variant = is_array( $node ) ? ( $node['merchandise'] ?? null ) : null;
+
+			if ( ! is_array( $variant ) || empty( $node['id'] ) || empty( $variant['id'] ) ) {
+				continue;
+			}
+
+			$image   = $variant['image'] ?? ( $variant['product']['featuredImage'] ?? null );
+			$lines[] = [
+				'id'       => (string) $node['id'],
+				'quantity' => (int) ( $node['quantity'] ?? 0 ),
+				'total'    => self::money( $node['cost']['totalAmount'] ?? null ),
+				'plan'     => (string) ( $node['sellingPlanAllocation']['sellingPlan']['name'] ?? '' ),
+				'variant'  => (string) $variant['id'],
+				// Shopify names a product with no options' only variant "Default Title".
+				'option'   => 'Default Title' === ( $variant['title'] ?? '' ) ? '' : (string) ( $variant['title'] ?? '' ),
+				'handle'   => (string) ( $variant['product']['handle'] ?? '' ),
+				'title'    => (string) ( $variant['product']['title'] ?? '' ),
+				'image'    => is_array( $image ) && ! empty( $image['url'] ) ? [ 'url' => (string) $image['url'], 'alt' => (string) ( $image['altText'] ?? '' ), 'width' => (int) ( $image['width'] ?? 0 ), 'height' => (int) ( $image['height'] ?? 0 ) ] : null,
+			];
+		}
+
+		$checkout = (string) ( $raw['checkoutUrl'] ?? '' );
+		$codes    = [];
+
+		foreach ( (array) ( $raw['discountCodes'] ?? [] ) as $code ) {
+			if ( is_array( $code ) && '' !== (string) ( $code['code'] ?? '' ) ) {
+				$codes[] = [ 'code' => (string) $code['code'], 'applies' => ! empty( $code['applicable'] ) ];
+			}
+		}
+
+		return [
+			'id'       => (string) ( $raw['id'] ?? '' ),
+			'checkout' => str_starts_with( $checkout, 'https://' ) ? $checkout : '',
+			'count'    => (int) ( $raw['totalQuantity'] ?? 0 ),
+			'subtotal' => self::money( $raw['cost']['subtotalAmount'] ?? null ),
+			'total'    => self::money( $raw['cost']['totalAmount'] ?? null ),
+			'codes'    => $codes,
+			'lines'    => $lines,
+		];
 	}
 
 	/**

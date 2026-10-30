@@ -26,7 +26,9 @@ use RedeemID\Auth\ShadowUsers;
 use RedeemID\Auth\SignInLinks;
 use RedeemID\Blocks\Registration;
 use RedeemID\Commerce\BuyNow;
+use RedeemID\Commerce\Cart;
 use RedeemID\Commerce\CartBridge;
+use RedeemID\Commerce\Pages;
 use RedeemID\Files\ProtectedFiles;
 use RedeemID\Integrations\OfficialCartToggle;
 use RedeemID\Integrations\SeoPlugins;
@@ -76,6 +78,8 @@ final class Plugin {
 		OfficialCartToggle::register();
 		BuyNow::register();
 		CartBridge::register();
+		Cart::register();
+		Pages::register();
 		ProtectedFiles::register();
 		Privacy::register();
 		EventLog::register();

@@ -1,0 +1,21 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "redeemid/cart",
+	"title": "Shopify Cart",
+	"category": "widgets",
+	"icon": "cart",
+	"description": "The visitor's Shopify cart: items, quantities, a discount code and a checkout button. Rendered on the server and works without JavaScript; signed-in customers check out signed in. RedeemID's cart page holds one; it shows nothing while Shopify's own plugin runs the cart.",
+	"keywords": [ "cart", "basket", "checkout", "shop", "shopify" ],
+	"textdomain": "redeemid",
+	"supports": { "align": [ "wide" ], "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "heading", "type": "text", "label": "Heading", "default": "Your cart" },
+			{ "id": "showDiscount", "type": "toggle", "label": "Show discount code field", "default": true },
+			{ "id": "checkoutLabel", "type": "text", "label": "Checkout button label", "default": "Check out" },
+			{ "id": "continueUrl", "type": "text", "label": "Continue shopping link", "help": "Leave empty to link to the home page." }
+		]
+	}
+}
