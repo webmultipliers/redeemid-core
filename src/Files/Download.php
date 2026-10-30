@@ -111,15 +111,86 @@ final class Download {
 			exit;
 		}
 
-		header( 'Content-Length: ' . (string) filesize( $path ) );
+		$size  = (int) filesize( $path );
+		$range = self::range( isset( $_SERVER['HTTP_RANGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_RANGE'] ) ) : null, $size );
+
+		header( 'Accept-Ranges: bytes' );
+
+		if ( false === $range ) {
+			status_header( 416 );
+			header( 'Content-Range: bytes */' . $size );
+			exit;
+		}
 
 		while ( ob_get_level() > 0 ) {
 			ob_end_clean();
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions, WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_readfile -- streaming a checked local file to the visitor.
-		readfile( $path );
+		if ( null === $range ) {
+			header( 'Content-Length: ' . (string) $size );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions, WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_readfile -- streaming a checked local file to the visitor.
+			readfile( $path );
+			exit;
+		}
+
+		[ $start, $end ] = $range;
+
+		status_header( 206 );
+		header( 'Content-Range: bytes ' . $start . '-' . $end . '/' . $size );
+		header( 'Content-Length: ' . (string) ( $end - $start + 1 ) );
+
+		// phpcs:disable WordPress.WP.AlternativeFunctions -- streaming part of a checked local file to the visitor.
+		$handle = fopen( $path, 'rb' );
+
+		if ( false !== $handle ) {
+			fseek( $handle, $start );
+			$left = $end - $start + 1;
+
+			while ( $left > 0 && ! feof( $handle ) ) {
+				$chunk = fread( $handle, min( 8192, $left ) );
+
+				if ( false === $chunk ) {
+					break;
+				}
+
+				echo $chunk; // phpcs:ignore WordPress.Security.EscapeOutput -- file bytes.
+				$left -= strlen( $chunk );
+			}
+
+			fclose( $handle );
+		}
+		// phpcs:enable
 		exit;
+	}
+
+	/**
+	 * One "bytes=" range from a Range header, so audio and video can seek and
+	 * large downloads resume. Pure.
+	 *
+	 * @return array{0: int, 1: int}|null|false [start, end] inclusive; null for
+	 *         the whole file (no header, or one this ignores such as several
+	 *         ranges); false when it can't be satisfied.
+	 */
+	public static function range( ?string $header, int $size ): array|null|false {
+		if ( null === $header || ! preg_match( '/^bytes=(\d*)-(\d*)$/', trim( $header ), $m ) || ( '' === $m[1] && '' === $m[2] ) ) {
+			return null;
+		}
+
+		if ( $size <= 0 ) {
+			return false;
+		}
+
+		if ( '' === $m[1] ) {
+			// A suffix: the last N bytes.
+			$length = (int) $m[2];
+
+			return $length > 0 ? [ max( 0, $size - $length ), $size - 1 ] : false;
+		}
+
+		$start = (int) $m[1];
+		$end   = '' === $m[2] ? $size - 1 : min( (int) $m[2], $size - 1 );
+
+		return $start < $size && $start <= $end ? [ $start, $end ] : false;
 	}
 
 	/**
