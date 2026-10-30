@@ -3,7 +3,7 @@
  * Plugin Name:       RedeemID
  * Plugin URI:        https://github.com/webmultipliers/redeemid-core
  * Description:       Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7.
- * Version:           0.0.1
+ * Version:           0.0.2
  * Requires at least: 6.7
  * Requires PHP:      8.2
  * Author:            Web Multipliers
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'REDEEMID_VERSION', '0.0.1' );
+define( 'REDEEMID_VERSION', '0.0.2' );
 define( 'REDEEMID_FILE', __FILE__ );
 define( 'REDEEMID_DIR', plugin_dir_path( __FILE__ ) );
 define( 'REDEEMID_URL', plugin_dir_url( __FILE__ ) );
