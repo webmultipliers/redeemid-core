@@ -2,6 +2,7 @@
 
 namespace RedeemID\Access;
 
+use RedeemID\Api\Events;
 use RedeemID\Blocks\Gate;
 use RedeemID\Entitlement\Decision;
 use RedeemID\Settings;
@@ -24,6 +25,9 @@ final class Gatekeeper {
 
 	/** @var array<int, EffectiveRule> */
 	private static array $rules = [];
+
+	/** @var array<int, true> Items whose wall_shown event has fired this request. */
+	private static array $announced = [];
 
 	public static function register(): void {
 		add_filter( 'the_content', [ self::class, 'filter_content' ], 8 );
@@ -125,9 +129,33 @@ final class Gatekeeper {
 		// An auto excerpt that reaches here is already rendered HTML, cut to nothing above; the wall belongs on full renders.
 		if ( ! doing_filter( 'get_the_excerpt' ) ) {
 			$out .= "\n\n<!-- wp:html -->\n" . self::wall( $post, $verdict ) . "\n<!-- /wp:html -->";
+			self::announce( $post, $verdict );
 		}
 
 		return $out;
+	}
+
+	/**
+	 * The wall_shown event, once per item per request, and only when the
+	 * reader is on the item's own page (not a loop, feed, REST or search).
+	 */
+	private static function announce( \WP_Post $post, Verdict $verdict ): void {
+		if ( isset( self::$announced[ $post->ID ] ) || null !== Viewer::preview_as() || ! Meter::reading( $post ) ) {
+			return;
+		}
+
+		self::$announced[ $post->ID ] = true;
+
+		Events::emit(
+			Events::WALL_SHOWN,
+			[
+				'post_id'   => $post->ID,
+				'post_type' => $post->post_type,
+				'reason'    => $verdict->decision->reason,
+				'level'     => (string) $verdict->next_level,
+				'user_id'   => get_current_user_id(),
+			]
+		);
 	}
 
 	public static function wall( \WP_Post $post, Verdict $verdict ): string {
@@ -144,7 +172,8 @@ final class Gatekeeper {
 			'unlocksAt'        => Decision::DRIP === $verdict->decision->reason ? Drip::opens_for( $post, get_current_user_id() ) : 0,
 		];
 
-		return '<div class="redeemid-paywall" data-redeemid-level="' . esc_attr( (string) $verdict->next_level ) . '">'
+		// The data attributes feed the browser client's wall_shown event. None is personal: a cached guest page carries them too.
+		return '<div class="redeemid-paywall" data-redeemid-level="' . esc_attr( (string) $verdict->next_level ) . '" data-redeemid-post="' . (int) $post->ID . '" data-redeemid-reason="' . esc_attr( $verdict->decision->reason ) . '" data-redeemid-view="' . ( Meter::reading( $post ) ? 'page' : 'list' ) . '">'
 			. self::meter_note( $verdict, self::rule( $post ), false )
 			. Gate::fallback_panel( $a, $verdict->decision, (string) $verdict->next_level )
 			. '</div>';
@@ -166,7 +195,9 @@ final class Gatekeeper {
 			? ' <a href="' . esc_url( $level->cta_url ) . '">' . esc_html( '' !== $level->cta_label ? $level->cta_label : sprintf( /* translators: %s: level label */ __( 'Become a %s member', 'redeemid' ), $level->label ) ) . '</a>'
 			: '';
 
-		return '<p class="redeemid-meter">' . esc_html( $note ) . $cta . '</p>';
+		$state = Decision::METERED === $verdict->decision->reason ? ' data-redeemid-metered="' . (int) get_the_ID() . '"' : '';
+
+		return '<p class="redeemid-meter"' . $state . '>' . esc_html( $note ) . $cta . '</p>';
 	}
 
 	/**

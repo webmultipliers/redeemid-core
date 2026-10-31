@@ -28,6 +28,8 @@ final class Reports {
 			[ __( 'Purchases that unlocked access', 'redeemid' ), Stats::total( $stats, 'unlocked', 30, $now ) ],
 			[ __( 'Plan card checkouts', 'redeemid' ), Stats::total( $stats, 'checkout', 30, $now ) ],
 			[ __( 'Shopify sign-ins', 'redeemid' ), Stats::total( $stats, 'sign_in', 30, $now ) ],
+			[ __( 'Metered reads', 'redeemid' ), Stats::total( $stats, 'meter', 30, $now ) ],
+			[ __( 'Readers who used up the meter', 'redeemid' ), Stats::total( $stats, 'meter_out', 30, $now ) ],
 		];
 		$joins  = Stats::weekly( $stats, 'join:', self::WEEKS, $now );
 		$leaves = Stats::weekly( $stats, 'leave:', self::WEEKS, $now );

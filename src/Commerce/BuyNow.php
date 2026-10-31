@@ -2,6 +2,7 @@
 
 namespace RedeemID\Commerce;
 
+use RedeemID\Api\Events;
 use RedeemID\Auth\Flow;
 use RedeemID\Auth\TokenVault;
 use RedeemID\Shopify\Storefront;
@@ -101,6 +102,16 @@ final class BuyNow {
 
 		Logger::log( 'commerce.buy_now', [ 'user_id' => $user_id, 'signed_in' => (bool) $token, 'selling_plan' => '' !== $plan ] );
 		PostCheckout::mark( $user_id, $back );
+		Events::emit(
+			Events::CHECKOUT_STARTED,
+			[
+				'variant'      => $variant,
+				'quantity'     => max( 1, $quantity ),
+				'subscription' => '' !== $plan,
+				'signed_in'    => (bool) $token,
+				'user_id'      => $user_id,
+			]
+		);
 
 		wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect -- checkoutUrl just returned by Shopify, https only.
 		exit;

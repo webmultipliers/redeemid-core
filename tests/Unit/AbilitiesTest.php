@@ -46,6 +46,19 @@ final class AbilitiesTest extends TestCase {
 		$this->assertTrue( $meta['mcp']['public'] );
 	}
 
+	public function test_staff_actions_are_staff_only_and_off_mcp_by_default(): void {
+		foreach ( Abilities::ACTIONS as $name => $destructive ) {
+			$this->assertSame( Abilities::STAFF, Abilities::AUDIENCE[ $name ] );
+
+			$meta = Abilities::action_meta( $destructive );
+			$this->assertFalse( $meta['annotations']['readonly'] );
+			$this->assertSame( $destructive, $meta['annotations']['destructive'] );
+			$this->assertFalse( $meta['mcp']['public'] );
+		}
+
+		$this->assertTrue( Abilities::ACTIONS['redeemid/edit-member-tags'] );
+	}
+
 	public function test_input_schemas_accept_an_empty_call(): void {
 		$empty = Abilities::input( [] );
 		$this->assertSame( 'object', $empty['type'] );

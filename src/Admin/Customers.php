@@ -417,6 +417,22 @@ final class Customers {
 	}
 
 	private static function edit_tags( int $user_id ): string {
+		$remove = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['remove'] ?? [] ) ); // phpcs:ignore WordPress.Security.NonceVerification -- checked in action().
+		$add    = array_filter( array_map( 'trim', explode( ',', sanitize_text_field( wp_unslash( $_POST['add'] ?? '' ) ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		return self::change_tags( $user_id, $add, $remove, 'admin' );
+	}
+
+	/**
+	 * Add and remove a linked customer's tags in Shopify, then read back what
+	 * Shopify holds. The grant lives in Shopify, never in WordPress. Also the
+	 * redeemid/edit-member-tags ability. Returns a result code: tags_saved,
+	 * tags_failed, no_admin or none.
+	 *
+	 * @param string[] $add
+	 * @param string[] $remove Only tags the customer holds now are removed.
+	 */
+	public static function change_tags( int $user_id, array $add, array $remove, string $by ): string {
 		$id = Mirror::customer_id( $user_id );
 
 		if ( ! $id ) {
@@ -424,10 +440,9 @@ final class Customers {
 		}
 
 		$current = Mirror::tags( $user_id );
-		$remove  = array_values( array_intersect( $current, array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['remove'] ?? [] ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification -- checked in action().
-		$add     = array_values( array_filter( array_map( 'trim', explode( ',', sanitize_text_field( wp_unslash( $_POST['add'] ?? '' ) ) ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$remove  = array_values( array_udiff( $remove, $add, 'strcasecmp' ) );
-		$add     = array_values( array_udiff( $add, $current, 'strcasecmp' ) );
+		$plan    = self::tag_plan( $current, $add, $remove );
+		$add     = $plan['add'];
+		$remove  = $plan['remove'];
 
 		if ( ! $add && ! $remove ) {
 			return 'none';
@@ -435,7 +450,7 @@ final class Customers {
 
 		if ( Mirror::is_fixture( $user_id ) ) {
 			Mirror::set_tags( $user_id, array_merge( array_diff( $current, $remove ), $add ) );
-			Mirror::stamp( $user_id, 'admin' );
+			Mirror::stamp( $user_id, $by );
 			Logger::log( 'admin.tags_edited', [ 'user' => $user_id, 'added' => implode( ',', $add ), 'removed' => implode( ',', $remove ), 'status' => 'fixture' ] );
 
 			return 'tags_saved';
@@ -452,9 +467,27 @@ final class Customers {
 		Logger::log( 'admin.tags_edited', [ 'user' => $user_id, 'customer' => $id->numeric, 'added' => implode( ',', $add ), 'removed' => implode( ',', $remove ), 'status' => $error ? $error->get_error_code() : 'ok' ] );
 
 		// Read back what Shopify now holds, whatever happened.
-		Reconciler::sync_user( $user_id, 'admin' );
+		Reconciler::sync_user( $user_id, $by );
 
 		return $error ? 'tags_failed' : 'tags_saved';
+	}
+
+	/**
+	 * Which tags to add and remove: removes only tags held now, a tag in both
+	 * lists is kept, and adds skip tags already held (case-insensitive). Pure.
+	 *
+	 * @param string[] $current
+	 * @param string[] $add
+	 * @param string[] $remove
+	 * @return array{add: string[], remove: string[]}
+	 */
+	public static function tag_plan( array $current, array $add, array $remove ): array {
+		$add    = array_values( array_filter( array_map( static fn( $t ) => trim( (string) $t ), $add ), 'strlen' ) );
+		$remove = array_values( array_intersect( $current, array_map( 'strval', $remove ) ) );
+		$remove = array_values( array_udiff( $remove, $add, 'strcasecmp' ) );
+		$add    = array_values( array_udiff( $add, $current, 'strcasecmp' ) );
+
+		return [ 'add' => $add, 'remove' => $remove ];
 	}
 
 	private static function finish( string $result, int $count, int $user_id = 0 ): never {

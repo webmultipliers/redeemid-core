@@ -14,17 +14,20 @@ use RedeemID\Access\Reader;
 use RedeemID\Access\RuleStore;
 use RedeemID\Access\Verdict;
 use RedeemID\Access\Viewer;
+use RedeemID\Admin\Customers;
 use RedeemID\Admin\Menu;
 use RedeemID\Blocks\Account;
 use RedeemID\Entitlement\Decision;
 use RedeemID\Entitlement\Member;
 use RedeemID\Features\Registry;
 use RedeemID\Settings;
+use RedeemID\Shopify\Admin as AdminApi;
 use RedeemID\Support\Health;
 use RedeemID\Support\Transfer;
 use RedeemID\Sync\BulkResync;
 use RedeemID\Sync\LevelHistory;
 use RedeemID\Sync\Mirror;
+use RedeemID\Sync\Reconciler;
 use RedeemID\Webhooks\Monitor;
 
 /**
@@ -33,14 +36,17 @@ use RedeemID\Webhooks\Monitor;
  * the JS client can ask what RedeemID knows. On older WordPress the hooks
  * never fire and nothing registers.
  *
- * Every ability is read-only. None grants access, changes a level or calls
- * Shopify: Shopify stays the record. Staff abilities need the RedeemID admin
+ * Most abilities are read-only. The three staff actions (sync-member,
+ * start-bulk-resync, edit-member-tags) change only what Shopify holds or
+ * read it again: none grants access in WordPress, edits a level or a rule,
+ * or writes a setting. Shopify stays the record. Staff abilities need the RedeemID admin
  * capability; member abilities answer only for the signed-in caller. Unknown
  * posts, users or viewers are errors, never "allowed". No ability returns a
  * token, a secret or a Shopify payload.
  *
- * All are marked public for MCP. A site that wants them off MCP sets
- * meta.mcp.public to false with core's wp_register_ability_args filter.
+ * The read-only abilities are marked public for MCP. The actions are not:
+ * a site that wants an agent to run them sets meta.mcp.public to true with
+ * core's wp_register_ability_args filter (and the reverse turns a read off).
  */
 final class Abilities {
 	public const CATEGORY = 'redeemid';
@@ -59,6 +65,16 @@ final class Abilities {
 		'redeemid/level-changes'    => self::STAFF,
 		'redeemid/my-membership'    => self::MEMBER,
 		'redeemid/can-i-read'       => self::MEMBER,
+		'redeemid/sync-member'      => self::STAFF,
+		'redeemid/start-bulk-resync' => self::STAFF,
+		'redeemid/edit-member-tags' => self::STAFF,
+	];
+
+	/** Abilities that change something, and whether the change is destructive. */
+	public const ACTIONS = [
+		'redeemid/sync-member'       => false,
+		'redeemid/start-bulk-resync' => false,
+		'redeemid/edit-member-tags'  => true,
 	];
 
 	public static function register(): void {
@@ -83,7 +99,7 @@ final class Abilities {
 				$args + [
 					'category'            => self::CATEGORY,
 					'permission_callback' => static fn() => self::allowed( self::AUDIENCE[ $name ], is_user_logged_in(), current_user_can( Menu::CAP ) ),
-					'meta'                => self::meta(),
+					'meta'                => isset( self::ACTIONS[ $name ] ) ? self::action_meta( self::ACTIONS[ $name ] ) : self::meta(),
 				]
 			);
 		}
@@ -108,6 +124,18 @@ final class Abilities {
 			'annotations'  => [ 'readonly' => true, 'destructive' => false, 'idempotent' => true ],
 			'show_in_rest' => true,
 			'mcp'          => [ 'public' => true ],
+		];
+	}
+
+	/**
+	 * A staff action: not read-only, run through REST POST, and kept off MCP
+	 * unless the site opts in. Pure.
+	 */
+	public static function action_meta( bool $destructive ): array {
+		return [
+			'annotations'  => [ 'readonly' => false, 'destructive' => $destructive, 'idempotent' => true ],
+			'show_in_rest' => true,
+			'mcp'          => [ 'public' => false ],
 		];
 	}
 
@@ -253,6 +281,33 @@ final class Abilities {
 				),
 				'execute_callback' => [ self::class, 'can_i_read' ],
 			],
+			'redeemid/sync-member'       => [
+				'label'            => __( 'Sync a member from Shopify', 'redeemid' ),
+				'description'      => __( 'Read one linked member\'s customer record from Shopify now and update what WordPress holds. Changes nothing in Shopify. Needs the Admin API.', 'redeemid' ),
+				'input_schema'     => self::input( [ 'user_id' => [ 'type' => 'integer', 'minimum' => 0, 'default' => 0, 'description' => 'A linked WordPress user ID.' ] ] ),
+				'output_schema'    => self::output( [ 'result' => [ 'type' => 'string' ], 'last_sync' => [ 'type' => [ 'integer', 'null' ] ] ] ),
+				'execute_callback' => [ self::class, 'sync_member' ],
+			],
+			'redeemid/start-bulk-resync' => [
+				'label'            => __( 'Start a bulk resync', 'redeemid' ),
+				'description'      => __( 'Start the paced resync of every linked member from Shopify, as Customers → Resync all does. It runs in the background within Shopify\'s rate limits; refused while one is already running.', 'redeemid' ),
+				'input_schema'     => self::input( [] ),
+				'output_schema'    => self::output( [ 'started' => [ 'type' => 'boolean' ], 'job' => [ 'type' => [ 'object', 'null' ] ] ] ),
+				'execute_callback' => [ self::class, 'start_bulk_resync' ],
+			],
+			'redeemid/edit-member-tags'  => [
+				'label'            => __( 'Add or remove a member\'s Shopify tags', 'redeemid' ),
+				'description'      => __( 'Add and remove tags on a linked member\'s Shopify customer, then read back what Shopify holds. The change is made in Shopify, so access follows from Shopify as usual. Only tags the customer holds can be removed.', 'redeemid' ),
+				'input_schema'     => self::input(
+					[
+						'user_id' => [ 'type' => 'integer', 'minimum' => 0, 'default' => 0, 'description' => 'A linked WordPress user ID.' ],
+						'add'     => [ 'type' => 'array', 'items' => [ 'type' => 'string' ], 'default' => [], 'description' => 'Tags to add in Shopify.' ],
+						'remove'  => [ 'type' => 'array', 'items' => [ 'type' => 'string' ], 'default' => [], 'description' => 'Tags to remove in Shopify.' ],
+					]
+				),
+				'output_schema'    => self::output( [ 'result' => [ 'type' => 'string' ], 'tags' => [ 'type' => 'array', 'items' => [ 'type' => 'string' ] ], 'levels' => [ 'type' => 'array', 'items' => [ 'type' => 'string' ] ] ] ),
+				'execute_callback' => [ self::class, 'edit_member_tags' ],
+			],
 		];
 	}
 
@@ -357,6 +412,68 @@ final class Abilities {
 			'test_fixture'  => Mirror::is_fixture( $id ),
 			'history'       => (object) LevelHistory::get( $id ),
 		];
+	}
+
+	public static function sync_member( mixed $input ): array|\WP_Error {
+		$user_id = self::linked_user( (array) $input );
+
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		if ( ! AdminApi::available() ) {
+			return new \WP_Error( 'redeemid_no_admin', __( 'The Shopify Admin API is not configured.', 'redeemid' ) );
+		}
+
+		$synced = Reconciler::sync_user( $user_id, 'admin' );
+
+		if ( is_wp_error( $synced ) ) {
+			return $synced;
+		}
+
+		return [ 'result' => 'synced', 'last_sync' => Mirror::member( $user_id )->last_sync ];
+	}
+
+	public static function start_bulk_resync(): array|\WP_Error {
+		$started = BulkResync::start( get_current_user_id() );
+
+		return is_wp_error( $started ) ? $started : [ 'started' => true, 'job' => BulkResync::job() ];
+	}
+
+	public static function edit_member_tags( mixed $input ): array|\WP_Error {
+		$input   = (array) $input;
+		$user_id = self::linked_user( $input );
+
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		$result = Customers::change_tags( $user_id, (array) ( $input['add'] ?? [] ), (array) ( $input['remove'] ?? [] ), 'admin' );
+
+		if ( 'no_admin' === $result ) {
+			return new \WP_Error( 'redeemid_no_admin', __( 'The Shopify Admin API is not configured.', 'redeemid' ) );
+		}
+
+		$member = Mirror::member( $user_id );
+
+		return [ 'result' => $result, 'tags' => $member->tags, 'levels' => Membership::held( LevelStore::levels(), $member, time() ) ];
+	}
+
+	/**
+	 * A linked user's ID from input, or an error.
+	 */
+	private static function linked_user( array $input ): int|\WP_Error {
+		$user_id = (int) ( $input['user_id'] ?? 0 );
+
+		if ( $user_id < 1 || ! get_userdata( $user_id ) ) {
+			return new \WP_Error( 'redeemid_unknown_user', __( 'No WordPress user has that ID.', 'redeemid' ) );
+		}
+
+		if ( null === Mirror::customer_id( $user_id ) ) {
+			return new \WP_Error( 'redeemid_not_linked', __( 'That user is not linked to a Shopify customer.', 'redeemid' ) );
+		}
+
+		return $user_id;
 	}
 
 	public static function site_health(): array {

@@ -3,6 +3,7 @@
 namespace RedeemID\Support;
 
 use RedeemID\Access\LevelStore;
+use RedeemID\Api\Events;
 use RedeemID\Admin\CustomerQuery;
 use RedeemID\Webhooks\Monitor;
 
@@ -12,8 +13,10 @@ use RedeemID\Webhooks\Monitor;
  * The event log keeps 30 days, so it can't answer "how many joined Gold this
  * year". Stats counts a few low-frequency events as they are logged (a level
  * or feature gained or lost, a sign-in, a new link, a buy-now checkout, a purchase that
- * unlocked access) and, once a day, how many linked customers hold each
- * level. Nothing here is per page view, so it costs nothing on busy sites.
+ * unlocked access, a metered read, a reader using up the meter) and, once a
+ * day, how many linked customers hold each level. Nothing here is per page
+ * view: a metered read counts once per item per reader per period, and
+ * walls shown are not counted, so it costs nothing on busy sites.
  *
  * Counts only, by day: no user IDs. bump(), weekly() and prune() are pure.
  */
@@ -23,6 +26,8 @@ final class Stats {
 
 	public static function register(): void {
 		add_action( 'redeemid_log', [ self::class, 'record' ], 20, 2 );
+		// Event-stream names have no dot, so they never collide with log events.
+		add_action( Events::HOOK, [ self::class, 'record' ], 20, 2 );
 		add_action( Monitor::HOOK, [ self::class, 'snapshot' ], 20 );
 	}
 
@@ -62,6 +67,8 @@ final class Stats {
 			'link.linked'            => [ 'linked' ],
 			'commerce.buy_now'       => [ 'checkout' ],
 			'checkout.access_ready'  => [ 'unlocked' ],
+			Events::METER_USED       => [ 'meter' ],
+			Events::METER_EXHAUSTED  => [ 'meter_out' ],
 			default                  => [],
 		};
 	}

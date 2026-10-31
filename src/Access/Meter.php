@@ -2,6 +2,7 @@
 
 namespace RedeemID\Access;
 
+use RedeemID\Api\Events;
 use RedeemID\Entitlement\Decision;
 use RedeemID\Sync\Mirror;
 
@@ -114,15 +115,36 @@ final class Meter {
 
 		if ( $result['counted'] ) {
 			update_user_meta( $user_id, self::META, $result['state'] );
+
+			$used  = count( $result['state']['items'] );
+			$props = [ 'post_id' => $post->ID, 'used' => $used, 'limit' => $settings['limit'], 'period' => $settings['period'], 'user_id' => $user_id ];
+
+			Events::emit( Events::METER_USED, $props );
+
+			if ( $used >= $settings['limit'] ) {
+				Events::emit( Events::METER_EXHAUSTED, $props );
+			}
 		}
 
 		return $result['allowed'] ? new Verdict( Decision::metered(), $verdict->next_level ) : $verdict;
 	}
 
 	/**
+	 * The meter for one user: on or off, used this period, limit, period.
+	 *
+	 * @return array{on: bool, used: int, limit: int, period: string}
+	 */
+	public static function state( int $user_id ): array {
+		$settings = self::settings();
+		$usage    = self::usage( $user_id );
+
+		return [ 'on' => $settings['limit'] > 0, 'used' => $usage['used'], 'limit' => $usage['limit'], 'period' => $settings['period'] ];
+	}
+
+	/**
 	 * Is this request the reader opening $post's own page?
 	 */
-	private static function reading( \WP_Post $post ): bool {
+	public static function reading( \WP_Post $post ): bool {
 		if ( wp_is_serving_rest_request() || is_feed() || is_embed() || is_search() || wp_doing_ajax() || wp_doing_cron() || ( defined( 'GRAPHQL_REQUEST' ) && GRAPHQL_REQUEST ) ) {
 			return false;
 		}
