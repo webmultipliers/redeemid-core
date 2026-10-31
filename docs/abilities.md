@@ -6,7 +6,7 @@ The point is support work: "why can't jane@example.com read the March report?" b
 
 ## What's registered
 
-Every ability is in the `redeemid` category and read-only. None of them grants access, changes a level, edits a rule or calls Shopify. Shopify stays the record, and these read what WordPress has already synced.
+Every ability is in the `redeemid` category. Most are read-only and read what WordPress has already synced. Three staff actions change what Shopify holds or read it again. None of them grants access in WordPress, edits a level or a rule, or writes a setting: Shopify stays the record.
 
 ### For staff
 
@@ -21,6 +21,16 @@ These need the RedeemID admin capability (`manage_options`).
 | `redeemid/get-member` | One user's synced record, by `user_id` or `email` (WordPress or Shopify address): linked, status, tags, levels, features, last sync and its source, level history. |
 | `redeemid/site-health` | The Health checklist, current webhook problems and the last bulk resync. Configuration values are never shown, only whether each is set. |
 | `redeemid/level-changes` | Who joined or left a level since a date (`since`, default `7 days ago`; optional `level`). The same list as `wp redeemid access changes`. |
+
+### Staff actions
+
+These need the RedeemID admin capability, run over REST with `POST`, and are **not** public over MCP unless you opt in (see below).
+
+| Ability | Does |
+|---|---|
+| `redeemid/sync-member` | Reads one linked member (`user_id`) from Shopify now and updates WordPress, as **Sync** on the Customers screen. Changes nothing in Shopify. Needs the Admin API. |
+| `redeemid/start-bulk-resync` | Starts the paced resync of every linked member, as **Resync all** does. Refused while one is running. |
+| `redeemid/edit-member-tags` | Adds (`add`) and removes (`remove`) tags on a linked member's Shopify customer, then reads back what Shopify holds and returns the tags and levels. Only tags the customer holds can be removed. Marked destructive. |
 
 ### For members
 
@@ -47,9 +57,21 @@ The default server lists abilities through its discover, get-info and execute to
 
 Without an agent, the same abilities run over REST: `GET /wp-json/wp-abilities/v1/abilities?category=redeemid` lists them, and `GET /wp-json/wp-abilities/v1/abilities/redeemid/list-levels/run` runs one.
 
-## Turning them off for MCP
+## Turning them on or off for MCP
 
-All RedeemID abilities are marked public for the MCP Adapter. To keep one, or all, off MCP while leaving REST and PHP alone, use core's filter:
+RedeemID's read-only abilities are marked public for the MCP Adapter, and its staff actions are not. To let an agent run the staff actions too:
+
+```php
+add_filter( 'wp_register_ability_args', static function ( array $args, string $name ): array {
+	if ( in_array( $name, [ 'redeemid/sync-member', 'redeemid/edit-member-tags' ], true ) ) {
+		$args['meta']['mcp']['public'] = true;
+	}
+
+	return $args;
+}, 10, 2 );
+```
+
+To keep one, or all, off MCP while leaving REST and PHP alone, use the same filter:
 
 ```php
 add_filter( 'wp_register_ability_args', static function ( array $args, string $name ): array {

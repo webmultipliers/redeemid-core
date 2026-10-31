@@ -4,6 +4,7 @@ namespace RedeemID\Sync;
 
 use RedeemID\Access\LevelStore;
 use RedeemID\Access\Membership;
+use RedeemID\Api\Events;
 use RedeemID\Support\Logger;
 
 /**
@@ -72,6 +73,14 @@ final class LevelHistory {
 			 * @param string[] $removed Level slugs no longer held.
 			 */
 			do_action( 'redeemid_levels_changed', $user_id, $added, $removed );
+
+			foreach ( $added as $slug ) {
+				Events::emit( Events::LEVEL_GAINED, [ 'level' => $slug, 'user_id' => $user_id ] );
+			}
+
+			foreach ( $removed as $slug ) {
+				Events::emit( Events::LEVEL_LOST, [ 'level' => $slug, 'user_id' => $user_id ] );
+			}
 		}
 
 		self::$before = [];

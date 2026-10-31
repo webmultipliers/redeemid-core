@@ -361,17 +361,20 @@ See [docs/official-plugin.md](docs/official-plugin.md) for the replacement plan 
 
 ## PHP API
 
+The full developer API (functions, the event stream, actions, filters, REST routes and the `window.redeemid` browser client), with what is stable and example adapters for analytics tools and other plugins, is in [docs/developer-api.md](docs/developer-api.md). Its version is `REDEEMID_API_VERSION`.
+
 For plugins that build on RedeemID (a course, a forum, a download manager) instead of running their own membership layer:
 
 - `redeemid_can_read( int|WP_Post $post, int|WP_User|null $user = null ): bool`: can this user read the item in full? It goes through every layer the gate uses (site default, post type, terms, the item's own rule, time and archive windows, drip) after WordPress's own status checks (drafts, private and password-protected items only for people who can edit them). It never uses the editor bypass. With no user it answers for the current visitor, including a staff "preview as".
 - `redeemid_user_levels( int|WP_User|null $user = null ): string[]`: slugs of the paid levels the user holds, including levels held through another (Gold includes Silver).
 - `redeemid_has_feature( string $slug, int|WP_User|null $user = null ): bool`, `redeemid_granted_features()` and `redeemid_menu_features()`: see [Features](#features).
+- `redeemid_meter( int|WP_User|null $user = null ): array`: `{on, used, limit, period}`, the meter as this user sees it this period.
 
 None of them return Shopify tags or the customer record. Each reads the synced mirror, so it costs no Shopify call. Pages that show member-only output from these should not be served from a shared page cache (see [Caching](#caching)).
 
 ## Abilities and MCP
 
-On WordPress 6.9+, RedeemID registers read-only abilities with the Abilities API, so AI agents can use them through the [MCP Adapter](https://github.com/WordPress/mcp-adapter) plugin. Staff abilities (`manage_options`) explain access to an item for any viewer, explain features, list levels and rules, read one member's synced record, report health and list level changes. Member abilities (`redeemid/my-membership`, `redeemid/can-i-read`) answer only for the signed-in caller. None of them grants access or calls Shopify. See [docs/abilities.md](docs/abilities.md).
+On WordPress 6.9+, RedeemID registers abilities with the Abilities API, so AI agents can use them through the [MCP Adapter](https://github.com/WordPress/mcp-adapter) plugin. Staff abilities (`manage_options`) explain access to an item for any viewer, explain features, list levels and rules, read one member's synced record, report health and list level changes. Member abilities (`redeemid/my-membership`, `redeemid/can-i-read`) answer only for the signed-in caller. Three staff actions (`redeemid/sync-member`, `redeemid/start-bulk-resync`, `redeemid/edit-member-tags`) re-read Shopify or change tags in Shopify, and are kept off MCP unless a site opts in. None of them grants access in WordPress. See [docs/abilities.md](docs/abilities.md).
 
 ## REST API
 
@@ -379,6 +382,7 @@ The namespace is `redeemid/v1`. Every write route needs the `wp_rest` nonce.
 
 | Route | Purpose |
 |---|---|
+| `GET /state` | The caller's own state for scripts: `{apiVersion, signedIn, linked, levels, features, meter, nonce}` (the browser client reads the same through admin-ajax, because a cached page has no REST nonce) |
 | `GET /auth/status` | The caller's own display-safe state |
 | `GET /auth/login` | Redirects to Shopify |
 | `POST /auth/logout` | Returns `{redirect}`, the Shopify end-session URL |
@@ -428,7 +432,10 @@ Rules that follow from it:
 
 ## Hooks
 
+Which of these are stable is listed in [docs/developer-api.md](docs/developer-api.md).
+
 - Actions:
+  - `redeemid_event` (`string $name, array $props, array $event`): every event in one vendor-neutral shape, for analytics and CRMs: `wall_shown`, `meter_used`, `meter_exhausted`, `checkout_started`, `level_gained` and `level_lost`, each also as its own shortcut action (`redeemid_wall_shown` and so on)
   - `redeemid_signed_in`, `redeemid_linked`, `redeemid_disconnected` and `redeemid_before_logout`
   - `redeemid_log`, which receives redacted log events
   - `redeemid_access_changed` (`int[] $post_ids`), `redeemid_access_levels_changed` and `redeemid_access_locked_changed` (`int $post_id, bool $locked`)
@@ -452,6 +459,7 @@ Rules that follow from it:
   - `redeemid_buyer_ip` (`string $ip`), the visitor IP sent to Shopify with buy-now and cart calls when the private Storefront token is set. Return the real IP from a header your proxy or CDN sets; forwarded headers are not read by default because visitors can forge them
   - `redeemid_locked_panel` (`array $data, Decision $decision`), the locked panel's message, button and form; `redeemid_checkout_banner` (`bool`); `redeemid_offer_existing_account` (`bool`)
   - `redeemid_file_sendfile` (`string $mode, string $path`): hand protected downloads to the web server with `x-accel-redirect` (nginx) or `x-sendfile` (Apache, LiteSpeed); see [docs/protected-files.md](docs/protected-files.md)
+  - `redeemid_client_config` (experimental), the browser client's config printed into cacheable pages
   - `redeemid_health_checks`, which adds rows (`label`, `state` of `ok|warn|fail|info`, `detail`) to the Shopify Health block
 
 ## Uninstall

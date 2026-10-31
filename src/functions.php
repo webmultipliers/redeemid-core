@@ -79,3 +79,17 @@ function redeemid_can_read( int|\WP_Post $post, int|\WP_User|null $user = null )
 function redeemid_user_levels( int|\WP_User|null $user = null ): array {
 	return \RedeemID\Access\Reader::levels( $user );
 }
+
+/**
+ * The meter as a user sees it (the current visitor by default): whether a
+ * meter is on, how many locked items they have opened this period, the
+ * limit, and the period ("month" or "week"). Guests and staff read 0 used.
+ *
+ * @param int|WP_User|null $user
+ * @return array{on: bool, used: int, limit: int, period: string}
+ */
+function redeemid_meter( int|\WP_User|null $user = null ): array {
+	$user_id = $user instanceof \WP_User ? $user->ID : ( null === $user ? get_current_user_id() : (int) $user );
+
+	return \RedeemID\Access\Meter::state( $user_id );
+}
