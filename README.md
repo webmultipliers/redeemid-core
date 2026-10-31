@@ -12,7 +12,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 0.0.2, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, product, collection and cart blocks with storefront pages, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. RedeemID now has its own storefront (product, collection and cart blocks and pages), so a site can run without Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). Expect breaking changes before 1.0.0.
+> **Status: 0.0.5, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, product, collection and cart blocks with storefront pages, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. RedeemID now has its own storefront (product, collection and cart blocks and pages), so a site can run without Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
