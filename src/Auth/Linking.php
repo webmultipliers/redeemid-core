@@ -40,10 +40,13 @@ final class Linking {
 	}
 
 	/**
-	 * Accounts that never link to, or sign in through, a Shopify customer.
+	 * Accounts that never link to, or sign in through, a Shopify customer:
+	 * anyone who can edit posts. A Shopify sign-in is an emailed code, so it
+	 * would skip the WordPress password and any two-factor plugin; staff use
+	 * the WordPress login.
 	 */
 	public static function privileged( \WP_User $user ): bool {
-		return user_can( $user, 'manage_options' ) || in_array( 'administrator', (array) $user->roles, true );
+		return user_can( $user, 'edit_posts' ) || user_can( $user, 'manage_options' ) || in_array( 'administrator', (array) $user->roles, true );
 	}
 
 	public static function issue( int $user_id ): string {

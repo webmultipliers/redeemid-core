@@ -190,7 +190,7 @@ A signed-in WordPress user can choose **Connect to Shopify**. After the Shopify 
 - the plugin checks that Shopify marks the email as verified and that it matches the WordPress account;
 - the user then confirms on the callback page.
 
-Administrators can't be linked, and a linked account that later becomes an administrator can't sign in with Shopify. A mismatched or unverified email is refused with a plain message.
+Staff accounts (anyone who can edit posts, so contributors and up) can't be linked, and a linked account that later gains that capability can't sign in with Shopify: a Shopify sign-in is an emailed code, which would skip the WordPress password and any two-factor plugin. A mismatched or unverified email is refused with a plain message.
 
 ### Sign-in links
 
