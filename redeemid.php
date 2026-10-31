@@ -6,7 +6,7 @@
  * Version:           0.0.4
  * Requires at least: 6.7
  * Requires PHP:      8.2
- * Author:            Web Multipliers
+ * Author:            Vinny S. Green, LLC
  * License:           GPL-2.0-or-later
  * Text Domain:       redeemid
  * Domain Path:       /languages
