@@ -18,18 +18,25 @@ final class ApiContractTest extends TestCase {
 		return dirname( __DIR__, 2 );
 	}
 
+	/**
+	 * A file in this repository, by path from its root.
+	 */
+	private static function read( string $path ): string {
+		return (string) file_get_contents( __DIR__ . '/../../' . ltrim( $path, '/' ) );
+	}
+
 	private static function source(): string {
 		if ( '' === self::$src ) {
 			$files = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( self::root() . '/src', \FilesystemIterator::SKIP_DOTS ) );
 
 			foreach ( $files as $file ) {
 				if ( 'php' === $file->getExtension() ) {
-					self::$src .= file_get_contents( $file->getPathname() );
+					self::$src .= self::read( substr( $file->getPathname(), strlen( self::root() ) ) );
 				}
 			}
 
 			foreach ( glob( self::root() . '/blocks/*/index.php' ) as $file ) {
-				self::$src .= file_get_contents( $file );
+				self::$src .= self::read( substr( $file, strlen( self::root() ) ) );
 			}
 		}
 
@@ -37,7 +44,7 @@ final class ApiContractTest extends TestCase {
 	}
 
 	private static function docs(): string {
-		return (string) file_get_contents( self::root() . '/docs/developer-api.md' );
+		return self::read( 'docs/developer-api.md' );
 	}
 
 	public function test_every_listed_action_fires(): void {
@@ -80,7 +87,7 @@ final class ApiContractTest extends TestCase {
 	}
 
 	public function test_listed_functions_and_defined_functions_match(): void {
-		$functions = (string) file_get_contents( self::root() . '/src/functions.php' );
+		$functions = self::read( 'src/functions.php' );
 		preg_match_all( '/^function (redeemid_[a-z0-9_]+)\(/m', $functions, $m );
 
 		$this->assertEqualsCanonicalizing( [ ...Contract::FUNCTIONS, ...Contract::INTERNAL_FUNCTIONS ], $m[1] );
@@ -115,7 +122,7 @@ final class ApiContractTest extends TestCase {
 	}
 
 	public function test_the_browser_client_has_every_listed_method_and_event(): void {
-		$client = (string) file_get_contents( self::root() . '/assets/client.js' );
+		$client = self::read( 'assets/client.js' );
 
 		foreach ( Contract::CLIENT_EVENTS as $event ) {
 			$this->assertStringContainsString( "'" . $event . "'", $client );
@@ -130,7 +137,7 @@ final class ApiContractTest extends TestCase {
 	}
 
 	public function test_the_runtime_version_matches_the_contract(): void {
-		$plugin = (string) file_get_contents( self::root() . '/redeemid.php' );
+		$plugin = self::read( 'redeemid.php' );
 
 		$this->assertMatchesRegularExpression( '/define\( \'REDEEMID_API_VERSION\', \'' . preg_quote( Contract::VERSION, '/' ) . '\' \);/', $plugin );
 		$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+$/', Contract::VERSION );
