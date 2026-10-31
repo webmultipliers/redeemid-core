@@ -186,7 +186,9 @@ final class Teaser {
 	}
 
 	private static function word_count( array $block ): int {
-		$text  = trim( html_entity_decode( strip_tags( (string) ( $block['innerHTML'] ?? '' ) ), ENT_QUOTES ) );
+		// Script and style contents are not words a reader sees.
+		$html  = (string) preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', (string) ( $block['innerHTML'] ?? '' ) );
+		$text  = trim( html_entity_decode( strip_tags( $html ), ENT_QUOTES ) ); // phpcs:ignore WordPressVIPMinimum.Functions.StripTags.StripTagsOneParameter, WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- script and style are removed above; unit tests run without WordPress.
 		$count = '' === $text ? 0 : count( preg_split( '/\s+/u', $text ) ?: [] );
 
 		foreach ( (array) ( $block['innerBlocks'] ?? [] ) as $inner ) {

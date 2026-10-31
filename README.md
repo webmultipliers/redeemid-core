@@ -190,7 +190,7 @@ A signed-in WordPress user can choose **Connect to Shopify**. After the Shopify 
 - the plugin checks that Shopify marks the email as verified and that it matches the WordPress account;
 - the user then confirms on the callback page.
 
-Administrators can't be linked, and a linked account that later becomes an administrator can't sign in with Shopify. A mismatched or unverified email is refused with a plain message.
+Staff accounts (anyone who can edit posts, so contributors and up) can't be linked, and a linked account that later gains that capability can't sign in with Shopify: a Shopify sign-in is an emailed code, which would skip the WordPress password and any two-factor plugin. A mismatched or unverified email is refused with a plain message.
 
 ### Sign-in links
 
@@ -338,6 +338,7 @@ Cache rules should bypass or vary on these cookies:
 
 - `wordpress_logged_in_*`
 - `redeemid_oauth_state`
+- `redeemid_pending`, set for ten minutes when sign-in needs one more answer (connect an existing account, or confirm a link): it ties that step to the browser that started it
 - `redeemid_fset`, only when a [feature](docs/features.md#caching) declares the `vary` caching option: an opaque hash of the visitor's granted set
 - `redeemid_cart`, for the cart page only (it already sends `Cache-Control: private`). Pages with the cart link need no bypass: the count comes from `redeemid_cart_count` in the browser
 
@@ -485,7 +486,7 @@ WordPress's own privacy tools, **Tools → Export Personal Data** and **Tools �
 - **Erase** removes the Shopify link, synced fields, tokens, meter and cart, and strips the person from both logs (the rows stay, so counts stay right). The WordPress account stays.
 - **A Shopify column** on both screens shows the linked customer with a link to Shopify admin. On an erase request, staff can press **Also request erasure in Shopify** (needs the optional `write_customer_data_erasure` scope; never automatic, refused for test fixtures). Shopify queues it and can still cancel it, then sends `customers/redact`, which removes what is left here. Shopify has no API to start its own customer data report, so export requests point to Shopify admin's Request customer data.
 - **Shopify's compliance webhooks** land in the same list: `customers/data_request` creates a confirmed export request marked with Shopify's request number, for staff to send to the store owner. `customers/redact` erases RedeemID's data at once, deletes a shadow user, and records the redaction as an erase request (left confirmed when the WordPress account stays, so staff decide on the rest). `shop/redact` unlinks every account and clears customer numbers from both logs.
-- **Suggested policy text** for Settings → Privacy → Policy Guide covers what is mirrored, the 30-day logs and the cookies: `redeemid_oauth_state`, `redeemid_cart`, `redeemid_cart_count` and `redeemid_fset`. With Shopify's plugin active, the cart bridge also stores two flags in the visitor's `localStorage` (`redeemid:attachedCart` and `redeemid:signedInCart`).
+- **Suggested policy text** for Settings → Privacy → Policy Guide covers what is mirrored, the 30-day logs and the cookies: `redeemid_oauth_state`, `redeemid_pending`, `redeemid_cart`, `redeemid_cart_count` and `redeemid_fset`. With Shopify's plugin active, the cart bridge also stores two flags in the visitor's `localStorage` (`redeemid:attachedCart` and `redeemid:signedInCart`).
 - **RedeemID → Customers** shows each person's privacy requests, and RedeemID → Debug has rows for the erasure scope and the last Shopify privacy webhook.
 
 ## Contributing

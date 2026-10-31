@@ -40,11 +40,11 @@ jobs:
           coverage: none
           tools: cs2pr
       - run: composer install --prefer-dist --no-interaction --no-progress
-      # Six findings on main wait on owner decisions. Until they are
+      # Four findings on main wait on owner decisions. Until they are
       # settled every finding is annotated, but only a new one fails the job.
       - name: PHPCS
         env:
-          BASELINE: 6
+          BASELINE: 4
         run: |
           vendor/bin/phpcs -q --report=checkstyle > "$RUNNER_TEMP/phpcs-report.xml" || true
           cs2pr --graceful-warnings "$RUNNER_TEMP/phpcs-report.xml" || true

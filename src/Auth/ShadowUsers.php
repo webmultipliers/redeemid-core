@@ -25,9 +25,17 @@ final class ShadowUsers {
 	}
 
 	public static function ensure_role(): void {
-		if ( ! get_role( self::ROLE ) ) {
-			add_role( self::ROLE, __( 'Shopify Customer', 'redeemid' ), [ 'read' => true ] );
+		if ( get_role( self::ROLE ) ) {
+			return;
 		}
+
+		// On WordPress VIP, roles are added through its helper so they survive its role caching.
+		if ( function_exists( 'wpcom_vip_add_role' ) ) {
+			wpcom_vip_add_role( self::ROLE, __( 'Shopify Customer', 'redeemid' ), [ 'read' => true ] );
+			return;
+		}
+
+		add_role( self::ROLE, __( 'Shopify Customer', 'redeemid' ), [ 'read' => true ] ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.custom_role_add_role -- wpcom_vip_add_role() is used above when present.
 	}
 
 	public static function is_shadow( int $user_id ): bool {
