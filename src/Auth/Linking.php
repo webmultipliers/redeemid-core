@@ -18,6 +18,9 @@ final class Linking {
 	/** Pending confirmations after a verified email match. */
 	private const PENDING = 'redeemid_link_pending_';
 
+	/** Binds held sign-ins to the browser that started them. */
+	public const COOKIE = 'redeemid_pending';
+
 	public static function refusal( int $user_id ): ?string {
 		$user = get_userdata( $user_id );
 
@@ -105,26 +108,92 @@ final class Linking {
 		return null;
 	}
 
+	/**
+	 * Park a sign-in that needs one more answer from the visitor. The ref
+	 * travels in the callback URL, where analytics, logs and history can see
+	 * it, so it is bound to this browser too: the record keeps a hash of a
+	 * random HttpOnly cookie, and a ref opened in any other browser is
+	 * worthless.
+	 */
 	public static function hold( array $pending ): string {
 		$ref = Pkce::random( 24 );
 
-		set_transient( self::PENDING . hash( 'sha256', $ref ), $pending, self::TTL );
+		set_transient( self::PENDING . hash( 'sha256', $ref ), $pending + [ 'browser' => hash( 'sha256', self::browser_secret() ) ], self::TTL );
 
 		return $ref;
 	}
 
+	/**
+	 * Read and burn a held sign-in. A ref from another browser is refused and
+	 * left in place, so a leaked link can't cancel the real visitor's step.
+	 */
 	public static function take( string $ref ): ?array {
 		$key     = self::PENDING . hash( 'sha256', $ref );
 		$pending = get_transient( $key );
+
+		if ( ! is_array( $pending ) || ! self::bound( $pending, self::browser_cookie() ) ) {
+			return null;
+		}
+
 		delete_transient( $key );
 
-		return is_array( $pending ) ? $pending : null;
+		return $pending;
 	}
 
 	public static function peek( string $ref ): ?array {
 		$pending = get_transient( self::PENDING . hash( 'sha256', $ref ) );
 
-		return is_array( $pending ) ? $pending : null;
+		return is_array( $pending ) && self::bound( $pending, self::browser_cookie() ) ? $pending : null;
+	}
+
+	/**
+	 * Whether a held record belongs to the browser holding $cookie. Pure.
+	 */
+	public static function bound( array $pending, string $cookie ): bool {
+		$stored = $pending['browser'] ?? '';
+
+		return is_string( $stored ) && '' !== $stored && '' !== $cookie && hash_equals( $stored, hash( 'sha256', $cookie ) );
+	}
+
+	/**
+	 * This browser's secret for held sign-ins, set on first use.
+	 */
+	private static function browser_secret(): string {
+		$secret = self::browser_cookie();
+
+		if ( '' !== $secret ) {
+			return $secret;
+		}
+
+		$secret = Pkce::random( 32 );
+
+		if ( ! headers_sent() ) {
+			// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.cookies_setcookie -- set only on the uncached sign-in callback.
+			setcookie(
+				self::COOKIE,
+				$secret,
+				[
+					'expires'  => time() + self::TTL,
+					'path'     => COOKIEPATH ?: '/',
+					'domain'   => \RedeemID\Config::cookie_domain(),
+					'secure'   => is_ssl(),
+					'httponly' => true,
+					// Lax: the callback that sets it is a top-level navigation back from Shopify.
+					'samesite' => 'Lax',
+				]
+			);
+		}
+
+		$_COOKIE[ self::COOKIE ] = $secret; // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE -- so a second hold in this request reuses the secret.
+
+		return $secret;
+	}
+
+	private static function browser_cookie(): string {
+		// phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE -- read only on the uncached callback and its form posts.
+		$value = isset( $_COOKIE[ self::COOKIE ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE ] ) ) : '';
+
+		return preg_match( '/^[A-Za-z0-9_-]{43}$/', $value ) ? $value : '';
 	}
 
 	public static function log_refusal( int $user_id, string $reason ): void {

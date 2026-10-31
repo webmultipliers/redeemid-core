@@ -63,6 +63,16 @@ final class TeaserTest extends TestCase {
 		$this->assertSame( [ 'one two three' ], self::texts( $cut ) );
 	}
 
+	public function test_words_skip_script_and_style_contents(): void {
+		$html   = '<script>var a = 1, b = 2, c = 3;</script><style>.x { color: red; }</style>';
+		$script = [ 'blockName' => 'core/html', 'attrs' => [], 'innerBlocks' => [], 'innerHTML' => $html, 'innerContent' => [ $html ] ];
+		$cut    = ( new Teaser( Teaser::MODE_WORDS, 3 ) )->cut( [ $script, self::p( 'one two three' ), self::p( 'SECRET' ) ] );
+		$texts  = self::texts( $cut );
+
+		$this->assertContains( 'one two three', $texts );
+		$this->assertNotContains( 'SECRET', $texts );
+	}
+
 	public function test_words_count_nested_blocks(): void {
 		$group = self::block( 'core/group', '', [ self::p( 'one two three four five' ) ] );
 		$cut   = ( new Teaser( Teaser::MODE_WORDS, 3 ) )->cut( [ $group ], '' );
