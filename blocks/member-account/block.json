@@ -17,6 +17,6 @@
 			{ "id": "joinUrl", "type": "link", "label": "Join page, for customers without a membership" },
 			{ "id": "showPrivacyLinks", "type": "toggle", "label": "Offer Download my data and Delete my data", "default": true }
 		],
-		"island": { "mode": "dynamic" }
+		"island": { "mode": "dynamic", "context": true }
 	}
 }
