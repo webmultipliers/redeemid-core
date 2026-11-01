@@ -14,10 +14,7 @@ parameters:
 	ignoreErrors:
 		# WP-CLI is not stubbed; these classes only load under `wp`.
 		-
-			identifier: staticMethod.notFound
-			path: src/*Cli.php
-		-
-			identifier: function.notFound
+			message: '#WP_CLI#'
 			path: src/*Cli.php
 		# ABSPATH-relative admin includes.
 		-
