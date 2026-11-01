@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'REDEEMID_VERSION', '0.0.7' );
 // The developer API's version (RedeemID\Api\Contract::VERSION, docs/developer-api.md).
-define( 'REDEEMID_API_VERSION', '1.0.0' );
+define( 'REDEEMID_API_VERSION', '1.1.0' );
 define( 'REDEEMID_FILE', __FILE__ );
 define( 'REDEEMID_DIR', plugin_dir_path( __FILE__ ) );
 define( 'REDEEMID_URL', plugin_dir_url( __FILE__ ) );

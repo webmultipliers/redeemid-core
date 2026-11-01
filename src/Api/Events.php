@@ -63,7 +63,7 @@ final class Events {
 		],
 		self::CHECKOUT_STARTED => [
 			'action' => 'redeemid_checkout_started',
-			'props'  => [ 'variant', 'quantity', 'subscription', 'signed_in', 'user_id' ],
+			'props'  => [ 'variant', 'quantity', 'subscription', 'signed_in', 'user_id', 'post_id' ],
 		],
 		self::LEVEL_GAINED     => [
 			'action' => 'redeemid_level_gained',
