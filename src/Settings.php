@@ -24,6 +24,7 @@ final class Settings {
 		'cart_path'            => 'cart',
 		'storefront_first'     => false,
 		'session_limit'        => 0,
+		'member_fields'        => [],
 	];
 
 	public static function all(): array {
@@ -52,6 +53,7 @@ final class Settings {
 			'cart_path'            => \RedeemID\Commerce\Pages::clean_path( (string) ( $input['cart_path'] ?? '' ) ) ?: self::DEFAULTS['cart_path'],
 			'storefront_first'     => ! empty( $input['storefront_first'] ),
 			'session_limit'        => max( 0, min( \RedeemID\Auth\SessionCap::MAX, (int) ( $input['session_limit'] ?? 0 ) ) ),
+			'member_fields'        => \RedeemID\Preferences\Preferences::clean_modes( $input['member_fields'] ?? [] ),
 		];
 	}
 

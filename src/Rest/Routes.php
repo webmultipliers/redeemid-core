@@ -6,6 +6,7 @@ use RedeemID\Auth\Flow;
 use RedeemID\Blocks\Account;
 use RedeemID\Auth\TokenVault;
 use RedeemID\Commerce\CartBridge;
+use RedeemID\Preferences\Preferences;
 use RedeemID\Shopify\Storefront;
 use RedeemID\Sync\Mirror;
 use RedeemID\Webhooks\Endpoint;
@@ -90,6 +91,24 @@ final class Routes {
 				'methods'             => 'POST',
 				'callback'            => static fn() => self::no_cache( [ 'result' => Flow::sync_now( get_current_user_id() ) ] ),
 				'permission_callback' => static fn() => is_user_logged_in() && null !== Mirror::customer_id( get_current_user_id() ),
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			'/account/preferences',
+			[
+				[
+					'methods'             => 'GET',
+					'callback'            => static fn() => self::no_cache( Preferences::read( get_current_user_id() ) ),
+					'permission_callback' => [ self::class, 'linked' ],
+				],
+				[
+					'methods'             => 'POST',
+					'callback'            => static fn( \WP_REST_Request $request ) => self::no_cache( Preferences::write( get_current_user_id(), (array) $request->get_param( 'values' ) ) ),
+					'permission_callback' => [ self::class, 'linked' ], // Plus the wp_rest nonce, as every cookie-authenticated write.
+					'args'                => [ 'values' => [ 'type' => 'object', 'required' => true ] ],
+				],
 			]
 		);
 
@@ -204,8 +223,15 @@ final class Routes {
 		return $user_id > 0 && user_can( $user_id, 'edit_posts' );
 	}
 
-	private static function no_cache( array $data ): \WP_REST_Response {
-		$response = new \WP_REST_Response( $data );
+	/**
+	 * A signed-in user linked to a Shopify customer.
+	 */
+	public static function linked(): bool {
+		return is_user_logged_in() && null !== Mirror::customer_id( get_current_user_id() );
+	}
+
+	private static function no_cache( array|\WP_Error $data ): \WP_REST_Response {
+		$response = is_wp_error( $data ) ? rest_convert_error_to_response( $data ) : new \WP_REST_Response( $data );
 		$response->header( 'Cache-Control', 'no-store, private' );
 
 		return $response;

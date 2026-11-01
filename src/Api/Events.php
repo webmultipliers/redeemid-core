@@ -31,6 +31,7 @@ final class Events {
 	public const CHECKOUT_STARTED = 'checkout_started';
 	public const LEVEL_GAINED     = 'level_gained';
 	public const LEVEL_LOST       = 'level_lost';
+	public const PREFERENCES_SAVED = 'preferences_saved';
 
 	/**
 	 * Every server event: its named shortcut action and the props it may carry.
@@ -45,6 +46,9 @@ final class Events {
 	 *   sent someone to Shopify checkout.
 	 * - level_gained / level_lost: one level, one user, because Shopify changed
 	 *   their tags or status. The same moment as redeemid_levels_changed.
+	 * - preferences_saved: a member saved preferences to Shopify. fields is a
+	 *   comma-separated list of the namespace.key names changed, never the
+	 *   answers.
 	 *
 	 * @var array<string, array{action: string, props: string[]}>
 	 */
@@ -72,6 +76,10 @@ final class Events {
 		self::LEVEL_LOST       => [
 			'action' => 'redeemid_level_lost',
 			'props'  => [ 'level', 'user_id' ],
+		],
+		self::PREFERENCES_SAVED => [
+			'action' => 'redeemid_preferences_saved',
+			'props'  => [ 'fields', 'user_id' ],
 		],
 	];
 

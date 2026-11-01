@@ -3,7 +3,9 @@
 namespace RedeemID\Admin;
 
 use RedeemID\Config;
+use RedeemID\Preferences\Preferences;
 use RedeemID\Settings;
+use RedeemID\Shopify\Admin;
 use RedeemID\Shopify\AdminToken;
 use RedeemID\Shopify\Discovery;
 use RedeemID\Support\ConfigValues;
@@ -313,6 +315,7 @@ final class SettingsPage {
 						<p class="description"><?php esc_html_e( 'Where members manage or cancel a subscription, such as your subscription app\'s customer portal. Shown on the Member Account block; leave empty to hide the link.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
+				<?php self::member_fields( (array) $settings['member_fields'] ); ?>
 				<tr>
 					<th scope="row"><label for="redeemid-return-url"><?php esc_html_e( 'Return link for Shopify', 'redeemid' ); ?></label></th>
 					<td>
@@ -364,6 +367,63 @@ final class SettingsPage {
 			</div>
 			<?php Menu::panel_end(); ?>
 		</form>
+		<?php
+	}
+
+	/**
+	 * The Member preferences row: every customer metafield defined in
+	 * Shopify, each Hidden, Members can see or Members can change. Read fresh
+	 * from Shopify each time this page loads.
+	 *
+	 * @param array<string, string> $modes
+	 */
+	private static function member_fields( array $modes ): void {
+		$definitions = Admin::available() ? Preferences::definitions( true ) : new \WP_Error( 'shopify_admin_unconfigured', '' );
+		$name        = Settings::OPTION . '[member_fields]';
+		$options     = [
+			''                       => __( 'Hidden', 'redeemid' ),
+			Preferences::SEE    => __( 'Members can see', 'redeemid' ),
+			Preferences::CHANGE => __( 'Members can change', 'redeemid' ),
+		];
+		?>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Member preferences', 'redeemid' ); ?></th>
+			<td>
+				<p class="description"><?php esc_html_e( 'Customer metafields defined in Shopify (Settings → Custom data → Customers). Choose which ones members may see or change. Answers are saved to the customer in Shopify, never in WordPress, and your theme, a forms plugin or a headless front end shows them through redeemid_preferences() and redeemid_set_preferences() or GET and POST /redeemid/v1/account/preferences. Fields in the membership namespace are never offered.', 'redeemid' ); ?></p>
+				<?php if ( is_wp_error( $definitions ) ) : ?>
+					<p><?php echo esc_html( 'shopify_admin_unconfigured' === $definitions->get_error_code() ? __( 'Needs the Admin API (Shopify connection above).', 'redeemid' ) : __( 'Shopify could not be reached, so the fields can\'t be listed right now. Saved choices are kept.', 'redeemid' ) ); ?></p>
+					<?php foreach ( Preferences::clean_modes( $modes ) as $redeemid_key => $redeemid_mode ) : ?>
+						<input type="hidden" name="<?php echo esc_attr( $name . '[' . $redeemid_key . ']' ); ?>" value="<?php echo esc_attr( $redeemid_mode ); ?>">
+					<?php endforeach; ?>
+				<?php elseif ( ! $definitions ) : ?>
+					<p><?php esc_html_e( 'No customer metafields are defined in Shopify yet.', 'redeemid' ); ?></p>
+				<?php else : ?>
+					<table class="widefat striped" style="max-width:48rem">
+						<tbody>
+						<?php foreach ( $definitions as $redeemid_key => $redeemid_def ) : ?>
+							<tr>
+								<td>
+									<strong><?php echo esc_html( $redeemid_def['name'] ); ?></strong><br>
+									<code><?php echo esc_html( $redeemid_key ); ?></code> <span class="description"><?php echo esc_html( $redeemid_def['type'] ); ?></span>
+								</td>
+								<td>
+									<?php if ( $redeemid_def['supported'] ) : ?>
+										<select name="<?php echo esc_attr( $name . '[' . $redeemid_key . ']' ); ?>" aria-label="<?php echo esc_attr( $redeemid_def['name'] ); ?>">
+											<?php foreach ( $options as $redeemid_value => $redeemid_label ) : ?>
+												<option value="<?php echo esc_attr( $redeemid_value ); ?>" <?php selected( $modes[ $redeemid_key ] ?? '', $redeemid_value ); ?>><?php echo esc_html( $redeemid_label ); ?></option>
+											<?php endforeach; ?>
+										</select>
+									<?php else : ?>
+										<span class="description"><?php echo esc_html( Preferences::reserved( $redeemid_key ) ? __( 'Used by RedeemID for membership dates', 'redeemid' ) : __( 'Type not supported', 'redeemid' ) ); ?></span>
+									<?php endif; ?>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php endif; ?>
+			</td>
+		</tr>
 		<?php
 	}
 }

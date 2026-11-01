@@ -2,7 +2,7 @@
 
 Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, the same one they use in your store, and what that account holds in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
 
-**[Website](https://www.redeemid.com/) · [Docs](https://www.redeemid.com/docs/) · [Guides](https://www.redeemid.com/guides/) · [Live demo](http://demo.redeemid.com/) · [Download](https://github.com/webmultipliers/redeemid-core/releases/latest) · [Developer API](docs/developer-api.md) · [Shopify Flow recipes](docs/shopify-flow.md) · [Protected files](docs/protected-files.md) · [Abilities and MCP](docs/abilities.md)**
+**[Website](https://www.redeemid.com/) · [Docs](https://www.redeemid.com/docs/) · [Guides](https://www.redeemid.com/guides/) · [Live demo](http://demo.redeemid.com/) · [Download](https://github.com/webmultipliers/redeemid-core/releases/latest) · [Developer API](docs/developer-api.md) · [Shopify Flow recipes](docs/shopify-flow.md) · [Protected files](docs/protected-files.md) · [Member preferences](docs/member-preferences.md) · [Abilities and MCP](docs/abilities.md)**
 
 Shopify stays the single source of truth. RedeemID links each Shopify customer account to a WordPress user and mirrors it there: name, email, account status, and the tags Shopify Flow or a subscription or membership app sets. Every access decision is made on the server from that mirror. A customer disabled in Shopify loses members-only access, and WordPress never grants access that Shopify doesn't know about.
 
@@ -394,6 +394,8 @@ The namespace is `redeemid/v1`. Every write route needs the `wp_rest` nonce.
 | `POST /auth/disconnect` | Unlinks the Shopify customer from the current user |
 | `GET /account` | The caller's own membership, as the Member Account block shows it (levels, dates, features, account links); guests get the guest shape |
 | `POST /account/sync` | Re-syncs the current user's mirror (rate-limited) |
+| `GET /account/preferences` | The caller's own [member preferences](docs/member-preferences.md), read from Shopify |
+| `POST /account/preferences` | Saves `{values}` to the caller's own Shopify customer (only fields the owner allows; rate-limited) |
 | `POST /cart/identity` | Attaches the signed-in, linked customer to the official plugin's cart, `{cartId}` → `{attached}` (rate-limited; only when that plugin serves the same store) |
 | `POST /webhooks/events` | Shopify webhooks (HMAC-verified) |
 | `GET /features` | The caller's own granted feature slugs, for features that declare the REST surface; guests get Public ones only. `/wp/v2/users/me` carries the same list as `redeemid_features` |

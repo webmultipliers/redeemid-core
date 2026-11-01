@@ -93,3 +93,41 @@ function redeemid_meter( int|\WP_User|null $user = null ): array {
 
 	return \RedeemID\Access\Meter::state( $user_id );
 }
+
+/**
+ * A member's preferences: the customer metafields the site owner lets
+ * members see or change (RedeemID → Settings → Member preferences), with
+ * their current values read from Shopify. Each field carries key
+ * (namespace.key), name, description, type, choices, min, max, editable
+ * and value. No user: the current visitor. A visitor who isn't a linked
+ * Shopify customer gets a WP_Error; a site with no fields chosen, [].
+ *
+ * @param int|WP_User|null $user
+ * @return array|WP_Error
+ */
+function redeemid_preferences( int|\WP_User|null $user = null ): array|\WP_Error {
+	$user_id = $user instanceof \WP_User ? $user->ID : ( null === $user ? get_current_user_id() : (int) $user );
+
+	return \RedeemID\Preferences\Preferences::read( $user_id );
+}
+
+/**
+ * Save a member's own preferences to their Shopify customer. $values maps
+ * namespace.key to a value: a string, a list of strings, a bool, a number or
+ * a YYYY-MM-DD date, as the field's type needs. An empty value clears the
+ * field. Only fields set to "Members can change" are accepted, and every
+ * value is checked against the field's Shopify definition first. Returns the
+ * fields as redeemid_preferences() does, or a WP_Error whose data lists the
+ * refused fields. No user: the current visitor.
+ *
+ * Call it from a forms plugin's submit hook to save answers to Shopify.
+ *
+ * @param array<string, mixed> $values
+ * @param int|WP_User|null     $user
+ * @return array|WP_Error
+ */
+function redeemid_set_preferences( array $values, int|\WP_User|null $user = null ): array|\WP_Error {
+	$user_id = $user instanceof \WP_User ? $user->ID : ( null === $user ? get_current_user_id() : (int) $user );
+
+	return \RedeemID\Preferences\Preferences::write( $user_id, $values );
+}
