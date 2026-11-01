@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.1.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.2.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -20,8 +20,10 @@ One rule runs through all of it: **extensions read access, they never store it.*
 | `redeemid_granted_features( int\|WP_User\|null $user = null ): array` | Granted features: slug => label, provenance and routes. |
 | `redeemid_menu_features( int\|WP_User\|null $user = null ): array` | Granted features flagged primary, at most three. |
 | `redeemid_meter( int\|WP_User\|null $user = null ): array` | `{on, used, limit, period}`: the meter as this user sees it this period. |
+| `redeemid_preferences( int\|WP_User\|null $user = null ): array\|WP_Error` | The member's [preferences](member-preferences.md): each field the owner chose, with `key`, `name`, `description`, `type`, `choices`, `min`, `max`, `editable` and `value`, read from Shopify. |
+| `redeemid_set_preferences( array $values, int\|WP_User\|null $user = null ): array\|WP_Error` | Saves `namespace.key => value` to the member's own Shopify customer and returns the fields again. Refused fields are listed in the error's data. |
 
-No user means the current visitor. None returns Shopify tags, an email or the customer record, and none calls Shopify. A page that prints member-only output from these must not be served from a shared page cache.
+No user means the current visitor. None returns Shopify tags, an email or the customer record. Only the two preference functions call Shopify. A page that prints member-only output from these must not be served from a shared page cache.
 
 ## The event stream (stable)
 
@@ -44,6 +46,7 @@ Each event also fires a named shortcut with `( array $props, array $event )`:
 | `checkout_started` | `redeemid_checkout_started` | A plan card, product or collection buy-now button sent someone to Shopify checkout | `variant`, `quantity`, `subscription`, `signed_in`, `user_id`, `post_id` (the post the button sat on, or 0) |
 | `level_gained` | `redeemid_level_gained` | Shopify's tags or status gave a user a level | `level`, `user_id` |
 | `level_lost` | `redeemid_level_lost` | Shopify's tags or status took a level away | `level`, `user_id` |
+| `preferences_saved` | `redeemid_preferences_saved` | A member saved preferences to Shopify | `fields` (comma-separated `namespace.key` names, never the answers), `user_id` |
 
 - `reason` is why the wall shows: `guest`, `not_linked`, `missing_tags`, `disabled`, `no_mirror`, `bad_rule` or `drip`. `level` is the level that would open the item, or empty.
 - `user_id` is the WordPress user ID, 0 for guests. Props are scalars only, and never an email, a Shopify tag or a customer ID.
@@ -91,6 +94,8 @@ Stable:
 | `POST /auth/disconnect` | Unlinks the Shopify customer from the current user |
 | `GET /account` | The caller's own membership, as the Member Account block shows it |
 | `POST /account/sync` | Re-syncs the current user's record (rate-limited) |
+| `GET /account/preferences` | The caller's own preferences, as `redeemid_preferences()` returns them. Linked customers only |
+| `POST /account/preferences` | `{values: {"namespace.key": value}}` saved to the caller's own Shopify customer, as `redeemid_set_preferences()` (10 a minute). Linked customers only |
 | `GET /features` | The caller's own granted feature slugs |
 
 Internal (for RedeemID's own blocks and Shopify): `POST /cart/identity`, `GET /editor/products`, `GET /editor/collections`, `POST /webhooks/events`.

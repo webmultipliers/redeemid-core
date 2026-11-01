@@ -21,7 +21,7 @@ namespace RedeemID\Api;
  * carries it at runtime.
  */
 final class Contract {
-	public const VERSION = '1.1.0';
+	public const VERSION = '1.2.0';
 
 	/** Global functions that exist only for Blockstudio's "populate", not for other code. */
 	public const INTERNAL_FUNCTIONS = [ 'redeemid_level_options' ];
@@ -34,6 +34,8 @@ final class Contract {
 		'redeemid_granted_features',
 		'redeemid_menu_features',
 		'redeemid_meter',
+		'redeemid_preferences',
+		'redeemid_set_preferences',
 	];
 
 	public const ACTIONS = [
@@ -44,6 +46,7 @@ final class Contract {
 		'redeemid_checkout_started',
 		'redeemid_level_gained',
 		'redeemid_level_lost',
+		'redeemid_preferences_saved',
 		'redeemid_signed_in',
 		'redeemid_linked',
 		'redeemid_disconnected',
@@ -108,6 +111,8 @@ final class Contract {
 		'POST /auth/disconnect',
 		'GET /account',
 		'POST /account/sync',
+		'GET /account/preferences',
+		'POST /account/preferences',
 		'GET /features',
 	];
 
