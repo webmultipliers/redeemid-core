@@ -183,6 +183,36 @@ final class Preferences {
 	}
 
 	/**
+	 * Fields set to "Members can change", without values: what a form needs
+	 * to ask a guest before they have an account. Public and cacheable.
+	 *
+	 * @return array<int, array>|\WP_Error
+	 */
+	public static function public_fields(): array|\WP_Error {
+		$fields = self::fields();
+
+		return is_wp_error( $fields ) ? $fields : self::public_list( $fields );
+	}
+
+	/**
+	 * The editable fields as a list, with only what describes them. Pure.
+	 *
+	 * @param array<string, array> $fields From allowed().
+	 * @return array<int, array{key: string, name: string, description: string, type: string, choices: string[], min: ?string, max: ?string}>
+	 */
+	public static function public_list( array $fields ): array {
+		$out = [];
+
+		foreach ( $fields as $field ) {
+			if ( ! empty( $field['editable'] ) ) {
+				$out[] = array_intersect_key( $field, array_flip( [ 'key', 'name', 'description', 'type', 'choices', 'min', 'max' ] ) );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * The member's fields with their current values from Shopify.
 	 *
 	 * @return array<int, array{key: string, name: string, description: string, type: string, choices: string[], min: ?string, max: ?string, editable: bool, value: mixed}>|\WP_Error
