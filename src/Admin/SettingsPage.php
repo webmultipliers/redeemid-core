@@ -300,6 +300,13 @@ final class SettingsPage {
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><label for="redeemid-session-limit"><?php esc_html_e( 'Signed-in browsers per member', 'redeemid' ); ?></label></th>
+					<td>
+						<input type="number" min="0" max="<?php echo (int) \RedeemID\Auth\SessionCap::MAX; ?>" id="redeemid-session-limit" class="small-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[session_limit]" value="<?php echo (int) $settings['session_limit']; ?>">
+						<p class="description"><?php esc_html_e( 'Slows down one membership shared by many people: when a linked member signs in on more browsers than this, their oldest sessions on this site end. Their Shopify account is untouched, and staff are never capped. 0 turns it off.', 'redeemid' ); ?></p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><label for="redeemid-subscription-url"><?php esc_html_e( 'Subscription management', 'redeemid' ); ?></label></th>
 					<td>
 						<input type="url" id="redeemid-subscription-url" class="regular-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[subscription_url]" value="<?php echo esc_attr( (string) $settings['subscription_url'] ); ?>" placeholder="https://">

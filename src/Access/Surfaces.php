@@ -39,6 +39,7 @@ final class Surfaces {
 		add_filter( 'pings_open', [ self::class, 'comments_open' ], 10, 2 );
 		add_filter( 'get_comments_number', [ self::class, 'comments_number' ], 10, 2 );
 		add_filter( 'the_comments', [ self::class, 'filter_comments' ] );
+		add_filter( 'rest_prepare_comment', [ self::class, 'rest_comment' ], 10, 2 );
 		add_filter( 'comment_feed_where', [ self::class, 'comment_feed_where' ] );
 
 		add_filter( 'wp_robots', [ self::class, 'robots' ] );
@@ -199,6 +200,19 @@ final class Surfaces {
 				}
 			)
 		);
+	}
+
+	/**
+	 * REST /wp/v2/comments/{id} reads one comment without a comment query,
+	 * so the_comments never sees it. Answer as core does for a comment that
+	 * doesn't exist, so the reply doesn't confirm there is one.
+	 */
+	public static function rest_comment( mixed $response, mixed $comment ): mixed {
+		if ( $comment instanceof \WP_Comment && self::comments_hidden( (int) $comment->comment_post_ID ) ) {
+			return new \WP_Error( 'rest_comment_invalid_id', __( 'Invalid comment ID.', 'redeemid' ), [ 'status' => 404 ] );
+		}
+
+		return $response;
 	}
 
 	/**

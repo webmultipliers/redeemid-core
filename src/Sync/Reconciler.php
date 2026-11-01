@@ -131,7 +131,7 @@ final class Reconciler {
 				Mirror::set_status( $user_id, $status, Mirror::STATUS_RESYNC );
 			}
 
-			Mirror::set_dates( $user_id, [ 'since' => $remote[ $id->numeric ]['since'] ?? null, 'renews' => $remote[ $id->numeric ]['renews'] ?? null ] );
+			Mirror::set_dates( $user_id, [ 'since' => $remote[ $id->numeric ]['since'] ?? null, 'renews' => $remote[ $id->numeric ]['renews'] ?? null, 'gift' => $remote[ $id->numeric ]['gift'] ?? null ] );
 			Mirror::stamp( $user_id, $source );
 		}
 

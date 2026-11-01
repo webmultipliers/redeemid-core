@@ -169,7 +169,7 @@ final class ContractTest extends TestCase {
 	}
 
 	public function test_admin_reconcile_response(): void {
-		foreach ( [ 'id', 'tags', 'member_since', 'renews_on' ] as $field ) {
+		foreach ( [ 'id', 'tags', 'member_since', 'renews_on', 'gift_until' ] as $field ) {
 			$this->assertStringContainsString( $field, Admin::RECONCILE_QUERY );
 		}
 
@@ -183,6 +183,7 @@ final class ContractTest extends TestCase {
 		$this->assertArrayNotHasKey( 'state', $out['706405506930370084'] );
 		$this->assertSame( '2026-01-15', $out['706405506930370084']['since'] );
 		$this->assertNull( $out['706405506930370084']['renews'] );
+		$this->assertNull( $out['706405506930370084']['gift'] );
 	}
 
 	public function test_customer_account_identity_response(): void {

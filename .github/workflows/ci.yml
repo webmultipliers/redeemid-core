@@ -51,3 +51,49 @@ jobs:
           found=$(grep -c '<error ' "$RUNNER_TEMP/phpcs-report.xml" || true)
           echo "PHPCS findings: $found (baseline $BASELINE)"
           test "$found" -le "$BASELINE"
+
+  leaks:
+    name: Leak tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress
+        ports: [ '3306:3306' ]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      WP_PATH: /tmp/wordpress
+      REDEEMID_LEAK_URL: http://127.0.0.1:8080
+      REDEEMID_LEAK_SEED: /tmp/redeemid-leak.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: sodium, mysqli, curl
+          coverage: none
+          tools: wp-cli
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Install WordPress
+        run: |
+          wp core download --path="$WP_PATH" --version=6.9
+          wp config create --path="$WP_PATH" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
+          wp core install --path="$WP_PATH" --url="$REDEEMID_LEAK_URL" --title="Leak tests" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
+          cp -r "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/redeemid"
+          wp plugin activate redeemid --path="$WP_PATH"
+      - name: Seed
+        run: wp eval-file "$GITHUB_WORKSPACE/tests/Integration/seed.php" --path="$WP_PATH"
+      - name: Serve
+        run: |
+          php -S 127.0.0.1:8080 -t "$WP_PATH" > /tmp/php-server.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS -o /dev/null "$REDEEMID_LEAK_URL/" && break; sleep 1; done
+      - name: Leak tests
+        run: vendor/bin/phpunit --testsuite integration --no-progress
+      - name: Server log
+        if: failure()
+        run: |
+          grep -vE ' (Accepted|Closing)$| \[[23][0-9][0-9]\]: ' /tmp/php-server.log | tail -n 60 || true

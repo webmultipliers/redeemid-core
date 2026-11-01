@@ -18,8 +18,8 @@ use RedeemID\Sync\PostCheckout;
  * renew, levels that ended, the features they hold, when Shopify last synced,
  * and where to manage their account and subscription.
  *
- * Dates come from the membership.member_since and membership.renews_on
- * customer metafields when the shop keeps them (Shopify Flow or a
+ * Dates come from the membership.member_since, membership.renews_on and
+ * membership.gift_until customer metafields when the shop keeps them (Shopify Flow or a
  * subscription app writes them), else from level history. All of it is for
  * display; access is decided from the synced tags alone.
  */
@@ -32,6 +32,7 @@ final class Account {
 	 *     levels: array<int, array{slug: string, label: string, badge: string, since: string}>,
 	 *     ended: array<int, array{label: string, until: string}>,
 	 *     renews: string,
+	 *     gift_until: string,
 	 *     features: string[],
 	 *     synced: int,
 	 *     checking_out: bool,
@@ -47,6 +48,7 @@ final class Account {
 			'levels'           => [],
 			'ended'            => [],
 			'renews'           => '',
+			'gift_until'       => '',
 			'features'         => [],
 			'synced'           => 0,
 			'checking_out'     => false,
@@ -78,6 +80,7 @@ final class Account {
 		$view['state']        = 'disabled' === $member->status ? 'disabled' : 'linked';
 		$view['email']        = (string) get_user_meta( $user_id, Mirror::EMAIL, true );
 		$view['renews']       = (string) get_user_meta( $user_id, Mirror::RENEWS, true );
+		$view['gift_until']   = self::upcoming( (string) get_user_meta( $user_id, Mirror::GIFT_UNTIL, true ), wp_date( 'Y-m-d' ) );
 		$view['synced']       = (int) $member->last_sync;
 		$view['checking_out'] = PostCheckout::active( $user_id );
 		$view['account_url']  = '' !== Config::store_domain() ? 'https://' . Config::store_domain() . '/account' : '';
@@ -114,5 +117,13 @@ final class Account {
 		$time = strtotime( $ymd . ' 12:00:00' );
 
 		return $time ? wp_date( (string) get_option( 'date_format' ), $time ) : $ymd;
+	}
+
+	/**
+	 * $ymd when it is $today or later, else ''. A gift that has ended is not
+	 * shown (Flow removes its tag; this only keeps the card tidy). Pure.
+	 */
+	public static function upcoming( string $ymd, string $today ): string {
+		return '' !== $ymd && $ymd >= $today ? $ymd : '';
 	}
 }

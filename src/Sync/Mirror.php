@@ -29,6 +29,7 @@ final class Mirror {
 	public const LINKED_AT   = '_redeemid_linked_at';
 	public const SINCE       = '_redeemid_member_since';
 	public const RENEWS      = '_redeemid_renews_on';
+	public const GIFT_UNTIL  = '_redeemid_gift_until';
 	public const HISTORY     = '_redeemid_level_history';
 	public const STATUS_FROM = '_redeemid_status_source';
 	public const PROFILE_AT  = '_redeemid_profile_updated_at';
@@ -43,7 +44,7 @@ final class Mirror {
 	public const ALL_KEYS = [
 		self::GID, self::NUMERIC, self::TAGS, self::STATUS, self::EMAIL, self::FIRST_NAME, self::LAST_NAME,
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
-		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::HISTORY, self::STATUS_FROM,
+		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::GIFT_UNTIL, self::HISTORY, self::STATUS_FROM,
 		self::PROFILE_AT, self::STATUS_AT,
 	];
 
@@ -137,13 +138,14 @@ final class Mirror {
 
 	/**
 	 * Membership dates a shop keeps in customer metafields (membership.member_since,
-	 * membership.renews_on), written by Shopify Flow or a subscription app.
+	 * membership.renews_on, membership.gift_until), written by Shopify Flow or
+	 * a subscription app.
 	 * Display only: they never grant or remove access.
 	 *
-	 * @param array{since?: string|null, renews?: string|null} $dates
+	 * @param array{since?: string|null, renews?: string|null, gift?: string|null} $dates
 	 */
 	public static function set_dates( int $user_id, array $dates ): void {
-		foreach ( [ 'since' => self::SINCE, 'renews' => self::RENEWS ] as $field => $key ) {
+		foreach ( [ 'since' => self::SINCE, 'renews' => self::RENEWS, 'gift' => self::GIFT_UNTIL ] as $field => $key ) {
 			if ( ! array_key_exists( $field, $dates ) ) {
 				continue;
 			}
