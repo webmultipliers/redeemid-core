@@ -28,7 +28,7 @@
 		"test": "phpunit",
 		"lint": "find src blocks tests redeemid.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
 		"phpcs": "phpcs",
-		"phpstan": "blockstudio-phpstan --root . --configuration phpstan.neon.dist --exclude 'vendor/**' --exclude '_dist/**' -- --no-progress",
+		"phpstan": "blockstudio-phpstan --root . --configuration phpstan.neon.dist --exclude 'vendor/**' --exclude '_dist/**' --exclude 'tests/**' -- --no-progress",
 		"build-prod": [
 			"@composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress"
 		],
