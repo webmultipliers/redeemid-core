@@ -170,7 +170,7 @@ final class Transfer {
 		return $out;
 	}
 
-	private const SETTING_KEYS = [ 'clear_cart_on_logout', 'quiet_days', 'alert_email', 'login_button', 'shopify_login_links', 'subscription_url', 'storefront_pages', 'product_path', 'collection_path', 'cart_path', 'storefront_first' ];
+	private const SETTING_KEYS = [ 'clear_cart_on_logout', 'quiet_days', 'alert_email', 'login_button', 'shopify_login_links', 'subscription_url', 'storefront_pages', 'product_path', 'collection_path', 'cart_path', 'storefront_first', 'session_limit' ];
 
 	/**
 	 * Rebase absolute URLs on the exporting site to this one: a level's

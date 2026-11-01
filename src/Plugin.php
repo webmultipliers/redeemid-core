@@ -24,6 +24,7 @@ use RedeemID\Admin\FileFields;
 use RedeemID\Admin\Menu;
 use RedeemID\Admin\UserProfile;
 use RedeemID\Auth\Flow;
+use RedeemID\Auth\SessionCap;
 use RedeemID\Auth\ShadowUsers;
 use RedeemID\Auth\SignInLinks;
 use RedeemID\Blocks\Registration;
@@ -55,6 +56,7 @@ final class Plugin {
 	public static function boot(): void {
 		ShadowUsers::register();
 		Flow::register();
+		SessionCap::register();
 		SignInLinks::register();
 		Status::register();
 		PostCheckout::register();
