@@ -401,7 +401,7 @@ Non-JavaScript forms post to `admin-post.php` handlers (`redeemid_login`, `_logo
 
 ## Building on Blockstudio
 
-The plugin is built on [Blockstudio](https://blockstudio.dev) (7.7.7, bundled through Composer). **Before writing any code for a block, check whether Blockstudio already does it.** Hand-made versions of features Blockstudio ships have to be maintained, tested and secured by us, and they drift from how the rest of the blocks behave. The Blockstudio docs are in `vendor/blockstudio/blockstudio/docs` after `composer install`, and at [blockstudio.dev/docs](https://blockstudio.dev/docs).
+The plugin is built on [Blockstudio](https://blockstudio.dev) (7.7.10, bundled through Composer). **Before writing any code for a block, check whether Blockstudio already does it.** Hand-made versions of features Blockstudio ships have to be maintained, tested and secured by us, and they drift from how the rest of the blocks behave. The Blockstudio docs are in `vendor/blockstudio/blockstudio/docs` after `composer install`, and at [blockstudio.dev/docs](https://blockstudio.dev/docs).
 
 What the plugin uses, and where:
 
@@ -497,10 +497,11 @@ Issues and pull requests are welcome. Work branches from `main`, and pull reques
 composer install
 composer lint   # php -l on every PHP file
 composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
+composer phpstan # Blockstudio checks: templates vs block.json, block.json shapes (phpstan.neon.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
 
-GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings. To release, bump `Version:` in `redeemid.php` and `REDEEMID_VERSION` together; when that reaches `main`, GitHub Actions builds `redeemid-core.zip` and publishes release `v<version>`. A version with a suffix such as `0.1.0-beta.1` is published as a pre-release. Files listed in `.distignore` stay out of the zip. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
+GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings, and fails on any Blockstudio PHPStan finding. To release, bump `Version:` in `redeemid.php` and `REDEEMID_VERSION` together; when that reaches `main`, GitHub Actions builds `redeemid-core.zip` and publishes release `v<version>`. A version with a suffix such as `0.1.0-beta.1` is published as a pre-release. Files listed in `.distignore` stay out of the zip. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
 
 - **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
 - **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.
