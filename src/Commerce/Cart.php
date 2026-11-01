@@ -199,14 +199,15 @@ final class Cart {
 			self::back( $back, 'cart_invalid' );
 		}
 
-		$line   = [ 'merchandiseId' => $variant, 'quantity' => $quantity ] + ( '' !== $plan ? [ 'sellingPlanId' => $plan ] : [] );
+		$source = Attribution::for_url( $back );
+		$line   = [ 'merchandiseId' => $variant, 'quantity' => $quantity ] + ( '' !== $plan ? [ 'sellingPlanId' => $plan ] : [] ) + ( $source ? [ 'attributes' => $source ] : [] );
 		$stored = self::stored( self::key() );
 		$cart   = $stored ? Storefront::cart_mutate( 'add', [ 'cartId' => $stored['id'], 'lines' => [ $line ] ] ) : null;
 
 		// No cart yet, or Shopify let it expire: start one.
 		if ( null === $cart || ( is_wp_error( $cart ) && 'shopify_cart_missing' === $cart->get_error_code() ) ) {
 			$country = Storefront::country();
-			$input   = [ 'lines' => [ $line ] ] + ( '' !== $country ? [ 'buyerIdentity' => [ 'countryCode' => $country ] ] : [] );
+			$input   = [ 'lines' => [ $line ] ] + ( $source ? [ 'attributes' => $source ] : [] ) + ( '' !== $country ? [ 'buyerIdentity' => [ 'countryCode' => $country ] ] : [] );
 			$cart    = Storefront::cart_mutate( 'create', [ 'input' => $input ] );
 			$stored  = null;
 		}

@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.0.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.1.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -41,7 +41,7 @@ Each event also fires a named shortcut with `( array $props, array $event )`:
 | `wall_shown` | `redeemid_wall_shown` | A locked item's own page rendered its wall for this reader | `post_id`, `post_type`, `reason`, `level`, `user_id` |
 | `meter_used` | `redeemid_meter_used` | A metered item was counted, once per item per period | `post_id`, `used`, `limit`, `period`, `user_id` |
 | `meter_exhausted` | `redeemid_meter_exhausted` | That count reached the limit | `post_id`, `limit`, `period`, `user_id` |
-| `checkout_started` | `redeemid_checkout_started` | A plan card, product or collection buy-now button sent someone to Shopify checkout | `variant`, `quantity`, `subscription`, `signed_in`, `user_id` |
+| `checkout_started` | `redeemid_checkout_started` | A plan card, product or collection buy-now button sent someone to Shopify checkout | `variant`, `quantity`, `subscription`, `signed_in`, `user_id`, `post_id` (the post the button sat on, or 0) |
 | `level_gained` | `redeemid_level_gained` | Shopify's tags or status gave a user a level | `level`, `user_id` |
 | `level_lost` | `redeemid_level_lost` | Shopify's tags or status took a level away | `level`, `user_id` |
 
@@ -67,7 +67,7 @@ Stable:
 - **Settings:** `redeemid_setting_{key}`
 - **Access:** `redeemid_access_levels`, `redeemid_access_rules`, `redeemid_gated_post_types`, `redeemid_access_context`, `redeemid_effective_rule`, `redeemid_teaser_settings`, `redeemid_paywall_schema`, `redeemid_drip_days`
 - **Features:** `redeemid_features`, `redeemid_feature_tests`, `redeemid_feature_decision`
-- **Commerce:** `redeemid_context_country`, `redeemid_buyer_ip`, `redeemid_checkout_banner`, `redeemid_storefront_path`, `redeemid_product_url`, `redeemid_cart_enabled`
+- **Commerce:** `redeemid_context_country`, `redeemid_buyer_ip`, `redeemid_cart_attribution`, `redeemid_checkout_banner`, `redeemid_storefront_path`, `redeemid_product_url`, `redeemid_cart_enabled`
 - **Display:** `redeemid_locked_panel`, `redeemid_health_checks`
 - **Files:** `redeemid_file_sendfile`
 - **Admin:** `redeemid_customer_badges`

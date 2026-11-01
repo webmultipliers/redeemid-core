@@ -87,12 +87,13 @@ final class BuyNow {
 
 		$user_id = get_current_user_id();
 		$token   = $user_id ? TokenVault::access_token( $user_id ) : null;
-		$url     = Storefront::checkout_url( $variant, $quantity, $token, $plan );
+		$source  = Attribution::for_url( $back );
+		$url     = Storefront::checkout_url( $variant, $quantity, $token, $plan, $source );
 
 		// A refused customer token must not block the purchase: retry as a guest.
 		if ( is_wp_error( $url ) && $token ) {
 			Logger::log( 'commerce.buyer_identity_refused', [ 'user_id' => $user_id, 'error' => $url->get_error_code() ] );
-			$url = Storefront::checkout_url( $variant, $quantity, null, $plan );
+			$url = Storefront::checkout_url( $variant, $quantity, null, $plan, $source );
 		}
 
 		if ( is_wp_error( $url ) ) {
@@ -110,6 +111,7 @@ final class BuyNow {
 				'subscription' => '' !== $plan,
 				'signed_in'    => (bool) $token,
 				'user_id'      => $user_id,
+				'post_id'      => Attribution::post_id( $back ),
 			]
 		);
 

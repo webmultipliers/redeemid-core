@@ -535,15 +535,16 @@ GRAPHQL;
 	 * Create a one-line cart and return its checkout URL, requested fresh
 	 * for buy-now. A signed-in customer's token attaches buyer
 	 * identity so checkout opens signed in. $selling_plan buys the line on a
-	 * subscription or other selling plan.
+	 * subscription or other selling plan. $attributes (see
+	 * Commerce\Attribution) go on both the line and the cart.
 	 */
-	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null, string $selling_plan = '' ): string|\WP_Error {
+	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null, string $selling_plan = '', array $attributes = [] ): string|\WP_Error {
 		if ( ! self::available() ) {
 			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
 		}
 
-		$line    = [ 'merchandiseId' => $variant_gid, 'quantity' => max( 1, min( 10, $quantity ) ) ] + ( '' !== $selling_plan ? [ 'sellingPlanId' => $selling_plan ] : [] );
-		$input   = [ 'lines' => [ $line ] ];
+		$line    = [ 'merchandiseId' => $variant_gid, 'quantity' => max( 1, min( 10, $quantity ) ) ] + ( '' !== $selling_plan ? [ 'sellingPlanId' => $selling_plan ] : [] ) + ( $attributes ? [ 'attributes' => $attributes ] : [] );
+		$input   = [ 'lines' => [ $line ] ] + ( $attributes ? [ 'attributes' => $attributes ] : [] );
 		$country = self::country();
 		$buyer   = ( $customer_token ? [ 'customerAccessToken' => $customer_token ] : [] ) + ( '' !== $country ? [ 'countryCode' => $country ] : [] );
 
