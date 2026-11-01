@@ -125,6 +125,6 @@
 				"conditions": [ [ { "id": "mode", "operator": "==", "value": "auto" } ] ]
 			}
 		],
-		"island": { "mode": "dynamic" }
+		"island": { "mode": "dynamic", "context": true }
 	}
 }

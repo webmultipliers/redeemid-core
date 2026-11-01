@@ -13,6 +13,7 @@
 node_modules
 tests
 phpcs.xml.dist
+phpstan.neon.dist
 phpunit.xml.dist
 composer.json
 composer.lock

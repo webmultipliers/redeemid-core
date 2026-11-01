@@ -18,7 +18,7 @@ use RedeemID\Blocks\Account;
 use RedeemID\Blocks\Gate;
 
 $redeemid_title = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your membership', 'redeemid' );
-$redeemid_here  = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
+$redeemid_here  = $isIslandFragment ? Gate::fragment_url() : Gate::current_url();
 $redeemid_query = [];
 wp_parse_str( (string) wp_parse_url( $redeemid_here, PHP_URL_QUERY ), $redeemid_query );
 $redeemid_said  = ! $isEditor && $isIslandFragment ? \RedeemID\Auth\Flow::message( sanitize_key( (string) ( $redeemid_query['redeemid_notice'] ?? '' ) ) ) : '';

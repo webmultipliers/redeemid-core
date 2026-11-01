@@ -7,10 +7,11 @@
 		"php": ">=8.2",
 		"ext-json": "*",
 		"ext-sodium": "*",
-		"blockstudio/blockstudio": "^7.7"
+		"blockstudio/blockstudio": "^7.7.10"
 	},
 	"require-dev": {
 		"automattic/vipwpcs": "^3.1",
+		"blockstudio/phpstan": "^0.1.9",
 		"phpunit/phpunit": "^11.0"
 	},
 	"autoload": {
@@ -27,6 +28,7 @@
 		"test": "phpunit",
 		"lint": "find src blocks tests redeemid.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 php -l",
 		"phpcs": "phpcs",
+		"phpstan": "blockstudio-phpstan --root . --configuration phpstan.neon.dist --exclude 'vendor/**' --exclude '_dist/**' --exclude 'tests/**' -- --no-progress",
 		"build-prod": [
 			"@composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress"
 		],
@@ -47,6 +49,7 @@
 	"scripts-descriptions": {
 		"phpcs": "Check the code against the WordPress VIP rules in phpcs.xml.dist.",
 		"build-prod": "Install production dependencies so this directory runs as the plugin (used by deploys and release zips).",
-		"release": "Alias of build-prod."
+		"release": "Alias of build-prod.",
+		"phpstan": "Blockstudio's PHPStan checks: block templates against block.json, block.json shapes, hook names."
 	}
 }

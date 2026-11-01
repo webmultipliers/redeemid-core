@@ -39,8 +39,8 @@ if ( $isEditor ) {
 }
 
 // The page the control sits on. The placeholder is cached per URL, so the URL itself is safe in it;
-// the fragment is rendered by a separate request and reads the page from its same-origin referer.
-$redeemid_here        = $isIslandFragment ? wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) ) : Gate::current_url();
+// the fragment is rendered by a separate request (see Gate::fragment_url()).
+$redeemid_here        = $isIslandFragment ? Gate::fragment_url() : Gate::current_url();
 $redeemid_after_login = Gate::url( $a['redirectAfterLogin'] ?? '' ) ?: $redeemid_here;
 $redeemid_after_out   = Gate::url( $a['redirectAfterLogout'] ?? '' ) ?: $redeemid_here;
 // Only the island fragment is personal; anything else may land in a shared cache.

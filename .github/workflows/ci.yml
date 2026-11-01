@@ -51,6 +51,8 @@ jobs:
           found=$(grep -c '<error ' "$RUNNER_TEMP/phpcs-report.xml" || true)
           echo "PHPCS findings: $found (baseline $BASELINE)"
           test "$found" -le "$BASELINE"
+      - name: Blockstudio PHPStan
+        run: composer phpstan
 
   leaks:
     name: Leak tests

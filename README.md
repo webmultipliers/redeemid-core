@@ -12,7 +12,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
-> **Status: 0.0.6, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, product, collection and cart blocks with storefront pages, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. RedeemID now has its own storefront (product, collection and cart blocks and pages), so a site can run without Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). Expect breaking changes before 1.0.0.
+> **Status: 0.0.7, early development.** Sign-in, linking, webhooks, gates, access rules, a signed-in meter, protected files, features, plan cards, product, collection and cart blocks with storefront pages, the member account card, settings export and import, and the bridge to Shopify's own cart are in place. RedeemID now has its own storefront (product, collection and cart blocks and pages), so a site can run without Shopify's plugin (see [docs/official-plugin.md](docs/official-plugin.md)). Expect breaking changes before 1.0.0.
 
 ## Requirements
 
@@ -330,7 +330,7 @@ The plugin records when each level started and ended for each member (`level.cha
 
 Gated pages are decided on the server. Any response that shows members-only or personal content (a granted item, a Membership Gate's members area, a block with its own Access setting, a member-aware plan card, a locked panel with a form) sets `DONOTCACHEPAGE` for page-cache plugins and, while headers can still be sent, `Cache-Control: private, no-store` for CDNs and proxies that never see that constant. Block themes render before headers go out, so the header is always sent there; a classic theme that prints content after headers are sent gets the constant only. Singular items gated by access rules also send `X-RedeemID-Access: open|locked|granted|bypass`, and granted, bypass and preview responses are `Cache-Control: private`. The `redeemid_access_changed` action passes the IDs of items whose rule changed (an empty list means any item may have), for purging.
 
-Personal pieces, such as the sign-in control, are [Blockstudio dynamic islands](https://blockstudio.dev/docs/blocks/islands). The page carries a neutral placeholder that any page cache can store (the guest "Log in" link, so sign-in works without JavaScript). After load, Blockstudio renders every island on the page for the visitor in one same-origin request to `POST /wp-json/blockstudio/v1/island/render` and swaps the results in. That response is never cached, so it can carry the visitor's own nonces; Blockstudio only restores the signed-in user for same-origin requests, so another site cannot read it.
+Personal pieces, such as the sign-in control, are [Blockstudio dynamic islands](https://blockstudio.dev/docs/blocks/islands). The page carries a neutral placeholder that any page cache can store (the guest "Log in" link, so sign-in works without JavaScript). After load, Blockstudio renders every island on the page for the visitor in one same-origin request to `POST /wp-json/blockstudio/v1/island/render` and swaps the results in. That response is never cached, so it can carry the visitor's own nonces; Blockstudio only restores the signed-in user for same-origin requests, so another site cannot read it. The sign-in control and the member account panel send you back to the page you were on: the fragment reads it from the same-origin Referer, and when a `Referrer-Policy` strips that, from the island's signed page context, so posts and pages still return to their permalink.
 
 `admin-ajax.php?action=redeemid_status` still returns the visitor's display-safe state and fresh nonces for scripts that are not blocks, such as the cart bridge.
 
@@ -401,7 +401,7 @@ Non-JavaScript forms post to `admin-post.php` handlers (`redeemid_login`, `_logo
 
 ## Building on Blockstudio
 
-The plugin is built on [Blockstudio](https://blockstudio.dev) (7.7.7, bundled through Composer). **Before writing any code for a block, check whether Blockstudio already does it.** Hand-made versions of features Blockstudio ships have to be maintained, tested and secured by us, and they drift from how the rest of the blocks behave. The Blockstudio docs are in `vendor/blockstudio/blockstudio/docs` after `composer install`, and at [blockstudio.dev/docs](https://blockstudio.dev/docs).
+The plugin is built on [Blockstudio](https://blockstudio.dev) (7.7.10, bundled through Composer). **Before writing any code for a block, check whether Blockstudio already does it.** Hand-made versions of features Blockstudio ships have to be maintained, tested and secured by us, and they drift from how the rest of the blocks behave. The Blockstudio docs are in `vendor/blockstudio/blockstudio/docs` after `composer install`, and at [blockstudio.dev/docs](https://blockstudio.dev/docs).
 
 What the plugin uses, and where:
 
@@ -497,10 +497,11 @@ Issues and pull requests are welcome. Work branches from `main`, and pull reques
 composer install
 composer lint   # php -l on every PHP file
 composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
+composer phpstan # Blockstudio checks: templates vs block.json, block.json shapes (phpstan.neon.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
 
-GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings. To release, bump `Version:` in `redeemid.php` and `REDEEMID_VERSION` together; when that reaches `main`, GitHub Actions builds `redeemid-core.zip` and publishes release `v<version>`. A version with a suffix such as `0.1.0-beta.1` is published as a pre-release. Files listed in `.distignore` stay out of the zip. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
+GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings, and fails on any Blockstudio PHPStan finding. To release, bump `Version:` in `redeemid.php` and `REDEEMID_VERSION` together; when that reaches `main`, GitHub Actions builds `redeemid-core.zip` and publishes release `v<version>`. A version with a suffix such as `0.1.0-beta.1` is published as a pre-release. Files listed in `.distignore` stay out of the zip. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
 
 - **Check Blockstudio first.** Before writing code for a block, see whether [Blockstudio](https://blockstudio.dev/docs) already does it: conditional fields, populated pickers, islands, components, variations and more. [Building on Blockstudio](#building-on-blockstudio) lists what the plugin uses and the few places it deliberately doesn't.
 - **Shopify is the source of truth for access.** A change must never let WordPress grant an entitlement that Shopify doesn't hold. Tools that make access easier to manage from WordPress write to Shopify (for example, customer tags) and read the result back.

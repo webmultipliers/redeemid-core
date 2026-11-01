@@ -1,0 +1,29 @@
+# Blockstudio's PHPStan checks: every block template's $a reads against its
+# block.json, block.json field shapes, hook and settings names. Run with
+# `composer phpstan`.
+parameters:
+	level: 1
+	# block.json findings come from a whole-project scan that PHPStan's result
+	# cache can skip, so an ignore may go unmatched on a warm run.
+	reportUnmatchedIgnoredErrors: false
+	paths:
+		- redeemid.php
+		- uninstall.php
+		- src
+		- blocks
+	ignoreErrors:
+		# WP-CLI is not stubbed; these classes only load under `wp`.
+		-
+			message: '#WP_CLI#'
+			path: src/*Cli.php
+		# ABSPATH-relative admin includes.
+		-
+			identifier: requireOnce.fileNotFound
+		# Defined at runtime by WordPress or redeemid.php.
+		-
+			message: '#^Constant (REDEEMID_[A-Z_]+|COOKIEPATH) not found\.$#'
+			identifier: constant.notFound
+		# Blockstudio's docs use "blockstudio": true for blocks without
+		# fields; the extension still expects an object.
+		-
+			identifier: blockstudio.blockJson.blockstudio

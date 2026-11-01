@@ -115,6 +115,29 @@ final class Gate {
 	}
 
 	/**
+	 * The page an island fragment sits on, for "come back here" redirects.
+	 *
+	 * The fragment is rendered by a separate request, so the request URL is
+	 * Blockstudio's island endpoint. The same-origin Referer is the page's
+	 * full URL, query string included. When a Referrer-Policy strips it, the
+	 * island's signed page context ("context": true in block.json) still
+	 * names the queried post, so posts and pages come back to their permalink.
+	 * Archives carry no page context and fall back to the home page.
+	 */
+	public static function fragment_url(): string {
+		$referer = wp_get_raw_referer();
+
+		if ( is_string( $referer ) && '' !== $referer ) {
+			return wp_validate_redirect( $referer, home_url( '/' ) );
+		}
+
+		$post_id   = (int) get_queried_object_id();
+		$permalink = $post_id > 0 ? get_permalink( $post_id ) : false;
+
+		return wp_validate_redirect( is_string( $permalink ) ? $permalink : '', home_url( '/' ) );
+	}
+
+	/**
 	 * Options for the gate's Level picker, filled by Blockstudio's populate
 	 * (blocks/membership-gate/block.json). Built-in Public is left out: a gate
 	 * that lets everyone in is not a gate.
