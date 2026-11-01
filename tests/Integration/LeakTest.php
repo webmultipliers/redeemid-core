@@ -109,25 +109,33 @@ final class LeakTest extends TestCase {
 
 	/**
 	 * A search for a word that is only in the locked part must not list the
-	 * item, or the result itself confirms the word is there.
+	 * item, or the result itself confirms the word is there. The search feed
+	 * stands in for the search page, whose theme template may list other
+	 * posts around the results.
 	 *
-	 * @return array<string, array{string}>
+	 * @return array<string, array{string, string}>
 	 */
 	public static function searches(): array {
 		return [
-			'search page'        => [ '/?s=quokkaword' ],
-			'search page (tail)' => [ '/?s=numbatword' ],
-			'REST posts search'  => [ '/?rest_route=/wp/v2/posts&search=quokkaword' ],
-			'REST site search'   => [ '/?rest_route=/wp/v2/search&search=quokkaword' ],
+			'search feed'              => [ '/?s=quokkaword&feed=rss2', 'break' ],
+			'search feed (tail)'       => [ '/?s=numbatword&feed=rss2', 'no_break' ],
+			'REST posts search'        => [ '/?rest_route=/wp/v2/posts&search=quokkaword', 'break' ],
+			'REST posts search (tail)' => [ '/?rest_route=/wp/v2/posts&search=numbatword', 'no_break' ],
+			'REST site search'         => [ '/?rest_route=/wp/v2/search&search=quokkaword', 'break' ],
+			'REST site search (tail)'  => [ '/?rest_route=/wp/v2/search&search=numbatword', 'no_break' ],
 		];
 	}
 
 	#[DataProvider( 'searches' )]
-	public function test_search_does_not_confirm_a_locked_word( string $path ): void {
+	public function test_search_does_not_confirm_a_locked_word( string $path, string $post ): void {
+		$id   = (int) self::$seed['posts'][ $post ]['id'];
+		$link = (string) self::$seed['posts'][ $post ]['link'];
+
 		foreach ( [ '', self::$seed['cookies']['reader'] ] as $cookie ) {
 			[ , $body ] = $this->fetch( $path, $cookie );
 
-			$this->assertFalse( str_contains( $body, 'Leak test with' ), "{$path} listed a post for a word only in its locked part: " . self::around( $body, 'Leak test with' ) );
+			$this->assertFalse( str_contains( $body, '"id":' . $id . ',' ), "{$path} listed post {$id} for a word only in its locked part." );
+			$this->assertFalse( str_contains( $body, '<link>' . $link . '</link>' ), "{$path} listed post {$id} for a word only in its locked part." );
 		}
 	}
 
