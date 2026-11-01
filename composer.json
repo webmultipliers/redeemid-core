@@ -1,6 +1,18 @@
 {
 	"name": "webmultipliers/redeemid-core",
-	"description": "RedeemID: Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7.",
+	"description": "RedeemID: customers sign in to WordPress with their Shopify customer account, and what that account holds in Shopify opens members-only content. Built on Blockstudio 7.",
+	"keywords": [
+		"wordpress",
+		"wordpress-plugin",
+		"shopify",
+		"customer-accounts",
+		"membership",
+		"paywall",
+		"content-gating",
+		"sso",
+		"blockstudio"
+	],
+	"homepage": "https://www.redeemid.com/",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {
