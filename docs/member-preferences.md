@@ -85,6 +85,25 @@ if (linked) {
 
 A refused save answers `400` with `data.fields`, which maps each refused key to a reason: `unknown_field`, `read_only`, `invalid_type`, `invalid_choice`, `invalid_length` or `invalid_range`. Saves are limited to 10 a minute per member (`429`).
 
+## Asking guests first
+
+A visitor without an account can answer too. Their answers stay in their own browser until they have an account and confirm them, so WordPress never stores anything about a guest.
+
+1. Build the form from `redeemid.preferenceFields()`, which lists the fields set to **Members can change** with their names, types and choices, and no values. It is public and cached for five minutes.
+2. On submit, call `redeemid.holdPreferences( values )`. The answers go into the browser's local storage, merged with any already held.
+3. After the visitor signs in with Shopify and is linked, `redeemid.heldPreferences()` returns what is waiting. Show the answers, let them change any, and save with `redeemid.saveHeldPreferences( values )`. A successful save forgets the held answers.
+
+```js
+const held = redeemid.heldPreferences();
+const { linked } = await redeemid.state();
+
+if (held && linked && window.confirm('Save your answers to your account?')) {
+	await redeemid.saveHeldPreferences(held);
+}
+```
+
+Held answers expire after 30 days and are forgotten by `redeemid.clearHeldPreferences()` and `redeemid.signOut()`. A sign-out that doesn't go through the browser client leaves them in place, which is why the member always confirms before anything is saved. Nothing is saved without that step.
+
 ## What happens on save
 
 - RedeemID writes to the member's own customer with the Admin API (`metafieldsSet`, or `metafieldsDelete` to clear), then reads the fields back. The customer comes from the member's link, never from the request.

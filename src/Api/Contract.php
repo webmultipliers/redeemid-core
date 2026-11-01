@@ -21,7 +21,7 @@ namespace RedeemID\Api;
  * carries it at runtime.
  */
 final class Contract {
-	public const VERSION = '1.2.0';
+	public const VERSION = '1.3.0';
 
 	/** Global functions that exist only for Blockstudio's "populate", not for other code. */
 	public const INTERNAL_FUNCTIONS = [ 'redeemid_level_options' ];
@@ -113,6 +113,7 @@ final class Contract {
 		'POST /account/sync',
 		'GET /account/preferences',
 		'POST /account/preferences',
+		'GET /preferences/fields',
 		'GET /features',
 	];
 
@@ -127,7 +128,7 @@ final class Contract {
 	/** The browser client: the script handle, window.redeemid's methods, and its events. */
 	public const CLIENT_HANDLE = 'redeemid-client';
 
-	public const CLIENT_METHODS = [ 'state', 'refresh', 'signIn', 'signOut', 'subscribe', 'emit' ];
+	public const CLIENT_METHODS = [ 'state', 'refresh', 'signIn', 'signOut', 'subscribe', 'emit', 'preferenceFields', 'holdPreferences', 'heldPreferences', 'saveHeldPreferences', 'clearHeldPreferences' ];
 
 	/** Browser events. emit() also accepts a site's own names, prefixed "site_". */
 	public const CLIENT_EVENTS = [ 'ready', 'state', 'wall_shown', 'metered_view', 'sign_in_click', 'checkout_click' ];

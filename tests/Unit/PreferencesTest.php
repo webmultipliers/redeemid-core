@@ -181,4 +181,11 @@ final class PreferencesTest extends TestCase {
 
 		$this->assertSame( [ 'fields' => 'preferences.topics', 'user_id' => 4 ], $event['props'] );
 	}
+
+	public function test_the_public_list_has_editable_fields_without_values(): void {
+		$list = Preferences::public_list( self::fields() );
+
+		$this->assertSame( [ 'preferences.topics', 'preferences.note', 'preferences.print', 'preferences.kids', 'preferences.birthday' ], array_column( $list, 'key' ) );
+		$this->assertSame( [ 'key', 'name', 'description', 'type', 'choices', 'min', 'max' ], array_keys( $list[0] ) );
+	}
 }

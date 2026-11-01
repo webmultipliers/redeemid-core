@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.2.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.3.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -95,6 +95,7 @@ Stable:
 | `GET /account` | The caller's own membership, as the Member Account block shows it |
 | `POST /account/sync` | Re-syncs the current user's record (rate-limited) |
 | `GET /account/preferences` | The caller's own preferences, as `redeemid_preferences()` returns them. Linked customers only |
+| `GET /preferences/fields` | The fields set to "Members can change", without values: `key`, `name`, `description`, `type`, `choices`, `min`, `max`. Public, cached for 5 minutes, for forms that ask guests |
 | `POST /account/preferences` | `{values: {"namespace.key": value}}` saved to the caller's own Shopify customer, as `redeemid_set_preferences()` (10 a minute). Linked customers only |
 | `GET /features` | The caller's own granted feature slugs |
 
@@ -120,6 +121,11 @@ It puts no personal data and no nonce in the page, so pages stay cacheable. The 
 | `redeemid.signOut( returnTo )` | Signs out of WordPress and Shopify |
 | `redeemid.subscribe( fn, { replay } )` | Calls `fn( name, props, event )` for every event; returns an unsubscribe function |
 | `redeemid.emit( name, props )` | Adds a site's own event to the stream. Names must start with `site_` |
+| `redeemid.preferenceFields()` | A promise for the editable [preference](member-preferences.md) fields, from `GET /preferences/fields` |
+| `redeemid.holdPreferences( values )` | Keeps a guest's answers (`namespace.key => value`) in this browser only, merged with any already held. Returns what is held, or null when the browser can't store it |
+| `redeemid.heldPreferences()` | The answers held in this browser, or null. They expire after 30 days |
+| `redeemid.saveHeldPreferences( values )` | Saves `values`, or the held answers, to the signed-in member's Shopify customer, then forgets the held answers. Rejects for a visitor who isn't linked, and on refused fields with `error.fields` |
+| `redeemid.clearHeldPreferences()` | Forgets the held answers. `signOut()` does this too |
 
 A subscriber also gets the events that fired before it subscribed (up to the last 100), so it can wait for consent first. Pass `{ replay: false }` to skip them. Every event is also dispatched on `document` as a `CustomEvent` named `redeemid:<name>`, with the event as `detail`.
 

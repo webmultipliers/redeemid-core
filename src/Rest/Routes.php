@@ -96,6 +96,16 @@ final class Routes {
 
 		register_rest_route(
 			self::NS,
+			'/preferences/fields',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ self::class, 'preference_fields' ],
+				'permission_callback' => '__return_true', // Field names, types and choices the owner made editable; never a value.
+			]
+		);
+
+		register_rest_route(
+			self::NS,
 			'/account/preferences',
 			[
 				[
@@ -221,6 +231,23 @@ final class Routes {
 		$user_id = (int) wp_validate_auth_cookie( '', 'logged_in' );
 
 		return $user_id > 0 && user_can( $user_id, 'edit_posts' );
+	}
+
+	/**
+	 * The editable preference fields, for forms that ask guests. The same for
+	 * everyone, so shared caches may keep it for five minutes.
+	 */
+	public static function preference_fields(): \WP_REST_Response {
+		$fields = Preferences::public_fields();
+
+		if ( is_wp_error( $fields ) ) {
+			return self::no_cache( new \WP_Error( $fields->get_error_code(), __( 'The preference fields are not available right now.', 'redeemid' ), [ 'status' => 503 ] ) );
+		}
+
+		$response = new \WP_REST_Response( $fields );
+		$response->header( 'Cache-Control', 'public, max-age=300' );
+
+		return $response;
 	}
 
 	/**

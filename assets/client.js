@@ -119,6 +119,8 @@
 		const current = await state();
 		const back = returnTo || window.location.href;
 
+		clearHeldPreferences();
+
 		if (!current.signedIn) {
 			return;
 		}
@@ -132,6 +134,105 @@
 		const body = response.ok ? await response.json() : {};
 
 		window.location.assign(body.redirect || back);
+	};
+
+	// Guest preferences: answers held in this browser only, never sent to the
+	// server until the visitor has an account and confirms them.
+	const HELD = 'redeemid:held-preferences';
+	const HELD_DAYS = 30;
+	const HELD_MAX = 8000;
+
+	const storage = () => {
+		try {
+			return window.localStorage;
+		} catch {
+			return null;
+		}
+	};
+
+	const clearHeldPreferences = () => {
+		storage()?.removeItem(HELD);
+	};
+
+	const heldPreferences = () => {
+		const store = storage();
+		let held = null;
+
+		try {
+			held = JSON.parse(store?.getItem(HELD) || 'null');
+		} catch {
+			held = null;
+		}
+
+		if (!held || typeof held.values !== 'object' || !held.values || Date.now() - Number(held.at || 0) > HELD_DAYS * 86400000) {
+			clearHeldPreferences();
+
+			return null;
+		}
+
+		return held.values;
+	};
+
+	const plain = (value) =>
+		value === null ||
+		['string', 'number', 'boolean'].includes(typeof value) ||
+		(Array.isArray(value) && value.every((item) => typeof item === 'string'));
+
+	const holdPreferences = (values) => {
+		const store = storage();
+		const next = { ...(heldPreferences() || {}) };
+
+		Object.keys(values || {}).forEach((key) => {
+			if (/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(key) && plain(values[key])) {
+				next[key] = values[key];
+			}
+		});
+
+		const json = JSON.stringify({ values: next, at: Date.now() });
+
+		if (!store || json.length > HELD_MAX) {
+			return null;
+		}
+
+		store.setItem(HELD, json);
+
+		return next;
+	};
+
+	const preferenceFields = () =>
+		fetch(`${config.restUrl}preferences/fields`, { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then((response) =>
+			response.ok ? response.json() : Promise.reject(new Error(`redeemid: preference fields ${response.status}`))
+		);
+
+	const saveHeldPreferences = async (values) => {
+		const current = await state();
+		const body = values || heldPreferences();
+
+		if (!current.linked) {
+			throw new Error('redeemid: sign in with Shopify before saving preferences');
+		}
+
+		if (!body) {
+			return null;
+		}
+
+		const response = await fetch(`${config.restUrl}account/preferences`, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': current.nonce },
+			body: JSON.stringify({ values: body }),
+		});
+		const result = await response.json().catch(() => null);
+
+		if (!response.ok) {
+			const error = new Error(result?.message || `redeemid: preferences ${response.status}`);
+			error.fields = result?.data?.fields || {};
+			throw error;
+		}
+
+		clearHeldPreferences();
+
+		return result;
 	};
 
 	const isSignIn = (href) => {
@@ -197,7 +298,7 @@
 		send('ready', { api_version: config.version || '' });
 	};
 
-	window.redeemid = Object.freeze({ version: config.version || '', events: Object.freeze(EVENTS.slice()), state, refresh, signIn, signOut, subscribe, emit });
+	window.redeemid = Object.freeze({ version: config.version || '', events: Object.freeze(EVENTS.slice()), state, refresh, signIn, signOut, subscribe, emit, preferenceFields, holdPreferences, heldPreferences, saveHeldPreferences, clearHeldPreferences });
 
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', scan, { once: true });
