@@ -42,7 +42,7 @@ Point a level at `pass`. A 24-hour or 7-day pass is the same workflow with a sho
 
 Add a **Wait** step to the grant workflow, after the tag is added, then **Remove customer tags**. A renewal purchase starts its own run, so give a renewal its own tag or check for a newer paid order before removing, as in step 6 above.
 
-### Subscription start and cancel
+### Subscriptions
 
 Subscription apps (Shopify Subscriptions, Recharge, Appstle and others) know when a contract is active, paused, failed or cancelled; RedeemID's app can't read another app's contracts. Use the app's own customer tagging if it has one. Otherwise use its Flow triggers (their names differ by app):
 
