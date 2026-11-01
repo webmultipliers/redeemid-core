@@ -4,6 +4,7 @@ namespace RedeemID;
 
 use RedeemID\Abilities\Abilities;
 use RedeemID\Api\Client;
+use RedeemID\Api\Outbound;
 use RedeemID\Access\Badges;
 use RedeemID\Access\BlockAccess;
 use RedeemID\Access\Cli;
@@ -91,6 +92,7 @@ final class Plugin {
 		Stats::register();
 		Abilities::register();
 		Client::register();
+		Outbound::register();
 
 		add_action( 'init', [ ShadowUsers::class, 'ensure_role' ] );
 		// Translations installed in wp-content/languages win; the bundled .pot is the template.

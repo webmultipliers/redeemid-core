@@ -9,8 +9,9 @@ namespace RedeemID\Api;
  * Every event goes through one action, redeemid_event, with the same shape:
  * a name from CATALOG, its props, and an envelope ({name, version, time,
  * props}). Most events also fire a named shortcut action
- * (redeemid_wall_shown and so on) with the props alone. RedeemID never sends
- * an event anywhere itself: a site, or another plugin, subscribes.
+ * (redeemid_wall_shown and so on) with the props alone. RedeemID sends an
+ * event nowhere itself unless the owner sets up event webhooks (Outbound):
+ * otherwise a site, or another plugin, subscribes.
  *
  * Props are scalars, limited to the keys the catalog declares, so an event
  * never carries a token, an email or a Shopify tag. user_id is the WordPress
