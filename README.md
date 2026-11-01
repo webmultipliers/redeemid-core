@@ -2,6 +2,8 @@
 
 Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, the same one they use in your store, and what that account holds in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
 
+**[Website](https://www.redeemid.com/) · [Docs](https://www.redeemid.com/docs/) · [Guides](https://www.redeemid.com/guides/) · [Live demo](http://demo.redeemid.com/) · [Download](https://github.com/webmultipliers/redeemid-core/releases/latest) · [Developer API](docs/developer-api.md) · [Shopify Flow recipes](docs/shopify-flow.md) · [Protected files](docs/protected-files.md) · [Abilities and MCP](docs/abilities.md)**
+
 Shopify stays the single source of truth. RedeemID links each Shopify customer account to a WordPress user and mirrors it there: name, email, account status, and the tags Shopify Flow or a subscription or membership app sets. Every access decision is made on the server from that mirror. A customer disabled in Shopify loses members-only access, and WordPress never grants access that Shopify doesn't know about.
 
 - **Sign in with Shopify.** OAuth with PKCE against the Customer Account API, shadow users for new customers, and optional linking of existing WordPress accounts.
@@ -9,6 +11,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Gate content.** A Membership Gate block, access rules per item, term, post type and site, per-block visibility, a paywall break, and teasers that stay out of feeds, REST, search and SEO descriptions.
 - **Features.** Site behaviours such as ad-free reading or downloads, unlocked by the same tags.
 - **Sell memberships.** Plan cards with live Shopify prices and a no-JavaScript buy-now button that opens a Shopify checkout.
+- **Built for the block editor.** Sign-in, gates, the paywall break, account blocks, plan cards, products, collections and the cart are all blocks, and every block gets an **Access** panel. They render on the server and work without JavaScript. See [Blocks for the block editor](https://www.redeemid.com/docs/blocks/).
 - **Cache-friendly.** Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **Works beside Shopify's own WordPress plugin**, and signs its cart in so checkout knows the customer.
 
@@ -500,6 +503,8 @@ composer phpcs  # WordPress VIP coding standards (phpcs.xml.dist)
 composer phpstan # Blockstudio checks: templates vs block.json, block.json shapes (phpstan.neon.dist)
 composer test   # PHPUnit; no WordPress install needed
 ```
+
+`readme.txt` is the WordPress.org-format readme that ships in the zip. Keep its `Stable tag` equal to `Version:` when you release.
 
 GitHub Actions runs the lint and tests on PHP 8.2, 8.3 and 8.4 for every pull request, and annotates coding-standard findings, and fails on any Blockstudio PHPStan finding. To release, bump `Version:` in `redeemid.php` and `REDEEMID_VERSION` together; when that reaches `main`, GitHub Actions builds `redeemid-core.zip` and publishes release `v<version>`. A version with a suffix such as `0.1.0-beta.1` is published as a pre-release. Files listed in `.distignore` stay out of the zip. The translation template is `languages/redeemid.pot`; regenerate it with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
 

@@ -27,12 +27,12 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: redeemid.php
-msgid "https://github.com/webmultipliers/redeemid-core"
+msgid "https://www.redeemid.com/"
 msgstr ""
 
 #. Description of the plugin
 #: redeemid.php
-msgid "Shopify customer account sign-in, memberships from Shopify purchases, and server-side content gating for WordPress, built on Blockstudio 7."
+msgid "Customers sign in to WordPress with their Shopify customer account, and what that account holds in Shopify opens members-only content. Built on Blockstudio 7."
 msgstr ""
 
 #. Author of the plugin
