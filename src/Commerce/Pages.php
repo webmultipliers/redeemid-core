@@ -422,9 +422,4 @@ final class Pages {
 
 		return '' === $attribute && $request && $kind === $request['kind'];
 	}
-
-	/** For tests. */
-	public static function reset(): void {
-		self::$request = null;
-	}
 }

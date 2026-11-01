@@ -85,12 +85,4 @@ final class RuleStore {
 		/** This action is documented in src/Access/ItemRule.php */
 		do_action( 'redeemid_access_changed', [] );
 	}
-
-	/**
-	 * Forget in-memory copies, for code that changes the filter mid-request.
-	 */
-	public static function reset(): void {
-		self::$rules   = null;
-		self::$version = null;
-	}
 }

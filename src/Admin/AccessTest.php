@@ -7,7 +7,6 @@ use RedeemID\Access\Explain;
 use RedeemID\Access\ItemRule;
 use RedeemID\Access\Level;
 use RedeemID\Access\LevelStore;
-use RedeemID\Entitlement\Decision;
 use RedeemID\Features\Registry;
 
 /**

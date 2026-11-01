@@ -420,9 +420,4 @@ final class Cart {
 		wp_safe_redirect( add_query_arg( 'redeemid_notice', $code, $url ) );
 		exit;
 	}
-
-	/** For tests. */
-	public static function reset(): void {
-		self::$current = false;
-	}
 }

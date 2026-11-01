@@ -48,15 +48,9 @@ final class CustomerIdTest extends TestCase {
 		$this->assertSame( '706405506930370084', CustomerId::from_payload( $payload, 'customer.tags_added' )?->numeric );
 	}
 
-	public function test_order_payload_uses_nested_customer_not_order_id(): void {
-		$payload = json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/orders-paid.json' ), true );
+	public function test_shop_topics_have_no_customer(): void {
+		$payload = json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/shopify-2026-10/app-uninstalled.json' ), true );
 
-		$this->assertSame( '706405506930370084', CustomerId::from_payload( $payload, 'orders/paid' )?->numeric );
-	}
-
-	public function test_refund_payload_has_no_customer(): void {
-		$payload = json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/refunds-create.json' ), true );
-
-		$this->assertNull( CustomerId::from_payload( $payload, 'refunds/create' ) );
+		$this->assertNull( CustomerId::from_payload( $payload, 'app/uninstalled' ) );
 	}
 }

@@ -249,7 +249,7 @@ final class Gatekeeper {
 	}
 
 	/**
-	 * For tests and for code that needs it: is this item locked for this visitor?
+	 * Is this item locked for this visitor?
 	 */
 	public static function locked( \WP_Post $post ): bool {
 		return ! self::rule( $post )->open() && ! self::verdict( $post )->granted();

@@ -145,9 +145,4 @@ final class OfficialPlugin {
 			default           => sprintf( /* translators: 1: version 2: their store 3: our store */ __( 'Version %1$s is connected to %2$s, but RedeemID is set up for %3$s. Purchases there will not unlock content here.', 'redeemid' ), $info['version'], $info['store_domain'], Config::store_domain() ),
 		};
 	}
-
-	/** For tests. */
-	public static function reset(): void {
-		self::$info = null;
-	}
 }
