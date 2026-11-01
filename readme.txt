@@ -37,25 +37,32 @@ RedeemID is free and open source. There is no paid version.
 * Locked content is removed on the server, so it never reaches the HTML, feeds, the REST API or search excerpts.
 * A signed-in meter, protected file downloads, and site features such as ad-free reading.
 
+= Member accounts =
+
+* A **Member Account** card with levels, dates, features and links to the Shopify account.
+* Member preferences: customer metafields you choose, which members see or change and which are saved on the Shopify customer.
+* Download my data and Delete my data, through WordPress's own privacy tools.
+
 = Built for the block editor =
 
-Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall Break, Access Badge, Member Account, Membership Features, Refresh Membership, Shopify Plan Card, Shopify Product, Shopify Collection, Shopify Cart and Shopify Cart Link. All of them render on the server and work without JavaScript. Personal pieces are dynamic islands, so pages stay cacheable behind a page cache or CDN.
+Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall Break, Access Badge, Member Account, Membership Features, Refresh Membership, Shopify Account Status, Shopify Plan Card, Shopify Product, Shopify Collection, Shopify Cart and Shopify Cart Link. All of them render on the server and work without JavaScript. Personal pieces are dynamic islands, so pages stay cacheable behind a page cache or CDN.
 
 = Sell from WordPress =
 
 * Plan cards, products and collections with live Shopify prices.
 * A server-held cart that checks out on Shopify, signed in.
+* Every cart records the page the purchase started on, so the Shopify order shows where the sale came from.
 * Works beside Shopify's own WordPress plugin, or without it.
 
 = For developers =
 
-A PHP API, REST routes, WP-CLI commands, an event stream with a vendor-neutral browser client, and WordPress Abilities for AI agents through the MCP Adapter. Built on [Blockstudio](https://blockstudio.dev), tested with PHPUnit, and checked against the WordPress VIP coding standards.
+A PHP API, REST routes, WP-CLI commands, an event stream with a vendor-neutral browser client, signed event webhooks for CRMs and automation tools, and WordPress Abilities for AI agents through the MCP Adapter. Built on [Blockstudio](https://blockstudio.dev), tested with PHPUnit, and checked against the WordPress VIP coding standards.
 
 = Documentation =
 
 * [Documentation](https://www.redeemid.com/docs/)
 * [Guides](https://www.redeemid.com/guides/)
-* [Live demo](http://demo.redeemid.com/)
+* [Live demo](https://demo.redeemid.com/)
 * [Source code](https://github.com/webmultipliers/redeemid-core)
 
 RedeemID is in early development. Expect breaking changes before 1.0.0.
