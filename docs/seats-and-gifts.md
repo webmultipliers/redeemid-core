@@ -1,6 +1,6 @@
 # Seats and gifts: design note
 
-Status: **not built.** This note records how team seats and gift memberships could work without breaking RedeemID's one rule, so the decision is made before any code is.
+Status: **decided 2026-11-01.** Seats use Shopify B2B only; gifts use a Flow workflow plus the `membership.gift_until` line on the Member Account card. Both recipes are in [shopify-flow.md](shopify-flow.md#recipes). No owner screen and no gift checkout field were built. The rest of this note records why.
 
 ## The rule they must keep
 
@@ -44,8 +44,7 @@ What stays out:
 - **Gift links that open an article for a non-member.** That's WordPress granting access to a reader Shopify doesn't know. If a "share this article" feature is wanted, it should be a time-limited, single-item exception designed separately, not a membership.
 - **A gift end date enforced by WordPress.** If the tag lingers in Shopify, the fix is the Flow, not a WordPress timer.
 
-## What to decide
+## Decided
 
-1. Seats: Shopify B2B only, or also a RedeemID owner screen that writes to Shopify?
-2. Gifts: is a Flow template plus account-card display enough, or is a gift checkout field on the plan card wanted?
-3. Both depend on Flow templates; the importable templates already planned would come first.
+1. Seats: Shopify B2B only. No RedeemID owner screen.
+2. Gifts: the Flow recipe and the account-card line. No gift checkout field on the plan card.
