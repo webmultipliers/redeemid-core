@@ -92,7 +92,8 @@ jobs:
           php -S 127.0.0.1:8080 -t "$WP_PATH" > /tmp/php-server.log 2>&1 &
           for i in $(seq 1 20); do curl -fsS -o /dev/null "$REDEEMID_LEAK_URL/" && break; sleep 1; done
       - name: Leak tests
-        run: vendor/bin/phpunit --testsuite integration
+        run: vendor/bin/phpunit --testsuite integration --no-progress
       - name: Server log
         if: failure()
-        run: tail -n 200 /tmp/php-server.log; cat "$WP_PATH/wp-content/debug.log" 2>/dev/null || true
+        run: |
+          grep -vE ' (Accepted|Closing)$| \[[23][0-9][0-9]\]: ' /tmp/php-server.log | tail -n 60 || true
