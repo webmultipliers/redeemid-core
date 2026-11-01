@@ -2,7 +2,7 @@
 
 Use your Shopify store as the membership system for a WordPress site. Customers sign in to WordPress with their Shopify customer account, the same one they use in your store, and what that account holds in Shopify decides what they can read and use on WordPress. Built on [Blockstudio 7](https://blockstudio.dev).
 
-**[Website](https://www.redeemid.com/) · [Docs](https://www.redeemid.com/docs/) · [Guides](https://www.redeemid.com/guides/) · [Live demo](http://demo.redeemid.com/) · [Download](https://github.com/webmultipliers/redeemid-core/releases/latest) · [Developer API](docs/developer-api.md) · [Shopify Flow recipes](docs/shopify-flow.md) · [Protected files](docs/protected-files.md) · [Member preferences](docs/member-preferences.md) · [Abilities and MCP](docs/abilities.md)**
+**[Website](https://www.redeemid.com/) · [Docs](https://www.redeemid.com/docs/) · [Guides](https://www.redeemid.com/guides/) · [Live demo](http://demo.redeemid.com/) · [Download](https://github.com/webmultipliers/redeemid-core/releases/latest) · [Developer API](docs/developer-api.md) · [Shopify Flow recipes](docs/shopify-flow.md) · [Protected files](docs/protected-files.md) · [Member preferences](docs/member-preferences.md) · [Event webhooks](docs/event-webhooks.md) · [Abilities and MCP](docs/abilities.md)**
 
 Shopify stays the single source of truth. RedeemID links each Shopify customer account to a WordPress user and mirrors it there: name, email, account status, and the tags Shopify Flow or a subscription or membership app sets. Every access decision is made on the server from that mirror. A customer disabled in Shopify loses members-only access, and WordPress never grants access that Shopify doesn't know about.
 
@@ -366,6 +366,8 @@ See [docs/official-plugin.md](docs/official-plugin.md) for the replacement plan 
 ## PHP API
 
 The full developer API (functions, the event stream, actions, filters, REST routes and the `window.redeemid` browser client), with what is stable and example adapters for analytics tools and other plugins, is in [docs/developer-api.md](docs/developer-api.md). Its version is `REDEEMID_API_VERSION`.
+
+To send those events to a CRM, an email service or an automation tool without code, set an address under RedeemID → Settings → **Event webhooks**. Each chosen event goes out in the background as signed JSON (HMAC-SHA256), with retries for about 15 hours, and can carry the member's Shopify customer ID so the receiver can match them. See [docs/event-webhooks.md](docs/event-webhooks.md).
 
 For plugins that build on RedeemID (a course, a forum, a download manager) instead of running their own membership layer:
 

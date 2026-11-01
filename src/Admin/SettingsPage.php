@@ -2,6 +2,8 @@
 
 namespace RedeemID\Admin;
 
+use RedeemID\Api\Events;
+use RedeemID\Api\Outbound;
 use RedeemID\Config;
 use RedeemID\Preferences\Preferences;
 use RedeemID\Settings;
@@ -22,10 +24,32 @@ use RedeemID\Support\Logger;
  */
 final class SettingsPage {
 	public const PAGE   = 'redeemid-settings';
-	public const ACTION = 'redeemid_save_config';
+	public const ACTION   = 'redeemid_save_config';
+	public const OUTBOUND = 'redeemid_outbound';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'save' ] );
+		add_action( 'admin_post_' . self::OUTBOUND, [ self::class, 'outbound_action' ] );
+	}
+
+	/**
+	 * Settings → Event webhooks: send a test event, or make a new secret.
+	 */
+	public static function outbound_action(): void {
+		Menu::guard( self::OUTBOUND );
+		$do   = sanitize_key( wp_unslash( $_POST['do'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification -- checked by Menu::guard().
+		$args = [];
+
+		if ( 'rotate' === $do ) {
+			$args['result'] = '' === Outbound::rotate() ? 'outbound_no_key' : 'outbound_rotated';
+		} elseif ( 'test' === $do && Outbound::enabled() ) {
+			$status         = Outbound::test();
+			$args['result'] = Outbound::succeeded( $status ) ? 'outbound_test_ok' : 'outbound_test_failed';
+			$args['n']      = is_int( $status ) ? $status : 0;
+		}
+
+		wp_safe_redirect( Menu::url( self::PAGE, $args ) . '#redeemid-outbound' );
+		exit;
 	}
 
 	public static function save(): void {
@@ -117,6 +141,11 @@ final class SettingsPage {
 				/* translators: %d: number of values changed */
 				'config_saved'   => [ 'success', __( 'Connection saved. %d values changed.', 'redeemid' ) ],
 				'config_invalid' => [ 'error', __( 'Some values were not saved. They are marked below.', 'redeemid' ) ],
+				'outbound_rotated'     => [ 'success', __( 'A new signing secret was made. Give it to every receiver: the old one no longer verifies.', 'redeemid' ) ],
+				'outbound_no_key'      => [ 'error', __( 'No encryption key is available, so a signing secret cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY.', 'redeemid' ) ],
+				'outbound_test_ok'     => [ 'success', __( 'The test event was delivered.', 'redeemid' ) ],
+				/* translators: %d: HTTP status code, or 0 when there was no answer */
+				'outbound_test_failed' => [ 'error', __( 'The test event was not accepted (HTTP status %d; 0 means no answer within five seconds, or the address could not be reached).', 'redeemid' ) ],
 			]
 		);
 
@@ -145,6 +174,7 @@ final class SettingsPage {
 			</form>
 
 			<?php self::behaviour(); ?>
+			<?php self::outbound_secret(); ?>
 		<?php
 		Menu::page_end();
 	}
@@ -366,6 +396,7 @@ final class SettingsPage {
 				<?php submit_button( null, 'primary', 'submit', false ); ?>
 			</div>
 			<?php Menu::panel_end(); ?>
+			<?php self::outbound( $settings ); ?>
 		</form>
 		<?php
 	}
@@ -425,5 +456,79 @@ final class SettingsPage {
 			</td>
 		</tr>
 		<?php
+	}
+
+	/**
+	 * The event webhook fields, inside the behaviour form.
+	 *
+	 * @param array<string, mixed> $settings
+	 */
+	private static function outbound( array $settings ): void {
+		$name   = Settings::OPTION;
+		$chosen = Outbound::sanitize_events( $settings['outbound_events'] );
+		Menu::panel_start( __( 'Event webhooks', 'redeemid' ), __( 'Send RedeemID\'s events as signed JSON to one address: a CRM, an email service, Zapier, Make or your own endpoint. Sent in the background and retried for about 15 hours. Off while the address is empty.', 'redeemid' ), '', 'redeemid-outbound' );
+		?>
+		<div class="redeemid-panel__body redeemid-panel__body--flush">
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="redeemid-outbound-url"><?php esc_html_e( 'Send events to', 'redeemid' ); ?></label></th>
+				<td>
+					<input type="url" id="redeemid-outbound-url" class="regular-text code" name="<?php echo esc_attr( $name ); ?>[outbound_url]" value="<?php echo esc_attr( (string) $settings['outbound_url'] ); ?>" placeholder="https://" spellcheck="false">
+					<p class="description"><?php esc_html_e( 'An https address. Redirects are not followed, and anything but a 2xx answer within five seconds counts as a failure.', 'redeemid' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Events', 'redeemid' ); ?></th>
+				<td>
+					<fieldset>
+						<legend class="screen-reader-text"><?php esc_html_e( 'Events', 'redeemid' ); ?></legend>
+						<?php foreach ( array_keys( Events::CATALOG ) as $event ) : ?>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[outbound_events][]" value="<?php echo esc_attr( $event ); ?>" <?php checked( in_array( $event, $chosen, true ) ); ?>> <code><?php echo esc_html( $event ); ?></code></label><br>
+						<?php endforeach; ?>
+					</fieldset>
+					<p class="description"><?php esc_html_e( 'wall_shown fires on page views and meter_used on metered reads, so each can mean one background job per view on a busy site.', 'redeemid' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Matching people', 'redeemid' ); ?></th>
+				<td>
+					<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[outbound_customer]" value="1" <?php checked( ! empty( $settings['outbound_customer'] ) ); ?>> <?php esc_html_e( 'Include the Shopify customer ID for linked members', 'redeemid' ); ?></label>
+					<p class="description"><?php esc_html_e( 'Lets a CRM or email service that syncs your Shopify customers match the person. Events never carry an email address or Shopify tags. Once sent, an event is the receiver\'s: erasing a member here does not remove it there, so list the receiver in your privacy policy.', 'redeemid' ); ?></p>
+				</td>
+			</tr>
+		</table>
+		</div>
+		<div class="redeemid-panel__footer">
+			<?php submit_button( null, 'primary', 'submit', false ); ?>
+		</div>
+		<?php
+		Menu::panel_end();
+	}
+
+	/**
+	 * The signing secret and the test and new-secret buttons, outside the form.
+	 */
+	private static function outbound_secret(): void {
+		if ( ! Outbound::enabled() ) {
+			return;
+		}
+
+		$secret  = Outbound::secret();
+		$actions = Menu::action_button_html( self::OUTBOUND, 'test', __( 'Send a test event', 'redeemid' ) )
+			. Menu::action_button_html( self::OUTBOUND, 'rotate', __( 'Make a new secret', 'redeemid' ) );
+		Menu::panel_start( __( 'Signing secret', 'redeemid' ), __( 'Every event webhook carries X-RedeemID-Signature: t=<time>,v1=<HMAC-SHA256 of "<time>.<body>" with this secret>. Check it, and that the time is recent, before trusting a delivery.', 'redeemid' ), $actions );
+		?>
+		<div class="redeemid-panel__body">
+			<?php if ( '' === $secret ) : ?>
+				<p class="redeemid-error-text"><?php esc_html_e( 'No encryption key is available, so no signing secret can be stored and nothing is sent. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY.', 'redeemid' ); ?></p>
+			<?php else : ?>
+				<details>
+					<summary><?php esc_html_e( 'Show the secret', 'redeemid' ); ?></summary>
+					<p><label class="screen-reader-text" for="redeemid-outbound-secret"><?php esc_html_e( 'Signing secret', 'redeemid' ); ?></label><input type="text" id="redeemid-outbound-secret" class="large-text code" readonly value="<?php echo esc_attr( $secret ); ?>" onfocus="this.select()"></p>
+				</details>
+			<?php endif; ?>
+		</div>
+		<?php
+		Menu::panel_end();
 	}
 }

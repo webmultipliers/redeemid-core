@@ -25,6 +25,9 @@ final class Settings {
 		'storefront_first'     => false,
 		'session_limit'        => 0,
 		'member_fields'        => [],
+		'outbound_url'         => '',
+		'outbound_events'      => \RedeemID\Api\Outbound::DEFAULT_EVENTS,
+		'outbound_customer'    => false,
 	];
 
 	public static function all(): array {
@@ -54,6 +57,9 @@ final class Settings {
 			'storefront_first'     => ! empty( $input['storefront_first'] ),
 			'session_limit'        => max( 0, min( \RedeemID\Auth\SessionCap::MAX, (int) ( $input['session_limit'] ?? 0 ) ) ),
 			'member_fields'        => \RedeemID\Preferences\Preferences::clean_modes( $input['member_fields'] ?? [] ),
+			'outbound_url'         => esc_url_raw( trim( (string) ( $input['outbound_url'] ?? '' ) ), [ 'https' ] ),
+			'outbound_events'      => \RedeemID\Api\Outbound::sanitize_events( $input['outbound_events'] ?? [] ),
+			'outbound_customer'    => ! empty( $input['outbound_customer'] ),
 		];
 	}
 

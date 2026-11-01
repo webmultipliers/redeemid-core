@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.3.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.4.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -27,7 +27,7 @@ No user means the current visitor. None returns Shopify tags, an email or the cu
 
 ## The event stream (stable)
 
-Every event goes through one action, `redeemid_event`, in one shape. Subscribe there to forward events to any analytics tool, CRM or queue. RedeemID never sends an event anywhere by itself and names no vendor.
+Every event goes through one action, `redeemid_event`, in one shape. Subscribe there to forward events to any analytics tool, CRM or queue. RedeemID sends an event nowhere unless you set up [event webhooks](event-webhooks.md), and it names no vendor.
 
 ```php
 add_action( 'redeemid_event', function ( string $name, array $props, array $event ) {
@@ -70,6 +70,7 @@ Stable:
 - **Settings:** `redeemid_setting_{key}`
 - **Access:** `redeemid_access_levels`, `redeemid_access_rules`, `redeemid_gated_post_types`, `redeemid_access_context`, `redeemid_effective_rule`, `redeemid_teaser_settings`, `redeemid_paywall_schema`, `redeemid_drip_days`
 - **Features:** `redeemid_features`, `redeemid_feature_tests`, `redeemid_feature_decision`
+- **Events:** `redeemid_outbound_payload`, the body of an [event webhook](event-webhooks.md) before it is queued (return `null` to skip it)
 - **Commerce:** `redeemid_context_country`, `redeemid_buyer_ip`, `redeemid_cart_attribution`, `redeemid_checkout_banner`, `redeemid_storefront_path`, `redeemid_product_url`, `redeemid_cart_enabled`
 - **Display:** `redeemid_locked_panel`, `redeemid_health_checks`
 - **Files:** `redeemid_file_sendfile`
@@ -158,7 +159,7 @@ redeemid.subscribe( ( name, props ) => window.posthog?.capture( `redeemid_${ nam
 redeemid.subscribe( ( name, props ) => ( window.dataLayer = window.dataLayer || [] ).push( { event: `redeemid_${ name }`, ...props } ) );
 ```
 
-On the server, the same pattern sends events from PHP, for example to a queue or a measurement endpoint:
+To send events to a CRM, an email service or an automation tool without code, use [event webhooks](event-webhooks.md): signed, queued and retried. For anything else, the same pattern sends events from PHP, for example to a queue or a measurement endpoint:
 
 ```php
 add_action( 'redeemid_event', function ( string $name, array $props ) {
