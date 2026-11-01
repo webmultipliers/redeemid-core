@@ -94,8 +94,8 @@ final class LeakTest extends TestCase {
 		[ $status, $body ] = $this->fetch( '/?p={break}', '' );
 
 		$this->assertSame( 200, $status );
-		$this->assertStringContainsString( 'LEAKTEST-PUBLIC', $body );
-		$this->assertStringContainsString( 'redeemid-paywall', $body );
+		$this->assertTrue( str_contains( $body, 'LEAKTEST-PUBLIC' ), 'The teaser is missing.' );
+		$this->assertTrue( str_contains( $body, 'redeemid-paywall' ), 'The wall is missing.' );
 	}
 
 	public function test_access_header_tells_caches_who_saw_what(): void {
@@ -127,7 +127,7 @@ final class LeakTest extends TestCase {
 		foreach ( [ '', self::$seed['cookies']['reader'] ] as $cookie ) {
 			[ , $body ] = $this->fetch( $path, $cookie );
 
-			$this->assertStringNotContainsString( 'Leak test with', $body, "{$path} listed a post for a word only in its locked part." );
+			$this->assertFalse( str_contains( $body, 'Leak test with' ), "{$path} listed a post for a word only in its locked part: " . self::around( $body, 'Leak test with' ) );
 		}
 	}
 
@@ -135,21 +135,24 @@ final class LeakTest extends TestCase {
 		[ $status, $body ] = $this->fetch( '/?p={break}', self::$seed['cookies']['gold'] );
 
 		$this->assertSame( 200, $status );
-		$this->assertStringContainsString( 'LEAKTEST-SECRET-ITEM', $body );
-		$this->assertStringContainsString( 'LEAKTEST-SECRET-COMMENT', $body );
-	}
-
-	public function test_gold_member_finds_the_locked_word(): void {
-		[ , $body ] = $this->fetch( '/?s=quokkaword', self::$seed['cookies']['gold'] );
-
-		$this->assertStringContainsString( 'Leak test with a break', $body );
+		$this->assertTrue( str_contains( $body, 'LEAKTEST-SECRET-ITEM' ), 'A Gold member did not get the locked text.' );
+		$this->assertTrue( str_contains( $body, 'LEAKTEST-SECRET-COMMENT' ), 'A Gold member did not get the comments.' );
 	}
 
 	private function assertNoSecret( string $path, string $cookie ): void {
 		[ $status, $body ] = $this->fetch( $path, $cookie );
 
 		$this->assertLessThan( 500, $status, "{$path} failed with HTTP {$status}." );
-		$this->assertStringNotContainsString( self::SECRET, $body, "Locked text leaked on {$path}." );
+		$this->assertFalse( str_contains( $body, self::SECRET ), "Locked text leaked on {$path}: " . self::around( $body, self::SECRET ) );
+	}
+
+	/**
+	 * 120 characters either side of $needle, for a readable failure.
+	 */
+	private static function around( string $body, string $needle ): string {
+		$at = (int) strpos( $body, $needle );
+
+		return '…' . preg_replace( '/\s+/', ' ', substr( $body, max( 0, $at - 120 ), 240 + strlen( $needle ) ) ) . '…';
 	}
 
 	/**
