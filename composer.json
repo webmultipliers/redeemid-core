@@ -31,8 +31,7 @@
 		"phpstan": "blockstudio-phpstan --root . --configuration phpstan.neon.dist --exclude 'vendor/**' --exclude '_dist/**' --exclude 'tests/**' -- --no-progress",
 		"build-prod": [
 			"@composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress"
-		],
-		"release": "@build-prod"
+		]
 	},
 	"config": {
 		"optimize-autoloader": true,
@@ -49,7 +48,6 @@
 	"scripts-descriptions": {
 		"phpcs": "Check the code against the WordPress VIP rules in phpcs.xml.dist.",
 		"build-prod": "Install production dependencies so this directory runs as the plugin (used by deploys and release zips).",
-		"release": "Alias of build-prod.",
 		"phpstan": "Blockstudio's PHPStan checks: block templates against block.json, block.json shapes, hook names."
 	}
 }

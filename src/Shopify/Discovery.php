@@ -6,8 +6,7 @@ use RedeemID\Config;
 
 /**
  * Cached OpenID and Customer Account API discovery for the configured store.
- * A last-good copy survives Shopify outages; explicit endpoint constants are
- * configuration overrides, not a substitute for discovery.
+ * A last-good copy survives Shopify outages.
  */
 final class Discovery {
 	private const CACHE      = 'redeemid_discovery';
@@ -55,16 +54,6 @@ final class Discovery {
 	}
 
 	public static function endpoint( string $key ): string {
-		$overrides = [
-			'authorization_endpoint' => 'REDEEMID_OAUTH_AUTHORIZE_URL',
-			'token_endpoint'         => 'REDEEMID_OAUTH_TOKEN_URL',
-			'end_session_endpoint'   => 'REDEEMID_OAUTH_LOGOUT_URL',
-		];
-
-		if ( isset( $overrides[ $key ] ) && Config::has( $overrides[ $key ] ) ) {
-			return esc_url_raw( Config::get( $overrides[ $key ] ) );
-		}
-
 		$value = self::openid()[ $key ] ?? '';
 
 		if ( 'graphql_api' === $key ) {

@@ -691,11 +691,6 @@ a.redeemid-card:focus-visible {
 	gap: 6px;
 }
 
-.redeemid-choice-list label {
-	display: block;
-	margin: 0 0 6px;
-}
-
 .redeemid-level-checks label {
 	display: inline-block;
 	margin: 0 12px 4px 0;
@@ -714,19 +709,6 @@ a.redeemid-card:focus-visible {
 
 .redeemid details[open] > summary {
 	margin-bottom: 8px;
-}
-
-.redeemid-copy-row {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
-}
-
-.redeemid-copy-row code {
-	padding: 4px 8px;
-	border-radius: 4px;
-	overflow-wrap: anywhere;
 }
 
 /* Small helpers. */

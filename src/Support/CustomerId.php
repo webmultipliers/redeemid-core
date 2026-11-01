@@ -48,11 +48,14 @@ final class CustomerId {
 	/**
 	 * Pull the customer identifier out of a webhook payload, whatever its shape.
 	 */
-	public static function from_payload( array $payload, string $topic = '' ): ?self {
-		// Customer topics (customers/*, customers_*_consent/update, customer.*) put the customer at the root; order topics nest it.
-		$candidates = str_starts_with( $topic, 'customers' ) || str_starts_with( $topic, 'customer.' )
-			? [ $payload['id'] ?? null, $payload['customerId'] ?? null, $payload['customer_id'] ?? null, $payload['customer']['id'] ?? null ]
-			: [ $payload['customer']['id'] ?? null, $payload['customer_id'] ?? null, $payload['customerId'] ?? null ];
+	public static function from_payload( array $payload, string $topic ): ?self {
+		// Customer topics (customers/*, customers_*_consent/update, customer.*) put the customer at the root.
+		// Shop topics (shop/redact, app/uninstalled) carry no customer; their root id is the shop's.
+		if ( ! str_starts_with( $topic, 'customers' ) && ! str_starts_with( $topic, 'customer.' ) ) {
+			return null;
+		}
+
+		$candidates = [ $payload['id'] ?? null, $payload['customerId'] ?? null, $payload['customer_id'] ?? null, $payload['customer']['id'] ?? null ];
 
 		foreach ( $candidates as $candidate ) {
 			$id = self::parse( $candidate );
