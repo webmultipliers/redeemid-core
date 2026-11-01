@@ -98,6 +98,11 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 				<dd><?php echo esc_html( Account::date( $redeemid_view['renews'] ) ); ?></dd>
 			<?php endif; ?>
 
+			<?php if ( '' !== $redeemid_view['gift_until'] ) : ?>
+				<dt><?php esc_html_e( 'Gift membership', 'redeemid' ); ?></dt>
+				<dd><?php echo esc_html( sprintf( /* translators: %s: date the gift ends */ __( 'Until %s', 'redeemid' ), Account::date( $redeemid_view['gift_until'] ) ) ); ?></dd>
+			<?php endif; ?>
+
 			<?php if ( ! empty( $a['showFeatures'] ) && $redeemid_view['features'] ) : ?>
 				<dt><?php esc_html_e( 'Includes', 'redeemid' ); ?></dt>
 				<dd><?php echo esc_html( implode( ', ', $redeemid_view['features'] ) ); ?></dd>

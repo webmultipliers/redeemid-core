@@ -10,7 +10,7 @@ use RedeemID\Support\CustomerId;
  * editing and webhook registration. Never called with credentials from the browser.
  */
 final class Admin {
-	public const RECONCILE_QUERY = 'query RedeemIDReconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } } } }';
+	public const RECONCILE_QUERY = 'query RedeemIDReconcile($ids: [ID!]!) { nodes(ids: $ids) { ... on Customer { id tags since: metafield(namespace: "membership", key: "member_since") { value } renews: metafield(namespace: "membership", key: "renews_on") { value } gift: metafield(namespace: "membership", key: "gift_until") { value } } } }';
 
 	public static function available(): bool {
 		return AdminToken::configured() && '' !== Config::store_domain();
@@ -49,10 +49,10 @@ final class Admin {
 	 * Gating fields for up to 50 customers in one call.
 	 *
 	 * @param CustomerId[] $ids
-	 * Also reads the optional membership.member_since and membership.renews_on
+	 * Also reads the optional membership.member_since, membership.renews_on and membership.gift_until
 	 * customer metafields, for the member's account card.
 	 *
-	 * @return array<string, array{tags: string[], since: ?string, renews: ?string}>|\WP_Error Keyed by numeric ID; missing keys were not found.
+	 * @return array<string, array{tags: string[], since: ?string, renews: ?string, gift: ?string}>|\WP_Error Keyed by numeric ID; missing keys were not found.
 	 */
 	public static function customers( array $ids ): array|\WP_Error {
 		$data = self::query(
@@ -74,7 +74,7 @@ final class Admin {
 	 * standing. Status comes from the customers/disable and customers/enable
 	 * webhooks instead (Webhooks\Extractor).
 	 *
-	 * @return array<string, array{tags: string[], since: ?string, renews: ?string}>
+	 * @return array<string, array{tags: string[], since: ?string, renews: ?string, gift: ?string}>
 	 */
 	public static function parse_customers( array $data ): array {
 		$out = [];
@@ -87,6 +87,7 @@ final class Admin {
 					'tags'   => array_values( array_filter( (array) ( $node['tags'] ?? [] ), 'is_string' ) ),
 					'since'  => isset( $node['since']['value'] ) ? (string) $node['since']['value'] : null,
 					'renews' => isset( $node['renews']['value'] ) ? (string) $node['renews']['value'] : null,
+					'gift'   => isset( $node['gift']['value'] ) ? (string) $node['gift']['value'] : null,
 				];
 			}
 		}

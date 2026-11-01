@@ -78,7 +78,7 @@ final class Privacy {
 	public const EXPORTED = [
 		Mirror::GID, Mirror::NUMERIC, Mirror::EMAIL, Mirror::FIRST_NAME, Mirror::LAST_NAME, Mirror::VERIFIED,
 		Mirror::TAGS, Mirror::STATUS, Mirror::STATUS_FROM, Mirror::EMAIL_OPTIN, Mirror::SMS_OPTIN, Mirror::SUMMARY,
-		Mirror::SINCE, Mirror::RENEWS, Mirror::HISTORY, Mirror::LINKED_AT, Mirror::LAST_SYNC, Mirror::SYNC_SOURCE,
+		Mirror::SINCE, Mirror::RENEWS, Mirror::GIFT_UNTIL, Mirror::HISTORY, Mirror::LINKED_AT, Mirror::LAST_SYNC, Mirror::SYNC_SOURCE,
 		Mirror::SYNC_FAILED, Mirror::LAST_EVENT, Mirror::PROFILE_AT, Mirror::STATUS_AT,
 	];
 

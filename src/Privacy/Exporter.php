@@ -34,6 +34,7 @@ final class Exporter {
 			Mirror::SUMMARY     => __( 'Purchasing summary', 'redeemid' ),
 			Mirror::SINCE       => __( 'Member since', 'redeemid' ),
 			Mirror::RENEWS      => __( 'Renews on', 'redeemid' ),
+			Mirror::GIFT_UNTIL  => __( 'Gift membership until', 'redeemid' ),
 			Mirror::HISTORY     => __( 'Membership level history', 'redeemid' ),
 			Mirror::LINKED_AT   => __( 'Linked to Shopify', 'redeemid' ),
 			Mirror::LAST_SYNC   => __( 'Last synced', 'redeemid' ),
