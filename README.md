@@ -113,7 +113,7 @@ Please don't open a public issue for a vulnerability. Report it privately from t
 
 ## Sponsor
 
-RedeemID is free, with no paid version. Sponsorship through [GitHub Sponsors](https://github.com/sponsors/vinnysgreen) pays for its development toward 1.0.0. See [Sponsors and first stores](https://redeemid.com/sponsors/).
+RedeemID is free, with no paid version. Sponsorship through [GitHub Sponsors](https://github.com/sponsors/vinnysgreen) pays for its development toward 1.0.0. See [Sponsors and first stores](https://www.redeemid.com/sponsors/).
 
 ## License
 
