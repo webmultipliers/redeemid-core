@@ -111,6 +111,10 @@ The [demo theme](https://github.com/webmultipliers/redeemid-demo-theme) seeds a 
 
 Please don't open a public issue for a vulnerability. Report it privately from the repository's **Security** tab (**Report a vulnerability**).
 
+## Sponsor
+
+RedeemID is free, with no paid version. Sponsorship through [GitHub Sponsors](https://github.com/sponsors/vinnysgreen) pays for its development toward 1.0.0. See [Sponsors and first stores](https://redeemid.com/sponsors/).
+
 ## License
 
 GPL-2.0-or-later. See [LICENSE](LICENSE). Copyright Vinny S. Green, LLC. Blockstudio, bundled through Composer, is also GPL-2.0-or-later.
