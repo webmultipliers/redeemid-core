@@ -1,5 +1,6 @@
 === RedeemID – Shopify Customer Login & Memberships ===
 Contributors: vinnysgreen
+Donate link: https://github.com/sponsors/vinnysgreen
 Tags: shopify, membership, paywall, restrict content, login
 Requires at least: 6.7
 Tested up to: 7.1
