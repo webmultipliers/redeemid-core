@@ -33,6 +33,7 @@ final class Flow {
 		add_action( 'template_redirect', [ self::class, 'maybe_handle_callback' ], 0 );
 		add_filter( 'the_content', [ self::class, 'callback_notice' ], 5 );
 		add_action( 'set_auth_cookie', [ TokenVault::class, 'capture_session_token' ], 10, 6 );
+		add_action( 'login_form_logout', [ self::class, 'handle_wp_logout' ] );
 
 		foreach ( [ 'login', 'logout', 'new_account' ] as $action ) {
 			add_action( 'admin_post_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
@@ -421,6 +422,33 @@ final class Flow {
 		}
 
 		self::redirect( self::logout( self::posted_redirect() ), true );
+	}
+
+	/**
+	 * WordPress's own logout link (the admin bar, wp_logout_url() in a theme)
+	 * would end only the WordPress session and leave the customer signed in
+	 * to Shopify, so the next person on a shared device could sign straight
+	 * back in as them. When this session signed in with Shopify, log out the
+	 * RedeemID way instead: both sessions end. Other sessions are left to
+	 * WordPress as usual.
+	 */
+	public static function handle_wp_logout(): void {
+		$user_id = get_current_user_id();
+		$tokens  = $user_id ? TokenVault::get( $user_id ) : null;
+
+		if ( '' === (string) ( $tokens['id_token'] ?? '' ) ) {
+			return;
+		}
+
+		check_admin_referer( 'log-out' );
+
+		$requested = isset( $_REQUEST['redirect_to'] ) ? sanitize_url( wp_unslash( $_REQUEST['redirect_to'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitize_url, then validated by safe_redirect().
+		$user      = wp_get_current_user();
+
+		// The same filter wp-login.php applies, so other plugins' targets still hold.
+		$after = (string) apply_filters( 'logout_redirect', '' !== $requested ? $requested : home_url( '/' ), $requested, $user );
+
+		self::redirect( self::logout( $after ), true );
 	}
 
 	public static function disconnect( int $user_id ): string|\WP_Error {
