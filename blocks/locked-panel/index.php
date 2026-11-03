@@ -13,8 +13,13 @@
  * cases apart), or replace this template with a Blockstudio override
  * ("override": true on redeemid/locked-panel).
  *
+ * An item sold on its own adds a buy-now button for its product (buyVariant,
+ * buyLabel). That form carries no nonce, like every buy-now form, so it is
+ * safe in cached HTML.
+ *
  * @var array $a Block attributes: message, reason, kind, level, ctaLabel, ctaUrl,
- *               signInUrl, hint, formAction, formLabel, formNonce, redirectTo.
+ *               signInUrl, hint, formAction, formLabel, formNonce, redirectTo,
+ *               buyVariant, buyLabel.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -29,6 +34,14 @@ $redeemid_form = in_array( $a['formAction'] ?? '', [ 'redeemid_connect', 'redeem
 	<div class="redeemid-gate__actions">
 		<?php if ( ! empty( $a['ctaLabel'] ) && ! empty( $a['ctaUrl'] ) ) : ?>
 			<a class="wp-element-button" href="<?php echo esc_url( (string) $a['ctaUrl'] ); ?>"><?php echo esc_html( (string) $a['ctaLabel'] ); ?></a>
+		<?php endif; ?>
+		<?php if ( ! empty( $a['buyVariant'] ) && ! empty( $a['buyLabel'] ) ) : ?>
+			<form method="post" action="<?php echo esc_url( \RedeemID\Commerce\BuyNow::form_url() ); ?>" class="redeemid-inline-form redeemid-gate__buy">
+				<input type="hidden" name="action" value="<?php echo esc_attr( \RedeemID\Commerce\BuyNow::ACTION ); ?>">
+				<input type="hidden" name="variant" value="<?php echo esc_attr( (string) $a['buyVariant'] ); ?>">
+				<input type="hidden" name="redirect_to" value="<?php echo esc_url( (string) ( $a['redirectTo'] ?? '' ) ); ?>">
+				<button type="submit" class="wp-element-button<?php echo ! empty( $a['ctaLabel'] ) && ! empty( $a['ctaUrl'] ) ? ' is-style-outline' : ''; ?>"><?php echo esc_html( (string) $a['buyLabel'] ); ?></button>
+			</form>
 		<?php endif; ?>
 		<?php if ( ! empty( $a['signInUrl'] ) ) : ?>
 			<a class="wp-element-button is-style-outline" href="<?php echo esc_url( (string) $a['signInUrl'] ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a>

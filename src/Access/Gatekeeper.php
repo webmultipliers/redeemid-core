@@ -170,6 +170,8 @@ final class Gatekeeper {
 			'fallbackCtaUrl'   => $level->cta_url ?? '',
 			'showSignIn'       => true,
 			'unlocksAt'        => Decision::DRIP === $verdict->decision->reason ? Drip::opens_for( $post, get_current_user_id() ) : 0,
+			// Sold on its own: the panel offers that product beside the level.
+			'buyProduct'       => self::rule( $post )->sold() ? ItemRule::get( $post )['unlock_product'] : '',
 		];
 
 		// The data attributes feed the browser client's wall_shown event. None is personal: a cached guest page carries them too.

@@ -182,6 +182,10 @@ final class Explain {
 			$lines[] = 'Item window: free until ' . $date( $c->public_until ) . ( $c->public_until <= $now ? ' (passed)' : ' (free now)' ) . '.';
 		}
 
+		if ( $c->item_unlock_tags ) {
+			$lines[] = 'Item sale: a customer tagged ' . implode( ' or ', $c->item_unlock_tags ) . ' can also read it, whatever the rule (no drip).';
+		}
+
 		foreach ( $c->terms as $term ) {
 			$lines[] = TermRule::OPENS === $term->kind
 				? $term->label() . ': opens the item until ' . ( $term->opens_until ? $date( $term->opens_until ) : '(no expiry, ignored)' ) . ( $term->opens_at( $now ) ? ' (in force).' : ' (not in force).' )

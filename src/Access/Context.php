@@ -29,6 +29,7 @@ final class Context {
 	 * @param ?int       $published        Publish time, for the post type's age window.
 	 * @param ?int       $type_public_after Post type window: items older than this many seconds are open.
 	 * @param bool       $meter_exempt     The item never counts toward a future meter.
+	 * @param string[]   $item_unlock_tags Shopify tags that unlock this one item on top of its rule (a sale of the item alone).
 	 */
 	public function __construct(
 		public readonly string $item_mode = self::ITEM_INHERIT,
@@ -43,6 +44,7 @@ final class Context {
 		public readonly ?int $published = null,
 		public readonly ?int $type_public_after = null,
 		public readonly bool $meter_exempt = false,
+		public readonly array $item_unlock_tags = [],
 	) {}
 
 	/**
@@ -72,6 +74,7 @@ final class Context {
 			published: $int( $a['published'] ?? null ),
 			type_public_after: $int( $a['type_public_after'] ?? null ),
 			meter_exempt: ! empty( $a['meter_exempt'] ),
+			item_unlock_tags: array_values( array_filter( (array) ( $a['item_unlock_tags'] ?? [] ), static fn( $t ) => is_string( $t ) && '' !== $t ) ),
 		);
 	}
 }

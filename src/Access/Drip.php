@@ -88,7 +88,8 @@ final class Drip {
 	 * Narrow a granted verdict for the signed-in visitor if the item hasn't dripped to them yet.
 	 */
 	public static function apply( Verdict $verdict, \WP_Post $post, EffectiveRule $rule ): Verdict {
-		if ( ! $verdict->granted() || $rule->open() || null !== Viewer::preview_as() ) {
+		// A buyer of the item alone paid for it now, not for a membership that ripens.
+		if ( ! $verdict->granted() || $rule->open() || Decision::BOUGHT === $verdict->decision->reason || null !== Viewer::preview_as() ) {
 			return $verdict;
 		}
 
