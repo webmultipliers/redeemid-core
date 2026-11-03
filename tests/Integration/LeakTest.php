@@ -147,6 +147,14 @@ final class LeakTest extends TestCase {
 		$this->assertTrue( str_contains( $body, 'LEAKTEST-SECRET-COMMENT' ), 'A Gold member did not get the comments.' );
 	}
 
+	public function test_buyer_reads_only_the_item_they_bought(): void {
+		[ $status, $body ] = $this->fetch( '/?p={break}', self::$seed['cookies']['buyer'] );
+
+		$this->assertSame( 200, $status );
+		$this->assertTrue( str_contains( $body, 'LEAKTEST-SECRET-ITEM' ), 'A buyer of the item did not get its locked text.' );
+		$this->assertNoSecret( '/?p={no_break}', self::$seed['cookies']['buyer'] );
+	}
+
 	private function assertNoSecret( string $path, string $cookie ): void {
 		[ $status, $body ] = $this->fetch( $path, $cookie );
 
