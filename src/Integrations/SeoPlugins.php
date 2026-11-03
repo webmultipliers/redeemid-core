@@ -31,6 +31,11 @@ use RedeemID\Access\Surfaces;
  * excerpts and hand-written SEO descriptions are public by definition and kept.
  */
 final class SeoPlugins {
+	/** The locked item IDs Yoast's sitemaps leave out, cached until an item locks or opens. */
+	public const LOCKED_IDS = 'redeemid_sitemap_locked_ids';
+
+	private const PAGE = 500;
+
 	public static function register(): void {
 		add_filter( 'wpseo_replacements', [ self::class, 'yoast_replacements' ], 10, 2 );
 		add_filter( 'rank_math/frontend/description', [ self::class, 'rank_math_description' ] );
@@ -48,6 +53,8 @@ final class SeoPlugins {
 	 * Both plugins cache sitemaps, and neither knows an item locked or opened.
 	 */
 	public static function clear_sitemap_caches( mixed $post_id = null ): void {
+		delete_transient( self::LOCKED_IDS );
+
 		if ( ! Surfaces::noindex_types() ) {
 			return;
 		}
@@ -82,19 +89,48 @@ final class SeoPlugins {
 			return $ids;
 		}
 
-		$locked = get_posts(
-			[
-				'post_type'        => $types,
-				'post_status'      => 'publish',
-				'fields'           => 'ids',
-				'posts_per_page'   => -1,
-				'no_found_rows'    => true,
-				'suppress_filters' => true,
-				'meta_key'         => Index::LOCKED, // phpcs:ignore WordPress.DB.SlowDBQuery
-			]
-		);
+		$locked = get_transient( self::LOCKED_IDS );
+
+		if ( ! is_array( $locked ) ) {
+			$locked = self::locked_ids( $types );
+			set_transient( self::LOCKED_IDS, $locked, 12 * HOUR_IN_SECONDS );
+		}
 
 		return array_values( array_unique( array_merge( is_array( $ids ) ? $ids : [], $locked ) ) );
+	}
+
+	/**
+	 * Every published locked item of these types, read 500 IDs at a time so a
+	 * large site never loads them in one query.
+	 *
+	 * @param string[] $types
+	 * @return int[]
+	 */
+	public static function locked_ids( array $types ): array {
+		$ids  = [];
+		$page = 1;
+
+		do {
+			$batch = get_posts(
+				[
+					'post_type'        => $types,
+					'post_status'      => 'publish',
+					'fields'           => 'ids',
+					'posts_per_page'   => self::PAGE,
+					'paged'            => $page,
+					'orderby'          => 'ID',
+					'order'            => 'ASC',
+					'no_found_rows'    => true,
+					'suppress_filters' => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- RedeemID's own query filters (Surfaces) must not hide the locked items this lists.
+					'meta_key'         => Index::LOCKED, // phpcs:ignore WordPress.DB.SlowDBQuery
+				]
+			);
+
+			$ids = array_merge( $ids, array_map( 'intval', $batch ) );
+			++$page;
+		} while ( count( $batch ) === self::PAGE );
+
+		return $ids;
 	}
 
 	/**
