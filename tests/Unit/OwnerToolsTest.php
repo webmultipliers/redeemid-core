@@ -84,6 +84,19 @@ final class OwnerToolsTest extends TestCase {
 		$this->assertFalse( $this->done( $this->facts( [ 'levels' => 0, 'unknown' => null ] ) )['levels'] );
 	}
 
+	public function test_sign_in_only_site_finishes_setup_without_levels(): void {
+		$steps = Setup::steps( $this->facts( [ 'levels' => 0, 'members' => 0 ] ) );
+		$this->assertSame( 0, Setup::left( $steps ), 'No levels means the levels and tagging steps are optional' );
+
+		$by_key = array_column( $steps, null, 'key' );
+		$this->assertTrue( $by_key['levels']['optional'] );
+		$this->assertTrue( $by_key['flow']['optional'] );
+	}
+
+	public function test_a_site_with_levels_still_needs_tagging(): void {
+		$this->assertSame( 1, Setup::left( Setup::steps( $this->facts( [ 'members' => 0 ] ) ) ) );
+	}
+
 	public function test_flow_step_waits_for_a_member(): void {
 		$this->assertFalse( $this->done( $this->facts( [ 'members' => 0 ] ) )['flow'] );
 	}

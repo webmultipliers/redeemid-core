@@ -136,7 +136,7 @@ final class Overview {
 	 */
 	private static function setup(): void {
 		$steps = Setup::steps( Setup::facts() );
-		$left  = count( array_filter( $steps, static fn( $step ) => ! $step['done'] ) );
+		$left  = Setup::left( $steps );
 		$names = [ 'sign_in' => __( 'sign-in', 'redeemid' ), 'admin' => __( 'Admin API', 'redeemid' ), 'storefront' => __( 'Storefront', 'redeemid' ) ];
 		$flow  = 'https://github.com/webmultipliers/redeemid-core/blob/main/docs/shopify-flow.md';
 		$text  = [
@@ -165,7 +165,7 @@ final class Overview {
 				<?php foreach ( $steps as $step ) : ?>
 					<?php [ $title, $help, $button ] = $text[ $step['key'] ]; ?>
 					<li class="<?php echo $step['done'] ? 'is-done' : ''; ?>">
-						<span class="redeemid-checks__label"><?php echo Menu::dot( $step['done'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $title ); ?></span>
+						<span class="redeemid-checks__label"><?php echo Menu::dot( $step['done'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $title ); ?><?php echo $step['optional'] && ! $step['done'] ? ' ' . esc_html__( '(optional for a sign-in-only site)', 'redeemid' ) : ''; ?></span>
 						<span class="redeemid-checks__detail">
 							<?php echo esc_html( $help ); ?>
 							<?php if ( 'test' === $step['key'] && '' !== $step['detail'] ) : ?>

@@ -201,29 +201,43 @@ final class Setup {
 			'levels'      => count( $levels ),
 			'unknown'     => $levels && AdminApi::available() ? self::unknown_tags() : null,
 			'members'     => array_sum( array_column( $activity['levels'], 'linked' ) ),
+			'linked'      => (int) ( $activity['linked_total'] ?? 0 ),
 		];
 	}
 
 	/**
 	 * The checklist for $facts. Pure.
 	 *
+	 * A site with no levels uses RedeemID for sign-in only: the levels and
+	 * tagging steps are then optional, and setup is done without them.
+	 *
 	 * @param array<string, mixed> $facts From facts().
-	 * @return array<int, array{key: string, done: bool, detail: string}>
+	 * @return array<int, array{key: string, done: bool, detail: string, optional: bool}>
 	 */
 	public static function steps( array $facts ): array {
 		$test    = $facts['test'];
 		$tested  = is_array( $test ) && $test['results'] && ! in_array( false, $test['results'], true );
 		$unknown = $facts['unknown'];
+		$sign_in = 0 === (int) $facts['levels'];
 
 		return [
-			[ 'key' => 'config', 'done' => (bool) $facts['config'], 'detail' => '' ],
-			[ 'key' => 'test', 'done' => $tested, 'detail' => is_array( $test ) ? implode( ', ', array_keys( array_filter( $test['results'], static fn( $ok ) => ! $ok ) ) ) : '' ],
-			[ 'key' => 'permalinks', 'done' => (bool) $facts['permalinks'], 'detail' => '' ],
-			[ 'key' => 'callback', 'done' => (bool) $facts['callback'], 'detail' => '' ],
-			[ 'key' => 'webhooks', 'done' => (bool) $facts['webhooks'], 'detail' => '' ],
+			[ 'key' => 'config', 'done' => (bool) $facts['config'], 'detail' => '', 'optional' => false ],
+			[ 'key' => 'test', 'done' => $tested, 'detail' => is_array( $test ) ? implode( ', ', array_keys( array_filter( $test['results'], static fn( $ok ) => ! $ok ) ) ) : '', 'optional' => false ],
+			[ 'key' => 'permalinks', 'done' => (bool) $facts['permalinks'], 'detail' => '', 'optional' => false ],
+			[ 'key' => 'callback', 'done' => (bool) $facts['callback'], 'detail' => '', 'optional' => false ],
+			[ 'key' => 'webhooks', 'done' => (bool) $facts['webhooks'], 'detail' => '', 'optional' => false ],
 			// Tags can't always be checked (no Admin API, or a store with 250+ tags); then a level is enough.
-			[ 'key' => 'levels', 'done' => $facts['levels'] > 0 && ! $unknown, 'detail' => $unknown ? implode( ', ', $unknown ) : '' ],
-			[ 'key' => 'flow', 'done' => $facts['members'] > 0, 'detail' => '' ],
+			[ 'key' => 'levels', 'done' => $facts['levels'] > 0 && ! $unknown, 'detail' => $unknown ? implode( ', ', $unknown ) : '', 'optional' => $sign_in ],
+			[ 'key' => 'flow', 'done' => $facts['members'] > 0, 'detail' => '', 'optional' => $sign_in ],
 		];
+	}
+
+	/**
+	 * Steps still to do, leaving out optional ones. Pure.
+	 *
+	 * @param array<int, array{done: bool, optional: bool}> $steps From steps().
+	 */
+	public static function left( array $steps ): int {
+		return count( array_filter( $steps, static fn( $step ) => ! $step['done'] && ! $step['optional'] ) );
 	}
 }

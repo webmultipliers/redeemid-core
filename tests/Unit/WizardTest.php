@@ -37,6 +37,18 @@ final class WizardTest extends TestCase {
 		$this->assertNotContains( false, $this->done( $this->facts() ) );
 	}
 
+	public function test_sign_in_only_site_needs_no_level(): void {
+		$steps = Wizard::steps( $this->facts( [ 'levels' => 0, 'members' => 0, 'locked' => false, 'tagged' => 0, 'linked' => 1 ] ) );
+
+		foreach ( [ 'level', 'lock', 'flow' ] as $key ) {
+			$this->assertTrue( $steps[ $key ]['optional'], $key );
+		}
+
+		$this->assertTrue( $steps['try']['ready'] );
+		$this->assertTrue( $steps['try']['done'], 'A linked customer is enough when nothing is sold' );
+		$this->assertSame( 'done', Wizard::current( $steps, '' ) );
+	}
+
 	public function test_site_needs_https_and_pretty_permalinks(): void {
 		$this->assertFalse( $this->done( $this->facts( [ 'https' => false ] ) )['site'] );
 		$this->assertFalse( $this->done( $this->facts( [ 'permalinks' => false ] ) )['site'] );
