@@ -8,6 +8,7 @@ use RedeemID\Access\Index;
 use RedeemID\Access\ItemRule;
 use RedeemID\Access\Level;
 use RedeemID\Access\LevelStore;
+use RedeemID\Files\ProtectedFiles;
 
 /**
  * The Access box in the post editor's sidebar: the item's mode, levels and
@@ -74,6 +75,15 @@ final class AccessMetaBox {
 		<?php if ( current_user_can( Menu::CAP ) ) : ?>
 			<p><a href="<?php echo esc_url( Menu::url( Access::PAGE, [ 'tab' => 'test', 'post' => $post->ID ] ) ); ?>"><?php esc_html_e( 'Test who can read it', 'redeemid' ); ?></a></p>
 		<?php endif; ?>
+		<?php $open_files = $effective->open() ? 0 : self::unprotected_attachments( $post->ID ); ?>
+		<?php if ( $open_files ) : ?>
+			<p class="notice notice-warning inline" style="padding:6px 8px">
+				<?php
+				/* translators: %d: number of files */
+				echo esc_html( sprintf( _n( '%d file attached to this item is not protected: anyone with its link can open it. Protect it in the Media Library.', '%d files attached to this item are not protected: anyone with their links can open them. Protect them in the Media Library.', $open_files, 'redeemid' ), $open_files ) );
+				?>
+			</p>
+		<?php endif; ?>
 		<?php foreach ( Gatekeeper::context( $post )->terms as $term ) : ?>
 			<?php if ( $term->opens_at( time() ) && Context::ITEM_INHERIT === $rule['mode'] ) : ?>
 				<p class="notice notice-warning inline" style="padding:6px 8px">
@@ -121,6 +131,25 @@ final class AccessMetaBox {
 		</p>
 		<p class="description"><?php esc_html_e( 'This locks the post\'s text. Files linked from it, such as PDFs and images, can still be opened by anyone with the link.', 'redeemid' ); ?></p>
 		<?php
+	}
+
+	/**
+	 * How many files uploaded to this item have no protection, counting at
+	 * most the first 100.
+	 */
+	public static function unprotected_attachments( int $post_id ): int {
+		$ids = get_posts(
+			[
+				'post_type'        => 'attachment',
+				'post_status'      => 'inherit',
+				'post_parent'      => $post_id,
+				'fields'           => 'ids',
+				'posts_per_page'   => 100,
+				'no_found_rows'    => true,
+			]
+		);
+
+		return count( array_filter( $ids, static fn( $id ) => ! ProtectedFiles::is_protected( (int) $id ) ) );
 	}
 
 	public static function save( int $post_id, \WP_Post $post ): void {
