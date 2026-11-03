@@ -332,6 +332,13 @@ final class SettingsPage {
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><?php esc_html_e( 'WordPress passwords', 'redeemid' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[shopify_only_login]" value="1" <?php checked( ! empty( $settings['shopify_only_login'] ) ); ?>> <?php esc_html_e( 'Linked members sign in with Shopify only', 'redeemid' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Off: a WordPress user who links a Shopify customer keeps their WordPress password too. On: their password, password reset and application passwords stop working, and Shopify is the only way in. Nothing is deleted, so turning this off gives the password back. Staff are never affected.', 'redeemid' ); ?></p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><label for="redeemid-session-limit"><?php esc_html_e( 'Signed-in browsers per member', 'redeemid' ); ?></label></th>
 					<td>
 						<input type="number" min="0" max="<?php echo (int) \RedeemID\Auth\SessionCap::MAX; ?>" id="redeemid-session-limit" class="small-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[session_limit]" value="<?php echo (int) $settings['session_limit']; ?>">
