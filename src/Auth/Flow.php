@@ -489,9 +489,10 @@ final class Flow {
 		 * Answer a "sync now" without asking Shopify: return synced, sync_wait or
 		 * sync_failed to short-circuit, or null to sync as usual. For customers
 		 * Shopify does not know, such as a test site's simulated fixtures (see
-		 * redeemid_customer_is_fixture). Runs before the rate limit.
+		 * redeemid_customer_is_fixture). Runs before the rate limit. Ignored on
+		 * production unless REDEEMID_ALLOW_FIXTURES opts in.
 		 */
-		$pre = apply_filters( 'redeemid_pre_sync_now', null, $user_id );
+		$pre = Mirror::fixtures_allowed() ? apply_filters( 'redeemid_pre_sync_now', null, $user_id ) : null;
 
 		if ( in_array( $pre, [ 'synced', 'sync_wait', 'sync_failed' ], true ) ) {
 			return $pre;

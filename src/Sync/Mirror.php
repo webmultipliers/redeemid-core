@@ -69,9 +69,26 @@ final class Mirror {
 	 * A linked user whose customer does not exist in Shopify on purpose, such as
 	 * a test theme's seeded accounts. Reconciliation leaves its tags alone and
 	 * the admin offers no Shopify links for it.
+	 *
+	 * Ignored on a production site (wp_get_environment_type()), so a stray
+	 * filter can't freeze real members' tags, unless REDEEMID_ALLOW_FIXTURES
+	 * is defined as true.
 	 */
 	public static function is_fixture( int $user_id ): bool {
-		return (bool) apply_filters( 'redeemid_customer_is_fixture', false, $user_id );
+		return self::fixtures_allowed() && (bool) apply_filters( 'redeemid_customer_is_fixture', false, $user_id );
+	}
+
+	/**
+	 * Whether test fixtures (redeemid_customer_is_fixture, redeemid_pre_sync_now)
+	 * are honoured: off on production unless REDEEMID_ALLOW_FIXTURES opts in,
+	 * and a false constant turns them off everywhere.
+	 */
+	public static function fixtures_allowed(): bool {
+		if ( defined( 'REDEEMID_ALLOW_FIXTURES' ) ) {
+			return (bool) constant( 'REDEEMID_ALLOW_FIXTURES' );
+		}
+
+		return 'production' !== wp_get_environment_type();
 	}
 
 	public static function customer_id( int $user_id ): ?CustomerId {
