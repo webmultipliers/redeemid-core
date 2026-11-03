@@ -3,7 +3,7 @@
  * Plugin Name:       RedeemID
  * Plugin URI:        https://www.redeemid.com/
  * Description:       Customers sign in to WordPress with their Shopify customer account, and what that account holds in Shopify opens members-only content. Built on Blockstudio 7.
- * Version:           0.0.7
+ * Version:           0.0.8
  * Requires at least: 6.7
  * Requires PHP:      8.2
  * Author:            Vinny S. Green, LLC
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'REDEEMID_VERSION', '0.0.7' );
+define( 'REDEEMID_VERSION', '0.0.8' );
 // The developer API's version (RedeemID\Api\Contract::VERSION, docs/developer-api.md).
 define( 'REDEEMID_API_VERSION', '1.4.0' );
 define( 'REDEEMID_FILE', __FILE__ );
