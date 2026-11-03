@@ -60,7 +60,12 @@ jobs:
       fail-fast: false
       matrix:
         # The same surfaces, alone and behind an SEO plugin that writes its own head.
-        seo: [ '', 'autodescription' ]
+        # The SEO Framework 5.2 needs WordPress 7.0 or newer, so that run uses current WordPress.
+        include:
+          - seo: ''
+            wp: '6.9'
+          - seo: 'autodescription'
+            wp: '7.1'
     services:
       mysql:
         image: mysql:8.0
@@ -86,7 +91,7 @@ jobs:
       - run: composer install --prefer-dist --no-interaction --no-progress
       - name: Install WordPress
         run: |
-          wp core download --path="$WP_PATH" --version=6.9
+          wp core download --path="$WP_PATH" --version="${{ matrix.wp }}"
           wp config create --path="$WP_PATH" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
           wp core install --path="$WP_PATH" --url="$REDEEMID_LEAK_URL" --title="Leak tests" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
           cp -r "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/redeemid"
