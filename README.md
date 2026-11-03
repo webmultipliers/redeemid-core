@@ -14,7 +14,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Built for the block editor and page caches.** Every piece a visitor sees is a block that renders on the server and works without JavaScript. Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **For developers.** A PHP API, REST routes, WP-CLI, a vendor-neutral event stream with signed outbound event webhooks, and WordPress Abilities for AI agents. Works beside Shopify's own WordPress plugin, or replaces it.
 
-> **Status: 0.0.7, early development.** Expect breaking changes before 1.0.0. See the [changelog](https://www.redeemid.com/changelog/) and [releases](https://github.com/webmultipliers/redeemid-core/releases).
+> **Status: 0.0.8, early development.** Expect breaking changes before 1.0.0. See the [changelog](https://www.redeemid.com/changelog/) and [releases](https://github.com/webmultipliers/redeemid-core/releases).
 
 ## Requirements
 
