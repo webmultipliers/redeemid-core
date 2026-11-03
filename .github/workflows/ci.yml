@@ -54,8 +54,13 @@ jobs:
         run: composer phpstan
 
   leaks:
-    name: Leak tests
+    name: Leak tests${{ matrix.seo && format(' with {0}', matrix.seo) || '' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The same surfaces, alone and behind an SEO plugin that writes its own head.
+        seo: [ '', 'autodescription' ]
     services:
       mysql:
         image: mysql:8.0
@@ -86,6 +91,9 @@ jobs:
           wp core install --path="$WP_PATH" --url="$REDEEMID_LEAK_URL" --title="Leak tests" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
           cp -r "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/redeemid"
           wp plugin activate redeemid --path="$WP_PATH"
+      - name: Install ${{ matrix.seo }}
+        if: matrix.seo != ''
+        run: wp plugin install "${{ matrix.seo }}" --activate --path="$WP_PATH"
       - name: Seed
         run: wp eval-file "$GITHUB_WORKSPACE/tests/Integration/seed.php" --path="$WP_PATH"
       - name: Serve

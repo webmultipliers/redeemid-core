@@ -326,6 +326,11 @@ final class Surfaces {
 			return;
 		}
 
+		// The SEO Framework's graph already carries it (Integrations\SeoPlugins::tsf_graph).
+		if ( \RedeemID\Integrations\SeoPlugins::schema_merged() ) {
+			return;
+		}
+
 		$data = [
 			'@context'            => 'https://schema.org',
 			'@type'               => 'post' === $post->post_type ? 'Article' : 'CreativeWork',
