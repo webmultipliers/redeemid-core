@@ -34,6 +34,7 @@ final class Mirror {
 	public const STATUS_FROM = '_redeemid_status_source';
 	public const PROFILE_AT  = '_redeemid_profile_updated_at';
 	public const STATUS_AT   = '_redeemid_status_updated_at';
+	public const FLAG        = '_redeemid_link_flag';
 
 	/** Where a status came from: Shopify's disable/enable webhooks, a resync that found no customer, or a resync. */
 	public const STATUS_WEBHOOK = 'webhook';
@@ -45,7 +46,7 @@ final class Mirror {
 		self::GID, self::NUMERIC, self::TAGS, self::STATUS, self::EMAIL, self::FIRST_NAME, self::LAST_NAME,
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
 		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::GIFT_UNTIL, self::HISTORY, self::STATUS_FROM,
-		self::PROFILE_AT, self::STATUS_AT,
+		self::PROFILE_AT, self::STATUS_AT, self::FLAG,
 	];
 
 	public static function find_user( CustomerId $id ): ?\WP_User {

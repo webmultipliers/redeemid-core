@@ -43,6 +43,7 @@ final class Exporter {
 			Mirror::LAST_EVENT  => __( 'Last Shopify event', 'redeemid' ),
 			Mirror::PROFILE_AT  => __( 'Profile last updated in Shopify', 'redeemid' ),
 			Mirror::STATUS_AT   => __( 'Status last changed in Shopify', 'redeemid' ),
+			Mirror::FLAG        => __( 'Linked by staff with a different email', 'redeemid' ),
 			default             => $key,
 		};
 	}

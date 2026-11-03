@@ -96,6 +96,16 @@ final class Admin {
 	}
 
 	/**
+	 * A customer's email, for staff linking by hand. '' when Shopify has no
+	 * such customer or no email for it.
+	 */
+	public static function customer_email( CustomerId $id ): string|\WP_Error {
+		$data = self::query( 'query RedeemIDCustomerEmail($id: ID!) { customer(id: $id) { defaultEmailAddress { emailAddress } } }', [ 'id' => $id->gid() ], 'admin.customer_email' );
+
+		return is_wp_error( $data ) ? $data : (string) ( $data['customer']['defaultEmailAddress']['emailAddress'] ?? '' );
+	}
+
+	/**
 	 * Customer counts for several searches in one call ('' counts everyone).
 	 * Shopify stops counting at 10,000; a capped count is returned as that.
 	 *
