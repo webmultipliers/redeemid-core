@@ -29,6 +29,7 @@ use RedeemID\Auth\PasswordLogin;
 use RedeemID\Auth\SessionCap;
 use RedeemID\Auth\ShadowUsers;
 use RedeemID\Auth\SignInLinks;
+use RedeemID\Blocks\PreferencesForm;
 use RedeemID\Blocks\Registration;
 use RedeemID\Commerce\BuyNow;
 use RedeemID\Commerce\Cart;
@@ -70,6 +71,7 @@ final class Plugin {
 		LevelHistory::register();
 		Monitor::register();
 		Registration::register();
+		PreferencesForm::register();
 		Gatekeeper::register();
 		ItemRule::register();
 		TermRules::register();

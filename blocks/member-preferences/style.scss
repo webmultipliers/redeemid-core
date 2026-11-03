@@ -1,0 +1,63 @@
+.redeemid-preferences {
+	padding: var(--wp--preset--spacing--40, 1.5rem);
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+	border-radius: 0.5rem;
+
+	&__title {
+		margin: 0 0 1rem;
+	}
+
+	&__status:empty {
+		display: none;
+	}
+
+	&__form {
+		display: grid;
+		gap: 1rem;
+	}
+
+	&__field {
+		display: grid;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0;
+		border: 0;
+
+		input:not([type="checkbox"]),
+		select,
+		textarea {
+			width: 100%;
+			max-width: 32rem;
+			font: inherit;
+		}
+
+		&.is-choices label,
+		&.is-check label {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+		}
+
+		&.is-invalid {
+			padding-left: 0.75rem;
+			border-left: 3px solid #b32d2e;
+		}
+	}
+
+	&__label {
+		font-weight: 600;
+	}
+
+	&__help,
+	&__hint {
+		font-size: 0.875em;
+	}
+
+	&__actions {
+		margin: 0;
+	}
+
+	&.is-placeholder &__loading {
+		margin: 0;
+	}
+}
