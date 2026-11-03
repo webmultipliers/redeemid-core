@@ -65,7 +65,7 @@ final class Privacy {
 			return $user;
 		}
 
-		$users = get_users( [ 'meta_key' => Mirror::EMAIL, 'meta_value' => $email, 'number' => 1 ] ); // phpcs:ignore WordPress.DB.SlowDBQuery
+		$users = get_users( [ 'meta_key' => \RedeemID\Support\Multisite::meta_key( Mirror::EMAIL ), 'meta_value' => $email, 'number' => 1 ] ); // phpcs:ignore WordPress.DB.SlowDBQuery
 
 		return $users[0] ?? null;
 	}

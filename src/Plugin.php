@@ -41,6 +41,7 @@ use RedeemID\Rest\Routes;
 use RedeemID\Rest\Status;
 use RedeemID\Support\Crypto;
 use RedeemID\Support\EventLog;
+use RedeemID\Support\Multisite;
 use RedeemID\Support\Stats;
 use RedeemID\Support\TransferCli;
 use RedeemID\Sync\BulkResync;
@@ -56,6 +57,8 @@ final class Plugin {
 	private static ?Crypto $crypto = null;
 
 	public static function boot(): void {
+		Multisite::register();
+		add_action( 'init', [ Lifecycle::class, 'maintain' ], 1 );
 		ShadowUsers::register();
 		Flow::register();
 		SessionCap::register();

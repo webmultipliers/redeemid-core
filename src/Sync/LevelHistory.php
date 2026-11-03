@@ -152,7 +152,7 @@ final class LevelHistory {
 		$rows   = [];
 		$users  = get_users(
 			[
-				'meta_key' => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key' => \RedeemID\Support\Multisite::meta_key( self::META ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'fields'   => [ 'ID', 'display_name' ],
 				'number'   => -1,
 			]

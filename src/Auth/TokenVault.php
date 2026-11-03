@@ -17,6 +17,14 @@ use RedeemID\Support\Logger;
 final class TokenVault {
 	private const KEY = 'redeemid';
 
+	/**
+	 * Where a session keeps this site's tokens. WordPress sessions are shared
+	 * across a network, and each site there signs in to its own store.
+	 */
+	public static function key(): string {
+		return \RedeemID\Support\Multisite::scoped() ? self::KEY . '_' . get_current_blog_id() : self::KEY;
+	}
+
 	/** Session token captured from the set_auth_cookie action during sign-in. */
 	private static string $fresh_session = '';
 
@@ -38,7 +46,7 @@ final class TokenVault {
 			return false;
 		}
 
-		$session[ self::KEY ] = Plugin::crypto()->encrypt(
+		$session[ self::key() ] = Plugin::crypto()->encrypt(
 			(string) wp_json_encode(
 				[
 					'access_token'  => $tokens['access_token'] ?? '',
@@ -63,11 +71,11 @@ final class TokenVault {
 
 		$session = \WP_Session_Tokens::get_instance( $user_id )->get( $session_token );
 
-		if ( ! is_array( $session ) || empty( $session[ self::KEY ] ) ) {
+		if ( ! is_array( $session ) || empty( $session[ self::key() ] ) ) {
 			return null;
 		}
 
-		$json = Plugin::crypto()->decrypt( (string) $session[ self::KEY ] );
+		$json = Plugin::crypto()->decrypt( (string) $session[ self::key() ] );
 		$data = null === $json ? null : json_decode( $json, true );
 
 		return is_array( $data ) ? $data : null;
@@ -83,8 +91,8 @@ final class TokenVault {
 		$manager = \WP_Session_Tokens::get_instance( $user_id );
 		$session = $manager->get( $session_token );
 
-		if ( is_array( $session ) && isset( $session[ self::KEY ] ) ) {
-			unset( $session[ self::KEY ] );
+		if ( is_array( $session ) && isset( $session[ self::key() ] ) ) {
+			unset( $session[ self::key() ] );
 			$manager->update( $session_token, $session );
 		}
 	}
@@ -100,8 +108,8 @@ final class TokenVault {
 		}
 
 		foreach ( $meta as $verifier => $session ) {
-			if ( is_array( $session ) && isset( $session[ self::KEY ] ) ) {
-				unset( $meta[ $verifier ][ self::KEY ] );
+			if ( is_array( $session ) && isset( $session[ self::key() ] ) ) {
+				unset( $meta[ $verifier ][ self::key() ] );
 			}
 		}
 

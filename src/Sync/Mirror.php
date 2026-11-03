@@ -52,7 +52,7 @@ final class Mirror {
 	public static function find_user( CustomerId $id ): ?\WP_User {
 		$users = get_users(
 			[
-				'meta_key'    => self::NUMERIC, // phpcs:ignore WordPress.DB.SlowDBQuery
+				'meta_key'    => \RedeemID\Support\Multisite::meta_key( self::NUMERIC ), // phpcs:ignore WordPress.DB.SlowDBQuery
 				'meta_value'  => $id->numeric, // phpcs:ignore WordPress.DB.SlowDBQuery
 				'number'      => 2,
 				'count_total' => false,

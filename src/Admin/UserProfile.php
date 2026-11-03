@@ -65,7 +65,7 @@ final class UserProfile {
 
 	private static function has_session( int $user_id ): bool {
 		foreach ( (array) get_user_meta( $user_id, 'session_tokens', true ) as $session ) {
-			if ( is_array( $session ) && ! empty( $session['redeemid'] ) && ( $session['expiration'] ?? 0 ) > time() ) {
+			if ( is_array( $session ) && ! empty( $session[ \RedeemID\Auth\TokenVault::key() ] ) && ( $session['expiration'] ?? 0 ) > time() ) {
 				return true;
 			}
 		}

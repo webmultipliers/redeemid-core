@@ -206,13 +206,13 @@ final class BulkResync {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- keyset paging over one meta key; WP_User_Query cannot page by ID.
-		return array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND user_id > %d ORDER BY user_id ASC LIMIT %d", Mirror::NUMERIC, $cursor, self::BATCH ) ) );
+		return array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND user_id > %d ORDER BY user_id ASC LIMIT %d", \RedeemID\Support\Multisite::meta_key( Mirror::NUMERIC ), $cursor, self::BATCH ) ) );
 	}
 
 	public static function linked_count(): int {
 		global $wpdb;
 
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s", Mirror::NUMERIC ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin-only count.
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s", \RedeemID\Support\Multisite::meta_key( Mirror::NUMERIC ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin-only count.
 	}
 
 	private static function schedule( int $delay ): void {

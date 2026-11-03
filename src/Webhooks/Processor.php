@@ -229,7 +229,7 @@ final class Processor {
 				return $user ? InboxStore::PROCESSED : InboxStore::UNMATCHED;
 
 			case 'shop/redact':
-				foreach ( get_users( [ 'meta_key' => Mirror::NUMERIC, 'fields' => 'ID' ] ) as $user_id ) { // phpcs:ignore WordPress.DB.SlowDBQuery
+				foreach ( get_users( [ 'meta_key' => \RedeemID\Support\Multisite::meta_key( Mirror::NUMERIC ), 'fields' => 'ID' ] ) as $user_id ) { // phpcs:ignore WordPress.DB.SlowDBQuery
 					TokenVault::forget_all( (int) $user_id );
 					Mirror::unlink( (int) $user_id );
 				}
