@@ -13,7 +13,7 @@ final class EventLog {
 	public const RETENTION  = 30 * DAY_IN_SECONDS;
 	public const MAX_ROWS   = 20000;
 
-	private const VERSION_OPTION = 'redeemid_events_db_version';
+	public const VERSION_OPTION = 'redeemid_events_db_version';
 
 	public static function register(): void {
 		add_action( 'redeemid_log', [ self::class, 'record' ], 10, 2 );

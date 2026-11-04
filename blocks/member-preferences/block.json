@@ -1,0 +1,22 @@
+{
+	"$schema": "https://blockstudio.dev/schema/block",
+	"apiVersion": 3,
+	"name": "redeemid/member-preferences",
+	"title": "Member Preferences",
+	"category": "widgets",
+	"icon": "forms",
+	"description": "A form for the customer fields you let members see or change (RedeemID → Settings → Member preferences), such as the topics they follow. Members read and save their own answers, which are kept on their Shopify customer. Guests can answer too: their answers wait in their browser until they sign in and confirm. A Blockstudio dynamic island: the cached page carries a placeholder and each visitor's fragment fills it in.",
+	"keywords": [ "shopify", "preferences", "profile", "metafields", "form", "newsletter" ],
+	"textdomain": "redeemid",
+	"supports": { "align": [ "wide" ], "html": false },
+	"example": {},
+	"blockstudio": {
+		"attributes": [
+			{ "id": "title", "type": "text", "label": "Title", "default": "Your preferences" },
+			{ "id": "intro", "type": "textarea", "label": "Intro text" },
+			{ "id": "button", "type": "text", "label": "Save button label", "default": "Save preferences" },
+			{ "id": "askGuests", "type": "toggle", "label": "Ask guests too (kept in their browser until they sign in)", "default": true }
+		],
+		"island": { "mode": "dynamic", "context": true }
+	}
+}

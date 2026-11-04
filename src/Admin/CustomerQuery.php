@@ -5,6 +5,7 @@ namespace RedeemID\Admin;
 use RedeemID\Access\Checker;
 use RedeemID\Access\LevelStore;
 use RedeemID\Settings;
+use RedeemID\Support\Multisite;
 use RedeemID\Sync\Mirror;
 
 /**
@@ -42,12 +43,12 @@ final class CustomerQuery {
 	 * @return array<string, mixed>
 	 */
 	public static function args( array $f ): array {
-		$meta = [ [ 'key' => Mirror::NUMERIC, 'compare' => 'EXISTS' ] ];
+		$meta = [ [ 'key' => Multisite::meta_key( Mirror::NUMERIC ), 'compare' => 'EXISTS' ] ];
 
 		if ( 'disabled' === $f['state'] ) {
-			$meta[] = [ 'key' => Mirror::STATUS, 'value' => 'disabled' ];
+			$meta[] = [ 'key' => Multisite::meta_key( Mirror::STATUS ), 'value' => 'disabled' ];
 		} elseif ( 'failed' === $f['state'] ) {
-			$meta[] = [ 'key' => Mirror::SYNC_FAILED, 'compare' => 'EXISTS' ];
+			$meta[] = [ 'key' => Multisite::meta_key( Mirror::SYNC_FAILED ), 'compare' => 'EXISTS' ];
 		}
 
 		$args = [
@@ -59,7 +60,7 @@ final class CustomerQuery {
 		if ( 'display_name' === $f['orderby'] ) {
 			$args['orderby'] = 'display_name';
 		} elseif ( 'last_sync' === $f['orderby'] || 'linked' === $f['orderby'] ) {
-			$args['meta_key'] = 'last_sync' === $f['orderby'] ? Mirror::LAST_SYNC : Mirror::LINKED_AT; // phpcs:ignore WordPress.DB.SlowDBQuery
+			$args['meta_key'] = Multisite::meta_key( 'last_sync' === $f['orderby'] ? Mirror::LAST_SYNC : Mirror::LINKED_AT ); // phpcs:ignore WordPress.DB.SlowDBQuery
 			$args['orderby']  = 'meta_value_num';
 		}
 
@@ -68,7 +69,7 @@ final class CustomerQuery {
 		if ( '' !== $f['s'] ) {
 			if ( ctype_digit( $f['s'] ) && strlen( $f['s'] ) > 6 ) {
 				// A Shopify customer ID.
-				$args['meta_query'][] = [ 'key' => Mirror::NUMERIC, 'value' => $f['s'] ];
+				$args['meta_query'][] = [ 'key' => Multisite::meta_key( Mirror::NUMERIC ), 'value' => $f['s'] ];
 			} else {
 				$include = self::search_ids( $f['s'] );
 			}
@@ -107,7 +108,7 @@ final class CustomerQuery {
 		) )->get_results();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin search over three mirror keys.
-		$meta = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key IN (%s, %s, %s) AND meta_value LIKE %s LIMIT %d", Mirror::EMAIL, Mirror::FIRST_NAME, Mirror::LAST_NAME, $like, self::CAP ) );
+		$meta = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key IN (%s, %s, %s) AND meta_value LIKE %s LIMIT %d", Multisite::meta_key( Mirror::EMAIL ), Multisite::meta_key( Mirror::FIRST_NAME ), Multisite::meta_key( Mirror::LAST_NAME ), $like, self::CAP ) );
 
 		return array_values( array_unique( array_map( 'intval', array_merge( (array) $ids, (array) $meta ) ) ) );
 	}
@@ -138,7 +139,7 @@ final class CustomerQuery {
 		$likes = array_map( static fn( string $tag ): string => '%"' . $wpdb->esc_like( $tag ) . '"%', $tags );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where holds only placeholders.
-		$candidates = $wpdb->get_col( $wpdb->prepare( "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND ({$where}) LIMIT %d", Mirror::TAGS, ...array_merge( $likes, [ self::CAP ] ) ) );
+		$candidates = $wpdb->get_col( $wpdb->prepare( "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND ({$where}) LIMIT %d", Multisite::meta_key( Mirror::TAGS ), ...array_merge( $likes, [ self::CAP ] ) ) );
 		$checker    = new Checker( $levels, Settings::evaluator() );
 		$now        = time();
 

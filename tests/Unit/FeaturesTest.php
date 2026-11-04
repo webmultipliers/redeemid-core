@@ -270,6 +270,8 @@ final class FeaturesTest extends TestCase {
 		$this->assertSame( Cache::key( [ 'b', 'a' ], 's' ), Cache::key( [ 'a', 'b' ], 's' ) );
 		$this->assertStringNotContainsString( 'ad-free', Cache::key( [ 'ad-free' ], 's' ), 'The cookie names no feature' );
 		$this->assertSame( '', Cache::key( [], 's' ) );
-		$this->assertSame( 16, strlen( Cache::key( [ 'x' ], 's' ) ) );
+		$this->assertSame( 32, strlen( Cache::key( [ 'x' ], 's' ) ) );
+		$this->assertNotSame( Cache::key( [ 'x' ], 's', '1:a' ), Cache::key( [ 'x' ], 's', '2:a' ), 'Another member gets another key' );
+		$this->assertNotSame( Cache::key( [ 'x' ], 's', '1:a' ), Cache::key( [ 'x' ], 's', '1:b' ), 'A new login session gets a new key' );
 	}
 }

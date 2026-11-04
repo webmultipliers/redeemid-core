@@ -83,6 +83,18 @@ final class Customers {
 			self::finish( self::edit_tags( $user_id ), 1, $user_id );
 		}
 
+		if ( StaffLink::DO_LINK === $do ) {
+			$result = StaffLink::link( sanitize_text_field( wp_unslash( $_POST['link_user'] ?? '' ) ), sanitize_text_field( wp_unslash( $_POST['link_customer'] ?? '' ) ) );
+			$linked = in_array( $result, [ 'staff_linked', 'staff_linked_flagged' ], true );
+			$who    = sanitize_text_field( wp_unslash( $_POST['link_user'] ?? '' ) );
+			$user   = $linked ? ( is_email( $who ) ? get_user_by( 'email', $who ) : get_user_by( 'login', $who ) ) : null;
+			self::finish( $result, 1, $user ? $user->ID : 0 );
+		}
+
+		if ( StaffLink::DO_CLEAR === $do ) {
+			self::finish( StaffLink::clear( $user_id ), 1, $user_id );
+		}
+
 		if ( 'export' === $do ) {
 			self::export();
 		}
@@ -532,6 +544,14 @@ final class Customers {
 				'bulk_paused'    => [ 'success', __( 'Resync paused. It stops after the batch in progress.', 'redeemid' ) ],
 				'bulk_resumed'   => [ 'success', __( 'Resync resumed from where it stopped.', 'redeemid' ) ],
 				'bulk_cancelled' => [ 'success', __( 'Resync cancelled. Customers already re-read keep their new data.', 'redeemid' ) ],
+				'staff_linked'           => [ 'success', __( 'Linked. The emails match, so the account is not flagged.', 'redeemid' ) ],
+				'staff_linked_flagged'   => [ 'warning', __( 'Linked and flagged, because the WordPress and Shopify emails differ.', 'redeemid' ) ],
+				'staff_link_no_user'     => [ 'error', __( 'No WordPress user has that username or email.', 'redeemid' ) ],
+				'staff_link_privileged'  => [ 'error', __( 'Staff accounts can\'t be linked to Shopify: they use the WordPress login.', 'redeemid' ) ],
+				'staff_link_already'     => [ 'error', __( 'That user is already linked to a Shopify customer. Disconnect them first.', 'redeemid' ) ],
+				'staff_link_taken'       => [ 'error', __( 'That Shopify customer is already linked to another user.', 'redeemid' ) ],
+				'staff_link_no_customer' => [ 'error', __( 'Shopify has no customer with that ID, or the customer has no email.', 'redeemid' ) ],
+				'flag_cleared'           => [ 'success', __( 'Flag cleared.', 'redeemid' ) ],
 			]
 		);
 	}
@@ -550,6 +570,7 @@ final class Customers {
 		self::notices();
 		self::activation_panel();
 		self::bulk_panel();
+		StaffLink::panel();
 		?>
 		<?php $table->views(); ?>
 		<form method="get" id="redeemid-customer-filters">
@@ -588,6 +609,28 @@ final class Customers {
 		);
 		self::notices();
 		?>
+
+		<?php $flag = StaffLink::flag( $user->ID ); ?>
+		<?php if ( $flag ) : ?>
+			<div class="notice notice-warning inline">
+				<p>
+					<?php
+					$by = get_userdata( (int) $flag['by'] );
+					echo esc_html(
+						sprintf(
+							/* translators: 1: staff name, 2: date, 3: WordPress email, 4: Shopify email */
+							__( 'Flagged: linked by hand by %1$s on %2$s although the emails differ (WordPress %3$s, Shopify %4$s). Check it is the same person, then clear the flag.', 'redeemid' ),
+							$by ? $by->display_name : __( 'a removed user', 'redeemid' ),
+							wp_date( get_option( 'date_format' ), (int) $flag['at'] ),
+							$flag['wp_email'],
+							$flag['shopify_email']
+						)
+					);
+					?>
+					<a class="button button-small" href="<?php echo esc_url( self::action_url( StaffLink::DO_CLEAR, $user->ID, true ) ); ?>"><?php esc_html_e( 'Clear the flag', 'redeemid' ); ?></a>
+				</p>
+			</div>
+		<?php endif; ?>
 
 		<?php if ( $fixture ) : ?>
 			<div class="notice notice-info inline"><p><?php esc_html_e( 'Test fixture: this customer does not exist in Shopify. Tag edits and resyncs stay in WordPress.', 'redeemid' ); ?></p></div>

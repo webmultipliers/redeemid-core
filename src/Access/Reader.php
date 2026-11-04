@@ -36,12 +36,14 @@ final class Reader {
 		$member  = null === $user ? Viewer::member() : Mirror::member( $user_id );
 		$checker = new Checker( LevelStore::levels(), Settings::evaluator() );
 
-		if ( ! $checker->check( $rule, $member, $now )->granted() ) {
+		$verdict = $checker->check( $rule, $member, $now );
+
+		if ( ! $verdict->granted() ) {
 			return false;
 		}
 
-		// Drip narrows for real members only, as on the page.
-		return null !== $preview || Drip::opens_for( $post, $user_id ) <= $now;
+		// Drip narrows for real members only, as on the page, and never for a buyer of the item.
+		return null !== $preview || \RedeemID\Entitlement\Decision::BOUGHT === $verdict->decision->reason || Drip::opens_for( $post, $user_id ) <= $now;
 	}
 
 	/**

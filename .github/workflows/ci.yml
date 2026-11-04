@@ -40,11 +40,10 @@ jobs:
           coverage: none
           tools: cs2pr
       - run: composer install --prefer-dist --no-interaction --no-progress
-      # Four findings on main wait on owner decisions. Until they are
-      # settled every finding is annotated, but only a new one fails the job.
+      # Every finding is annotated, and any finding fails the job.
       - name: PHPCS
         env:
-          BASELINE: 4
+          BASELINE: 0
         run: |
           vendor/bin/phpcs -q --report=checkstyle > "$RUNNER_TEMP/phpcs-report.xml" || true
           cs2pr --graceful-warnings "$RUNNER_TEMP/phpcs-report.xml" || true
@@ -55,8 +54,18 @@ jobs:
         run: composer phpstan
 
   leaks:
-    name: Leak tests
+    name: Leak tests${{ matrix.seo && format(' with {0}', matrix.seo) || '' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The same surfaces, alone and behind an SEO plugin that writes its own head.
+        # The SEO Framework 5.2 needs WordPress 7.0 or newer, so that run uses current WordPress.
+        include:
+          - seo: ''
+            wp: '6.9'
+          - seo: 'autodescription'
+            wp: '7.1'
     services:
       mysql:
         image: mysql:8.0
@@ -82,11 +91,14 @@ jobs:
       - run: composer install --prefer-dist --no-interaction --no-progress
       - name: Install WordPress
         run: |
-          wp core download --path="$WP_PATH" --version=6.9
+          wp core download --path="$WP_PATH" --version="${{ matrix.wp }}"
           wp config create --path="$WP_PATH" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
           wp core install --path="$WP_PATH" --url="$REDEEMID_LEAK_URL" --title="Leak tests" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
           cp -r "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/redeemid"
           wp plugin activate redeemid --path="$WP_PATH"
+      - name: Install ${{ matrix.seo }}
+        if: matrix.seo != ''
+        run: wp plugin install "${{ matrix.seo }}" --activate --path="$WP_PATH"
       - name: Seed
         run: wp eval-file "$GITHUB_WORKSPACE/tests/Integration/seed.php" --path="$WP_PATH"
       - name: Serve

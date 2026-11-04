@@ -21,7 +21,7 @@ final class Overview {
 		$inbox    = new WpdbInboxStore();
 		$last     = $inbox->last_received();
 		$health   = Monitor::messages();
-		$linked   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s", Mirror::NUMERIC ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin-only count.
+		$linked   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s", \RedeemID\Support\Multisite::meta_key( Mirror::NUMERIC ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- admin-only count.
 		$missing  = array_keys( array_filter( Config::definitions(), static fn( $def, $name ) => $def['required'] && ! Config::has( $name ), ARRAY_FILTER_USE_BOTH ) );
 		$failures = EventLog::count_since( 'shopify.http_failed', time() - DAY_IN_SECONDS ) + EventLog::count_since( 'webhook.rejected', time() - DAY_IN_SECONDS );
 		$cards    = [
@@ -136,7 +136,7 @@ final class Overview {
 	 */
 	private static function setup(): void {
 		$steps = Setup::steps( Setup::facts() );
-		$left  = count( array_filter( $steps, static fn( $step ) => ! $step['done'] ) );
+		$left  = Setup::left( $steps );
 		$names = [ 'sign_in' => __( 'sign-in', 'redeemid' ), 'admin' => __( 'Admin API', 'redeemid' ), 'storefront' => __( 'Storefront', 'redeemid' ) ];
 		$flow  = 'https://github.com/webmultipliers/redeemid-core/blob/main/docs/shopify-flow.md';
 		$text  = [
@@ -165,7 +165,7 @@ final class Overview {
 				<?php foreach ( $steps as $step ) : ?>
 					<?php [ $title, $help, $button ] = $text[ $step['key'] ]; ?>
 					<li class="<?php echo $step['done'] ? 'is-done' : ''; ?>">
-						<span class="redeemid-checks__label"><?php echo Menu::dot( $step['done'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $title ); ?></span>
+						<span class="redeemid-checks__label"><?php echo Menu::dot( $step['done'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $title ); ?><?php echo $step['optional'] && ! $step['done'] ? ' ' . esc_html__( '(optional for a sign-in-only site)', 'redeemid' ) : ''; ?></span>
 						<span class="redeemid-checks__detail">
 							<?php echo esc_html( $help ); ?>
 							<?php if ( 'test' === $step['key'] && '' !== $step['detail'] ) : ?>

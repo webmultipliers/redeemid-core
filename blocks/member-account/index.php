@@ -17,7 +17,12 @@ defined( 'ABSPATH' ) || exit;
 use RedeemID\Blocks\Account;
 use RedeemID\Blocks\Gate;
 
-$redeemid_title = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your membership', 'redeemid' );
+$redeemid_sells = Account::memberships();
+$redeemid_title = trim( (string) ( $a['title'] ?? '' ) );
+// A sign-in-only site (no levels) keeps the default title from saying "membership".
+$redeemid_title = '' === $redeemid_title || ( ! $redeemid_sells && 'Your membership' === $redeemid_title )
+	? ( $redeemid_sells ? __( 'Your membership', 'redeemid' ) : __( 'Your account', 'redeemid' ) )
+	: $redeemid_title;
 $redeemid_here  = $isIslandFragment ? Gate::fragment_url() : Gate::current_url();
 $redeemid_query = [];
 wp_parse_str( (string) wp_parse_url( $redeemid_here, PHP_URL_QUERY ), $redeemid_query );
@@ -45,17 +50,17 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 	<?php endif; ?>
 
 	<?php if ( $isEditor ) : ?>
-		<p><?php esc_html_e( 'Each customer sees their own levels, dates, features and account links here.', 'redeemid' ); ?></p>
+		<p><?php $redeemid_sells ? esc_html_e( 'Each customer sees their own levels, dates, features and account links here.', 'redeemid' ) : esc_html_e( 'Each customer sees their own account details and links here.', 'redeemid' ); ?></p>
 	<?php elseif ( ! $redeemid_view ) : ?>
-		<p class="redeemid-account__loading"><?php esc_html_e( 'Loading your membership…', 'redeemid' ); ?></p>
+		<p class="redeemid-account__loading"><?php $redeemid_sells ? esc_html_e( 'Loading your membership…', 'redeemid' ) : esc_html_e( 'Loading your account…', 'redeemid' ); ?></p>
 	<?php elseif ( 'guest' === $redeemid_view['state'] ) : ?>
-		<p><?php esc_html_e( 'Log in with Shopify to see your membership.', 'redeemid' ); ?></p>
+		<p><?php $redeemid_sells ? esc_html_e( 'Log in with Shopify to see your membership.', 'redeemid' ) : esc_html_e( 'Log in with Shopify to see your account.', 'redeemid' ); ?></p>
 		<p><a class="wp-element-button" href="<?php echo esc_url( \RedeemID\Auth\Flow::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a></p>
 	<?php elseif ( 'not_linked' === $redeemid_view['state'] ) : ?>
 		<p><?php esc_html_e( 'Your account here isn\'t connected to a Shopify customer yet.', 'redeemid' ); ?></p>
 		<?php $redeemid_form( 'redeemid_connect', __( 'Connect your Shopify account', 'redeemid' ), 'wp-element-button' ); ?>
 	<?php elseif ( 'syncing' === $redeemid_view['state'] ) : ?>
-		<p><?php esc_html_e( 'Your membership details are on their way from Shopify.', 'redeemid' ); ?></p>
+		<p><?php $redeemid_sells ? esc_html_e( 'Your membership details are on their way from Shopify.', 'redeemid' ) : esc_html_e( 'Your account details are on their way from Shopify.', 'redeemid' ); ?></p>
 	<?php else : ?>
 		<?php if ( 'disabled' === $redeemid_view['state'] ) : ?>
 			<p class="redeemid-account__alert"><?php esc_html_e( 'Your account is disabled. Contact the store for help.', 'redeemid' ); ?></p>
@@ -65,6 +70,7 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 			<dt><?php esc_html_e( 'Signed in as', 'redeemid' ); ?></dt>
 			<dd><?php echo esc_html( trim( $redeemid_view['name'] . ( '' !== $redeemid_view['email'] ? ' · ' . $redeemid_view['email'] : '' ) ) ); ?></dd>
 
+			<?php if ( $redeemid_sells || $redeemid_view['levels'] || $redeemid_view['ended'] ) : ?>
 			<dt><?php esc_html_e( 'Membership', 'redeemid' ); ?></dt>
 			<dd>
 				<?php if ( $redeemid_view['levels'] ) : ?>
@@ -92,6 +98,7 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 					<p class="redeemid-account__ended"><?php echo esc_html( sprintf( __( 'Your %1$s membership ended on %2$s.', 'redeemid' ), $redeemid_ended['label'], Account::date( $redeemid_ended['until'] ) ) ); ?></p>
 				<?php endforeach; ?>
 			</dd>
+			<?php endif; ?>
 
 			<?php if ( '' !== $redeemid_view['renews'] ) : ?>
 				<dt><?php esc_html_e( 'Renews', 'redeemid' ); ?></dt>
@@ -122,7 +129,7 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 		</dl>
 
 		<div class="redeemid-account__actions">
-			<?php $redeemid_form( 'redeemid_sync', __( 'Refresh membership', 'redeemid' ) ); ?>
+			<?php $redeemid_form( 'redeemid_sync', $redeemid_sells ? __( 'Refresh membership', 'redeemid' ) : __( 'Refresh from Shopify', 'redeemid' ) ); ?>
 			<?php if ( '' !== $redeemid_view['subscription_url'] ) : ?>
 				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $redeemid_view['subscription_url'] ); ?>"><?php esc_html_e( 'Manage subscription', 'redeemid' ); ?></a>
 			<?php endif; ?>

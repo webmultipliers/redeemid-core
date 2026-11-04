@@ -12,6 +12,7 @@ use RedeemID\Auth\Flow;
 use RedeemID\Entitlement\Decision;
 use RedeemID\Entitlement\Rule;
 use RedeemID\Settings;
+use RedeemID\Shopify\Storefront;
 use RedeemID\Sync\LevelHistory;
 use RedeemID\Sync\PostCheckout;
 use RedeemID\Features\Cache as PageCache;
@@ -283,6 +284,8 @@ final class Gate {
 			'formLabel'  => '',
 			'formNonce'  => '',
 			'redirectTo' => $here,
+			'buyVariant' => '',
+			'buyLabel'   => '',
 		];
 
 		switch ( $kind ) {
@@ -338,6 +341,10 @@ final class Gate {
 				break;
 		}
 
+		if ( '' !== (string) ( $a['buyProduct'] ?? '' ) && in_array( $kind, [ PanelKind::SIGN_IN, PanelKind::CONNECT, PanelKind::JOIN, PanelKind::UPGRADE, PanelKind::RENEW ], true ) ) {
+			$data = self::buy( (string) $a['buyProduct'] ) + $data;
+		}
+
 		if ( '' !== $data['formAction'] ) {
 			$data['formNonce'] = wp_create_nonce( $data['formAction'] );
 
@@ -347,7 +354,8 @@ final class Gate {
 
 		/**
 		 * The locked panel's content before it renders: message, reason, kind,
-		 * level, ctaLabel, ctaUrl, signInUrl, hint, formAction, formLabel.
+		 * level, ctaLabel, ctaUrl, signInUrl, hint, formAction, formLabel,
+		 * buyVariant and buyLabel (an item sold on its own).
 		 *
 		 * @param array<string, string> $data
 		 * @param Decision              $decision
@@ -355,6 +363,30 @@ final class Gate {
 		$data = (array) apply_filters( 'redeemid_locked_panel', $data, $decision );
 
 		return function_exists( 'bs_block' ) ? (string) bs_block( [ 'name' => self::PANEL, 'data' => $data ] ) : '';
+	}
+
+	/**
+	 * The buy-now button for an item sold on its own: the product's first
+	 * variant for sale, labelled with its price. Nothing when Shopify can't
+	 * be asked or the product is gone or sold out; the level's offer stands.
+	 *
+	 * @return array{buyVariant?: string, buyLabel?: string}
+	 */
+	private static function buy( string $handle ): array {
+		$product = Storefront::product( $handle );
+		$variant = is_array( $product ) ? Storefront::pick_variant( $product ) : null;
+
+		if ( ! $variant || ! $variant['available'] ) {
+			return [];
+		}
+
+		$price = Storefront::format_money( $variant['price'] );
+
+		return [
+			'buyVariant' => $variant['id'],
+			/* translators: %s: a price, such as $4.00 */
+			'buyLabel'   => '' !== $price ? sprintf( __( 'Buy just this for %s', 'redeemid' ), $price ) : __( 'Buy just this', 'redeemid' ),
+		];
 	}
 
 	/**

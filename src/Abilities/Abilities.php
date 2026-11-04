@@ -603,7 +603,7 @@ final class Abilities {
 			if ( ! $user ) {
 				$found = get_users(
 					[
-						'meta_key'    => Mirror::EMAIL, // phpcs:ignore WordPress.DB.SlowDBQuery -- staff lookup, not a page view.
+						'meta_key'    => \RedeemID\Support\Multisite::meta_key( Mirror::EMAIL ), // phpcs:ignore WordPress.DB.SlowDBQuery -- staff lookup, not a page view.
 						'meta_value'  => $email, // phpcs:ignore WordPress.DB.SlowDBQuery
 						'number'      => 1,
 						'count_total' => false,

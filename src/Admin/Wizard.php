@@ -324,21 +324,23 @@ final class Wizard {
 			'level'      => $facts['levels'] > 0 && ! $facts['unknown'],
 			'lock'       => (bool) $facts['locked'],
 			'flow'       => $facts['tagged'] > 0 || $facts['members'] > 0,
-			'try'        => $facts['members'] > 0,
+			'try'        => $facts['members'] > 0 || ( 0 === (int) $facts['levels'] && ( $facts['linked'] ?? 0 ) > 0 ),
 		];
 		$ready   = [
 			'webhooks' => $done['admin'],
 			'lock'     => $done['sign_in'] && $done['admin'] && $done['webhooks'] && $facts['levels'] > 0,
 			'flow'     => $facts['levels'] > 0,
-			'try'      => $done['site'] && $done['sign_in'] && $done['callback'] && $facts['levels'] > 0,
+			'try'      => $done['site'] && $done['sign_in'] && $done['callback'],
 		];
+		// No levels means a sign-in-only site: levels, locking and tagging are then optional.
+		$optional = 0 === (int) $facts['levels'] ? array_merge( self::OPTIONAL, [ 'level', 'flow' ] ) : self::OPTIONAL;
 		$out     = [];
 
 		foreach ( self::KEYS as $key ) {
 			$out[ $key ] = [
 				'key'      => $key,
 				'done'     => (bool) $done[ $key ],
-				'optional' => in_array( $key, self::OPTIONAL, true ),
+				'optional' => in_array( $key, $optional, true ),
 				'ready'    => $ready[ $key ] ?? true,
 			];
 		}

@@ -34,6 +34,7 @@ final class Mirror {
 	public const STATUS_FROM = '_redeemid_status_source';
 	public const PROFILE_AT  = '_redeemid_profile_updated_at';
 	public const STATUS_AT   = '_redeemid_status_updated_at';
+	public const FLAG        = '_redeemid_link_flag';
 
 	/** Where a status came from: Shopify's disable/enable webhooks, a resync that found no customer, or a resync. */
 	public const STATUS_WEBHOOK = 'webhook';
@@ -45,13 +46,13 @@ final class Mirror {
 		self::GID, self::NUMERIC, self::TAGS, self::STATUS, self::EMAIL, self::FIRST_NAME, self::LAST_NAME,
 		self::VERIFIED, self::EMAIL_OPTIN, self::SMS_OPTIN, self::SUMMARY, self::LAST_SYNC, self::SYNC_SOURCE,
 		self::SYNC_FAILED, self::LAST_EVENT, self::LINKED_AT, self::SINCE, self::RENEWS, self::GIFT_UNTIL, self::HISTORY, self::STATUS_FROM,
-		self::PROFILE_AT, self::STATUS_AT,
+		self::PROFILE_AT, self::STATUS_AT, self::FLAG,
 	];
 
 	public static function find_user( CustomerId $id ): ?\WP_User {
 		$users = get_users(
 			[
-				'meta_key'    => self::NUMERIC, // phpcs:ignore WordPress.DB.SlowDBQuery
+				'meta_key'    => \RedeemID\Support\Multisite::meta_key( self::NUMERIC ), // phpcs:ignore WordPress.DB.SlowDBQuery
 				'meta_value'  => $id->numeric, // phpcs:ignore WordPress.DB.SlowDBQuery
 				'number'      => 2,
 				'count_total' => false,
@@ -69,9 +70,26 @@ final class Mirror {
 	 * A linked user whose customer does not exist in Shopify on purpose, such as
 	 * a test theme's seeded accounts. Reconciliation leaves its tags alone and
 	 * the admin offers no Shopify links for it.
+	 *
+	 * Ignored on a production site (wp_get_environment_type()), so a stray
+	 * filter can't freeze real members' tags, unless REDEEMID_ALLOW_FIXTURES
+	 * is defined as true.
 	 */
 	public static function is_fixture( int $user_id ): bool {
-		return (bool) apply_filters( 'redeemid_customer_is_fixture', false, $user_id );
+		return self::fixtures_allowed() && (bool) apply_filters( 'redeemid_customer_is_fixture', false, $user_id );
+	}
+
+	/**
+	 * Whether test fixtures (redeemid_customer_is_fixture, redeemid_pre_sync_now)
+	 * are honoured: off on production unless REDEEMID_ALLOW_FIXTURES opts in,
+	 * and a false constant turns them off everywhere.
+	 */
+	public static function fixtures_allowed(): bool {
+		if ( defined( 'REDEEMID_ALLOW_FIXTURES' ) ) {
+			return (bool) constant( 'REDEEMID_ALLOW_FIXTURES' );
+		}
+
+		return 'production' !== wp_get_environment_type();
 	}
 
 	public static function customer_id( int $user_id ): ?CustomerId {

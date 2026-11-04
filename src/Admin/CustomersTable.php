@@ -119,6 +119,10 @@ final class CustomersTable extends \WP_List_Table {
 			array_unshift( $badges, __( 'Shopify-only account', 'redeemid' ) );
 		}
 
+		if ( StaffLink::flag( $user->ID ) ) {
+			array_unshift( $badges, __( 'Flagged: linked by hand, emails differ', 'redeemid' ) );
+		}
+
 		$actions = [
 			'view' => sprintf( '<a href="%s">%s</a>', esc_url( $view ), esc_html__( 'Details & tags', 'redeemid' ) ),
 			'edit' => sprintf( '<a href="%s">%s</a>', esc_url( (string) get_edit_user_link( $user->ID ) ), esc_html__( 'Edit user', 'redeemid' ) ),

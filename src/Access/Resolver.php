@@ -36,7 +36,8 @@ final class Resolver {
 		// 8. Windows last, and only ever to open on their date.
 		$rule = $this->windows( $rule, $c, $now );
 
-		return new EffectiveRule( $rule->clauses, $rule->source, $rule->contributing, ! $rule->open() && ! $c->meter_exempt );
+		// 10. A sale of this item alone is a second way in, never a way to lock it.
+		return new EffectiveRule( $rule->clauses, $rule->source, $rule->contributing, ! $rule->open() && ! $c->meter_exempt, $rule->open() ? [] : $c->item_unlock_tags );
 	}
 
 	/**

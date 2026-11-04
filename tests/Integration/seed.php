@@ -69,8 +69,10 @@ foreach ( [ $with_break, $no_break ] as $item ) {
 	ItemRule::save(
 		$item,
 		[
-			'mode'   => Context::ITEM_LEVEL,
-			'levels' => [ 'gold' ],
+			'mode'       => Context::ITEM_LEVEL,
+			'levels'     => [ 'gold' ],
+			// The item with a break is also sold on its own (see the buyer below).
+			'unlock_tag' => $with_break === $item ? 'leaktest-item' : '',
 		]
 	);
 	// Saving again rebuilds the public search text with the rule in place.
@@ -126,6 +128,13 @@ Mirror::set_tags( $gold, [ 'gold-member' ] );
 Mirror::set_status( $gold, 'enabled' );
 Mirror::stamp( $gold, 'leaktest' );
 
+// Linked with only the item's own tag: bought the item with a break, nothing else.
+$buyer = $user( 'leak-buyer' );
+Mirror::link( $buyer, CustomerId::parse( 900000000003 ) );
+Mirror::set_tags( $buyer, [ 'leaktest-item' ] );
+Mirror::set_status( $buyer, 'enabled' );
+Mirror::stamp( $buyer, 'leaktest' );
+
 $cookie = static fn( int $id ): string => LOGGED_IN_COOKIE . '=' . rawurlencode( wp_generate_auth_cookie( $id, time() + DAY_IN_SECONDS, 'logged_in' ) );
 
 $seed = [
@@ -144,6 +153,7 @@ $seed = [
 		'reader' => $cookie( $reader ),
 		'linked' => $cookie( $linked ),
 		'gold'   => $cookie( $gold ),
+		'buyer'  => $cookie( $buyer ),
 	],
 ];
 

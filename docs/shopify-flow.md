@@ -38,6 +38,20 @@ One workflow, so the end is scheduled the moment access starts:
 
 Point a level at `pass`. A 24-hour or 7-day pass is the same workflow with a shorter **Wait**.
 
+### One article on its own
+
+Sell a single post, episode or download without a membership. In the item's **Who can read this** box, under **Sold on its own**, give it a customer tag (for example `item-big-story`) and the Shopify product that sells it. A customer with that tag reads the item whatever its levels say, with no drip, and locked readers see a button to buy the product beside the level's offer.
+
+One workflow covers every item sold this way:
+
+1. In Shopify, add a product metafield definition `redeemid.unlock_tag` (single line text), and on each item's product set it to the same tag as in WordPress.
+2. Trigger: **Order paid**.
+3. **For each** line item in the order.
+4. Condition: the line item's product metafield `redeemid.unlock_tag` is not empty (pick it in Flow's variable picker).
+5. Action: **Add customer tags**: the metafield's value, inserted from the variable picker.
+
+With only a few items, one workflow per item is just as good: condition on the product, add its tag. Purchases are kept for good unless a cancel or refund workflow removes the tag, as in the one-time purchase above. Each item's tag is its own: it never grants a level, so these tags don't belong in any level.
+
 ### Fixed term (for example 12 months)
 
 Add a **Wait** step to the grant workflow, after the tag is added, then **Remove customer tags**. A renewal purchase starts its own run, so give a renewal its own tag or check for a newer paid order before removing, as in step 6 above.

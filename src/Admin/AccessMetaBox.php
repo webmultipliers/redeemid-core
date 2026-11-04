@@ -8,6 +8,7 @@ use RedeemID\Access\Index;
 use RedeemID\Access\ItemRule;
 use RedeemID\Access\Level;
 use RedeemID\Access\LevelStore;
+use RedeemID\Files\ProtectedFiles;
 
 /**
  * The Access box in the post editor's sidebar: the item's mode, levels and
@@ -74,6 +75,15 @@ final class AccessMetaBox {
 		<?php if ( current_user_can( Menu::CAP ) ) : ?>
 			<p><a href="<?php echo esc_url( Menu::url( Access::PAGE, [ 'tab' => 'test', 'post' => $post->ID ] ) ); ?>"><?php esc_html_e( 'Test who can read it', 'redeemid' ); ?></a></p>
 		<?php endif; ?>
+		<?php $open_files = $effective->open() ? 0 : self::unprotected_attachments( $post->ID ); ?>
+		<?php if ( $open_files ) : ?>
+			<p class="notice notice-warning inline" style="padding:6px 8px">
+				<?php
+				/* translators: %d: number of files */
+				echo esc_html( sprintf( _n( '%d file attached to this item is not protected: anyone with its link can open it. Protect it in the Media Library.', '%d files attached to this item are not protected: anyone with their links can open them. Protect them in the Media Library.', $open_files, 'redeemid' ), $open_files ) );
+				?>
+			</p>
+		<?php endif; ?>
 		<?php foreach ( Gatekeeper::context( $post )->terms as $term ) : ?>
 			<?php if ( $term->opens_at( time() ) && Context::ITEM_INHERIT === $rule['mode'] ) : ?>
 				<p class="notice notice-warning inline" style="padding:6px 8px">
@@ -119,8 +129,43 @@ final class AccessMetaBox {
 		<p>
 			<label><input type="checkbox" name="redeemid_access[meter_exempt]" value="1" <?php checked( $rule['meter_exempt'] ); ?>> <?php esc_html_e( 'Never count toward a meter', 'redeemid' ); ?></label>
 		</p>
+		<fieldset>
+			<legend><strong><?php esc_html_e( 'Sold on its own', 'redeemid' ); ?></strong></legend>
+			<?php if ( '' !== $rule['unlock_tag'] && $effective->open() ) : ?>
+				<p class="notice notice-info inline" style="padding:6px 8px"><?php esc_html_e( 'It is free to everyone right now, so the tag changes nothing until it is locked.', 'redeemid' ); ?></p>
+			<?php endif; ?>
+			<p>
+				<label for="redeemid-access-unlock-tag"><?php esc_html_e( 'Shopify customer tag that unlocks it', 'redeemid' ); ?></label>
+				<input id="redeemid-access-unlock-tag" type="text" name="redeemid_access[unlock_tag]" value="<?php echo esc_attr( $rule['unlock_tag'] ); ?>" placeholder="<?php echo esc_attr( 'item-' . ( $post->post_name ?: $post->ID ) ); ?>" style="width:100%">
+			</p>
+			<p>
+				<label for="redeemid-access-unlock-product"><?php esc_html_e( 'Shopify product that sells it (handle or link)', 'redeemid' ); ?></label>
+				<input id="redeemid-access-unlock-product" type="text" name="redeemid_access[unlock_product]" value="<?php echo esc_attr( $rule['unlock_product'] ); ?>" style="width:100%">
+			</p>
+			<p class="description"><?php esc_html_e( 'A customer with this tag can read it whatever the levels say, with no drip. Shopify adds the tag when the order is paid, through a Shopify Flow workflow. Locked readers get a button to buy the product.', 'redeemid' ); ?></p>
+		</fieldset>
+
 		<p class="description"><?php esc_html_e( 'This locks the post\'s text. Files linked from it, such as PDFs and images, can still be opened by anyone with the link.', 'redeemid' ); ?></p>
 		<?php
+	}
+
+	/**
+	 * How many files uploaded to this item have no protection, counting at
+	 * most the first 100.
+	 */
+	public static function unprotected_attachments( int $post_id ): int {
+		$ids = get_posts(
+			[
+				'post_type'        => 'attachment',
+				'post_status'      => 'inherit',
+				'post_parent'      => $post_id,
+				'fields'           => 'ids',
+				'posts_per_page'   => 100,
+				'no_found_rows'    => true,
+			]
+		);
+
+		return count( array_filter( $ids, static fn( $id ) => ! ProtectedFiles::is_protected( (int) $id ) ) );
 	}
 
 	public static function save( int $post_id, \WP_Post $post ): void {
@@ -148,12 +193,14 @@ final class AccessMetaBox {
 		ItemRule::save(
 			$post_id,
 			[
-				'mode'         => sanitize_key( (string) ( $raw['mode'] ?? '' ) ),
-				'levels'       => array_map( 'sanitize_key', (array) ( $raw['levels'] ?? [] ) ),
-				'locked_until' => $time( $raw['locked_until'] ?? '' ),
-				'public_until' => $time( $raw['public_until'] ?? '' ),
-				'meter_exempt' => ! empty( $raw['meter_exempt'] ),
-				'drip_days'    => absint( $raw['drip_days'] ?? 0 ),
+				'mode'           => sanitize_key( (string) ( $raw['mode'] ?? '' ) ),
+				'levels'         => array_map( 'sanitize_key', (array) ( $raw['levels'] ?? [] ) ),
+				'locked_until'   => $time( $raw['locked_until'] ?? '' ),
+				'public_until'   => $time( $raw['public_until'] ?? '' ),
+				'meter_exempt'   => ! empty( $raw['meter_exempt'] ),
+				'drip_days'      => absint( $raw['drip_days'] ?? 0 ),
+				'unlock_tag'     => sanitize_text_field( (string) ( $raw['unlock_tag'] ?? '' ) ),
+				'unlock_product' => sanitize_text_field( (string) ( $raw['unlock_product'] ?? '' ) ),
 			]
 		);
 	}

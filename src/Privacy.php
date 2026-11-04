@@ -65,7 +65,7 @@ final class Privacy {
 			return $user;
 		}
 
-		$users = get_users( [ 'meta_key' => Mirror::EMAIL, 'meta_value' => $email, 'number' => 1 ] ); // phpcs:ignore WordPress.DB.SlowDBQuery
+		$users = get_users( [ 'meta_key' => \RedeemID\Support\Multisite::meta_key( Mirror::EMAIL ), 'meta_value' => $email, 'number' => 1 ] ); // phpcs:ignore WordPress.DB.SlowDBQuery
 
 		return $users[0] ?? null;
 	}
@@ -79,7 +79,7 @@ final class Privacy {
 		Mirror::GID, Mirror::NUMERIC, Mirror::EMAIL, Mirror::FIRST_NAME, Mirror::LAST_NAME, Mirror::VERIFIED,
 		Mirror::TAGS, Mirror::STATUS, Mirror::STATUS_FROM, Mirror::EMAIL_OPTIN, Mirror::SMS_OPTIN, Mirror::SUMMARY,
 		Mirror::SINCE, Mirror::RENEWS, Mirror::GIFT_UNTIL, Mirror::HISTORY, Mirror::LINKED_AT, Mirror::LAST_SYNC, Mirror::SYNC_SOURCE,
-		Mirror::SYNC_FAILED, Mirror::LAST_EVENT, Mirror::PROFILE_AT, Mirror::STATUS_AT,
+		Mirror::SYNC_FAILED, Mirror::LAST_EVENT, Mirror::PROFILE_AT, Mirror::STATUS_AT, Mirror::FLAG,
 	];
 
 	/**

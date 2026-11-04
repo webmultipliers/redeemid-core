@@ -258,4 +258,43 @@ final class ResolverTest extends TestCase {
 
 		$this->assertTrue( $this->checker()->check( $rule, $old, self::NOW )->granted() );
 	}
+
+	public function test_a_sold_item_opens_for_its_buyers_only(): void {
+		$rule = $this->resolve( new Context( item_mode: Context::ITEM_LEVEL, item_levels: [ 'gold' ], item_unlock_tags: [ 'item-42' ] ) );
+
+		$this->assertTrue( $rule->sold() );
+		$this->assertSame( 'Gold, or buyers of this item', $rule->readers( $this->levels ) );
+
+		$bought = $this->checker()->check( $rule, $this->member( [ 'item-42' ] ), self::NOW );
+		$this->assertTrue( $bought->granted() );
+		$this->assertSame( Decision::BOUGHT, $bought->decision->reason );
+
+		$member = $this->checker()->check( $rule, $this->member( [ 'gold-member' ] ), self::NOW );
+		$this->assertSame( Decision::GRANTED, $member->decision->reason, 'A member reads through the level, not the sale' );
+
+		$other = $this->checker()->check( $rule, $this->member( [ 'item-7' ] ), self::NOW );
+		$this->assertFalse( $other->granted() );
+		$this->assertSame( 'gold', $other->next_level );
+	}
+
+	public function test_a_sale_fails_closed_like_a_level(): void {
+		$rule = $this->resolve( new Context( item_mode: Context::ITEM_LEVEL, item_levels: [ 'gold' ], item_unlock_tags: [ 'item-42' ] ) );
+
+		$this->assertFalse( $this->checker()->check( $rule, Member::guest(), self::NOW )->granted() );
+		$this->assertFalse( $this->checker()->check( $rule, new Member( true, true, [ 'item-42' ], 'disabled', self::NOW - 60 ), self::NOW )->granted() );
+	}
+
+	public function test_a_sale_never_locks_an_open_item(): void {
+		$rule = $this->resolve( new Context( item_unlock_tags: [ 'item-42' ] ) );
+
+		$this->assertTrue( $rule->open() );
+		$this->assertFalse( $rule->sold() );
+		$this->assertSame( [], $rule->unlock_tags );
+	}
+
+	public function test_unlock_tags_survive_the_cache(): void {
+		$context = new Context( item_mode: Context::ITEM_LEVEL, item_levels: [ 'gold' ], item_unlock_tags: [ 'item-42' ] );
+
+		$this->assertSame( [ 'item-42' ], Context::from_array( $context->to_array() )->item_unlock_tags );
+	}
 }

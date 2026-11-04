@@ -5,6 +5,7 @@ namespace RedeemID\Access;
 use RedeemID\Entitlement\Decision;
 use RedeemID\Entitlement\Evaluator;
 use RedeemID\Entitlement\Member;
+use RedeemID\Entitlement\Rule;
 
 /**
  * Does this visitor pass an effective rule? Each level's groups go through
@@ -40,10 +41,24 @@ final class Checker {
 				}
 			}
 
-			return new Verdict( $best ?? Decision::deny( Decision::BAD_RULE ), $this->next_level( $clause ) );
+			return $this->bought( $rule, $member, $now ) ?? new Verdict( $best ?? Decision::deny( Decision::BAD_RULE ), $this->next_level( $clause ) );
 		}
 
 		return new Verdict( Decision::grant(), null );
+	}
+
+	/**
+	 * A grant for a visitor who bought the item on its own: they hold one of
+	 * its unlock tags. The tags go through the Evaluator like a level's, so a
+	 * guest, a disabled customer or an unsynced account fails closed. Null when
+	 * the item isn't sold or the visitor didn't buy it.
+	 */
+	private function bought( EffectiveRule $rule, Member $member, int $now ): ?Verdict {
+		if ( ! $rule->sold() || ! $this->evaluator->decide( new Rule( $rule->unlock_tags, Rule::MATCH_ANY, true ), $member, $now )->granted ) {
+			return null;
+		}
+
+		return new Verdict( Decision::bought(), null );
 	}
 
 	/**

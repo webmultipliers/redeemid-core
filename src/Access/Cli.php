@@ -259,13 +259,14 @@ final class Cli {
 					'locked_until' => $item['locked_until'] ? wp_date( 'Y-m-d H:i', (int) $item['locked_until'] ) : '',
 					'public_until' => $item['public_until'] ? wp_date( 'Y-m-d H:i', (int) $item['public_until'] ) : '',
 					'drip_days'    => (int) $item['drip_days'],
+					'unlock_tag'   => $item['unlock_tag'],
 				];
 			}
 
 			wp_cache_flush_runtime();
 		} while ( count( $ids ) === 100 );
 
-		\WP_CLI\Utils\format_items( (string) ( $assoc['format'] ?? 'csv' ), $rows, [ 'id', 'type', 'status', 'title', 'readers', 'set_by', 'item_mode', 'item_levels', 'locked_until', 'public_until', 'drip_days' ] );
+		\WP_CLI\Utils\format_items( (string) ( $assoc['format'] ?? 'csv' ), $rows, [ 'id', 'type', 'status', 'title', 'readers', 'set_by', 'item_mode', 'item_levels', 'locked_until', 'public_until', 'drip_days', 'unlock_tag' ] );
 	}
 
 	/**

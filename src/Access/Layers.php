@@ -89,6 +89,7 @@ final class Layers {
 			published: (int) get_post_time( 'U', true, $post ) ?: null,
 			type_public_after: $type['public_after_days'] ? $type['public_after_days'] * DAY_IN_SECONDS : null,
 			meter_exempt: $item['meter_exempt'],
+			item_unlock_tags: '' !== $item['unlock_tag'] ? [ $item['unlock_tag'] ] : [],
 		);
 	}
 

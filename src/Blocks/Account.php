@@ -25,6 +25,21 @@ use RedeemID\Sync\PostCheckout;
  */
 final class Account {
 	/**
+	 * Whether the site sells memberships at all: any level beyond the built-in
+	 * ones. A sign-in-only site has none, and the card then speaks of the
+	 * account, not a membership.
+	 */
+	public static function memberships(): bool {
+		foreach ( LevelStore::levels()->all() as $level ) {
+			if ( ! $level->builtin() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @return array{
 	 *     state: string,
 	 *     name: string,

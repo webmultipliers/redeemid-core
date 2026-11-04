@@ -53,7 +53,13 @@ final class ItemRule {
 	}
 
 	/**
-	 * @return array{mode: string, levels: string[], locked_until: ?int, public_until: ?int, meter_exempt: bool, drip_days: int}
+	 * unlock_tag sells the item on its own: a customer who holds that Shopify
+	 * tag can read it whatever its levels say. Shopify Flow (or any app) adds
+	 * the tag when the order is paid, so the grant lives in Shopify like every
+	 * other. unlock_product is the Shopify product handle the locked panel
+	 * offers to buy it.
+	 *
+	 * @return array{mode: string, levels: string[], locked_until: ?int, public_until: ?int, meter_exempt: bool, drip_days: int, unlock_tag: string, unlock_product: string}
 	 */
 	public static function sanitize( mixed $value ): array {
 		$value  = is_array( $value ) ? $value : [];
@@ -62,13 +68,39 @@ final class ItemRule {
 		$time   = static fn( $t ) => is_numeric( $t ) && (int) $t > 0 ? (int) $t : null;
 
 		return [
-			'mode'         => $mode,
-			'levels'       => $levels,
-			'locked_until' => $time( $value['locked_until'] ?? null ),
-			'public_until' => $time( $value['public_until'] ?? null ),
-			'meter_exempt' => ! empty( $value['meter_exempt'] ),
-			'drip_days'    => max( 0, min( 3650, (int) ( $value['drip_days'] ?? 0 ) ) ),
+			'mode'           => $mode,
+			'levels'         => $levels,
+			'locked_until'   => $time( $value['locked_until'] ?? null ),
+			'public_until'   => $time( $value['public_until'] ?? null ),
+			'meter_exempt'   => ! empty( $value['meter_exempt'] ),
+			'drip_days'      => max( 0, min( 3650, (int) ( $value['drip_days'] ?? 0 ) ) ),
+			'unlock_tag'     => self::tag( $value['unlock_tag'] ?? '' ),
+			'unlock_product' => self::handle( $value['unlock_product'] ?? '' ),
 		];
+	}
+
+	/**
+	 * A Shopify customer tag as Shopify stores it: one line, no commas (Shopify
+	 * splits tags on them), at most 255 characters. Pure.
+	 */
+	public static function tag( mixed $raw ): string {
+		$tag = is_string( $raw ) ? trim( (string) preg_replace( '/[\x00-\x1F\x7F,<>]+|\s+/u', ' ', $raw ) ) : '';
+
+		return trim( mb_substr( (string) preg_replace( '/ {2,}/', ' ', $tag ), 0, 255 ) );
+	}
+
+	/**
+	 * A Shopify product handle, or '' when it can't be one. A pasted product
+	 * URL keeps its handle. Pure.
+	 */
+	public static function handle( mixed $raw ): string {
+		$raw = is_string( $raw ) ? strtolower( trim( $raw ) ) : '';
+
+		if ( preg_match( '#/products/([^/?\#]+)#', $raw, $m ) ) {
+			$raw = $m[1];
+		}
+
+		return preg_match( '/^[\p{Ll}\p{N}][\p{Ll}\p{N}_-]*$/u', $raw ) ? mb_substr( $raw, 0, 255 ) : '';
 	}
 
 	public static function get( \WP_Post $post ): array {
@@ -78,7 +110,7 @@ final class ItemRule {
 	public static function save( int $post_id, array $rule ): void {
 		$rule = self::sanitize( $rule );
 
-		if ( Context::ITEM_INHERIT === $rule['mode'] && ! $rule['locked_until'] && ! $rule['public_until'] && ! $rule['meter_exempt'] && ! $rule['drip_days'] ) {
+		if ( Context::ITEM_INHERIT === $rule['mode'] && ! $rule['locked_until'] && ! $rule['public_until'] && ! $rule['meter_exempt'] && ! $rule['drip_days'] && '' === $rule['unlock_tag'] ) {
 			delete_post_meta( $post_id, self::META );
 		} else {
 			update_post_meta( $post_id, self::META, $rule );
