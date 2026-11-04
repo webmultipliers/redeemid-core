@@ -548,6 +548,7 @@ final class Customers {
 				'staff_linked_flagged'   => [ 'warning', __( 'Linked and flagged, because the WordPress and Shopify emails differ.', 'redeemid' ) ],
 				'staff_link_no_user'     => [ 'error', __( 'No WordPress user has that username or email.', 'redeemid' ) ],
 				'staff_link_privileged'  => [ 'error', __( 'Staff accounts can\'t be linked to Shopify: they use the WordPress login.', 'redeemid' ) ],
+				'staff_link_not_allowed' => [ 'error', __( 'You can\'t link that user: only staff who can edit their account can. On multisite, ask a super admin.', 'redeemid' ) ],
 				'staff_link_already'     => [ 'error', __( 'That user is already linked to a Shopify customer. Disconnect them first.', 'redeemid' ) ],
 				'staff_link_taken'       => [ 'error', __( 'That Shopify customer is already linked to another user.', 'redeemid' ) ],
 				'staff_link_no_customer' => [ 'error', __( 'Shopify has no customer with that ID, or the customer has no email.', 'redeemid' ) ],

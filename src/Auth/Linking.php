@@ -44,8 +44,48 @@ final class Linking {
 	 * anyone who can edit posts. A Shopify sign-in is an emailed code, so it
 	 * would skip the WordPress password and any two-factor plugin; staff use
 	 * the WordPress login.
+	 *
+	 * On multisite a user and their login cookie belong to the whole network,
+	 * so staff on any site of the network, and super admins, count as staff
+	 * here too: otherwise an editor of one site could be linked on another and
+	 * reach their editor account through an emailed code.
 	 */
 	public static function privileged( \WP_User $user ): bool {
+		if ( self::staff_on_site( $user ) ) {
+			return true;
+		}
+
+		if ( ! is_multisite() ) {
+			return false;
+		}
+
+		if ( is_super_admin( $user->ID ) ) {
+			return true;
+		}
+
+		foreach ( self::other_sites( array_keys( get_blogs_of_user( $user->ID ) ), get_current_blog_id() ) as $site_id ) {
+			if ( self::staff_on_site( new \WP_User( $user->ID, '', $site_id ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * The sites to check besides this one. Pure.
+	 *
+	 * @param array<int|string> $sites Site IDs the user belongs to.
+	 * @return int[]
+	 */
+	public static function other_sites( array $sites, int $current ): array {
+		return array_values( array_filter( array_unique( array_map( 'intval', $sites ) ), static fn( int $site ) => $site > 0 && $site !== $current ) );
+	}
+
+	/**
+	 * Staff on the site the user object was loaded for.
+	 */
+	private static function staff_on_site( \WP_User $user ): bool {
 		return user_can( $user, 'edit_posts' ) || user_can( $user, 'manage_options' ) || in_array( 'administrator', (array) $user->roles, true );
 	}
 
