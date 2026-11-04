@@ -22,4 +22,11 @@ final class StaffLinkTest extends TestCase {
 		$this->assertSame( 'staff_link_no_customer', StaffLink::check( 7, false, false, null, 'a@b.c', '' )['error'] );
 		$this->assertFalse( StaffLink::check( 7, true, false, null, 'a@b.c', 'x@y.z' )['flag'] );
 	}
+
+	public function test_staff_who_cannot_edit_the_user_cannot_link_them(): void {
+		// A multisite site admin can't edit network users, so can't hand their sign-in to a Shopify customer.
+		$this->assertSame( 'staff_link_not_allowed', StaffLink::check( 7, false, false, null, 'a@b.c', 'x@y.z', false )['error'] );
+		$this->assertFalse( StaffLink::check( 7, false, false, null, 'a@b.c', 'x@y.z', false )['flag'] );
+		$this->assertSame( 'staff_link_privileged', StaffLink::check( 7, true, false, null, 'a@b.c', 'x@y.z', false )['error'], 'Staff refusal still comes first' );
+	}
 }
