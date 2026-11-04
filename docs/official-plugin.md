@@ -12,7 +12,7 @@ Shopify publishes its own WordPress plugin for the Sell on WordPress sales chann
 | Membership or plan purchase | **Shopify Plan Card** (`redeemid/plan-card`), member-aware, selling plans | Covered (RedeemID only) |
 | Cart toggle block, cart drawer, discount code field | **Shopify Cart** (`redeemid/cart`) and **Shopify Cart Link** (`redeemid/cart-link`): a server-held cart with quantities, discount code and signed-in checkout, no JavaScript | Covered |
 | `/cart`, `/products/{handle}`, `/collections/{handle}` pages | The same paths by default, or any paths the site sets, as editable templates | Covered |
-| SEO title, description and social tags on those pages | The same, plus canonical links and Product structured data, deferring to Yoast SEO or Rank Math | Covered |
+| SEO title, description and social tags on those pages | The same, plus canonical links and Product structured data, deferring to Yoast SEO, Rank Math or The SEO Framework | Covered |
 | Admin bar links to Shopify products and collections | A staff-only **Shopify** admin-bar menu: products, collections, orders, customers, and Edit this product or collection on storefront pages | Covered |
 | Pageview and install analytics sent to Shopify | Not replicated; RedeemID keeps its own local stats | Not planned |
 

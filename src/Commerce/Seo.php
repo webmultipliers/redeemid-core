@@ -5,9 +5,12 @@ namespace RedeemID\Commerce;
 /**
  * Titles, descriptions, canonical links, social tags and Product structured
  * data for the storefront pages (Commerce\Pages). WordPress knows nothing
- * about these products, so neither do SEO plugins: with Yoast SEO or Rank
- * Math active, RedeemID answers their title, description and canonical
- * filters and leaves the tags to them; without one, it prints its own.
+ * about these products, so neither do SEO plugins: with Yoast SEO, Rank
+ * Math or The SEO Framework active, RedeemID answers their title,
+ * description and canonical filters and leaves the tags to them; without
+ * one, it prints its own. The SEO Framework (5.x) has no canonical or
+ * description filter for a page it doesn't know, so its rendered tags are
+ * rewritten through the_seo_framework_meta_render_data.
  * Product structured data is always RedeemID's, since no SEO plugin has it.
  * All of it is Shopify's public catalog data, never personal.
  */
@@ -25,6 +28,8 @@ final class Seo {
 		add_filter( 'rank_math/frontend/title', [ self::class, 'plugin_title' ] );
 		add_filter( 'rank_math/frontend/description', [ self::class, 'plugin_description' ], 20 );
 		add_filter( 'rank_math/frontend/canonical', [ self::class, 'canonical_url' ] );
+		add_filter( 'the_seo_framework_title_from_generation', [ self::class, 'tsf_title' ] );
+		add_filter( 'the_seo_framework_meta_render_data', [ self::class, 'tsf_tags' ] );
 	}
 
 	/**
@@ -136,8 +141,67 @@ final class Seo {
 		return $page ? $page['url'] : $url;
 	}
 
+	/**
+	 * The SEO Framework adds the site name itself, so it gets the bare title.
+	 */
+	public static function tsf_title( mixed $title ): mixed {
+		$page = self::page();
+
+		return $page ? $page['title'] : $title;
+	}
+
+	public static function tsf_tags( mixed $tags ): mixed {
+		$page = self::page();
+
+		return $page && is_array( $tags ) ? self::tsf_render_data( $tags, $page ) : $tags;
+	}
+
+	/**
+	 * The SEO Framework's tag render data with the storefront page's own
+	 * description, canonical link and social URL, title and description, so
+	 * it prints one set of tags and RedeemID prints none. Pure.
+	 *
+	 * @param array<string, array> $tags The render data, keyed by tag ID.
+	 * @param array                $page From page().
+	 * @return array<string, array>
+	 */
+	public static function tsf_render_data( array $tags, array $page ): array {
+		$set = static function ( string $id, string $key, string $attr, string $value ) use ( &$tags ): void {
+			if ( '' === $value ) {
+				unset( $tags[ $id ] );
+				return;
+			}
+
+			$tag = $tags[ $id ] ?? [];
+
+			$tag['attributes'] = array_merge( (array) ( $tag['attributes'] ?? [] ), [ $key => $id, $attr => $value ] );
+
+			if ( 'canonical' === $id ) {
+				$tag['tag']        = 'link';
+				$tag['attributes'] = [ 'rel' => 'canonical', 'href' => $value ];
+			}
+
+			$tags[ $id ] = $tag;
+		};
+
+		$set( 'description', 'name', 'content', $page['description'] );
+		$set( 'canonical', 'rel', 'href', $page['url'] );
+		$set( 'og:type', 'property', 'content', $page['product'] ? 'product' : 'website' );
+		$set( 'og:title', 'property', 'content', $page['title'] );
+		$set( 'og:description', 'property', 'content', $page['description'] );
+		$set( 'og:url', 'property', 'content', $page['url'] );
+		$set( 'twitter:title', 'name', 'content', $page['title'] );
+		$set( 'twitter:description', 'name', 'content', $page['description'] );
+
+		if ( $page['image'] ) {
+			$set( 'og:image', 'property', 'content', (string) $page['image']['url'] );
+		}
+
+		return $tags;
+	}
+
 	private static function seo_plugin(): bool {
-		return defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath' );
+		return defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath' ) || defined( 'THE_SEO_FRAMEWORK_VERSION' );
 	}
 
 	public static function head(): void {

@@ -318,7 +318,7 @@ final class Gate {
 			case PanelKind::JOIN:
 				// The level's own button label is written for newcomers; an existing member is upgrading.
 				$data['ctaLabel']   = PanelKind::UPGRADE === $kind && $label
-					/* translators: %s: access level label */
+					/* translators: %s: the name of a membership level or plan */
 					? sprintf( __( 'Upgrade to %s', 'redeemid' ), $label )
 					/* translators: %s: access level label */
 					: ( $cta ?: ( $label ? sprintf( __( 'Join %s', 'redeemid' ), $label ) : '' ) );

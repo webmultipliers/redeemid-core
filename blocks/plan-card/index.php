@@ -84,7 +84,7 @@ $redeemid_via    = '' !== $redeemid_member['via'] ? ( \RedeemID\Access\LevelStor
 $redeemid_manage = (string) \RedeemID\Settings::get( 'subscription_url' );
 
 if ( \RedeemID\Commerce\PlanState::UPGRADE === $redeemid_member['state'] ) {
-	/* translators: %s: plan title */
+	/* translators: %s: the name of a membership level or plan */
 	$redeemid_button = (string) ( $a['upgradeLabel'] ?? '' ) ?: sprintf( __( 'Upgrade to %s', 'redeemid' ), $redeemid_title );
 } elseif ( \RedeemID\Commerce\PlanState::ADD === $redeemid_member['state'] ) {
 	/* translators: %s: plan title */
