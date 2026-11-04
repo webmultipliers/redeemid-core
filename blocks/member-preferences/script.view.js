@@ -69,22 +69,52 @@ const fill = (form, values) => {
 	});
 };
 
-const mark = (form, fields) => {
+// Mark the fields the server refused, in words as well as colour: each gets
+// "Check this answer." tied to it with aria-describedby. Returns the first.
+const mark = (root, form, fields) => {
+	let first = null;
+
 	form.querySelectorAll('[data-redeemid-key]').forEach((el) => {
 		const bad = Object.prototype.hasOwnProperty.call(fields || {}, el.dataset.redeemidKey);
+		const wrap = el.closest('.redeemid-preferences__field');
+		const id = `redeemid-pref-error-${el.dataset.redeemidKey.replace(/[^\w-]/g, '-')}`;
+		const described = (el.getAttribute('aria-describedby') || '').split(' ').filter((ref) => ref && ref !== id);
+		let note = wrap?.querySelector('.redeemid-preferences__error');
 
 		el.toggleAttribute('aria-invalid', bad);
-		el.closest('.redeemid-preferences__field')?.classList.toggle('is-invalid', bad);
+		wrap?.classList.toggle('is-invalid', bad);
+
+		if (bad && wrap) {
+			if (!note) {
+				note = document.createElement('span');
+				note.className = 'redeemid-preferences__error';
+				note.id = id;
+				wrap.append(note);
+			}
+
+			note.textContent = messagesOf(root).field || '';
+			described.push(id);
+			first = first || el;
+		} else {
+			note?.remove();
+		}
+
+		described.length ? el.setAttribute('aria-describedby', described.join(' ')) : el.removeAttribute('aria-describedby');
 	});
+
+	return first;
 };
 
 async function save(root, form) {
 	const button = form.querySelector('button[type="submit"]');
 	const values = collect(form);
 
-	if (button) {
-		button.disabled = true;
+	if (button?.getAttribute('aria-disabled') === 'true') {
+		return;
 	}
+
+	// aria-disabled, not disabled: disabling the focused button would drop focus to the page.
+	button?.setAttribute('aria-disabled', 'true');
 
 	try {
 		const response = await fetch(root.dataset.redeemidEndpoint, {
@@ -95,20 +125,20 @@ async function save(root, form) {
 		});
 		const body = await response.json().catch(() => null);
 
-		mark(form, response.status === 400 ? body?.data?.fields : {});
+		const invalid = mark(root, form, response.status === 400 ? body?.data?.fields : {});
 
 		if (response.ok) {
 			client()?.clearHeldPreferences?.();
 			say(root, 'saved');
 		} else {
 			say(root, response.status === 400 ? 'invalid' : response.status === 429 ? 'busy' : 'error');
+			// The first refused answer takes focus, so it is the next thing read.
+			invalid?.focus();
 		}
 	} catch {
 		say(root, 'error');
 	} finally {
-		if (button) {
-			button.disabled = false;
-		}
+		button?.removeAttribute('aria-disabled');
 	}
 }
 

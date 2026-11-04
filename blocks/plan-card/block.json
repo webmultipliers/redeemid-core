@@ -38,6 +38,7 @@
 				"help": "Sell on a subscription or other selling plan. The card lists the product's plans in the editor. Left empty, the card sells a one-time purchase, or the first plan when the product is subscription-only."
 			},
 			{ "id": "heading", "type": "text", "label": "Heading", "help": "Leave empty to use the product title from Shopify." },
+			{ "id": "headingLevel", "type": "select", "label": "Heading level", "default": "3", "help": "One level below the heading the block sits under, so screen reader users can follow the page outline.", "options": [ { "value": "2", "label": "H2" }, { "value": "3", "label": "H3" }, { "value": "4", "label": "H4" } ] },
 			{
 				"id": "description",
 				"type": "textarea",

@@ -25,6 +25,7 @@
 					"returnFormat": { "value": "handle", "label": "title" }
 				}
 			},
+			{ "id": "headingLevel", "type": "select", "label": "Heading level", "default": "3", "help": "One level below the heading the block sits under, so screen reader users can follow the page outline. On its own product page the title is always the page's H1.", "options": [ { "value": "2", "label": "H2" }, { "value": "3", "label": "H3" }, { "value": "4", "label": "H4" } ] },
 			{ "id": "cartLabel", "type": "text", "label": "Add to cart label", "default": "Add to cart", "help": "Shown when RedeemID's cart is on (it is off while Shopify's own plugin runs the cart)." },
 			{ "id": "showBuyNow", "type": "toggle", "label": "Show buy-now button next to Add to cart", "default": true },
 			{ "id": "buttonLabel", "type": "text", "label": "Buy-now label", "default": "Buy now" },

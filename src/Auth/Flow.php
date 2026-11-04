@@ -626,7 +626,7 @@ final class Flow {
 		if ( $connect && is_user_logged_in() && ! Mirror::customer_id( get_current_user_id() ) && ! Linking::refusal( get_current_user_id() ) ) {
 			ob_start();
 			?>
-			<form class="redeemid-notice redeemid-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
+			<form class="redeemid-notice redeemid-link-confirm" data-redeemid-notice method="post" action="<?php echo esc_url( self::action_url() ); ?>">
 				<p><?php esc_html_e( 'You\'re signed in. Connect your Shopify account to this one so your membership works here.', 'redeemid' ); ?></p>
 				<input type="hidden" name="action" value="redeemid_connect">
 				<input type="hidden" name="redirect_to" value="<?php echo esc_attr( $back ); ?>">
@@ -641,14 +641,14 @@ final class Flow {
 			$pending = Linking::peek( $ref );
 
 			if ( ! $pending || (int) $pending['user_id'] !== get_current_user_id() ) {
-				return '<div class="redeemid-notice" role="alert"><p>' . esc_html( self::message( 'link_token_missing' ) ) . '</p></div>';
+				return '<div class="redeemid-notice" role="alert" data-redeemid-notice><p>' . esc_html( self::message( 'link_token_missing' ) ) . '</p></div>';
 			}
 
 			$user = wp_get_current_user();
 
 			ob_start();
 			?>
-			<form class="redeemid-notice redeemid-link-confirm" method="post" action="<?php echo esc_url( self::action_url() ); ?>">
+			<form class="redeemid-notice redeemid-link-confirm" data-redeemid-notice method="post" action="<?php echo esc_url( self::action_url() ); ?>">
 				<p>
 					<?php
 					printf(
@@ -671,7 +671,7 @@ final class Flow {
 
 		$message = self::message( $notice );
 
-		return '' === $message ? '' : '<div class="redeemid-notice" role="status"><p>' . esc_html( $message ) . '</p></div>';
+		return '' === $message ? '' : '<div class="redeemid-notice" role="status" data-redeemid-notice><p>' . esc_html( $message ) . '</p></div>';
 	}
 
 	/**
@@ -682,7 +682,7 @@ final class Flow {
 		$pending = Linking::peek( $ref );
 
 		if ( ! $pending || 'existing' !== ( $pending['kind'] ?? '' ) ) {
-			return '<div class="redeemid-notice" role="alert"><p>' . esc_html( self::message( 'existing_expired' ) ) . '</p></div>';
+			return '<div class="redeemid-notice" role="alert" data-redeemid-notice><p>' . esc_html( self::message( 'existing_expired' ) ) . '</p></div>';
 		}
 
 		$after = add_query_arg(
@@ -695,7 +695,7 @@ final class Flow {
 
 		ob_start();
 		?>
-		<div class="redeemid-notice redeemid-existing">
+		<div class="redeemid-notice redeemid-existing" data-redeemid-notice>
 			<p>
 				<?php
 				printf(

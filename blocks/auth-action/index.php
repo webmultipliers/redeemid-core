@@ -65,7 +65,7 @@ if ( ! \RedeemID\Shopify\Discovery::available() ) :
 		<button type="button" class="<?php echo esc_attr( $redeemid_class ); ?>" disabled><?php esc_html_e( 'Sign-in is temporarily unavailable', 'redeemid' ); ?></button>
 	</div>
 <?php else : ?>
-<div useBlockProps class="redeemid-auth" aria-live="polite">
+<div useBlockProps class="redeemid-auth">
 	<?php if ( ! $redeemid_user ) : ?>
 		<?php if ( 'logout' !== $redeemid_mode && 'connect' !== $redeemid_mode ) : ?>
 			<a class="<?php echo esc_attr( $redeemid_class ); ?>" href="<?php echo esc_url( \RedeemID\Auth\Flow::login_url( $redeemid_after_login ) ); ?>" rel="nofollow"><?php echo esc_html( $redeemid_login ); ?></a>

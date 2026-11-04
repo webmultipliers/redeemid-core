@@ -21,7 +21,9 @@ async function refresh(root) {
 		messages = { ...fallback, ...JSON.parse(root.dataset.redeemidRefreshMessages || '{}') };
 	} catch {}
 
-	button.disabled = true;
+	// aria-disabled rather than disabled: a disabled button drops keyboard and
+	// screen reader focus to the page, so the result would be read from nowhere.
+	button.setAttribute('aria-disabled', 'true');
 	message.textContent = messages.checking;
 
 	let result = 'sync_failed';
@@ -45,13 +47,13 @@ async function refresh(root) {
 		return;
 	}
 
-	button.disabled = false;
+	button.removeAttribute('aria-disabled');
 }
 
 document.addEventListener('click', (event) => {
 	const root = event.target.closest('.redeemid-refresh__button')?.closest('[data-redeemid-refresh-nonce]');
 
-	if (root) {
+	if (root && root.querySelector('.redeemid-refresh__button')?.getAttribute('aria-disabled') !== 'true') {
 		refresh(root);
 	}
 });

@@ -19,11 +19,12 @@ defined( 'ABSPATH' ) || exit;
 $redeemid_handle      = sanitize_title( \RedeemID\Blocks\Gate::option( $a['productHandle'] ?? '', '' ) );
 $redeemid_button      = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Join now', 'redeemid' );
 $redeemid_classes     = 'redeemid-plan' . ( ! empty( $a['highlight'] ) ? ' is-highlighted' : '' );
-$redeemid_unavailable = static function ( string $message ) use ( $redeemid_classes, $a ): void {
+$redeemid_tag         = \RedeemID\Blocks\Gate::heading( $a['headingLevel'] ?? '', 'h3' );
+$redeemid_unavailable = static function ( string $message ) use ( $redeemid_classes, $redeemid_tag, $a ): void {
 	?>
 	<div useBlockProps class="<?php echo esc_attr( $redeemid_classes ); ?> is-unavailable">
 		<?php if ( ! empty( $a['heading'] ) ) : ?>
-			<h3 class="redeemid-plan__title"><?php echo esc_html( (string) $a['heading'] ); ?></h3>
+			<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-plan__title"><?php echo esc_html( (string) $a['heading'] ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 		<?php endif; ?>
 		<p class="redeemid-plan__notice"><?php echo esc_html( $message ); ?></p>
 	</div>
@@ -55,7 +56,7 @@ if ( 'preview' === $redeemid_problem ) :
 	// The inserter preview shows sample data, never a live Shopify call.
 	?>
 	<div useBlockProps class="<?php echo esc_attr( $redeemid_classes ); ?>">
-		<h3 class="redeemid-plan__title"><?php echo esc_html( (string) ( $a['heading'] ?? '' ) ?: __( 'Gold membership', 'redeemid' ) ); ?></h3>
+		<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-plan__title"><?php echo esc_html( (string) ( $a['heading'] ?? '' ) ?: __( 'Gold membership', 'redeemid' ) ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 		<p class="redeemid-plan__price">$12.00</p>
 		<p class="redeemid-plan__description"><?php esc_html_e( 'Every story, the archive and the weekly briefing.', 'redeemid' ); ?></p>
 		<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>
@@ -98,7 +99,7 @@ $redeemid_classes .= '' !== $redeemid_member['state'] ? ' is-member-' . $redeemi
 		<img class="redeemid-plan__image" src="<?php echo esc_url( $redeemid_image['url'] ); ?>" alt="<?php echo esc_attr( $redeemid_image['alt'] ); ?>" <?php echo $redeemid_image['width'] ? 'width="' . (int) $redeemid_image['width'] . '" height="' . (int) $redeemid_image['height'] . '"' : ''; ?> loading="lazy">
 	<?php endif; ?>
 
-	<h3 class="redeemid-plan__title"><?php echo esc_html( $redeemid_title ); ?></h3>
+	<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-plan__title"><?php echo esc_html( $redeemid_title ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 
 	<?php if ( '' !== $redeemid_price ) : ?>
 		<p class="redeemid-plan__price">
@@ -133,7 +134,7 @@ $redeemid_classes .= '' !== $redeemid_member['state'] ? ' is-member-' . $redeemi
 	<?php endif; ?>
 
 	<?php if ( '' !== $redeemid_notice ) : ?>
-		<p class="redeemid-plan__notice" role="alert"><?php echo esc_html( $redeemid_notice ); ?></p>
+		<p class="redeemid-plan__notice" role="alert" data-redeemid-notice><?php echo esc_html( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
 	<?php if ( \RedeemID\Commerce\PlanState::UPGRADE === $redeemid_member['state'] && '' !== $redeemid_via ) : ?>

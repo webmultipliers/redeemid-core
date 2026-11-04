@@ -96,7 +96,7 @@ $redeemid_page   = static fn( string $key, string $cursor ): string => add_query
 	<?php endif; ?>
 
 	<?php if ( '' !== $redeemid_notice ) : ?>
-		<p class="redeemid-collection__notice" role="status"><?php echo wp_kses_post( $redeemid_notice ); ?></p>
+		<p class="redeemid-collection__notice" role="status" data-redeemid-notice><?php echo wp_kses_post( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
 	<ul class="redeemid-collection__grid">

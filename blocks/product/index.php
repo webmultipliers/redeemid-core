@@ -22,7 +22,7 @@ $redeemid_handle = \RedeemID\Commerce\Pages::handle_for( \RedeemID\Commerce\Page
 $redeemid_button = (string) ( $a['buttonLabel'] ?? '' ) ?: __( 'Buy now', 'redeemid' );
 $redeemid_cart   = \RedeemID\Commerce\Cart::enabled();
 $redeemid_add    = (string) ( $a['cartLabel'] ?? '' ) ?: __( 'Add to cart', 'redeemid' );
-$redeemid_tag    = \RedeemID\Commerce\Pages::is_page_block( \RedeemID\Commerce\Pages::PRODUCT, $redeemid_chosen ) ? 'h1' : 'h3';
+$redeemid_tag    = \RedeemID\Commerce\Pages::is_page_block( \RedeemID\Commerce\Pages::PRODUCT, $redeemid_chosen ) ? 'h1' : \RedeemID\Blocks\Gate::heading( $a['headingLevel'] ?? '', 'h3' );
 
 // Every branch that prints markup runs to the end of the file; see the plan card.
 $redeemid_product = null;
@@ -47,7 +47,7 @@ if ( $isPreview ) {
 if ( 'preview' === $redeemid_problem ) :
 	?>
 	<div useBlockProps class="redeemid-product">
-		<h3 class="redeemid-product__title"><?php esc_html_e( 'Field notebook', 'redeemid' ); ?></h3>
+		<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-product__title"><?php esc_html_e( 'Field notebook', 'redeemid' ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 		<p class="redeemid-product__price">$18.00</p>
 		<span class="wp-element-button"><?php echo esc_html( $redeemid_button ); ?></span>
 	</div>
@@ -102,7 +102,7 @@ $redeemid_return = $isEditor ? '' : remove_query_arg( 'redeemid_notice', \Redeem
 	<?php endif; ?>
 
 	<?php if ( '' !== $redeemid_notice ) : ?>
-		<p class="redeemid-product__notice" role="status"><?php echo wp_kses_post( $redeemid_notice ); ?></p>
+		<p class="redeemid-product__notice" role="status" data-redeemid-notice><?php echo wp_kses_post( $redeemid_notice ); ?></p>
 	<?php endif; ?>
 
 	<?php if ( ! $redeemid_sellable ) : ?>

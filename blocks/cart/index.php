@@ -49,7 +49,7 @@ if ( $redeemid_enabled || $isEditor || $isPreview ) :
 		<<?php echo esc_attr( $redeemid_tag ); ?> id="redeemid-cart-heading" class="redeemid-cart__heading"><?php echo esc_html( $redeemid_heading ?: __( 'Your cart', 'redeemid' ) ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 
 		<?php if ( '' !== $redeemid_notice ) : ?>
-			<p class="redeemid-cart__notice" role="status"><?php echo wp_kses_post( $redeemid_notice ); ?></p>
+			<p class="redeemid-cart__notice" role="status" data-redeemid-notice><?php echo wp_kses_post( $redeemid_notice ); ?></p>
 		<?php endif; ?>
 
 		<?php if ( ! $redeemid_cart || ! $redeemid_cart['lines'] ) : ?>

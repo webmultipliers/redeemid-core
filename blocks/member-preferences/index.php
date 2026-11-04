@@ -20,6 +20,7 @@ $redeemid_title  = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['
 $redeemid_intro  = trim( (string) ( $a['intro'] ?? '' ) );
 $redeemid_button = '' !== trim( (string) ( $a['button'] ?? '' ) ) ? (string) $a['button'] : __( 'Save preferences', 'redeemid' );
 $redeemid_guests = ! empty( $a['askGuests'] );
+$redeemid_tag    = Gate::heading( $a['headingLevel'] ?? '', 'h2' );
 $redeemid_here   = $isIslandFragment ? Gate::fragment_url() : Gate::current_url();
 $redeemid_query  = [];
 wp_parse_str( (string) wp_parse_url( $redeemid_here, PHP_URL_QUERY ), $redeemid_query );
@@ -63,13 +64,13 @@ $redeemid_editable = array_filter( $redeemid_fields, static fn( $f ) => ! empty(
 		data-redeemid-endpoint="<?php echo esc_url( rest_url( \RedeemID\Rest\Routes::NS . '/account/preferences' ) ); ?>"
 		data-redeemid-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
 	<?php endif; ?>>
-	<h2 class="redeemid-preferences__title"><?php echo esc_html( $redeemid_title ); ?></h2>
+	<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-preferences__title"><?php echo esc_html( $redeemid_title ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 
 	<?php if ( '' !== $redeemid_intro ) : ?>
 		<p class="redeemid-preferences__intro"><?php echo esc_html( $redeemid_intro ); ?></p>
 	<?php endif; ?>
 
-	<p class="redeemid-preferences__status" role="status"><?php echo isset( $redeemid_msgs[ $redeemid_said ] ) && 'field' !== $redeemid_said ? esc_html( $redeemid_msgs[ $redeemid_said ] ) : ''; ?></p>
+	<p class="redeemid-preferences__status" role="status" data-redeemid-notice><?php echo isset( $redeemid_msgs[ $redeemid_said ] ) && 'field' !== $redeemid_said ? esc_html( $redeemid_msgs[ $redeemid_said ] ) : ''; ?></p>
 
 	<?php if ( $isEditor ) : ?>
 		<p><?php esc_html_e( 'Each member sees the fields you set to Members can see or Members can change under RedeemID → Settings → Member preferences, with their own answers. Guests see the fields they can change.', 'redeemid' ); ?></p>
