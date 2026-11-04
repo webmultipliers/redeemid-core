@@ -5,7 +5,7 @@ Tags: shopify, membership, paywall, restrict content, login
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 0.0.8
+Stable tag: 0.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,8 +22,10 @@ RedeemID is free and open source. There is no paid version.
 = Sign in with Shopify =
 
 * A **Log in with Shopify** block: OAuth with PKCE against Shopify's Customer Account API.
-* New customers get a WordPress user tied to their Shopify account. Existing WordPress accounts can be linked, after a verified-email check.
+* New customers get a WordPress user tied to their Shopify account. Existing WordPress accounts can be linked, after a verified-email check. Staff can link a member whose emails differ, and the account is flagged until they clear it.
+* An optional setting makes linked members sign in with Shopify only, with no WordPress password.
 * Sign-out ends both sessions.
+* Use it for sign-in alone, with no levels and nothing gated.
 
 = Memberships from Shopify =
 
@@ -35,18 +37,19 @@ RedeemID is free and open source. There is no paid version.
 
 * A **Membership Gate** block, a **Paywall Break** block, and an **Access** panel on every block.
 * Access rules for a post, a category or tag, a whole post type, or the site.
-* Locked content is removed on the server, so it never reaches the HTML, feeds, the REST API or search excerpts.
+* Locked content is removed on the server, so it never reaches the HTML, feeds, the REST API, search excerpts or the descriptions Yoast SEO, Rank Math and The SEO Framework print.
+* Sell one post on its own: a customer tag set by Shopify Flow opens it, and locked readers see a button to buy it.
 * A signed-in meter, protected file downloads, and site features such as ad-free reading.
 
 = Member accounts =
 
 * A **Member Account** card with levels, dates, features and links to the Shopify account.
-* Member preferences: customer metafields you choose, which members see or change and which are saved on the Shopify customer.
+* A **Member Preferences** form for the customer metafields you choose, which members see or change and which are saved on the Shopify customer. Guests can answer first and confirm after they sign in.
 * Download my data and Delete my data, through WordPress's own privacy tools.
 
 = Built for the block editor =
 
-Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall Break, Access Badge, Member Account, Membership Features, Refresh Membership, Shopify Account Status, Shopify Plan Card, Shopify Product, Shopify Collection, Shopify Cart and Shopify Cart Link. All of them render on the server and work without JavaScript. Personal pieces are dynamic islands, so pages stay cacheable behind a page cache or CDN.
+Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall Break, Access Badge, Member Account, Member Preferences, Membership Features, Refresh Membership, Shopify Account Status, Shopify Plan Card, Shopify Product, Shopify Collection, Shopify Cart and Shopify Cart Link. All of them render on the server and work without JavaScript. Personal pieces are dynamic islands, so pages stay cacheable behind a page cache or CDN.
 
 = Sell from WordPress =
 
@@ -74,7 +77,7 @@ RedeemID is in early development. Expect breaking changes before 1.0.0.
 2. Turn on pretty permalinks (**Settings → Permalinks**). Shopify sign-in returns to `/auth-callback/`, which needs them.
 3. **RedeemID → Setup** opens on activation and walks through connecting your Shopify store.
 
-You need PHP 8.2 or later with `sodium`, WordPress 6.7 or later, and a Shopify store with a headless or custom app that has Customer Account API access. See [Install](https://www.redeemid.com/docs/install/) and [Connect Shopify](https://www.redeemid.com/docs/connect/).
+You need PHP 8.2 or later with `sodium`, WordPress 6.7 or later, and a Shopify store with a headless or custom app that has Customer Account API access. On multisite, each site connects its own Shopify store. See [Install](https://www.redeemid.com/docs/install/) and [Connect Shopify](https://www.redeemid.com/docs/connect/).
 
 == Frequently Asked Questions ==
 
@@ -93,6 +96,10 @@ No. Shopify runs the store. RedeemID shows Shopify products on WordPress and sen
 = Does it work with page caches? =
 
 Yes. Personal pieces load after the page in one uncached request, so the page itself stays cacheable. See [Works with](https://www.redeemid.com/docs/compatibility/).
+
+= Does it work with SEO plugins? =
+
+Yes. With Yoast SEO, Rank Math or The SEO Framework, locked posts get teaser-only descriptions and paywall structured data, and locked posts you keep out of search are left out of their sitemaps. See [Works with](https://www.redeemid.com/docs/compatibility/).
 
 = Where is my customers' data? =
 

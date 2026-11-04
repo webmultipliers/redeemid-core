@@ -1,6 +1,6 @@
 # Replacing Shopify's WordPress plugin
 
-Shopify publishes its own WordPress plugin for the Sell on WordPress sales channel. Version 1.0.0 (built 2026-03-20) is the only release, it is not on wordpress.org, and it is named in a published security advisory (CVE-2026-57748, local file inclusion, versions up to and including 1.0.0) with no fixed release. RedeemID covers everything it does, so a site can remove it and lose nothing, and runs beside it without conflict until then. The [README](../README.md#shopifys-wordpress-plugin) covers the settings and behaviour.
+Shopify publishes its own WordPress plugin for the Sell on WordPress sales channel. Version 1.0.0 (built 2026-03-20) is the only release, it is not on wordpress.org, and it is named in a published security advisory (CVE-2026-57748, local file inclusion, versions up to and including 1.0.0) with no fixed release. RedeemID covers everything it does, so a site can remove it and lose nothing, and runs beside it without conflict until then. [Products, collections and the cart](https://www.redeemid.com/docs/storefront/) covers the settings and behaviour.
 
 ## What it does, and what covers it
 

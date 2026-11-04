@@ -6,15 +6,15 @@ Customers sign in to WordPress with their Shopify customer account, the same one
 
 Shopify stays the single source of truth. RedeemID links each Shopify customer account to a WordPress user and mirrors it there: name, email, account status, and the tags Shopify Flow or a subscription or membership app sets. Every access decision is made on the server from that mirror. A customer disabled in Shopify loses members-only access, and WordPress never grants access that Shopify doesn't know about.
 
-- **Sign in with Shopify.** OAuth with PKCE against the Customer Account API. New customers get a WordPress user; existing WordPress accounts can be linked after a verified-email check.
+- **Sign in with Shopify.** OAuth with PKCE against the Customer Account API. New customers get a WordPress user; existing WordPress accounts can be linked after a verified-email check, or by staff when the emails differ (the account is flagged until they clear it). An optional setting makes linked members sign in with Shopify only. A site can use RedeemID for sign-in alone, with no levels.
 - **Memberships from Shopify.** Shopify Flow or your subscription app tags customers, and named access levels point at those tags. Renewals, cancellations and fixed terms stay in Shopify, and webhooks bring changes over within seconds.
-- **Gate content.** A Membership Gate block, a Paywall Break, an Access panel on every block, and access rules per item, term, post type and site. Locked content is removed on the server, so it never reaches the HTML, feeds, REST or search. A signed-in meter, protected file downloads and member features (such as ad-free reading) use the same rules.
-- **Member accounts and preferences.** A member account card, a membership refresh button, and member preferences: customer metafields the owner chooses, read and written on the Shopify customer.
+- **Gate content.** A Membership Gate block, a Paywall Break, an Access panel on every block, and access rules per item, term, post type and site. Locked content is removed on the server, so it never reaches the HTML, feeds, REST, search or the SEO descriptions of Yoast SEO, Rank Math and The SEO Framework. A signed-in meter, protected file downloads and member features (such as ad-free reading) use the same rules, and one post can be sold on its own through its own customer tag.
+- **Member accounts and preferences.** A member account card, a membership refresh button, and a Member Preferences form for the customer metafields the owner chooses, read and written on the Shopify customer.
 - **Sell from WordPress.** Plan cards, products and collections with live Shopify prices, and a server-held cart that checks out on Shopify, signed in. Every cart records the page the purchase started on, so the order in Shopify shows where the sale came from.
 - **Built for the block editor and page caches.** Every piece a visitor sees is a block that renders on the server and works without JavaScript. Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **For developers.** A PHP API, REST routes, WP-CLI, a vendor-neutral event stream with signed outbound event webhooks, and WordPress Abilities for AI agents. Works beside Shopify's own WordPress plugin, or replaces it.
 
-> **Status: 0.0.8, early development.** Expect breaking changes before 1.0.0. See the [changelog](https://www.redeemid.com/changelog/) and [releases](https://github.com/webmultipliers/redeemid-core/releases).
+> **Status: 0.0.9, early development.** Expect breaking changes before 1.0.0. See the [changelog](https://www.redeemid.com/changelog/) and [releases](https://github.com/webmultipliers/redeemid-core/releases).
 
 ## Requirements
 
@@ -22,6 +22,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - WordPress 6.7+ (6.9+ for [abilities](docs/abilities.md))
 - Pretty permalinks, for sign-in only: Shopify returns customers to `https://your-site/auth-callback/`, a rewrite rule
 - A Shopify store with a headless or custom app that has Customer Account API access, and a Dev Dashboard app for the Admin API
+- On multisite, one Shopify store per site, each with its own settings ([Multisite](https://www.redeemid.com/docs/install/#multisite))
 
 If PHP, WordPress or `sodium` is missing, activation stops with a notice instead of a fatal error.
 

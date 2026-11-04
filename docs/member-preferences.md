@@ -2,13 +2,13 @@
 
 Members can see and change fields you define on their Shopify customer, such as the topics they follow or their skill level. You decide every field and who may touch it. The answers live on the customer in Shopify, ready for Flow, segments and email. WordPress keeps no copy.
 
-RedeemID ships the plumbing, not a form. Your theme, a forms plugin or a headless front end shows the fields and saves them through the API below.
+The **Member Preferences** block (`redeemid/member-preferences`) is the ready-made form: it lists every field members can see or change, with a control for each type, and saves to Shopify. It works without JavaScript too. A theme, a forms plugin or a headless front end can build its own instead, through the API below.
 
 ## Set it up
 
 1. **Define the fields in Shopify.** Go to Settings → Custom data → Customers and add a metafield definition for each one. The definition sets the name, the type and any limits, such as a list of allowed choices or a minimum and maximum.
 2. **Choose who may touch each field.** Go to RedeemID → Settings → Member preferences. RedeemID lists your customer definitions. Set each one to **Hidden**, **Members can see** or **Members can change**, then save.
-3. **Show the fields.** Use `redeemid_preferences()` and `redeemid_set_preferences()` in PHP, or `GET` and `POST /wp-json/redeemid/v1/account/preferences` from JavaScript. Examples are below.
+3. **Show the fields.** Add the **Member Preferences** block to the member's account page, or use `redeemid_preferences()` and `redeemid_set_preferences()` in PHP, or `GET` and `POST /wp-json/redeemid/v1/account/preferences` from JavaScript. Examples are below.
 
 Fields in the `membership` namespace are never offered, because RedeemID reads membership dates from them. Preferences never open content: access still comes only from tags.
 
