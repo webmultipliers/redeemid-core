@@ -26,7 +26,8 @@ defined( 'ABSPATH' ) || exit;
 
 $redeemid_form = in_array( $a['formAction'] ?? '', [ 'redeemid_connect', 'redeemid_sync' ], true ) && ! empty( $a['formNonce'] );
 ?>
-<div class="redeemid-gate__panel" role="region" aria-label="<?php esc_attr_e( 'Members only', 'redeemid' ); ?>" data-redeemid-kind="<?php echo esc_attr( (string) ( $a['kind'] ?? '' ) ); ?>" data-redeemid-level="<?php echo esc_attr( (string) ( $a['level'] ?? '' ) ); ?>">
+<?php // No region role: a page with several gates would list several "Members only" landmarks with nothing to tell them apart. The panel reads in place, after the teaser. ?>
+<div class="redeemid-gate__panel" data-redeemid-kind="<?php echo esc_attr( (string) ( $a['kind'] ?? '' ) ); ?>" data-redeemid-level="<?php echo esc_attr( (string) ( $a['level'] ?? '' ) ); ?>">
 	<p><?php echo esc_html( (string) ( $a['message'] ?? '' ) ); ?></p>
 	<?php if ( ! empty( $a['reason'] ) ) : ?>
 		<p class="redeemid-gate__reason"><?php echo esc_html( (string) $a['reason'] ); ?></p>

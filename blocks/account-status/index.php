@@ -67,6 +67,7 @@ if ( $isEditor ) {
 }
 
 $redeemid_class = 'redeemid-account-status';
+$redeemid_id    = wp_unique_id( 'redeemid-account-status-' );
 if ( $redeemid_status && ! empty( $redeemid_status['signedIn'] ) ) {
 	$redeemid_class .= ' is-signed-in';
 }
@@ -75,9 +76,9 @@ if ( $redeemid_status && ( ! empty( $redeemid_status['linked'] ) || ! empty( $re
 }
 ?>
 <div useBlockProps class="<?php echo esc_attr( $redeemid_class ); ?>">
-	<p class="redeemid-account-status__title"><?php echo esc_html( $redeemid_title ); ?></p>
+	<p class="redeemid-account-status__title" id="<?php echo esc_attr( $redeemid_id ); ?>"><?php echo esc_html( $redeemid_title ); ?></p>
 	<?php if ( ! $isEditor ) : ?>
-		<table class="redeemid-account-status__table">
+		<table class="redeemid-account-status__table" aria-labelledby="<?php echo esc_attr( $redeemid_id ); ?>">
 			<tbody>
 				<?php foreach ( $redeemid_rows as $redeemid_key => $redeemid_label ) : ?>
 					<tr>

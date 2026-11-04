@@ -168,7 +168,8 @@ final class PostCheckout {
 		}
 
 		?>
-		<div class="redeemid-checkout-banner" role="status">
+		<?php // The guest prompt and "ready" follow a step the visitor just took, so they take focus once (blocks/notices). ?>
+		<div class="redeemid-checkout-banner" role="status"<?php echo $guest || $ready ? ' data-redeemid-notice' : ''; ?>>
 			<?php if ( $guest ) : ?>
 				<p><?php esc_html_e( 'Thanks for your order. To use a membership you bought, log in with Shopify using the email address from your order.', 'redeemid' ); ?></p>
 				<a class="wp-element-button" href="<?php echo esc_url( Flow::login_url( home_url( '/' ) ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a>

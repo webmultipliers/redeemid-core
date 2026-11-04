@@ -56,7 +56,7 @@ if ( $isEditor ) {
 		<p class="redeemid-member-features__title"><?php echo esc_html( $redeemid_title ); ?></p>
 	<?php endif; ?>
 	<?php if ( $redeemid_items ) : ?>
-		<ul class="redeemid-member-features__list">
+		<ul class="redeemid-member-features__list"<?php echo $redeemid_menu ? ' aria-label="' . esc_attr( $redeemid_title ) . '"' : ''; ?>>
 			<?php foreach ( $redeemid_items as $redeemid_item ) : ?>
 				<li class="redeemid-member-features__item <?php echo $redeemid_item['held'] ? 'is-held' : 'is-missing'; ?>" data-feature="<?php echo esc_attr( $redeemid_item['slug'] ); ?>">
 					<span class="redeemid-member-features__label"><?php echo esc_html( $redeemid_item['label'] ); ?></span>

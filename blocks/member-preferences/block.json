@@ -13,6 +13,7 @@
 	"blockstudio": {
 		"attributes": [
 			{ "id": "title", "type": "text", "label": "Title", "default": "Your preferences" },
+			{ "id": "headingLevel", "type": "select", "label": "Heading level", "default": "2", "help": "One level below the heading the block sits under, so screen reader users can follow the page outline.", "options": [ { "value": "2", "label": "H2" }, { "value": "3", "label": "H3" }, { "value": "4", "label": "H4" } ] },
 			{ "id": "intro", "type": "textarea", "label": "Intro text" },
 			{ "id": "button", "type": "text", "label": "Save button label", "default": "Save preferences" },
 			{ "id": "askGuests", "type": "toggle", "label": "Ask guests too (kept in their browser until they sign in)", "default": true }

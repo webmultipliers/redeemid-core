@@ -23,6 +23,7 @@ $redeemid_title = trim( (string) ( $a['title'] ?? '' ) );
 $redeemid_title = '' === $redeemid_title || ( ! $redeemid_sells && 'Your membership' === $redeemid_title )
 	? ( $redeemid_sells ? __( 'Your membership', 'redeemid' ) : __( 'Your account', 'redeemid' ) )
 	: $redeemid_title;
+$redeemid_tag   = Gate::heading( $a['headingLevel'] ?? '', 'h2' );
 $redeemid_here  = $isIslandFragment ? Gate::fragment_url() : Gate::current_url();
 $redeemid_query = [];
 wp_parse_str( (string) wp_parse_url( $redeemid_here, PHP_URL_QUERY ), $redeemid_query );
@@ -42,11 +43,11 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 	<?php
 };
 ?>
-<section useBlockProps class="redeemid-account<?php echo $redeemid_view ? ' is-' . esc_attr( $redeemid_view['state'] ) : ''; ?>" aria-live="polite">
-	<h2 class="redeemid-account__title"><?php echo esc_html( $redeemid_title ); ?></h2>
+<section useBlockProps class="redeemid-account<?php echo $redeemid_view ? ' is-' . esc_attr( $redeemid_view['state'] ) : ''; ?>">
+	<<?php echo esc_attr( $redeemid_tag ); ?> class="redeemid-account__title"><?php echo esc_html( $redeemid_title ); ?></<?php echo esc_attr( $redeemid_tag ); ?>>
 
 	<?php if ( '' !== $redeemid_said ) : ?>
-		<p class="redeemid-account__notice" role="status"><?php echo esc_html( $redeemid_said ); ?></p>
+		<p class="redeemid-account__notice" role="status" data-redeemid-notice><?php echo esc_html( $redeemid_said ); ?></p>
 	<?php endif; ?>
 
 	<?php if ( $isEditor ) : ?>

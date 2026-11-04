@@ -49,8 +49,18 @@
 	}
 
 	&__help,
-	&__hint {
+	&__hint,
+	&__error {
 		font-size: 0.875em;
+	}
+
+	&__error {
+		font-weight: 600;
+	}
+
+	&__actions [aria-disabled="true"] {
+		opacity: 0.6;
+		cursor: progress;
 	}
 
 	&__actions {

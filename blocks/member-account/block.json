@@ -13,6 +13,7 @@
 	"blockstudio": {
 		"attributes": [
 			{ "id": "title", "type": "text", "label": "Title", "default": "Your membership" },
+			{ "id": "headingLevel", "type": "select", "label": "Heading level", "default": "2", "help": "One level below the heading the block sits under, so screen reader users can follow the page outline.", "options": [ { "value": "2", "label": "H2" }, { "value": "3", "label": "H3" }, { "value": "4", "label": "H4" } ] },
 			{ "id": "showFeatures", "type": "toggle", "label": "List what the membership includes", "default": true },
 			{ "id": "joinUrl", "type": "link", "label": "Join page, for customers without a membership" },
 			{ "id": "showPrivacyLinks", "type": "toggle", "label": "Offer Download my data and Delete my data", "default": true }

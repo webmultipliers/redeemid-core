@@ -96,6 +96,15 @@ final class Gate {
 	}
 
 	/**
+	 * A heading tag from a headingLevel select: h2, h3 or h4, else $fallback.
+	 */
+	public static function heading( mixed $value, string $fallback ): string {
+		$level = self::option( $value, '' );
+
+		return in_array( $level, [ '2', '3', '4' ], true ) ? 'h' . $level : $fallback;
+	}
+
+	/**
 	 * A Blockstudio link field value ({url, title, ...}) as a URL. A plain
 	 * string, from content written by hand, also works.
 	 */

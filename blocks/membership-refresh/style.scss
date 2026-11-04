@@ -8,13 +8,14 @@
 		display: none;
 	}
 
-	&__button:disabled {
+	&__button:disabled,
+	&__button[aria-disabled="true"] {
 		opacity: 0.6;
 		cursor: progress;
 	}
 
+	// Full text colour: faded text fails contrast on many theme backgrounds.
 	&__message {
-		opacity: 0.75;
 		font-size: var(--wp--preset--font-size--small, 0.8125rem);
 	}
 }
