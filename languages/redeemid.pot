@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-04T00:21:16+00:00\n"
+"POT-Creation-Date: 2026-11-04T00:29:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -181,7 +181,7 @@ msgid "Sign-in is temporarily unavailable"
 msgstr ""
 
 #: blocks/cart-link/index.php:16
-#: src/Commerce/Seo.php:43
+#: src/Commerce/Seo.php:48
 msgid "Cart"
 msgstr ""
 
@@ -748,8 +748,7 @@ msgstr ""
 msgid "Every story, the archive and the weekly briefing."
 msgstr ""
 
-#. translators: %s: plan title
-#. translators: %s: access level label
+#. translators: %s: the name of a membership level or plan
 #: blocks/plan-card/index.php:88
 #: src/Blocks/Gate.php:322
 #, php-format
