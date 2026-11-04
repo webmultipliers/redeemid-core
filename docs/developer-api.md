@@ -77,7 +77,7 @@ Stable:
 - **Admin:** `redeemid_customer_badges`
 - **Privacy:** `redeemid_reassign_user`, `redeemid_redact_opens_wp_request`
 
-Experimental: `redeemid_customer_is_fixture`, `redeemid_official_state`, `redeemid_pre_sync_now` and `redeemid_client_config` (the browser client's config, printed into cacheable pages: never add personal data or a nonce).
+Experimental: `redeemid_customer_is_fixture`, `redeemid_official_state`, `redeemid_pre_sync_now` (the fixture filters are ignored on production unless `REDEEMID_ALLOW_FIXTURES` is `true`) and `redeemid_client_config` (the browser client's config, printed into cacheable pages: never add personal data or a nonce).
 
 ## REST routes
 

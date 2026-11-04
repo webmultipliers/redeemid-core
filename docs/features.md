@@ -109,7 +109,7 @@ Feature-dependent output is personalised. Each feature declares one caching opti
 | `vary` | Repeat visits by the same member, behind a cache that can vary on a cookie | `redeemid_fset` carries an opaque key for the visitor's granted `vary` features (empty for guests). The key is bound to the member and their login session, so it can't be forged or copied from another member; the cost is one cached copy per member, not one per combination. Whether your cache plugin or CDN can vary on it is for you to verify on your stack. |
 | `fragment` | Only a small part varies | Nothing. Render the varying part per visitor yourself, for example as a dynamic island. |
 
-A missing or unknown option falls back to `private`, and the Features tab flags it. Guests can only hold Public features, which every guest holds alike, so guest pages stay cacheable. Page caches should already bypass the `wordpress_logged_in_*` cookie (see the README).
+A missing or unknown option falls back to `private`, and the Features tab flags it. Guests can only hold Public features, which every guest holds alike, so guest pages stay cacheable. Page caches should already bypass the `wordpress_logged_in_*` cookie (see [Works with](https://www.redeemid.com/docs/compatibility/#page-caches)).
 
 Two acceptance cases to run through your production cache: a holder then a non-holder requesting the same URL, and the reverse order.
 
