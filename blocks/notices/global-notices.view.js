@@ -14,25 +14,29 @@
  */
 let done = false;
 
-const say = (root) => {
-	const notice = done ? null : root.querySelector?.('[data-redeemid-notice]');
+const say = ( root ) => {
+	const notice = done ? null : root.querySelector?.( '[data-redeemid-notice]' );
 
-	if (!notice || '' === notice.textContent.trim()) {
+	if ( ! notice || '' === notice.textContent.trim() ) {
 		return;
 	}
 
-	const active = document.activeElement;
+	const active = notice.ownerDocument.activeElement;
 
-	if (active && active !== document.body && active !== document.documentElement) {
+	if ( active && active !== document.body && active !== document.documentElement ) {
 		return;
 	}
 
 	done = true;
-	notice.setAttribute('tabindex', '-1');
+	notice.setAttribute( 'tabindex', '-1' );
 	notice.focus();
 };
 
-const start = () => say(document);
+const start = () => say( document );
 
-document.addEventListener('blockstudio:island:rendered', (event) => say(event.target));
-document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
+document.addEventListener( 'blockstudio:island:rendered', ( event ) => say( event.target ) );
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', start );
+} else {
+	start();
+}

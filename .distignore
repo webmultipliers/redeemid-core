@@ -26,3 +26,5 @@ lighthouserc.js
 test-results
 playwright-report
 .lighthouseci
+eslint.config.js
+psalm.xml

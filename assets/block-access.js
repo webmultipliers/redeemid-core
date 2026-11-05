@@ -4,8 +4,11 @@
  * the redeemidAccess attribute and warns about settings that can't work.
  *
  * No build step: plain script on the editor's own globals.
+ *
+ * @param {Object} wp     The editor's wp global.
+ * @param {Object} config Settings printed by the server.
  */
-( function ( wp, config ) {
+( function( wp, config ) {
 	if ( ! wp || ! config ) {
 		return;
 	}
@@ -50,6 +53,8 @@
 
 	/**
 	 * Is the block at or below a top-level block that comes after the break?
+	 *
+	 * @param {string} clientId The block's client ID.
 	 */
 	const useAfterBreak = ( clientId ) =>
 		useSelect(
@@ -66,7 +71,7 @@
 
 				return breakAt !== -1 && order.indexOf( top ) > breakAt;
 			},
-			[ clientId ]
+			[ clientId ],
 		);
 
 	const FEATURES = config.features || [];
@@ -119,22 +124,22 @@
 										: levels.filter( ( slug ) => slug !== level.slug ),
 								} ),
 							__nextHasNoMarginBottom: true,
-						} )
-					)
+						} ),
+					),
 				),
 			show === 'levels' &&
 				! levels.length &&
 				el(
 					Notice,
 					{ status: 'warning', isDismissible: false },
-					__( 'Pick at least one level. Until then nobody sees this block.', 'redeemid' )
+					__( 'Pick at least one level. Until then nobody sees this block.', 'redeemid' ),
 				),
 			( show === 'locked' || show === 'without' ) &&
 				afterBreak &&
 				el(
 					Notice,
 					{ status: 'warning', isDismissible: false },
-					__( 'This block is after the paywall break, so locked visitors never reach it. Move it above the break.', 'redeemid' )
+					__( 'This block is after the paywall break, so locked visitors never reach it. Move it above the break.', 'redeemid' ),
 				),
 			( FEATURES.length > 0 || feature ) &&
 				el( SelectControl, {
@@ -163,8 +168,8 @@
 				el(
 					Notice,
 					{ status: 'warning', isDismissible: false },
-					__( 'This feature is not registered for blocks, so nobody holds it here.', 'redeemid' )
-				)
+					__( 'This feature is not registered for blocks, so nobody holds it here.', 'redeemid' ),
+				),
 		);
 	};
 
@@ -181,11 +186,11 @@
 					wp.element.Fragment,
 					null,
 					el( BlockEdit, props ),
-					el( InspectorControls, null, el( Panel, props ) )
+					el( InspectorControls, null, el( Panel, props ) ),
 				);
 			},
-			'withRedeemidAccess'
-		)
+			'withRedeemidAccess',
+		),
 	);
 
 	// Bindings to the Access source show their key in the editor; the value is decided per visitor on the page.
@@ -222,7 +227,7 @@
 					className: [ props.className, 'redeemid-access-limited', 'redeemid-access-' + ( value.show || 'everyone' ), value.feature ? 'redeemid-access-feature' : '' ].filter( Boolean ).join( ' ' ),
 				} );
 			},
-			'withRedeemidAccessOutline'
-		)
+			'withRedeemidAccessOutline',
+		),
 	);
-} )( window.wp, window.redeemidBlockAccess );
+}( window.wp, window.redeemidBlockAccess ) );

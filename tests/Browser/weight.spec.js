@@ -62,6 +62,7 @@ for ( const [ reader, cookie ] of Object.entries( readers ) ) {
 			}
 
 			// One line per page in the CI log, to see the trend.
+			// eslint-disable-next-line no-console
 			console.log( `${ reader } › ${ name }: ${ JSON.stringify( totals ) }` );
 			const over = Object.entries( budget ).filter( ( [ key, max ] ) => totals[ key ] > max );
 			expect( over.map( ( [ key, max ] ) => `${ key }: ${ totals[ key ] } > ${ max }` ), lines.join( '\n' ) ).toEqual( [] );

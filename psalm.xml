@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<psalm
+	errorLevel="8"
+	findUnusedCode="false"
+	findUnusedBaselineEntry="false"
+>
+	<!--
+		Psalm taint analysis only: follows request input, cookies and remote
+		responses to output, SQL, shell, file and redirect sinks, with Human Made's
+		WordPress plugin for WordPress's escaping and sanitizing functions. Types
+		stay with PHPStan (phpstan.neon.dist). Run in CI's Security job, in taint
+		analysis mode.
+	-->
+	<projectFiles>
+		<directory name="src" />
+		<directory name="blocks" />
+		<directory name="templates" />
+		<file name="redeemid.php" />
+		<file name="uninstall.php" />
+		<ignoreFiles allowMissingFiles="true">
+			<directory name="blocks/*/_dist" />
+		</ignoreFiles>
+	</projectFiles>
+	<plugins>
+		<pluginClass class="PsalmWordPress\Plugin" />
+	</plugins>
+</psalm>

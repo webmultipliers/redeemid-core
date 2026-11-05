@@ -1,15 +1,28 @@
 {
-	"name": "redeemid-core-browser-tests",
+	"name": "redeemid-core-ci",
 	"private": true,
-	"description": "Accessibility (axe) and performance (Lighthouse) checks against a running WordPress. CI runs them; see .github/workflows/ci.yml.",
+	"description": "CI tooling: accessibility (axe), performance (Lighthouse) and JavaScript lint (WordPress ESLint rules). See .github/workflows/ci.yml.",
 	"license": "GPL-2.0-or-later",
 	"scripts": {
 		"test:a11y": "playwright test",
-		"test:perf": "lhci autorun"
+		"test:perf": "lhci autorun",
+		"lint:js": "eslint ."
 	},
 	"devDependencies": {
 		"@axe-core/playwright": "4.14.0",
 		"@lhci/cli": "0.16.0",
-		"@playwright/test": "1.63.0"
+		"@playwright/test": "1.63.0",
+		"@wordpress/eslint-plugin": "28.1.0",
+		"eslint": "9.39.5",
+		"globals": "16.5.0"
+	},
+	"overrides": {
+		"basic-ftp": "^6.2.6",
+		"@sentry/bundler-plugins": {
+			"glob": "^14.0.3"
+		},
+		"@typescript-eslint/typescript-estree": {
+			"minimatch": "^11.0.4"
+		}
 	}
 }
