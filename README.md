@@ -28,7 +28,7 @@ If PHP, WordPress or `sodium` is missing, activation stops with a notice instead
 
 ## Install
 
-Download `redeemid-core.zip` from the [latest release](https://github.com/webmultipliers/redeemid-core/releases/latest) and upload it in **Plugins → Add New → Upload Plugin**. The zip includes `vendor/`. On a site that isn't connected yet, activation opens **RedeemID → Setup**, a step-by-step wizard that connects the store, checks HTTPS and permalinks, registers webhooks and creates a first level.
+Download `redeemid-core.zip` from the [latest release](https://github.com/webmultipliers/redeemid-core/releases/latest) and upload it in **Plugins → Add New → Upload Plugin**. The zip includes `vendor/`. On a site that isn't connected yet, activation opens **RedeemID → Setup**, a step-by-step wizard that connects the store, checks HTTPS and permalinks, and creates a first level. Each step links to the Shopify screen it needs (the Headless channel, customer accounts settings, the Dev Dashboard, Shopify Flow). Once **Test connection** passes, it publishes the sign-in callback page and registers the webhooks itself. A store still on classic customer accounts fails the test with a plain notice, because sign-in needs the new customer accounts.
 
 From source, or when your host syncs the plugin folder from Git, run `composer build-prod` in the plugin folder after each sync. That is the only build step. Blockstudio compiles block styles on first load, so `blocks/*/_dist/` must be writable.
 
@@ -94,6 +94,23 @@ GitHub Actions runs these on PHP 8.2, 8.3 and 8.4 for every pull request. It als
 - **Code quality:** PHPCS with the WordPress VIP rules (`phpcs.xml.dist`), Blockstudio's PHPStan checks, and ESLint with WordPress's JavaScript standards (`eslint.config.js`, `npm run lint:js`).
 - **Security:** `composer audit` and `npm audit`; Psalm taint analysis with Human Made's WordPress plugin (`psalm.xml`), which follows request input, cookies and remote responses to output, SQL, file and redirect sinks; CodeQL on the JavaScript and the workflows; GitHub's dependency review on pull requests; and WordPress's Plugin Check (security, general and performance checks) on the running install.
 - **Performance:** budgets for the script, style and island bytes RedeemID sends and its request count (`tests/Browser/weight.spec.js`), and Lighthouse on mobile for the performance score, LCP, CLS, TBT and server response time (`lighthouserc.js`, reports kept as a run artifact).
+
+The browser and leak checks need a running WordPress with the plugin active. To run them yourself, use a throwaway WordPress (the seed adds posts, users and a level, so never a real site), seed it with `tests/Integration/seed.php`, which writes the file the checks read, and point the checks at it:
+
+```sh
+export REDEEMID_LEAK_URL=http://127.0.0.1:8080  # your WordPress, plugin active
+export REDEEMID_LEAK_SEED=/tmp/redeemid-leak.json
+wp eval-file tests/Integration/seed.php        # run in that WordPress
+vendor/bin/phpunit --testsuite integration     # leak tests
+npm ci && npx playwright install chromium
+npm run test:a11y                              # accessibility and weight budgets
+npm run test:perf                              # Lighthouse
+npm run lint:js                                # ESLint
+```
+
+Psalm runs the same way as in CI: `composer global require vimeo/psalm:^6.5 humanmade/psalm-plugin-wordpress:^3.1`, then `psalm --taint-analysis` in the plugin folder.
+
+Dependency review only works when **Dependency graph** is on for the repository (**Settings → Advanced Security → Dependency graph**). Until it is, that check fails on every pull request whatever the change; the other checks are unaffected.
 
 To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
 
