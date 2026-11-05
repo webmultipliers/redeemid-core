@@ -1,0 +1,15 @@
+{
+	"name": "redeemid-core-browser-tests",
+	"private": true,
+	"description": "Accessibility (axe) and performance (Lighthouse) checks against a running WordPress. CI runs them; see .github/workflows/ci.yml.",
+	"license": "GPL-2.0-or-later",
+	"scripts": {
+		"test:a11y": "playwright test",
+		"test:perf": "lhci autorun"
+	},
+	"devDependencies": {
+		"@axe-core/playwright": "4.14.0",
+		"@lhci/cli": "0.16.0",
+		"@playwright/test": "1.63.0"
+	}
+}

@@ -4,8 +4,9 @@
  *
  *     REDEEMID_LEAK_SEED=/tmp/leak.json wp eval-file tests/Integration/seed.php
  *
- * It writes the IDs, links and sign-in cookies LeakTest needs to the JSON
- * file named by REDEEMID_LEAK_SEED. Never run it on a real site: it adds
+ * It writes the IDs, links and sign-in cookies LeakTest and the browser checks
+ * (tests/Browser, lighthouserc.js) need to the JSON file named by
+ * REDEEMID_LEAK_SEED. Never run it on a real site: it adds
  * posts, users and a level.
  *
  * @package RedeemID
@@ -79,6 +80,33 @@ foreach ( [ $with_break, $no_break ] as $item ) {
 	wp_update_post( [ 'ID' => $item ] );
 }
 
+// Every member-facing block that renders without a Shopify store, for the
+// accessibility and performance checks (tests/Browser, lighthouserc.js).
+$blocks = wp_insert_post(
+	[
+		'post_title'   => 'Member blocks',
+		'post_status'  => 'publish',
+		'post_type'    => 'page',
+		'post_content' => "<!-- wp:redeemid/auth-action /-->\n\n"
+			. "<!-- wp:redeemid/access-badge /-->\n\n"
+			. "<!-- wp:redeemid/member-account /-->\n\n"
+			. "<!-- wp:redeemid/member-features /-->\n\n"
+			. "<!-- wp:redeemid/member-preferences /-->\n\n"
+			. "<!-- wp:redeemid/membership-refresh /-->\n\n"
+			. "<!-- wp:redeemid/account-status /-->\n\n"
+			. '<!-- wp:redeemid/membership-gate {"ruleSource":"level","level":"gold","fallbackMode":{"value":"message"},"fallbackMessage":"This part is for Gold members.","fallbackCtaLabel":"Join","showSignIn":true} -->' . "\n"
+			. "<!-- wp:redeemid/membership-gate-content -->\n" . $paragraph( 'Gold members read this.' ) . "<!-- /wp:redeemid/membership-gate-content -->\n"
+			. "<!-- wp:redeemid/membership-gate-fallback /-->\n"
+			. "<!-- /wp:redeemid/membership-gate -->\n\n"
+			. "<!-- wp:redeemid/cart-link /-->\n",
+	],
+	true
+);
+
+if ( is_wp_error( $blocks ) ) {
+	WP_CLI::error( "Could not create the member blocks page." );
+}
+
 $comment_id = wp_insert_comment(
 	[
 		'comment_post_ID'  => $with_break,
@@ -146,6 +174,12 @@ $seed = [
 		'no_break' => [
 			'id'   => $no_break,
 			'link' => get_permalink( $no_break ),
+		],
+	],
+	'pages'   => [
+		'blocks' => [
+			'id'   => $blocks,
+			'link' => get_permalink( $blocks ),
 		],
 	],
 	'comment' => (int) $comment_id,
