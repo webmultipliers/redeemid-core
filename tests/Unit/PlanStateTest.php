@@ -55,4 +55,13 @@ final class PlanStateTest extends TestCase {
 	public function test_add_on_for_an_unrelated_level(): void {
 		$this->assertSame( PlanState::ADD, $this->state( 'puzzle-pack', [ 'gold', 'silver' ], [ 'gold' ] ) );
 	}
+
+	public function test_renew_for_a_lapsed_member(): void {
+		$levels = $this->levels();
+
+		$this->assertSame( PlanState::RENEW, PlanState::state( $levels, 'gold', [], [], true )['state'] );
+		$this->assertSame( PlanState::RENEW, PlanState::state( $levels, 'gold', [ 'silver' ], [ 'silver' ], true )['state'] );
+		// Held again (renewed): their plan, not a renew button.
+		$this->assertSame( PlanState::CURRENT, PlanState::state( $levels, 'gold', [ 'gold', 'silver' ], [ 'gold' ], true )['state'] );
+	}
 }

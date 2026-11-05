@@ -6,8 +6,9 @@ namespace RedeemID\Commerce;
  * Which WordPress page sold it: the page a buy-now or add-to-cart form sat
  * on, written onto the Shopify cart so it travels to the order.
  *
- * Each cart line carries the page that added it, and a buy-now cart also
- * carries it on the cart itself:
+ * Each cart line carries the page that added it. The cart itself carries the
+ * page that started it, and keeps that first page when later pages add lines
+ * (decided 2026-11-05: the purchase journey starts there):
  *
  * - _redeemid_source: the page's path, such as /reports/harbor-fees/
  * - _redeemid_post:   the post ID, when the page is a post

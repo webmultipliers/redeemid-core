@@ -54,10 +54,11 @@
 				"type": "toggle",
 				"label": "Change for members",
 				"default": true,
-				"help": "When a level lists this product (RedeemID → Access → Levels → Shopify products), signed-in members see \"Your plan\", \"Included\", an upgrade or an add-on button instead of the same card as everyone. Guests always see the plain card."
+				"help": "When a level lists this product (RedeemID → Access → Levels → Shopify products), signed-in members see \"Your plan\", \"Included\", an upgrade, renew or add-on button instead of the same card as everyone. Guests always see the plain card."
 			},
 			{ "id": "upgradeLabel", "type": "text", "label": "Upgrade button label", "help": "For members whose level this plan includes. Leave empty for \"Upgrade to <plan>\"." },
-			{ "id": "addLabel", "type": "text", "label": "Add-on button label", "help": "For members of other, unrelated levels. Leave empty for \"Add <plan>\"." }
+			{ "id": "addLabel", "type": "text", "label": "Add-on button label", "help": "For members of other, unrelated levels. Leave empty for \"Add <plan>\"." },
+			{ "id": "renewLabel", "type": "text", "label": "Renew button label", "help": "For members whose membership of this plan's level ended. Leave empty for \"Renew <plan>\"." }
 		]
 	}
 }

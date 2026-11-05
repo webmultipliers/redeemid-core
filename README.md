@@ -74,7 +74,7 @@ Plugins that build on RedeemID (a course, a forum, a download manager) can ask i
 - `redeemid_has_feature( $slug, $user = null )`: does the user hold a [feature](docs/features.md)?
 - `redeemid_preferences()` and `redeemid_set_preferences()`: the member's [preferences](docs/member-preferences.md), read from and saved to Shopify.
 
-They read the synced mirror, so they cost no Shopify call. The `redeemid_event` action and the `window.redeemid` browser client carry every event (walls, the meter, checkouts, level changes) in one vendor-neutral shape, and [event webhooks](docs/event-webhooks.md) send them to a CRM or automation tool without code. The REST namespace is `redeemid/v1`, and WP-CLI commands live under `wp redeemid` (resync, access, settings). What is stable is listed in [docs/developer-api.md](docs/developer-api.md); its version is `REDEEMID_API_VERSION` (currently 1.5.0).
+They read the synced mirror, so they cost no Shopify call. The `redeemid_event` action and the `window.redeemid` browser client carry every event (walls, the meter, checkouts, level changes) in one vendor-neutral shape, and [event webhooks](docs/event-webhooks.md) send them to a CRM or automation tool without code. The REST namespace is `redeemid/v1`, and WP-CLI commands live under `wp redeemid` (resync, access, settings). What is stable is listed in [docs/developer-api.md](docs/developer-api.md); its version is `REDEEMID_API_VERSION` (currently 1.6.0).
 
 ## Contributing
 

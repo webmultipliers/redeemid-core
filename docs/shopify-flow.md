@@ -31,7 +31,7 @@ One workflow, so the end is scheduled the moment access starts:
 1. Trigger: **Order paid**.
 2. Condition: a line item's product has the tag `pass-30`.
 3. Action: **Add customer tags**: `pass`.
-4. Optional, for the Member Account card: **Update customer metafield** `membership.renews_on` (type date) to the order date plus 30 days. The card shows it as the end date.
+4. Optional, for the Member Account card: **Update customer metafield** `membership.ends_on` (type date) to the order date plus 30 days. The card shows it as **Ends**, since a pass doesn't renew. Clear it in step 7 (**Remove customer metafield**).
 5. **Wait** 30 days.
 6. Condition: the customer has no newer paid order for a `pass-30` product (otherwise the newer run removes the tag when it ends).
 7. Action: **Remove customer tags**: `pass`.
@@ -89,10 +89,11 @@ Add the tag by hand in Shopify, or from RedeemID → Customers → a customer in
 
 ## Start and renewal dates
 
-The **Member Account** block shows when a membership started and when it renews. To show Shopify's dates rather than the date WordPress first saw the tag, have the workflow set customer metafields in the `membership` namespace, as dates (`YYYY-MM-DD`):
+The **Member Account** block shows when a membership started and when it renews or ends. To show Shopify's dates rather than the date WordPress first saw the tag, have the workflow set customer metafields in the `membership` namespace, as dates (`YYYY-MM-DD`):
 
 - `membership.member_since`, set with **Update customer metafield** when the tag is added;
-- `membership.renews_on`, set by the subscription app's renewal trigger, or by the fixed-term workflow before its **Wait** step;
+- `membership.renews_on`, set by the subscription app's renewal trigger (shown as **Renews**);
+- `membership.ends_on`, set by a pass or fixed-term workflow before its **Wait** step, for access that doesn't renew (shown as **Ends**);
 - `membership.gift_until`, set by the gift workflow above.
 
 They are read on every resync (a member's **Refresh Membership**, staff's resync, or **Resync all customers**), and they only change what the card says, never access.

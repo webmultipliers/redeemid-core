@@ -7,6 +7,7 @@ use RedeemID\Access\Levels;
 use RedeemID\Access\Membership;
 use RedeemID\Access\Viewer;
 use RedeemID\Features\Cache as PageCache;
+use RedeemID\Sync\LevelHistory;
 
 /**
  * What a plan card should say to a signed-in member, from which level its
@@ -19,6 +20,7 @@ use RedeemID\Features\Cache as PageCache;
  * - upgrade:  the card's level includes one they hold (a Gold card for a
  *   Silver member). The button says "Upgrade".
  * - add:      they hold levels, none related to this one (an add-on).
+ * - renew:    they held this level before and don't now. "Renew <plan>".
  * - '':       a guest, someone with no level, or a product no level names.
  *
  * level_for() and state() are pure; viewer() reads the current visitor.
@@ -28,6 +30,7 @@ final class PlanState {
 	public const INCLUDED = 'included';
 	public const UPGRADE  = 'upgrade';
 	public const ADD      = 'add';
+	public const RENEW    = 'renew';
 
 	/**
 	 * The level whose products list $handle, or null.
@@ -45,10 +48,20 @@ final class PlanState {
 	/**
 	 * @param string[] $held     Levels held, directly or through inclusion (Membership::held()).
 	 * @param string[] $direct   Of those, the ones no other held level includes (Membership::top()).
+	 * @param bool     $lapsed   Their level history shows $level ended (LevelHistory::lapsed()).
 	 * @return array{state: string, via: string} via: the held level that includes it, for "included".
 	 */
-	public static function state( Levels $levels, ?string $level, array $held, array $direct ): array {
-		if ( null === $level || ! $held ) {
+	public static function state( Levels $levels, ?string $level, array $held, array $direct, bool $lapsed = false ): array {
+		if ( null === $level ) {
+			return [ 'state' => '', 'via' => '' ];
+		}
+
+		// A lapsed member is offered their own plan back, not "Join" as if new.
+		if ( $lapsed && ! in_array( $level, $held, true ) ) {
+			return [ 'state' => self::RENEW, 'via' => '' ];
+		}
+
+		if ( ! $held ) {
 			return [ 'state' => '', 'via' => '' ];
 		}
 
@@ -90,8 +103,9 @@ final class PlanState {
 			return [ 'state' => '', 'via' => '' ];
 		}
 
-		$held  = Membership::held( $levels, Viewer::member(), time() );
-		$state = self::state( $levels, $level, $held, Membership::top( $levels, $held ) );
+		$held   = Membership::held( $levels, Viewer::member(), time() );
+		$lapsed = null === Viewer::preview_as() && LevelHistory::lapsed( get_current_user_id(), $level );
+		$state  = self::state( $levels, $level, $held, Membership::top( $levels, $held ), $lapsed );
 
 		if ( '' !== $state['state'] ) {
 			PageCache::private_page();

@@ -267,8 +267,8 @@ final class ProtectedFiles {
 	}
 
 	/**
-	 * Move an attachment's file, its image sizes and any original image, then
-	 * point WordPress at the new place.
+	 * Move an attachment's file, its image sizes, any original image and the
+	 * image editor's backups, then point WordPress at the new place.
 	 */
 	private static function move( int $attachment_id, bool $into ): true|\WP_Error {
 		$relative = (string) get_post_meta( $attachment_id, '_wp_attached_file', true );
@@ -301,6 +301,15 @@ final class ProtectedFiles {
 
 		if ( ! empty( $meta['original_image'] ) ) {
 			$names[] = (string) $meta['original_image'];
+		}
+
+		// The image editor keeps the unedited original and its sizes here, beside the file.
+		$backups = get_post_meta( $attachment_id, '_wp_attachment_backup_sizes', true );
+
+		foreach ( is_array( $backups ) ? $backups : [] as $backup ) {
+			if ( is_array( $backup ) && ! empty( $backup['file'] ) ) {
+				$names[] = basename( (string) $backup['file'] );
+			}
 		}
 
 		$from_dir = dirname( $base . $relative );

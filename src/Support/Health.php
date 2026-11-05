@@ -133,6 +133,15 @@ final class Health {
 			);
 		}
 
+		if ( has_filter( 'redeemid_context_country' ) ) {
+			// RedeemID can't see the page cache's key, so it can only remind: plan card prices differ by country.
+			$add(
+				__( 'Prices by country', 'redeemid' ),
+				self::WARN,
+				__( 'redeemid_context_country is in use: make sure your page cache varies by the country it reads (for example a CDN country header), or visitors may see another country’s prices', 'redeemid' )
+			);
+		}
+
 		if ( Admin::available() ) {
 			$relay = Admin::erasure_scope();
 			$add(

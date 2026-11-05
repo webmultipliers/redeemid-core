@@ -179,7 +179,12 @@ final class Transfer {
 		return $out;
 	}
 
-	private const SETTING_KEYS = [ 'clear_cart_on_logout', 'quiet_days', 'alert_email', 'login_button', 'shopify_login_links', 'subscription_url', 'storefront_pages', 'product_path', 'collection_path', 'cart_path', 'storefront_first', 'session_limit', 'shopify_only_login' ];
+	/**
+	 * Settings a file carries. Event webhooks (outbound_*) stay with each site on
+	 * purpose: a staging copy must not post to production's receiver, and the
+	 * signing secret is never exported.
+	 */
+	private const SETTING_KEYS = [ 'clear_cart_on_logout', 'quiet_days', 'alert_email', 'login_button', 'shopify_login_links', 'subscription_url', 'storefront_pages', 'product_path', 'collection_path', 'cart_path', 'storefront_first', 'session_limit', 'shopify_only_login', 'member_fields' ];
 
 	/**
 	 * Rebase absolute URLs on the exporting site to this one: a level's

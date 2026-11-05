@@ -47,6 +47,7 @@ final class Account {
 	 *     levels: array<int, array{slug: string, label: string, badge: string, since: string}>,
 	 *     ended: array<int, array{label: string, until: string}>,
 	 *     renews: string,
+	 *     ends: string,
 	 *     gift_until: string,
 	 *     features: string[],
 	 *     synced: int,
@@ -63,6 +64,7 @@ final class Account {
 			'levels'           => [],
 			'ended'            => [],
 			'renews'           => '',
+			'ends'             => '',
 			'gift_until'       => '',
 			'features'         => [],
 			'synced'           => 0,
@@ -95,6 +97,7 @@ final class Account {
 		$view['state']        = 'disabled' === $member->status ? 'disabled' : 'linked';
 		$view['email']        = (string) get_user_meta( $user_id, Mirror::EMAIL, true );
 		$view['renews']       = (string) get_user_meta( $user_id, Mirror::RENEWS, true );
+		$view['ends']         = (string) get_user_meta( $user_id, Mirror::ENDS, true );
 		$view['gift_until']   = self::upcoming( (string) get_user_meta( $user_id, Mirror::GIFT_UNTIL, true ), wp_date( 'Y-m-d' ) );
 		$view['synced']       = (int) $member->last_sync;
 		$view['checking_out'] = PostCheckout::active( $user_id );

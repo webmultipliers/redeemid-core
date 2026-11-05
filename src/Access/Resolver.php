@@ -62,7 +62,14 @@ final class Resolver {
 		}
 
 		// 5. Requires terms, combined by the site's conflict mode after inclusion is expanded.
-		$requires = array_values( array_filter( $c->terms, static fn( TermRule $t ) => TermRule::REQUIRES === $t->kind && $t->levels ) );
+		// A Requires term with no level saved (an import, a CLI or code write) fails closed to
+		// "signed in", as the item's own Level mode does, rather than dropping out to open.
+		$requires = array_values(
+			array_map(
+				static fn( TermRule $t ) => $t->levels ? $t : new TermRule( $t->taxonomy, $t->term, $t->kind, [ Level::SIGNED_IN ], $t->opens_until, $t->priority ),
+				array_filter( $c->terms, static fn( TermRule $t ) => TermRule::REQUIRES === $t->kind )
+			)
+		);
 
 		if ( $requires ) {
 			return $this->combine( $requires, $c->conflict, $labels );
@@ -82,7 +89,7 @@ final class Resolver {
 	}
 
 	/**
-	 * @param TermRule[] $terms  Requires rules with at least one level.
+	 * @param TermRule[] $terms  Requires rules, each with at least one level.
 	 * @param string[]   $labels Every term that took part, for provenance.
 	 */
 	private function combine( array $terms, string $mode, array $labels ): EffectiveRule {
