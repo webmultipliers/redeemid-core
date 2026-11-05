@@ -4,7 +4,9 @@ name: Release
 # header in redeemid.php changed. Pull requests into main run the same check
 # and report what merging would do, without publishing. Run it by hand to
 # publish the current version if its release is missing (for example the
-# first one).
+# first one). Nothing is published unless CI passes on the same commit. 0.x
+# versions stay the latest release (the site's download button reads it);
+# only a suffixed version (x.y.z-beta.1) is a prerelease.
 on:
   push:
     branches: [ main ]
@@ -90,9 +92,19 @@ jobs:
           echo "$note" >> "$GITHUB_STEP_SUMMARY"
           echo "release=$release" >> "$GITHUB_OUTPUT"
 
+  # A release is cut only from a commit that passes the full CI suite.
+  ci:
+    name: CI
+    needs: check
+    if: needs.check.outputs.release == 'true'
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      security-events: write
+
   release:
     name: Build and release
-    needs: check
+    needs: [ check, ci ]
     if: needs.check.outputs.release == 'true'
     runs-on: ubuntu-latest
     permissions:

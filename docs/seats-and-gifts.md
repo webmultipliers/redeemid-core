@@ -13,20 +13,14 @@ That rules out the two shortcuts most membership plugins take:
 
 ## Seats
 
-**Model: one Shopify customer per seat.** Every person who reads is a Shopify customer with their own tag, exactly like an individual member. What changes is who buys and who manages the list.
+**Model: one Shopify customer per seat, managed in Shopify B2B.** Every person who reads is a Shopify customer with their own tag, exactly like an individual member. What changes is who buys and who manages the list.
 
-1. The buyer (the "account owner") buys a team plan in Shopify: a product with a quantity, or a subscription with a seat count. Shopify Flow (or the subscription app) tags the owner `team-owner` and records the seat count in a customer metafield on the owner, for example `membership.seats = 10`.
-2. The owner adds people. Two ways, both ending in Shopify:
-   - **In Shopify:** a B2B company with locations and contacts (Shopify Plus), where each contact is a customer. Flow tags each contact `team-gold` when they're added to the company and removes the tag when they're removed.
-   - **From WordPress, writing to Shopify:** a RedeemID "Your team" screen for the owner that finds or creates the colleague as a Shopify customer (`customerCreate`) and adds the `team-gold` tag (`tagsAdd`), refusing once the count of customers carrying the owner's team tag reaches `membership.seats`. Removing someone removes the tag in Shopify. WordPress holds no seat list; the list is "customers tagged for this team", read from Shopify.
-3. Each colleague signs in with their own Shopify customer account. Their tags arrive like anyone's, and a level (`gold` granted by `gold` *or* `team-gold`) opens the content.
-4. When the owner's subscription ends, Flow removes the owner's tags and every team tag for that team. The members lose access as the webhooks arrive, as with any lapsed member.
+1. The buyer (the "account owner") buys a team plan in Shopify. The store sets the team up as a B2B company (Shopify Plus) with locations and contacts, where each contact is a customer.
+2. Flow tags each contact `team-gold` when they're added to the company and removes the tag when they're removed. The seat count is enforced in Shopify, by whoever manages the company (the store, or the owner through B2B self-serve). RedeemID reads no seat count.
+3. Each colleague signs in with their own customer account. Their tags arrive like anyone's, and a level (`gold` granted by `gold` *or* `team-gold`) opens the content.
+4. When the team's subscription ends, Flow removes every team tag for that company. The members lose access as the webhooks arrive, as with any lapsed member.
 
-Open questions for the build:
-
-- How a team tag names its team. One tag per team (`team-acme`) scales badly in level conditions; a shared `team-gold` tag plus a metafield `membership.team = <owner id>` keeps levels simple and lets Flow find a team's members.
-- Whether the owner screen is worth building, or whether Shopify B2B covers the stores that need seats.
-- Seat counting needs a Shopify customer search by tag and metafield on every add, at Admin API cost.
+A WordPress "Your team" screen that would create customers and count seats against a `membership.seats` metafield was considered and dropped (decided 2026-11-01, confirmed 2026-11-05): B2B already holds the list, and counting would cost an Admin API search on every add.
 
 ## Gifts
 

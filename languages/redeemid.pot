@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T16:47:25+00:00\n"
+"POT-Creation-Date: 2026-11-05T21:52:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -156,15 +156,15 @@ msgstr ""
 #: blocks/locked-panel/index.php:48
 #: blocks/member-account/index.php:59
 #: blocks/member-preferences/index.php:106
-#: src/Auth/Flow.php:129
-#: src/Auth/SignInLinks.php:127
+#: src/Auth/Flow.php:136
+#: src/Auth/SignInLinks.php:141
 #: src/Sync/PostCheckout.php:175
 msgid "Sign in"
 msgstr ""
 
 #: blocks/auth-action/index.php:26
-#: blocks/member-account/index.php:140
-#: src/Auth/SignInLinks.php:128
+#: blocks/member-account/index.php:146
+#: src/Auth/SignInLinks.php:142
 msgid "Sign out"
 msgstr ""
 
@@ -319,13 +319,13 @@ msgid "From %s"
 msgstr ""
 
 #: blocks/collection/index.php:133
-#: blocks/plan-card/index.php:112
+#: blocks/plan-card/index.php:115
 #: blocks/product/index.php:91
 msgid "Regular price:"
 msgstr ""
 
 #: blocks/collection/index.php:139
-#: blocks/plan-card/index.php:159
+#: blocks/plan-card/index.php:162
 #: blocks/product/index.php:109
 msgid "Sold out"
 msgstr ""
@@ -468,63 +468,67 @@ msgstr ""
 msgid "Renews"
 msgstr ""
 
-#: blocks/member-account/index.php:110
+#: blocks/member-account/index.php:111
+msgid "Ends"
+msgstr ""
+
+#: blocks/member-account/index.php:116
 msgid "Gift membership"
 msgstr ""
 
 #. translators: %s: date the gift ends
-#: blocks/member-account/index.php:111
+#: blocks/member-account/index.php:117
 #, php-format
 msgid "Until %s"
 msgstr ""
 
-#: blocks/member-account/index.php:115
+#: blocks/member-account/index.php:121
 #: src/Admin/Access.php:236
 #: src/Admin/Access.php:363
 msgid "Includes"
 msgstr ""
 
-#: blocks/member-account/index.php:119
+#: blocks/member-account/index.php:125
 msgid "Last updated"
 msgstr ""
 
 #. translators: %s: human time difference
-#: blocks/member-account/index.php:125
+#: blocks/member-account/index.php:131
 #: src/Admin/Menu.php:245
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: blocks/member-account/index.php:126
+#: blocks/member-account/index.php:132
 msgid "Not yet"
 msgstr ""
 
-#: blocks/member-account/index.php:133
+#: blocks/member-account/index.php:139
 #: blocks/membership-refresh/index.php:18
 msgid "Refresh membership"
 msgstr ""
 
-#: blocks/member-account/index.php:133
+#: blocks/member-account/index.php:139
 msgid "Check for updates"
 msgstr ""
 
-#: blocks/member-account/index.php:135
+#: blocks/member-account/index.php:141
 msgid "Manage subscription"
 msgstr ""
 
-#: blocks/member-account/index.php:138
+#: blocks/member-account/index.php:144
 msgid "Orders and addresses"
 msgstr ""
 
-#: blocks/member-account/index.php:145
+#: blocks/member-account/index.php:151
 msgid "Your data: we will email you to confirm either request."
 msgstr ""
 
-#: blocks/member-account/index.php:146
+#: blocks/member-account/index.php:152
 msgid "Download my data"
 msgstr ""
 
-#: blocks/member-account/index.php:146
+#: blocks/member-account/index.php:152
 msgid "Delete my data"
 msgstr ""
 
@@ -743,37 +747,45 @@ msgid "Upgrade to %s"
 msgstr ""
 
 #. translators: %s: plan title
+#. translators: %s: access level label
 #: blocks/plan-card/index.php:92
+#: src/Blocks/Gate.php:322
+#, php-format
+msgid "Renew %s"
+msgstr ""
+
+#. translators: %s: plan title
+#: blocks/plan-card/index.php:95
 #, php-format
 msgid "Add %s"
 msgstr ""
 
-#: blocks/plan-card/index.php:107
+#: blocks/plan-card/index.php:110
 #: blocks/product/index.php:87
 msgid "Price:"
 msgstr ""
 
-#: blocks/plan-card/index.php:123
+#: blocks/plan-card/index.php:126
 msgid "Selling plans for this variant (put an ID in the block settings to sell on that plan):"
 msgstr ""
 
 #. translators: %s: the level the member holds now
-#: blocks/plan-card/index.php:141
+#: blocks/plan-card/index.php:144
 #, php-format
 msgid "You have %s now."
 msgstr ""
 
 #. translators: %s: the level that includes this plan
-#: blocks/plan-card/index.php:150
+#: blocks/plan-card/index.php:153
 #, php-format
 msgid "Included in your %s membership."
 msgstr ""
 
-#: blocks/plan-card/index.php:151
+#: blocks/plan-card/index.php:154
 msgid "This is your plan."
 msgstr ""
 
-#: blocks/plan-card/index.php:156
+#: blocks/plan-card/index.php:159
 msgid "Manage membership"
 msgstr ""
 
@@ -2281,8 +2293,8 @@ msgstr ""
 
 #: src/Admin/AdminBar.php:50
 #: src/Admin/UserProfile.php:25
-#: src/Auth/SignInLinks.php:122
-#: src/Privacy/Exporter.php:101
+#: src/Auth/SignInLinks.php:136
+#: src/Privacy/Exporter.php:102
 #: src/Privacy/Requests.php:53
 #: src/Privacy/Requests.php:59
 msgid "Shopify"
@@ -3191,7 +3203,7 @@ msgid "Time"
 msgstr ""
 
 #: src/Admin/EventsTable.php:45
-#: src/Privacy/Exporter.php:114
+#: src/Privacy/Exporter.php:115
 msgid "Event"
 msgstr ""
 
@@ -4497,7 +4509,7 @@ msgstr ""
 
 #: src/Admin/Webhooks.php:183
 #: src/Admin/WebhooksTable.php:29
-#: src/Privacy/Exporter.php:128
+#: src/Privacy/Exporter.php:129
 msgid "Received"
 msgstr ""
 
@@ -4508,12 +4520,12 @@ msgid "Kept for %d days. Payloads are not stored; only the fields the plugin act
 msgstr ""
 
 #: src/Admin/WebhooksTable.php:30
-#: src/Privacy/Exporter.php:129
+#: src/Privacy/Exporter.php:130
 msgid "Topic"
 msgstr ""
 
 #: src/Admin/WebhooksTable.php:31
-#: src/Privacy/Exporter.php:130
+#: src/Privacy/Exporter.php:131
 msgid "Outcome"
 msgstr ""
 
@@ -5116,115 +5128,115 @@ msgstr ""
 msgid "Levels and rules"
 msgstr ""
 
-#: src/Auth/Flow.php:128
+#: src/Auth/Flow.php:135
 msgid "Nothing to do here."
 msgstr ""
 
-#: src/Auth/Flow.php:489
+#: src/Auth/Flow.php:497
 msgid "Your sign-in link expired or was opened in a different browser. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:490
+#: src/Auth/Flow.php:498
 msgid "Sign-in was cancelled."
 msgstr ""
 
-#: src/Auth/Flow.php:491
+#: src/Auth/Flow.php:499
 msgid "We couldn't sign you in. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:492
+#: src/Auth/Flow.php:500
 msgid "Your account details couldn't be loaded. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:493
+#: src/Auth/Flow.php:501
 msgid "Sign-in is temporarily unavailable."
 msgstr ""
 
-#: src/Auth/Flow.php:494
+#: src/Auth/Flow.php:502
 msgid "We couldn't verify that sign-in. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:495
+#: src/Auth/Flow.php:503
 msgid "That confirmation is no longer valid. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:496
+#: src/Auth/Flow.php:504
 msgid "That confirmation expired. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:497
+#: src/Auth/Flow.php:505
 msgid "That confirmation was started in a different session. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:498
+#: src/Auth/Flow.php:506
 msgid "Please sign in to the account you want to use, then try again."
 msgstr ""
 
-#: src/Auth/Flow.php:499
+#: src/Auth/Flow.php:507
 msgid "Staff accounts (anyone who can edit posts) cannot be connected to a Shopify customer."
 msgstr ""
 
-#: src/Auth/Flow.php:500
+#: src/Auth/Flow.php:508
 msgid "Staff accounts (anyone who can edit posts) cannot sign in with Shopify. Use the WordPress login instead."
 msgstr ""
 
-#: src/Auth/Flow.php:501
+#: src/Auth/Flow.php:509
 msgid "This account already signs in with an email code."
 msgstr ""
 
-#: src/Auth/Flow.php:502
+#: src/Auth/Flow.php:510
 msgid "That email address wasn't confirmed, so your membership wasn't added to this account."
 msgstr ""
 
-#: src/Auth/Flow.php:503
+#: src/Auth/Flow.php:511
 msgid "That isn't the email address this account uses, so nothing was changed. Confirm the email you use on this site."
 msgstr ""
 
-#: src/Auth/Flow.php:504
+#: src/Auth/Flow.php:512
 msgid "That email's membership is already on another account here."
 msgstr ""
 
-#: src/Auth/Flow.php:505
+#: src/Auth/Flow.php:513
 msgid "Your email is confirmed and your membership is on this account."
 msgstr ""
 
-#: src/Auth/Flow.php:506
+#: src/Auth/Flow.php:514
 msgid "Your membership was removed from this account."
 msgstr ""
 
-#: src/Auth/Flow.php:507
+#: src/Auth/Flow.php:515
 msgid "Your membership details were refreshed."
 msgstr ""
 
-#: src/Auth/Flow.php:508
+#: src/Auth/Flow.php:516
 msgid "Your details could not be refreshed right now. Please try again later."
 msgstr ""
 
-#: src/Auth/Flow.php:509
+#: src/Auth/Flow.php:517
 msgid "Your details were refreshed a moment ago."
 msgstr ""
 
-#: src/Auth/Flow.php:510
+#: src/Auth/Flow.php:518
 msgid "Welcome back. Your membership is on your account."
 msgstr ""
 
-#: src/Auth/Flow.php:511
+#: src/Auth/Flow.php:519
 msgid "Check your email: confirm the request and we will send you a copy of your data."
 msgstr ""
 
-#: src/Auth/Flow.php:512
+#: src/Auth/Flow.php:520
 msgid "Check your email: confirm the request and we will erase your data here."
 msgstr ""
 
-#: src/Auth/Flow.php:513
+#: src/Auth/Flow.php:521
 msgid "You already have a request waiting. Check your email for the confirmation link."
 msgstr ""
 
-#: src/Auth/Flow.php:514
+#: src/Auth/Flow.php:522
 msgid "We have your request, but could not email you a confirmation link. We will be in touch."
 msgstr ""
 
-#: src/Auth/Flow.php:515
+#: src/Auth/Flow.php:523
 msgid "Your request could not be sent. Please contact us instead."
 msgstr ""
 
@@ -5243,19 +5255,19 @@ msgstr ""
 msgid "Member"
 msgstr ""
 
-#: src/Auth/SignInLinks.php:63
+#: src/Auth/SignInLinks.php:64
 msgid "Sign in with an email code"
 msgstr ""
 
-#: src/Auth/SignInLinks.php:64
+#: src/Auth/SignInLinks.php:65
 msgid "Staff and accounts with a password: use the form below."
 msgstr ""
 
-#: src/Auth/SignInLinks.php:133
+#: src/Auth/SignInLinks.php:147
 msgid "Sign in shows to guests only and returns them to the page they were on; Sign out shows to signed-in visitors only."
 msgstr ""
 
-#: src/Auth/SignInLinks.php:149
+#: src/Auth/SignInLinks.php:163
 msgid "Add to Menu"
 msgstr ""
 
@@ -5285,12 +5297,6 @@ msgstr ""
 #. translators: %s: access level label, such as Gold
 #: src/Blocks/Gate.php:320
 msgid "Your membership has ended."
-msgstr ""
-
-#. translators: %s: access level label
-#: src/Blocks/Gate.php:322
-#, php-format
-msgid "Renew %s"
 msgstr ""
 
 #. translators: %s: access level label
@@ -5511,11 +5517,11 @@ msgstr ""
 msgid "This file can't be moved: WordPress has no file for it, or the file system isn't writable."
 msgstr ""
 
-#: src/Files/ProtectedFiles.php:310
+#: src/Files/ProtectedFiles.php:319
 msgid "The folder for this file couldn't be created."
 msgstr ""
 
-#: src/Files/ProtectedFiles.php:328
+#: src/Files/ProtectedFiles.php:337
 msgid "The file couldn't be moved. Check that the uploads folder is writable."
 msgstr ""
 
@@ -5612,78 +5618,82 @@ msgid "Renews on"
 msgstr ""
 
 #: src/Privacy/Exporter.php:37
-msgid "Gift membership until"
+msgid "Membership ends on"
 msgstr ""
 
 #: src/Privacy/Exporter.php:38
-msgid "Membership level history"
+msgid "Gift membership until"
 msgstr ""
 
 #: src/Privacy/Exporter.php:39
-msgid "Linked to Shopify"
+msgid "Membership level history"
 msgstr ""
 
 #: src/Privacy/Exporter.php:40
-msgid "Last synced"
+msgid "Linked to Shopify"
 msgstr ""
 
 #: src/Privacy/Exporter.php:41
-msgid "Last synced by"
+msgid "Last synced"
 msgstr ""
 
 #: src/Privacy/Exporter.php:42
-msgid "Last failed sync"
+msgid "Last synced by"
 msgstr ""
 
 #: src/Privacy/Exporter.php:43
-msgid "Last Shopify event"
+msgid "Last failed sync"
 msgstr ""
 
 #: src/Privacy/Exporter.php:44
-msgid "Profile last updated in Shopify"
+msgid "Last Shopify event"
 msgstr ""
 
 #: src/Privacy/Exporter.php:45
-msgid "Status last changed in Shopify"
+msgid "Profile last updated in Shopify"
 msgstr ""
 
 #: src/Privacy/Exporter.php:46
+msgid "Status last changed in Shopify"
+msgstr ""
+
+#: src/Privacy/Exporter.php:47
 msgid "Linked by staff with a different email"
 msgstr ""
 
-#: src/Privacy/Exporter.php:110
+#: src/Privacy/Exporter.php:111
 msgid "RedeemID activity log"
 msgstr ""
 
-#: src/Privacy/Exporter.php:113
+#: src/Privacy/Exporter.php:114
 msgid "When"
 msgstr ""
 
-#: src/Privacy/Exporter.php:115
+#: src/Privacy/Exporter.php:116
 msgid "Detail"
 msgstr ""
 
-#: src/Privacy/Exporter.php:125
+#: src/Privacy/Exporter.php:126
 msgid "Updates received from Shopify"
 msgstr ""
 
-#: src/Privacy/Exporter.php:167
+#: src/Privacy/Exporter.php:168
 msgid "Free stories read this period (post IDs)"
 msgstr ""
 
-#: src/Privacy/Exporter.php:175
+#: src/Privacy/Exporter.php:176
 msgid "Started a checkout from this site"
 msgstr ""
 
-#: src/Privacy/Exporter.php:181
+#: src/Privacy/Exporter.php:182
 msgid "Shopify cart in progress"
 msgstr ""
 
-#: src/Privacy/Exporter.php:186
+#: src/Privacy/Exporter.php:187
 msgid "Held in Shopify"
 msgstr ""
 
-#: src/Privacy/Exporter.php:187
+#: src/Privacy/Exporter.php:188
 msgid "Shopify holds the full customer record, with orders and addresses. Ask the store for Shopify's own customer data report."
 msgstr ""
 
@@ -5947,34 +5957,42 @@ msgid "off: needs the same store and a Storefront token"
 msgstr ""
 
 #: src/Support/Health.php:139
+msgid "Prices by country"
+msgstr ""
+
+#: src/Support/Health.php:141
+msgid "redeemid_context_country is in use: make sure your page cache varies by the country it reads (for example a CDN country header), or visitors may see another country’s prices"
+msgstr ""
+
+#: src/Support/Health.php:148
 msgid "Shopify erasure from Tools"
 msgstr ""
 
-#: src/Support/Health.php:142
+#: src/Support/Health.php:151
 msgid "staff can ask Shopify to erase a customer from Tools → Erase Personal Data"
 msgstr ""
 
-#: src/Support/Health.php:143
+#: src/Support/Health.php:152
 msgid "not known until the Admin app gets its first token"
 msgstr ""
 
 #. translators: %s: Admin API scope
-#: src/Support/Health.php:145
+#: src/Support/Health.php:154
 #, php-format
 msgid "optional: give the Admin app the %s scope to ask Shopify from Tools → Erase Personal Data"
 msgstr ""
 
-#: src/Support/Health.php:152
+#: src/Support/Health.php:161
 msgid "Shopify privacy webhooks"
 msgstr ""
 
 #. translators: %s: date and time
-#: src/Support/Health.php:156
+#: src/Support/Health.php:165
 #, php-format
 msgid "last request from Shopify %s; each becomes a request in Tools → Export / Erase Personal Data"
 msgstr ""
 
-#: src/Support/Health.php:157
+#: src/Support/Health.php:166
 msgid "none received in the last 30 days; declare the compliance topics in the Dev Dashboard app (setup wizard, Webhooks step)"
 msgstr ""
 
