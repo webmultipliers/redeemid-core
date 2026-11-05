@@ -18,7 +18,7 @@ jobs:
         php: [ '8.2', '8.3', '8.4' ]
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           extensions: sodium
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.3'
           coverage: none
@@ -52,6 +52,68 @@ jobs:
           test "$found" -le "$BASELINE"
       - name: Blockstudio PHPStan
         run: composer phpstan
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      # WordPress JavaScript coding standards (eslint.config.js).
+      - name: ESLint
+        run: npx eslint .
+
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.3'
+          extensions: sodium
+          coverage: none
+      # Known vulnerabilities in the locked PHP and npm dependencies (GitHub's advisory database).
+      - name: Composer audit
+        run: composer audit --locked
+      - name: npm audit
+        run: npm audit
+      - run: composer install --no-dev --prefer-dist --no-interaction --no-progress
+      # Taint analysis: request input, cookies and remote responses followed to
+      # output, SQL, file and redirect sinks. Human Made's WordPress plugin
+      # teaches it WordPress's escaping and sanitizing functions (psalm.xml).
+      - name: Psalm taint analysis
+        run: |
+          composer global require --no-interaction --no-progress vimeo/psalm:^6.5 humanmade/psalm-plugin-wordpress:^3.1
+          "$(composer global config bin-dir --absolute)/psalm" --taint-analysis --no-progress --threads=4 --output-format=github
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # CodeQL has no PHP support; Psalm covers PHP above.
+        language: [ javascript-typescript, actions ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v4
+
+  dependencies:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Fails a pull request that adds a dependency with a known moderate or worse vulnerability.
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
 
   leaks:
     name: Leak tests${{ matrix.seo && format(' with {0}', matrix.seo) || '' }}
@@ -82,7 +144,7 @@ jobs:
       REDEEMID_LEAK_SEED: /tmp/redeemid-leak.json
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.3'
           extensions: sodium, mysqli, curl
@@ -107,6 +169,84 @@ jobs:
           for i in $(seq 1 20); do curl -fsS -o /dev/null "$REDEEMID_LEAK_URL/" && break; sleep 1; done
       - name: Leak tests
         run: vendor/bin/phpunit --testsuite integration --no-progress
+      # WordPress's Plugin Check, the security, general and performance checks
+      # (not the WordPress.org directory rules). It reports without failing,
+      # so the step fails on any ERROR line.
+      - name: Plugin Check
+        if: ${{ !cancelled() && matrix.seo == '' }}
+        run: |
+          wp plugin install plugin-check --activate --path="$WP_PATH"
+          wp plugin check redeemid --categories=general,security,performance --ignore-warnings --exclude-directories=tests --path="$WP_PATH" | tee /tmp/plugin-check.txt
+          ! grep -q 'ERROR' /tmp/plugin-check.txt
+      - name: Server log
+        if: failure()
+        run: |
+          grep -vE ' (Accepted|Closing)$| \[[23][0-9][0-9]\]: ' /tmp/php-server.log | tail -n 60 || true
+
+  browser:
+    name: Accessibility and performance
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress
+        ports: [ '3306:3306' ]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      WP_PATH: /tmp/wordpress
+      REDEEMID_LEAK_URL: http://127.0.0.1:8080
+      REDEEMID_LEAK_SEED: /tmp/redeemid-leak.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.3'
+          extensions: sodium, mysqli, curl
+          coverage: none
+          tools: wp-cli
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --no-dev --prefer-dist --no-interaction --no-progress
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Install WordPress
+        run: |
+          wp core download --path="$WP_PATH"
+          wp config create --path="$WP_PATH" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
+          wp core install --path="$WP_PATH" --url="$REDEEMID_LEAK_URL" --title="Browser checks" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
+          rsync -a --exclude node_modules "$GITHUB_WORKSPACE/" "$WP_PATH/wp-content/plugins/redeemid/"
+          wp plugin activate redeemid --path="$WP_PATH"
+      - name: Seed
+        run: wp eval-file "$GITHUB_WORKSPACE/tests/Integration/seed.php" --path="$WP_PATH"
+      - name: Serve
+        id: serve
+        run: |
+          PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8080 -t "$WP_PATH" > /tmp/php-server.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS -o /dev/null "$REDEEMID_LEAK_URL/" && break; sleep 1; done
+      # axe-core, WCAG 2.2 A and AA, on RedeemID's markup in every reader state and every admin screen.
+      - name: Accessibility
+        run: npx playwright test tests/Browser/a11y.spec.js
+      # Runs even when accessibility fails, so one push reports both.
+      - name: Performance budgets for RedeemID's own files
+        if: ${{ !cancelled() && steps.serve.outcome == 'success' }}
+        run: npx playwright test tests/Browser/weight.spec.js
+      - name: Lighthouse
+        if: ${{ !cancelled() && steps.serve.outcome == 'success' }}
+        run: npx lhci autorun
+      - name: Lighthouse reports
+        if: ${{ !cancelled() && steps.serve.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          include-hidden-files: true
+          retention-days: 14
       - name: Server log
         if: failure()
         run: |

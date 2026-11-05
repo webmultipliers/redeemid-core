@@ -8,6 +8,8 @@ use RedeemID\Auth\ShadowUsers;
 use RedeemID\Config;
 use RedeemID\Sync\Mirror;
 
+defined( 'ABSPATH' ) || exit;
+
 if ( ! class_exists( \WP_List_Table::class ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }

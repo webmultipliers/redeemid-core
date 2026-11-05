@@ -5,7 +5,8 @@
  */
 .redeemid,
 .redeemid-topbar {
-	--redeemid-accent: var(--wp-admin-theme-color, #2271b1);
+	/* The darker shade: the plain theme colour is 4.3:1 on the subtle panel ground. */
+	--redeemid-accent: var(--wp-admin-theme-color-darker-10, #2271b1);
 	--redeemid-border: #dcdcde;
 	--redeemid-muted: #646970;
 	--redeemid-surface: #fff;
@@ -631,10 +632,6 @@ a.redeemid-card:focus-visible {
 .redeemid-setup__steps > li {
 	grid-template-columns: minmax(200px, 260px) 1fr auto;
 	align-items: center;
-}
-
-.redeemid-setup__steps > li.is-done .redeemid-setup__action {
-	opacity: 0.6;
 }
 
 .redeemid-setup__action form {

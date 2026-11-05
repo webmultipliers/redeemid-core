@@ -128,7 +128,7 @@ final class ApiContractTest extends TestCase {
 			$this->assertStringContainsString( "'" . $event . "'", $client );
 		}
 
-		preg_match( '/window\.redeemid = Object\.freeze\(\{([^}]*)\}\)/', $client, $m );
+		preg_match( '/window\.redeemid = Object\.freeze\(\s*\{([^}]*)\}\s*\)/', $client, $m );
 		$this->assertNotEmpty( $m );
 
 		foreach ( Contract::CLIENT_METHODS as $method ) {

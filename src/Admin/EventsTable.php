@@ -4,6 +4,8 @@ namespace RedeemID\Admin;
 
 use RedeemID\Support\EventLog;
 
+defined( 'ABSPATH' ) || exit;
+
 if ( ! class_exists( \WP_List_Table::class ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }

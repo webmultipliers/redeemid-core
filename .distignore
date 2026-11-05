@@ -19,3 +19,12 @@ composer.json
 composer.lock
 *.zip
 build
+package.json
+package-lock.json
+playwright.config.js
+lighthouserc.js
+test-results
+playwright-report
+.lighthouseci
+eslint.config.js
+psalm.xml

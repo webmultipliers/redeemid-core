@@ -88,7 +88,14 @@ composer phpstan  # Blockstudio checks: templates against block.json (phpstan.ne
 composer test     # PHPUnit; no WordPress install needed
 ```
 
-GitHub Actions runs these on PHP 8.2, 8.3 and 8.4 for every pull request. To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
+GitHub Actions runs these on PHP 8.2, 8.3 and 8.4 for every pull request. It also starts a WordPress with seeded posts, readers and members (`tests/Integration/seed.php`) and runs, against it, the leak tests, then the browser checks (`npm ci` installs them):
+
+- **Accessibility:** axe-core, WCAG 2.2 A and AA, on RedeemID's markup on the locked posts, the member blocks and search as a guest, a signed-in reader, a linked member without the tag and a Gold member, and on every screen and tab under the RedeemID menu (`tests/Browser/a11y.spec.js`).
+- **Code quality:** PHPCS with the WordPress VIP rules (`phpcs.xml.dist`), Blockstudio's PHPStan checks, and ESLint with WordPress's JavaScript standards (`eslint.config.js`, `npm run lint:js`).
+- **Security:** `composer audit` and `npm audit`; Psalm taint analysis with Human Made's WordPress plugin (`psalm.xml`), which follows request input, cookies and remote responses to output, SQL, file and redirect sinks; CodeQL on the JavaScript and the workflows; GitHub's dependency review on pull requests; and WordPress's Plugin Check (security, general and performance checks) on the running install.
+- **Performance:** budgets for the script, style and island bytes RedeemID sends and its request count (`tests/Browser/weight.spec.js`), and Lighthouse on mobile for the performance score, LCP, CLS, TBT and server response time (`lighthouserc.js`, reports kept as a run artifact).
+
+To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
 
 The rules every change follows:
 
