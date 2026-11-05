@@ -7,6 +7,8 @@ use RedeemID\Sync\Mirror;
 use RedeemID\Webhooks\InboxStore;
 use RedeemID\Webhooks\WpdbInboxStore;
 
+defined( 'ABSPATH' ) || exit;
+
 if ( ! class_exists( \WP_List_Table::class ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
