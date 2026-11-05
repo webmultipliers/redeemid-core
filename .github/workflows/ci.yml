@@ -245,6 +245,7 @@ jobs:
         with:
           name: lighthouse
           path: .lighthouseci/
+          include-hidden-files: true
           retention-days: 14
       - name: Server log
         if: failure()

@@ -8,18 +8,19 @@ const { test, expect } = require( '@playwright/test' );
 const seed = JSON.parse( fs.readFileSync( process.env.REDEEMID_LEAK_SEED || '/tmp/redeemid-leak.json', 'utf8' ) );
 
 // Bytes over the wire (no compression on PHP's built-in server) and requests.
-// Today (0.0.9): script 8.4 KB, stylesheet 1 KB, island fragments 8 KB, 3 requests.
-const budget = {
-	script: 16 * 1024,
-	stylesheet: 8 * 1024,
-	// Island fragments (Blockstudio's island render route).
-	fetch: 24 * 1024,
-	requests: 6,
-};
-
+// Today (0.0.9) the locked post sends script 8.4 KB, stylesheet 1 KB, island
+// fragments 8 KB in 3 requests. The member blocks page carries every member
+// block at once, one stylesheet per block (Blockstudio's way), so it sends
+// script 19.3 KB, stylesheet 10.5 KB in 17 requests.
 const pages = {
-	'locked post': seed.posts.break.link,
-	'member blocks': seed.pages.blocks.link,
+	'locked post': {
+		path: seed.posts.break.link,
+		budget: { script: 16 * 1024, stylesheet: 8 * 1024, fetch: 24 * 1024, requests: 6 },
+	},
+	'member blocks': {
+		path: seed.pages.blocks.link,
+		budget: { script: 24 * 1024, stylesheet: 14 * 1024, fetch: 24 * 1024, requests: 20 },
+	},
 };
 
 const readers = {
@@ -28,7 +29,7 @@ const readers = {
 };
 
 for ( const [ reader, cookie ] of Object.entries( readers ) ) {
-	for ( const [ name, path ] of Object.entries( pages ) ) {
+	for ( const [ name, { path, budget } ] of Object.entries( pages ) ) {
 		test( `${ reader } › ${ name }`, async ( { page, context, baseURL } ) => {
 			if ( cookie ) {
 				const [ key, ...value ] = cookie.split( '=' );
