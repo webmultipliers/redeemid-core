@@ -42,6 +42,8 @@
 }
 
 .redeemid-login .button.button-large {
+	/* wp-login.css floats .button-primary right; unfloated, the note below can't sit over it. */
+	float: none;
 	display: block;
 	width: 100%;
 	text-align: center;
