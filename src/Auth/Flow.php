@@ -75,6 +75,13 @@ final class Flow {
 			return new \WP_Error( 'unavailable', self::message( 'unavailable' ) );
 		}
 
+		// Plain permalinks never route /auth-callback/: stop here rather than send the member to a 404.
+		if ( '' === (string) get_option( 'permalink_structure' ) ) {
+			Logger::log( 'auth.unavailable', [ 'reason' => 'plain_permalinks' ] );
+
+			return new \WP_Error( 'unavailable', self::message( 'unavailable' ) );
+		}
+
 		$verifier = Pkce::verifier();
 		$nonce    = Pkce::random( 24 );
 		$data     = [
@@ -229,7 +236,8 @@ final class Flow {
 		// A linked account can gain a privileged role after linking; the link-time check alone would let it in.
 		if ( Linking::privileged( $user ) ) {
 			Logger::log( 'auth.sign_in_refused', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
-			return self::notice_url( 'admin_sign_in_refused' );
+			// Straight to the WordPress login, which shows why: login_url() may point at sign-in itself.
+			return add_query_arg( 'redeemid_notice', 'admin_sign_in_refused', site_url( 'wp-login.php', 'login' ) );
 		}
 
 		wp_clear_auth_cookie();

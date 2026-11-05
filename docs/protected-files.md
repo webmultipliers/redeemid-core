@@ -13,7 +13,7 @@ Open the file in the media library (the media modal or the attachment's edit scr
 
 Anyone who can edit the file can always download it.
 
-Choosing anything but **Everyone** moves the file, and every image size WordPress made of it, into `wp-content/uploads/redeemid-protected/`. From then on every address WordPress builds for it (file blocks, image blocks, the media library, REST) is `https://example.com/?redeemid_file=<id>`. Choosing **Everyone** again moves it back.
+Choosing anything but **Everyone** moves the file, every image size WordPress made of it, and the unedited originals the image editor keeps after a crop or rotate, into `wp-content/uploads/redeemid-protected/`. From then on every address WordPress builds for it (file blocks, image blocks, the media library, REST) is `https://example.com/?redeemid_file=<id>`. Choosing **Everyone** again moves it back.
 
 Shopify still decides who is entitled: the check reads the same synced tags, levels and features as the gates. Nothing here grants access on WordPress's own say.
 

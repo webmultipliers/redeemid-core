@@ -5,6 +5,7 @@ namespace RedeemID\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use RedeemID\Access\Checker;
 use RedeemID\Access\Context;
+use RedeemID\Access\Level;
 use RedeemID\Access\Levels;
 use RedeemID\Access\Resolver;
 use RedeemID\Access\TermRule;
@@ -69,6 +70,16 @@ final class ResolverTest extends TestCase {
 	public function test_site_default_is_last(): void {
 		$this->assertSame( [ [ 'members' ] ], $this->resolve( new Context( site_levels: [ 'members' ] ) )->clauses );
 		$this->assertSame( [ [ 'gold' ] ], $this->resolve( new Context( type_levels: [ 'gold' ], site_levels: [ 'members' ] ) )->clauses );
+	}
+
+	public function test_requires_term_with_no_level_fails_closed(): void {
+		// An import or code write can save a Requires term with no level; the admin form can't.
+		$rule = $this->resolve( new Context( terms: [ $this->needs( 'Investigations', [] ) ], type_levels: [] ) );
+
+		$this->assertFalse( $rule->open() );
+		$this->assertSame( [ [ Level::SIGNED_IN ] ], $rule->clauses );
+		$this->assertSame( 'Category: Investigations', $rule->source );
+		$this->assertSame( [ [ Level::SIGNED_IN ] ], $this->resolve( new Context( terms: [ $this->needs( 'Investigations', [] ) ], type_levels: [ 'gold' ] ) )->clauses );
 	}
 
 	public function test_term_beats_post_type(): void {

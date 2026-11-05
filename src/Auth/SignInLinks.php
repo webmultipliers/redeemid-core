@@ -25,6 +25,7 @@ final class SignInLinks {
 
 	public static function register(): void {
 		add_filter( 'login_message', [ self::class, 'login_button' ] );
+		add_filter( 'login_message', [ self::class, 'staff_notice' ], 5 );
 		add_action( 'login_enqueue_scripts', [ self::class, 'login_style' ] );
 		add_filter( 'login_url', [ self::class, 'login_url' ], 20, 3 );
 		add_filter( 'wp_nav_menu_objects', [ self::class, 'menu_items' ] );
@@ -63,6 +64,19 @@ final class SignInLinks {
 			esc_html__( 'Sign in with an email code', 'redeemid' ),
 			esc_html__( 'Staff and accounts with a password: use the form below.', 'redeemid' )
 		);
+	}
+
+	/**
+	 * Staff sent back from sign-in (see Flow::sign_in) are told why, above the form they need.
+	 */
+	public static function staff_notice( mixed $message ): mixed {
+		$code = isset( $_GET['redeemid_notice'] ) ? sanitize_key( wp_unslash( $_GET['redeemid_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification -- display only.
+
+		if ( 'admin_sign_in_refused' !== $code ) {
+			return $message;
+		}
+
+		return '<p class="message">' . esc_html( Flow::message( $code ) ) . '</p>' . (string) $message;
 	}
 
 	public static function login_style(): void {
