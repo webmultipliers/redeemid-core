@@ -153,11 +153,19 @@ final class ConfigValues {
 	}
 
 	/**
-	 * No scheme, no path, lower case.
+	 * No scheme, no path, lower case. Also takes the forms people copy from
+	 * Shopify: an admin URL (admin.shopify.com/store/your-store/...) or the
+	 * bare handle (your-store), both turned into your-store.myshopify.com.
 	 */
 	public static function normalise_domain( string $domain ): string {
 		$domain = (string) preg_replace( '#^https?://#', '', strtolower( trim( $domain ) ) );
 
-		return rtrim( (string) strtok( $domain, '/' ), '/' );
+		if ( preg_match( '#^admin\.shopify\.com/store/([a-z0-9][a-z0-9-]*)(?:[/?\#]|$)#', $domain, $match ) ) {
+			return $match[1] . '.myshopify.com';
+		}
+
+		$host = rtrim( (string) strtok( $domain, '/?#' ), '/' );
+
+		return preg_match( '/^[a-z0-9][a-z0-9-]*$/', $host ) ? $host . '.myshopify.com' : $host;
 	}
 }

@@ -15,7 +15,9 @@ use RedeemID\Webhooks\Registrar;
  * The setup checklist on RedeemID → Overview: each thing a new site needs, in
  * the order to do it, with the button that does it where the plugin can.
  *
- * - Test connection asks each Shopify API once and keeps the answers.
+ * - Test connection asks each Shopify API once and keeps the answers. When
+ *   sign-in answers it publishes the callback page if there is none, and when
+ *   the Admin app answers it registers webhooks if they aren't in place.
  * - Create the callback page publishes the page sign-in returns to.
  * - Level tags are checked against the tags Shopify's customers actually
  *   have, which catches a typo before a member finds it.
@@ -26,6 +28,9 @@ final class Setup {
 	public const ACTION = 'redeemid_setup';
 	private const TEST  = 'redeemid_connection_test';
 	private const TAGS  = 'redeemid_shop_tags';
+
+	/** Shopify's CustomerAccountsVersion for legacy accounts, which can't use the Customer Account API. */
+	public const CLASSIC_ACCOUNTS = 'CLASSIC';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'action' ] );
@@ -68,10 +73,19 @@ final class Setup {
 			$errors['sign_in'] = 'discovery';
 		}
 
+		$accounts = '';
+
 		if ( AdminApi::available() ) {
-			$ping               = AdminApi::query( 'query RedeemIDPing { shop { name } }', [], 'admin.ping' );
-			$results['admin']   = ! is_wp_error( $ping );
-			$errors['admin']    = is_wp_error( $ping ) ? $ping->get_error_code() : '';
+			$ping             = AdminApi::query( 'query RedeemIDPing { shop { name customerAccountsV2 { customerAccountsVersion } } }', [], 'admin.ping' );
+			$results['admin'] = ! is_wp_error( $ping );
+			$errors['admin']  = is_wp_error( $ping ) ? $ping->get_error_code() : '';
+			$accounts         = is_array( $ping ) ? (string) ( $ping['shop']['customerAccountsV2']['customerAccountsVersion'] ?? '' ) : '';
+		}
+
+		// Members sign in through the Customer Account API, which only new customer accounts have.
+		if ( self::CLASSIC_ACCOUNTS === $accounts ) {
+			$results['sign_in'] = false;
+			$errors['sign_in']  = 'classic_accounts';
 		}
 
 		if ( Storefront::available() ) {
@@ -80,11 +94,77 @@ final class Setup {
 			$errors['storefront']  = is_wp_error( $search ) ? $search->get_error_code() : '';
 		}
 
-		$test = [ 'at' => $started, 'results' => $results, 'errors' => array_filter( $errors ) ];
+		// A topic skipped for want of a scope is tried again, in case the app gained it.
+		$hooks = get_option( Registrar::RESULT );
+		$done  = self::follow_up(
+			self::follow_ups(
+				$results,
+				get_page_by_path( Config::callback_slug() ) instanceof \WP_Post,
+				self::webhooks_registered( $hooks ) && empty( $hooks['skipped'] )
+			)
+		);
+		$test = [ 'at' => $started, 'results' => $results, 'errors' => array_filter( $errors ), 'accounts' => $accounts, 'auto' => $done ];
 		update_option( self::TEST, $test, false );
-		Logger::log( 'admin.connection_test', [ 'results' => $results ] );
+		Logger::log( 'admin.connection_test', [ 'results' => $results, 'auto' => implode( ',', $done ) ] );
 
 		return $test;
+	}
+
+	/**
+	 * What a passing test lets the plugin do on its own, so nobody has to press
+	 * another button: publish the callback page once sign-in answers (only when
+	 * no page has that slug, so a page someone unpublished stays as it is), and
+	 * register webhooks once the Admin app answers and they aren't in place. Pure.
+	 *
+	 * @param array<string, bool> $results    From the test.
+	 * @param bool                $has_page   A page with the callback slug exists, in any status.
+	 * @param bool                $registered The last webhook registration succeeded.
+	 * @return string[] 'callback' and/or 'webhooks'.
+	 */
+	public static function follow_ups( array $results, bool $has_page, bool $registered ): array {
+		$todo = [];
+
+		if ( true === ( $results['sign_in'] ?? null ) && ! $has_page ) {
+			$todo[] = 'callback';
+		}
+
+		if ( true === ( $results['admin'] ?? null ) && ! $registered ) {
+			$todo[] = 'webhooks';
+		}
+
+		return $todo;
+	}
+
+	/**
+	 * Whether a stored registration result (Registrar::RESULT) is a success. Pure.
+	 */
+	public static function webhooks_registered( mixed $result ): bool {
+		return is_array( $result ) && empty( $result['error'] ) && empty( $result['failed'] );
+	}
+
+	/**
+	 * Do the follow-ups; returns the ones that worked.
+	 *
+	 * @param string[] $todo From follow_ups().
+	 * @return string[] The ones that changed something.
+	 */
+	private static function follow_up( array $todo ): array {
+		$done = [];
+
+		if ( in_array( 'callback', $todo, true ) && self::create_callback_page() ) {
+			$done[] = 'callback';
+		}
+
+		if ( in_array( 'webhooks', $todo, true ) ) {
+			$sync = Registrar::sync();
+
+			// Reported only when something new was subscribed, so a retry of a skipped topic stays quiet.
+			if ( self::webhooks_registered( $sync ) && $sync['created'] ) {
+				$done[] = 'webhooks';
+			}
+		}
+
+		return $done;
 	}
 
 	/**
@@ -197,7 +277,7 @@ final class Setup {
 			'test'        => is_array( $test ) ? $test : null,
 			'permalinks'  => '' !== (string) get_option( 'permalink_structure' ),
 			'callback'    => $page instanceof \WP_Post && 'publish' === $page->post_status,
-			'webhooks'    => is_array( $hooks ) && ! $hooks['error'] && ! $hooks['failed'],
+			'webhooks'    => self::webhooks_registered( $hooks ),
 			'levels'      => count( $levels ),
 			'unknown'     => $levels && AdminApi::available() ? self::unknown_tags() : null,
 			'members'     => array_sum( array_column( $activity['levels'], 'linked' ) ),

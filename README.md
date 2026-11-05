@@ -42,7 +42,7 @@ These eight values are the whole connection. Enter each in **RedeemID → Settin
 
 | Constant | Required | Purpose |
 |---|---|---|
-| `REDEEMID_STORE_DOMAIN` | yes | `your-store.myshopify.com` |
+| `REDEEMID_STORE_DOMAIN` | yes | `your-store.myshopify.com` (the handle or an `admin.shopify.com/store/…` address also works) |
 | `REDEEMID_CLIENT_ID` | yes | Customer Account API client ID, for sign-in |
 | `REDEEMID_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client |
 | `REDEEMID_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store, for resync, tag editing and webhooks |

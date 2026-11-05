@@ -63,6 +63,11 @@ final class Wizard {
 
 	private const FLOW_DOCS = 'https://github.com/webmultipliers/redeemid-core/blob/main/docs/shopify-flow.md';
 
+	/** Shopify's free Headless channel, which holds the sign-in client and Storefront tokens. */
+	private const HEADLESS_APP = 'https://apps.shopify.com/headless';
+
+	private const DEV_DASHBOARD = 'https://dev.shopify.com/dashboard';
+
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'action' ] );
 		add_action( 'admin_init', [ self::class, 'maybe_redirect' ] );
@@ -118,10 +123,13 @@ final class Wizard {
 				if ( ! $saved['errors'] ) {
 					$args['result'] = in_array( false, $test['results'], true ) ? 'test_failed' : 'test_ok';
 				}
+
+				$args['auto'] = implode( ',', $test['auto'] );
 				break;
 			case 'test':
 				$test           = Setup::test();
 				$args['result'] = in_array( false, $test['results'], true ) ? 'test_failed' : 'test_ok';
+				$args['auto']   = implode( ',', $test['auto'] );
 				break;
 			case 'permalinks':
 				$args['result'] = self::use_post_name_permalinks() ? 'permalinks_set' : 'permalinks_kept';
@@ -476,6 +484,32 @@ final class Wizard {
 				'recounted'        => [ 'success', __( 'Counted again from Shopify.', 'redeemid' ) ],
 			]
 		);
+
+		$auto = array_intersect( [ 'callback', 'webhooks' ], explode( ',', sanitize_text_field( wp_unslash( $_GET['auto'] ?? '' ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$says = [
+			'callback' => __( 'Sign-in answered, so the callback page was published for you.', 'redeemid' ),
+			'webhooks' => __( 'The Admin app answered, so webhooks were registered for you.', 'redeemid' ),
+		];
+
+		foreach ( $auto as $done ) {
+			printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $says[ $done ] ) );
+		}
+	}
+
+	/**
+	 * A link to another site (Shopify, the docs), opening in a new tab. Nothing when $url is empty.
+	 */
+	private static function external_link( string $url, string $label ): void {
+		if ( '' === $url ) {
+			return;
+		}
+
+		printf(
+			'<a class="button" href="%1$s" target="_blank" rel="noopener">%2$s<span class="screen-reader-text"> %3$s</span></a> ',
+			esc_url( $url ),
+			esc_html( $label ),
+			esc_html__( '(opens in a new tab)', 'redeemid' )
+		);
 	}
 
 	/**
@@ -662,6 +696,15 @@ final class Wizard {
 	private static function step_sign_in( array $facts ): void {
 		?>
 		<p><?php esc_html_e( 'Members sign in with their Shopify customer account. Shopify needs a Customer Account API client that knows this site.', 'redeemid' ); ?></p>
+		<?php if ( Setup::CLASSIC_ACCOUNTS === ( $facts['test']['accounts'] ?? '' ) ) : ?>
+			<div class="notice notice-error inline"><p><?php esc_html_e( 'This store still uses classic customer accounts, which can\'t sign members in. Turn on new customer accounts in Shopify (Settings → Customer accounts), then test again.', 'redeemid' ); ?></p></div>
+		<?php endif; ?>
+		<p>
+			<?php
+			self::external_link( self::HEADLESS_APP, __( 'Get the Headless channel', 'redeemid' ) );
+			self::external_link( Config::admin_url( 'settings/customer_accounts' ), __( 'Customer accounts settings', 'redeemid' ) );
+			?>
+		</p>
 		<ol class="redeemid-wizard__howto">
 			<li><?php esc_html_e( 'In your Shopify admin, add the Headless sales channel (free, from the Shopify App Store) and create a storefront in it.', 'redeemid' ); ?></li>
 			<li><?php esc_html_e( 'Open Customer Account API settings. A public client is fine; copy its client ID.', 'redeemid' ); ?></li>
@@ -672,7 +715,7 @@ final class Wizard {
 		self::copy_field( 'redeemid-js-origin', __( 'JavaScript origin', 'redeemid' ), untrailingslashit( home_url() ) );
 		self::copy_field( 'redeemid-logout-uri', __( 'Logout URI', 'redeemid' ), home_url( '/' ) );
 		?>
-		<p><?php esc_html_e( 'Then enter the store and client here. Saving tests sign-in discovery at once.', 'redeemid' ); ?></p>
+		<p><?php esc_html_e( 'Then enter the store and client here. The store can be its your-store.myshopify.com domain, its handle, or any admin.shopify.com/store/… address copied from the browser. Saving tests sign-in at once and, when it answers, publishes the callback page.', 'redeemid' ); ?></p>
 		<?php
 		self::config_form( 'sign_in' );
 		self::test_line( $facts, 'sign_in' );
@@ -685,11 +728,12 @@ final class Wizard {
 		$missing = self::missing_scopes( (string) $facts['scopes'] );
 		?>
 		<p><?php esc_html_e( 'An app on the store lets WordPress read customers\' tags, resync members, edit tags in Shopify for you and register webhooks. It never runs a scheduled bulk sync.', 'redeemid' ); ?></p>
+		<p><?php self::external_link( self::DEV_DASHBOARD, __( 'Open the Dev Dashboard', 'redeemid' ) ); ?></p>
 		<ol class="redeemid-wizard__howto">
 			<li><?php esc_html_e( 'In Shopify\'s Dev Dashboard, create an app and give it these Admin API scopes:', 'redeemid' ); ?> <code><?php echo esc_html( implode( ', ', self::SCOPES ) ); ?></code></li>
 			<li><?php esc_html_e( 'Optional: add this scope too, so staff can ask Shopify to erase a customer from Tools → Erase Personal Data:', 'redeemid' ); ?> <code><?php echo esc_html( implode( ', ', self::OPTIONAL_SCOPES ) ); ?></code></li>
 			<li><?php esc_html_e( 'Release a version and install the app on this store.', 'redeemid' ); ?></li>
-			<li><?php esc_html_e( 'Copy the app\'s client ID and secret into the fields below.', 'redeemid' ); ?></li>
+			<li><?php esc_html_e( 'Copy the app\'s client ID and secret into the fields below. When the test passes, webhooks are registered for you.', 'redeemid' ); ?></li>
 		</ol>
 		<?php self::config_form( 'admin' ); ?>
 		<?php self::test_line( $facts, 'admin' ); ?>
@@ -733,9 +777,9 @@ final class Wizard {
 	private static function step_webhooks( array $step ): void {
 		$hooks = get_option( Registrar::RESULT );
 		?>
-		<p><?php esc_html_e( 'Shopify tells WordPress the moment a customer\'s tags change, so access follows Shopify without any scheduled sync.', 'redeemid' ); ?></p>
+		<p><?php esc_html_e( 'Shopify tells WordPress the moment a customer\'s tags change, so access follows Shopify without any scheduled sync. They are registered for you as soon as the Admin app test passes; use the button to register them again.', 'redeemid' ); ?></p>
 		<?php if ( $step['ready'] ) : ?>
-			<?php Menu::action_button( self::ACTION, 'webhooks', __( 'Register webhooks', 'redeemid' ), [ 'step' => 'webhooks' ], 'primary' ); ?>
+			<?php Menu::action_button( self::ACTION, 'webhooks', $step['done'] ? __( 'Register again', 'redeemid' ) : __( 'Register webhooks', 'redeemid' ), [ 'step' => 'webhooks' ], $step['done'] ? 'secondary' : 'primary' ); ?>
 		<?php endif; ?>
 		<?php if ( is_array( $hooks ) ) : ?>
 			<ul class="redeemid-checks redeemid-wizard__checks">
@@ -788,7 +832,7 @@ final class Wizard {
 		<p>
 			<?php
 			/* translators: %s: callback path */
-			echo esc_html( sprintf( __( 'Sign-in results show on %s, inside your theme. Publish the page once; you can edit its text like any page.', 'redeemid' ), '/' . Config::callback_slug() . '/' ) );
+			echo esc_html( sprintf( __( 'Sign-in results show on %s, inside your theme. It is published for you once the sign-in test passes, unless a page with that address already exists; you can edit its text like any page.', 'redeemid' ), '/' . Config::callback_slug() . '/' ) );
 			?>
 		</p>
 		<?php if ( $facts['callback'] ) : ?>
@@ -947,7 +991,12 @@ final class Wizard {
 	private static function step_flow( array $facts ): void {
 		?>
 		<p><?php esc_html_e( 'RedeemID reads tags; it never adds them. A Shopify Flow workflow or your subscription app should add the level tag when someone buys and remove it when the membership ends.', 'redeemid' ); ?></p>
-		<p><a class="button" href="<?php echo esc_url( self::FLOW_DOCS ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Flow recipes', 'redeemid' ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'redeemid' ); ?></span></a></p>
+		<p>
+			<?php
+			self::external_link( self::FLOW_DOCS, __( 'Flow recipes', 'redeemid' ) );
+			self::external_link( Config::admin_url( 'apps/flow' ), __( 'Open Shopify Flow', 'redeemid' ) );
+			?>
+		</p>
 		<p>
 			<?php
 			if ( null === $facts['tagged'] ) {

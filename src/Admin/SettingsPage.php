@@ -12,6 +12,7 @@ use RedeemID\Shopify\AdminToken;
 use RedeemID\Shopify\Discovery;
 use RedeemID\Support\ConfigValues;
 use RedeemID\Support\Logger;
+use RedeemID\Webhooks\Registrar;
 
 /**
  * RedeemID → Settings: the Shopify connection and the plugin's behaviour.
@@ -130,6 +131,8 @@ final class SettingsPage {
 			delete_option( 'redeemid_admin_token_error' );
 			delete_option( 'redeemid_admin_token_scopes' );
 			delete_transient( 'redeemid_admin_scopes' );
+			// Another store or app has none of this site's subscriptions yet; the next passing test registers them.
+			delete_option( Registrar::RESULT );
 		}
 	}
 
