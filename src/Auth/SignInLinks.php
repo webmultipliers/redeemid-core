@@ -8,7 +8,7 @@ use RedeemID\Settings;
 use RedeemID\Shopify\Discovery;
 
 /**
- * "Log in with Shopify" outside the plugin's blocks:
+ * Member sign-in ("Sign in") outside the plugin's blocks:
  *
  * - a button on wp-login.php, above the login form, so comment forms and
  *   other plugins that send visitors to the WordPress login still offer it;
@@ -60,8 +60,8 @@ final class SignInLinks {
 		return (string) $message . sprintf(
 			'<div class="redeemid-login"><a class="button button-primary button-large" href="%s" rel="nofollow">%s</a><p class="redeemid-login__or">%s</p></div>',
 			esc_url( Flow::login_url( self::login_redirect() ) ),
-			esc_html__( 'Log in with Shopify', 'redeemid' ),
-			esc_html__( 'or with your username and password', 'redeemid' )
+			esc_html__( 'Sign in with an email code', 'redeemid' ),
+			esc_html__( 'Staff and accounts with a password: use the form below.', 'redeemid' )
 		);
 	}
 
@@ -124,13 +124,13 @@ final class SignInLinks {
 
 	public static function render_meta_box(): void {
 		$items = [
-			self::LOGIN_ITEM  => __( 'Log in with Shopify', 'redeemid' ),
-			self::LOGOUT_ITEM => __( 'Log out', 'redeemid' ),
+			self::LOGIN_ITEM  => __( 'Sign in', 'redeemid' ),
+			self::LOGOUT_ITEM => __( 'Sign out', 'redeemid' ),
 		];
 		$i     = -1;
 		?>
 		<div id="redeemid-menu-items" class="posttypediv">
-			<p class="description"><?php esc_html_e( 'Log in shows to guests only and returns them to the page they were on; Log out shows to signed-in visitors only.', 'redeemid' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Sign in shows to guests only and returns them to the page they were on; Sign out shows to signed-in visitors only.', 'redeemid' ); ?></p>
 			<div class="tabs-panel tabs-panel-active">
 				<ul class="categorychecklist form-no-clear">
 					<?php foreach ( $items as $url => $label ) : ?>

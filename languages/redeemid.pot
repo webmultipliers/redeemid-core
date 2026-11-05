@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T16:01:09+00:00\n"
+"POT-Creation-Date: 2026-11-05T16:47:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -66,7 +66,8 @@ msgid "Access badge: shows on gated items"
 msgstr ""
 
 #: blocks/account-status/index.php:18
-msgid "Your Shopify account"
+#: blocks/member-account/index.php:24
+msgid "Your account"
 msgstr ""
 
 #: blocks/account-status/index.php:20
@@ -78,11 +79,11 @@ msgid "Display name"
 msgstr ""
 
 #: blocks/account-status/index.php:22
-msgid "Linked to a Shopify customer"
+msgid "Email confirmed for membership"
 msgstr ""
 
 #: blocks/account-status/index.php:23
-msgid "Account created by Shopify sign-in"
+msgid "Signs in with an email code only"
 msgstr ""
 
 #: blocks/account-status/index.php:24
@@ -90,8 +91,7 @@ msgid "Membership last synced"
 msgstr ""
 
 #: blocks/account-status/index.php:25
-#: src/Support/Health.php:64
-msgid "Shopify sign-in available"
+msgid "Sign-in available"
 msgstr ""
 
 #: blocks/account-status/index.php:26
@@ -133,19 +133,19 @@ msgid "Not for guests"
 msgstr ""
 
 #: blocks/account-status/index.php:59
-msgid "Shopify sign-in is not available right now."
+msgid "Sign-in is not available right now."
 msgstr ""
 
 #: blocks/account-status/index.php:61
-msgid "You are not signed in. Log in with Shopify to see your membership."
+msgid "You are not signed in. Sign in to see your membership."
 msgstr ""
 
 #: blocks/account-status/index.php:63
-msgid "You are signed in, but your account is not connected to Shopify yet."
+msgid "You are signed in. Confirm your email to use your membership on this account."
 msgstr ""
 
 #: blocks/account-status/index.php:65
-msgid "Signed in and connected to Shopify."
+msgid "Signed in, with your membership on this account."
 msgstr ""
 
 #: blocks/account-status/index.php:95
@@ -156,20 +156,22 @@ msgstr ""
 #: blocks/locked-panel/index.php:48
 #: blocks/member-account/index.php:59
 #: blocks/member-preferences/index.php:106
-#: src/Auth/SignInLinks.php:63
+#: src/Auth/Flow.php:129
 #: src/Auth/SignInLinks.php:127
 #: src/Sync/PostCheckout.php:175
-msgid "Log in with Shopify"
+msgid "Sign in"
 msgstr ""
 
 #: blocks/auth-action/index.php:26
 #: blocks/member-account/index.php:140
 #: src/Auth/SignInLinks.php:128
-msgid "Log out"
+msgid "Sign out"
 msgstr ""
 
 #: blocks/auth-action/index.php:27
-msgid "Connect Shopify account"
+#: blocks/member-account/index.php:62
+#: src/Blocks/Gate.php:310
+msgid "Confirm your email"
 msgstr ""
 
 #: blocks/auth-action/index.php:35
@@ -388,10 +390,6 @@ msgstr ""
 msgid "Your membership"
 msgstr ""
 
-#: blocks/member-account/index.php:24
-msgid "Your account"
-msgstr ""
-
 #: blocks/member-account/index.php:54
 msgid "Each customer sees their own levels, dates, features and account links here."
 msgstr ""
@@ -409,29 +407,23 @@ msgid "Loading your account…"
 msgstr ""
 
 #: blocks/member-account/index.php:58
-msgid "Log in with Shopify to see your membership."
+msgid "Sign in to see your membership."
 msgstr ""
 
 #: blocks/member-account/index.php:58
-msgid "Log in with Shopify to see your account."
+msgid "Sign in to see your account."
 msgstr ""
 
 #: blocks/member-account/index.php:61
-msgid "Your account here isn't connected to a Shopify customer yet."
-msgstr ""
-
-#: blocks/member-account/index.php:62
-#: src/Auth/Flow.php:634
-#: src/Blocks/Gate.php:310
-msgid "Connect your Shopify account"
+msgid "Confirm your email to use your membership on this account. We'll send you a code."
 msgstr ""
 
 #: blocks/member-account/index.php:64
-msgid "Your membership details are on their way from Shopify."
+msgid "Your membership details are on their way."
 msgstr ""
 
 #: blocks/member-account/index.php:64
-msgid "Your account details are on their way from Shopify."
+msgid "Your account details are on their way."
 msgstr ""
 
 #: blocks/member-account/index.php:67
@@ -493,7 +485,7 @@ msgid "Includes"
 msgstr ""
 
 #: blocks/member-account/index.php:119
-msgid "Last updated from Shopify"
+msgid "Last updated"
 msgstr ""
 
 #. translators: %s: human time difference
@@ -513,7 +505,7 @@ msgid "Refresh membership"
 msgstr ""
 
 #: blocks/member-account/index.php:133
-msgid "Refresh from Shopify"
+msgid "Check for updates"
 msgstr ""
 
 #: blocks/member-account/index.php:135
@@ -521,7 +513,7 @@ msgid "Manage subscription"
 msgstr ""
 
 #: blocks/member-account/index.php:138
-msgid "Orders and account in Shopify"
+msgid "Orders and addresses"
 msgstr ""
 
 #: blocks/member-account/index.php:145
@@ -590,7 +582,7 @@ msgid "Loading your preferences…"
 msgstr ""
 
 #: blocks/member-preferences/index.php:80
-msgid "Connect your Shopify account to set your preferences."
+msgid "Confirm your email on your account page to set your preferences."
 msgstr ""
 
 #: blocks/member-preferences/index.php:82
@@ -598,7 +590,7 @@ msgid "Your preferences can't be loaded right now. Try again later."
 msgstr ""
 
 #: blocks/member-preferences/index.php:84
-msgid "Log in with Shopify to set your preferences"
+msgid "Sign in to set your preferences"
 msgstr ""
 
 #: blocks/member-preferences/index.php:86
@@ -606,7 +598,7 @@ msgid "There is nothing to set here yet."
 msgstr ""
 
 #: blocks/member-preferences/index.php:105
-msgid "Your answers are kept on your Shopify customer account."
+msgid "Your answers are saved to your account."
 msgstr ""
 
 #: blocks/membership-gate-content/index.php:17
@@ -668,7 +660,7 @@ msgstr ""
 #. translators: %s: how long ago, such as "5 mins"
 #: blocks/membership-refresh/index.php:26
 #, php-format
-msgid "Synced from Shopify %s ago."
+msgid "Updated %s ago."
 msgstr ""
 
 #: blocks/membership-refresh/index.php:27
@@ -676,7 +668,7 @@ msgid "Not synced yet."
 msgstr ""
 
 #: blocks/membership-refresh/index.php:31
-msgid "Checking with Shopify…"
+msgid "Checking…"
 msgstr ""
 
 #: blocks/membership-refresh/index.php:32
@@ -688,7 +680,7 @@ msgid "You just refreshed. Try again in a minute."
 msgstr ""
 
 #: blocks/membership-refresh/index.php:34
-msgid "Shopify could not be reached. Try again later."
+msgid "We couldn't check right now. Try again later."
 msgstr ""
 
 #: blocks/membership-refresh/index.php:42
@@ -1324,7 +1316,6 @@ msgstr ""
 #: src/Admin/Access.php:338
 #: src/Admin/AccessFeatures.php:214
 #: src/Admin/Customers.php:366
-#: src/Auth/Flow.php:666
 msgid "Cancel"
 msgstr ""
 
@@ -2695,7 +2686,6 @@ msgid "Customer"
 msgstr ""
 
 #: src/Admin/CustomersTable.php:29
-#: src/Auth/ShadowUsers.php:58
 msgid "Shopify customer"
 msgstr ""
 
@@ -3879,7 +3869,7 @@ msgid "Sign-in links"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:332
-msgid "Show \"Log in with Shopify\" on the WordPress login screen"
+msgid "Show the member \"Sign in with an email code\" button on the WordPress login screen"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:333
@@ -3887,7 +3877,7 @@ msgid "Send visitors to Shopify sign-in from the site's login links (comment for
 msgstr ""
 
 #: src/Admin/SettingsPage.php:334
-msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Log in and Log out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode."
+msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Sign in and Sign out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:338
@@ -5126,158 +5116,122 @@ msgstr ""
 msgid "Levels and rules"
 msgstr ""
 
-#: src/Auth/Flow.php:125
+#: src/Auth/Flow.php:128
 msgid "Nothing to do here."
 msgstr ""
 
-#: src/Auth/Flow.php:126
-msgid "Sign in"
-msgstr ""
-
-#: src/Auth/Flow.php:565
+#: src/Auth/Flow.php:489
 msgid "Your sign-in link expired or was opened in a different browser. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:566
-msgid "Sign-in was cancelled at Shopify."
+#: src/Auth/Flow.php:490
+msgid "Sign-in was cancelled."
 msgstr ""
 
-#: src/Auth/Flow.php:567
-msgid "Shopify sign-in could not be completed. Please try again."
+#: src/Auth/Flow.php:491
+msgid "We couldn't sign you in. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:568
-msgid "Your Shopify profile could not be loaded. Please try again."
+#: src/Auth/Flow.php:492
+msgid "Your account details couldn't be loaded. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:569
+#: src/Auth/Flow.php:493
 msgid "Sign-in is temporarily unavailable."
 msgstr ""
 
-#: src/Auth/Flow.php:570
-msgid "Shopify sign-in could not be verified. Please try again."
+#: src/Auth/Flow.php:494
+msgid "We couldn't verify that sign-in. Please try again."
 msgstr ""
 
-#: src/Auth/Flow.php:571
-msgid "That connect request is no longer valid. Start again from your account."
+#: src/Auth/Flow.php:495
+msgid "That confirmation is no longer valid. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:572
-msgid "That connect request expired. Start again from your account."
+#: src/Auth/Flow.php:496
+msgid "That confirmation expired. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:573
-msgid "That connect request belongs to a different session. Start again from your account."
+#: src/Auth/Flow.php:497
+msgid "That confirmation was started in a different session. Start again from your account."
 msgstr ""
 
-#: src/Auth/Flow.php:574
-msgid "Please sign in to the WordPress account you want to connect, then try again."
+#: src/Auth/Flow.php:498
+msgid "Please sign in to the account you want to use, then try again."
 msgstr ""
 
-#: src/Auth/Flow.php:575
+#: src/Auth/Flow.php:499
 msgid "Staff accounts (anyone who can edit posts) cannot be connected to a Shopify customer."
 msgstr ""
 
-#: src/Auth/Flow.php:576
+#: src/Auth/Flow.php:500
 msgid "Staff accounts (anyone who can edit posts) cannot sign in with Shopify. Use the WordPress login instead."
 msgstr ""
 
-#: src/Auth/Flow.php:577
-msgid "This account already signs in with Shopify."
+#: src/Auth/Flow.php:501
+msgid "This account already signs in with an email code."
 msgstr ""
 
-#: src/Auth/Flow.php:578
-msgid "Shopify did not confirm that email address, so the accounts were not connected."
+#: src/Auth/Flow.php:502
+msgid "That email address wasn't confirmed, so your membership wasn't added to this account."
 msgstr ""
 
-#: src/Auth/Flow.php:579
-msgid "Your Shopify email does not match this account's email, so the accounts were not connected."
+#: src/Auth/Flow.php:503
+msgid "That isn't the email address this account uses, so nothing was changed. Confirm the email you use on this site."
 msgstr ""
 
-#: src/Auth/Flow.php:580
-msgid "That Shopify customer is already connected to another account."
+#: src/Auth/Flow.php:504
+msgid "That email's membership is already on another account here."
 msgstr ""
 
-#: src/Auth/Flow.php:581
-msgid "The accounts were not connected."
+#: src/Auth/Flow.php:505
+msgid "Your email is confirmed and your membership is on this account."
 msgstr ""
 
-#: src/Auth/Flow.php:582
-msgid "Your Shopify account is now connected."
+#: src/Auth/Flow.php:506
+msgid "Your membership was removed from this account."
 msgstr ""
 
-#: src/Auth/Flow.php:583
-msgid "Your Shopify account was disconnected."
-msgstr ""
-
-#: src/Auth/Flow.php:584
+#: src/Auth/Flow.php:507
 msgid "Your membership details were refreshed."
 msgstr ""
 
-#: src/Auth/Flow.php:585
+#: src/Auth/Flow.php:508
 msgid "Your details could not be refreshed right now. Please try again later."
 msgstr ""
 
-#: src/Auth/Flow.php:586
+#: src/Auth/Flow.php:509
 msgid "Your details were refreshed a moment ago."
 msgstr ""
 
-#: src/Auth/Flow.php:587
-msgid "That sign-in expired. Please log in with Shopify again."
+#: src/Auth/Flow.php:510
+msgid "Welcome back. Your membership is on your account."
 msgstr ""
 
-#: src/Auth/Flow.php:588
+#: src/Auth/Flow.php:511
 msgid "Check your email: confirm the request and we will send you a copy of your data."
 msgstr ""
 
-#: src/Auth/Flow.php:589
+#: src/Auth/Flow.php:512
 msgid "Check your email: confirm the request and we will erase your data here."
 msgstr ""
 
-#: src/Auth/Flow.php:590
+#: src/Auth/Flow.php:513
 msgid "You already have a request waiting. Check your email for the confirmation link."
 msgstr ""
 
-#: src/Auth/Flow.php:591
+#: src/Auth/Flow.php:514
 msgid "We have your request, but could not email you a confirmation link. We will be in touch."
 msgstr ""
 
-#: src/Auth/Flow.php:592
+#: src/Auth/Flow.php:515
 msgid "Your request could not be sent. Please contact us instead."
 msgstr ""
 
-#: src/Auth/Flow.php:630
-msgid "You're signed in. Connect your Shopify account to this one so your membership works here."
-msgstr ""
-
-#. translators: 1: Shopify email, 2: WordPress username
-#: src/Auth/Flow.php:656
-#, php-format
-msgid "Connect the Shopify customer %1$s to your account %2$s?"
-msgstr ""
-
-#: src/Auth/Flow.php:665
-msgid "Connect accounts"
-msgstr ""
-
-#. translators: %s: email address
-#: src/Auth/Flow.php:703
-#, php-format
-msgid "You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place."
-msgstr ""
-
-#: src/Auth/Flow.php:709
-msgid "Sign in to my account"
-msgstr ""
-
-#: src/Auth/Flow.php:714
-msgid "No thanks, use a separate account"
-msgstr ""
-
 #. translators: %s: sign-in link
-#: src/Auth/PasswordLogin.php:50
+#: src/Auth/PasswordLogin.php:56
 #, php-format
-msgid "This account signs in with Shopify. <a href=\"%s\">Log in with Shopify</a>."
+msgid "You don't need a password for this account. <a href=\"%s\">Sign in with an email code</a> instead."
 msgstr ""
 
 #: src/Auth/ShadowUsers.php:34
@@ -5285,16 +5239,20 @@ msgstr ""
 msgid "Shopify Customer"
 msgstr ""
 
-#: src/Auth/ShadowUsers.php:84
-msgid "This account signs in with Shopify. Manage your sign-in from your Shopify account."
+#: src/Auth/ShadowUsers.php:60
+msgid "Member"
+msgstr ""
+
+#: src/Auth/SignInLinks.php:63
+msgid "Sign in with an email code"
 msgstr ""
 
 #: src/Auth/SignInLinks.php:64
-msgid "or with your username and password"
+msgid "Staff and accounts with a password: use the form below."
 msgstr ""
 
 #: src/Auth/SignInLinks.php:133
-msgid "Log in shows to guests only and returns them to the page they were on; Log out shows to signed-in visitors only."
+msgid "Sign in shows to guests only and returns them to the page they were on; Sign out shows to signed-in visitors only."
 msgstr ""
 
 #: src/Auth/SignInLinks.php:149
@@ -5302,11 +5260,11 @@ msgid "Add to Menu"
 msgstr ""
 
 #: src/Blocks/Gate.php:304
-msgid "Already a member, or just bought a membership? Log in with Shopify using the email address you checked out with."
+msgid "Already a member, or just bought a membership? Sign in with the email you used at checkout."
 msgstr ""
 
 #: src/Blocks/Gate.php:308
-msgid "Your account here isn't connected to a Shopify customer yet. Connect it to use a membership you have."
+msgid "Confirm your email to use a membership you have on this account. We'll send you a code."
 msgstr ""
 
 #: src/Blocks/Gate.php:313
@@ -5380,7 +5338,7 @@ msgid "Saved to your account."
 msgstr ""
 
 #: src/Blocks/PreferencesForm.php:109
-msgid "Saved in this browser. Log in with Shopify to keep them on your account."
+msgid "Saved in this browser. Sign in to keep them on your account."
 msgstr ""
 
 #: src/Blocks/PreferencesForm.php:110
@@ -5442,7 +5400,7 @@ msgid "The cart is temporarily unavailable. Please try again shortly."
 msgstr ""
 
 #: src/Commerce/Cart.php:73
-msgid "Shopify couldn’t make that change. The item may be sold out, or the code may not apply."
+msgid "That change couldn’t be made. The item may be sold out, or the code may not apply."
 msgstr ""
 
 #: src/Commerce/Cart.php:93
@@ -5585,7 +5543,7 @@ msgstr ""
 
 #: src/Preferences/Preferences.php:224
 #: src/Preferences/Preferences.php:445
-msgid "Sign in with your Shopify customer account first."
+msgid "Sign in first."
 msgstr ""
 
 #: src/Preferences/Preferences.php:461
@@ -5752,7 +5710,7 @@ msgid "We send records of some activity on this site, such as reaching the free 
 msgstr ""
 
 #: src/Privacy/PolicyText.php:33
-msgid "Cookies: redeemid_oauth_state and redeemid_pending (for ten minutes while you sign in), redeemid_cart and redeemid_cart_count (your cart, for up to 14 days), and redeemid_fset (which membership features you hold, so pages can be cached correctly; removed when you close your browser)."
+msgid "Cookies: redeemid_oauth_state (for ten minutes while you sign in), redeemid_cart and redeemid_cart_count (your cart, for up to 14 days), and redeemid_fset (which membership features you hold, so pages can be cached correctly; removed when you close your browser)."
 msgstr ""
 
 #: src/Privacy/PolicyText.php:34
@@ -5906,6 +5864,10 @@ msgid "not published; the plugin falls back to a bare result page"
 msgstr ""
 
 #: src/Support/Health.php:64
+msgid "Shopify sign-in available"
+msgstr ""
+
+#: src/Support/Health.php:64
 msgid "OIDC discovery answered"
 msgstr ""
 
@@ -6017,7 +5979,7 @@ msgid "none received in the last 30 days; declare the compliance topics in the D
 msgstr ""
 
 #: src/Sync/PostCheckout.php:174
-msgid "Thanks for your order. To use a membership you bought, log in with Shopify using the email address from your order."
+msgid "Thanks for your order. To use a membership you bought, sign in with the email from your order."
 msgstr ""
 
 #: src/Sync/PostCheckout.php:177
@@ -6335,7 +6297,7 @@ msgstr ""
 
 #: blocks/auth-action/block.json
 msgctxt "block variation description"
-msgid "Lets a signed-in WordPress user link their Shopify customer account."
+msgid "Lets a signed-in WordPress user confirm their email by code, which links their Shopify customer account."
 msgstr ""
 
 #: blocks/cart-link/block.json

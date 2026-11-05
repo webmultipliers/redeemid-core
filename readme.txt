@@ -21,8 +21,8 @@ RedeemID is free and open source. There is no paid version.
 
 = Sign in with Shopify =
 
-* A **Log in with Shopify** block: OAuth with PKCE against Shopify's Customer Account API.
-* New customers get a WordPress user tied to their Shopify account. Existing WordPress accounts can be linked, after a verified-email check. Staff can link a member whose emails differ, and the account is flagged until they clear it.
+* A **Sign in** block: OAuth with PKCE against Shopify's Customer Account API. Members see a plain Sign in button and your store's own sign-in page, in your site's language, never the word Shopify.
+* New customers get a WordPress user tied to their Shopify account. A returning reader whose verified email matches an existing (non-staff) WordPress account is signed in to that account, and a signed-in user can confirm their email by code to link it. Staff can link a member whose emails differ, and the account is flagged until they clear it.
 * An optional setting makes linked members sign in with Shopify only, with no WordPress password.
 * Sign-out ends both sessions.
 * Use it for sign-in alone, with no levels and nothing gated.

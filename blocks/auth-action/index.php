@@ -22,9 +22,9 @@ use RedeemID\Blocks\Gate;
 $redeemid_mode    = Gate::option( $a['mode'] ?? '', 'auto' );
 $redeemid_style   = Gate::option( $a['controlStyle'] ?? '', 'button' );
 $redeemid_preview = Gate::option( $a['previewState'] ?? '', 'guest' );
-$redeemid_login   = ( $a['loginLabel'] ?? '' ) ?: __( 'Log in with Shopify', 'redeemid' );
-$redeemid_logout  = ( $a['logoutLabel'] ?? '' ) ?: __( 'Log out', 'redeemid' );
-$redeemid_connect = ( $a['connectLabel'] ?? '' ) ?: __( 'Connect Shopify account', 'redeemid' );
+$redeemid_login   = ( $a['loginLabel'] ?? '' ) ?: __( 'Sign in', 'redeemid' );
+$redeemid_logout  = ( $a['logoutLabel'] ?? '' ) ?: __( 'Sign out', 'redeemid' );
+$redeemid_connect = ( $a['connectLabel'] ?? '' ) ?: __( 'Confirm your email', 'redeemid' );
 $redeemid_class   = 'button' === $redeemid_style ? 'wp-element-button redeemid-auth__control' : 'redeemid-auth__control redeemid-auth__control--link';
 
 if ( $isEditor ) {

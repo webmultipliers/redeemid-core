@@ -301,13 +301,13 @@ final class Gate {
 			case PanelKind::SIGN_IN:
 				if ( false !== ( $a['showSignIn'] ?? true ) ) {
 					$data['signInUrl'] = Flow::login_url( $here );
-					$data['hint']      = __( 'Already a member, or just bought a membership? Log in with Shopify using the email address you checked out with.', 'redeemid' );
+					$data['hint']      = __( 'Already a member, or just bought a membership? Sign in with the email you used at checkout.', 'redeemid' );
 				}
 				break;
 			case PanelKind::CONNECT:
-				$data['reason']     = __( 'Your account here isn\'t connected to a Shopify customer yet. Connect it to use a membership you have.', 'redeemid' );
+				$data['reason']     = __( 'Confirm your email to use a membership you have on this account. We\'ll send you a code.', 'redeemid' );
 				$data['formAction'] = 'redeemid_connect';
-				$data['formLabel']  = __( 'Connect your Shopify account', 'redeemid' );
+				$data['formLabel']  = __( 'Confirm your email', 'redeemid' );
 				break;
 			case PanelKind::FINISHING:
 				$data['reason']     = __( 'We\'re finishing setting up your membership. This usually takes under a minute after checkout.', 'redeemid' );

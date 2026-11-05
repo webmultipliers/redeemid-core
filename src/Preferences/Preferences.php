@@ -221,7 +221,7 @@ final class Preferences {
 		$customer = $user_id ? Mirror::customer_id( $user_id ) : null;
 
 		if ( ! $customer ) {
-			return new \WP_Error( 'redeemid_not_linked', __( 'Sign in with your Shopify customer account first.', 'redeemid' ), [ 'status' => 403 ] );
+			return new \WP_Error( 'redeemid_not_linked', __( 'Sign in first.', 'redeemid' ), [ 'status' => 403 ] );
 		}
 
 		$fields = self::fields();
@@ -442,7 +442,7 @@ final class Preferences {
 		$customer = $user_id ? Mirror::customer_id( $user_id ) : null;
 
 		if ( ! $customer ) {
-			return new \WP_Error( 'redeemid_not_linked', __( 'Sign in with your Shopify customer account first.', 'redeemid' ), [ 'status' => 403 ] );
+			return new \WP_Error( 'redeemid_not_linked', __( 'Sign in first.', 'redeemid' ), [ 'status' => 403 ] );
 		}
 
 		if ( ! self::within_rate_limit( $user_id ) ) {

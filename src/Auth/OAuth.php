@@ -10,22 +10,42 @@ use RedeemID\Shopify\Http;
  * Customer Account API OAuth 2.0 + PKCE, entirely server-side.
  */
 final class OAuth {
-	public static function authorize_url( string $state, string $nonce, string $challenge ): string {
+	/**
+	 * @param string $locale     The sign-in page's language, such as fr-CA ('' for Shopify's choice).
+	 * @param string $login_hint An email to fill in on the sign-in page ('' for none).
+	 */
+	public static function authorize_url( string $state, string $nonce, string $challenge, string $locale = '', string $login_hint = '' ): string {
 		return add_query_arg(
 			rawurlencode_deep(
-				[
-					'client_id'             => Config::get( 'REDEEMID_CLIENT_ID' ),
-					'response_type'         => 'code',
-					'redirect_uri'          => Config::callback_url(),
-					'scope'                 => Config::SCOPES,
-					'state'                 => $state,
-					'nonce'                 => $nonce,
-					'code_challenge'        => $challenge,
-					'code_challenge_method' => 'S256',
-				]
+				array_filter(
+					[
+						'client_id'             => Config::get( 'REDEEMID_CLIENT_ID' ),
+						'response_type'         => 'code',
+						'redirect_uri'          => Config::callback_url(),
+						'scope'                 => Config::SCOPES,
+						'state'                 => $state,
+						'nonce'                 => $nonce,
+						'code_challenge'        => $challenge,
+						'code_challenge_method' => 'S256',
+						'locale'                => $locale,
+						'login_hint'            => $login_hint,
+					],
+					static fn ( $value ): bool => '' !== $value
+				)
 			),
 			Discovery::endpoint( 'authorization_endpoint' )
 		);
+	}
+
+	/**
+	 * The sign-in page's language from a WordPress locale, so it matches the
+	 * site: fr_CA → fr-CA, de_DE_formal → de-DE, ja → ja. Filter with
+	 * redeemid_sign_in_locale ('' leaves it to Shopify).
+	 */
+	public static function locale( string $wp_locale ): string {
+		$tag = preg_match( '/^([a-z]{2,3})(?:_([A-Z]{2}))?(?:_[A-Za-z0-9]+)?$/', $wp_locale, $m ) ? $m[1] . ( isset( $m[2] ) ? '-' . $m[2] : '' ) : '';
+
+		return function_exists( 'apply_filters' ) ? (string) apply_filters( 'redeemid_sign_in_locale', $tag, $wp_locale ) : $tag;
 	}
 
 	/**

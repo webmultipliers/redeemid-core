@@ -51,11 +51,13 @@ final class ShadowUsers {
 		$user_id = wp_insert_user(
 			[
 				'user_login'   => 'shopify_' . $hash,
+				// The nicename is public (author links, comment classes), so it carries no platform name.
+				'user_nicename' => 'member-' . substr( $hash, 0, 12 ),
 				'user_email'   => 'c' . $hash . '@' . self::EMAIL_DOMAIN,
 				'user_pass'    => wp_generate_password( 64, true, true ),
 				'first_name'   => $first,
 				'last_name'    => $last,
-				'display_name' => trim( $first . ' ' . $last ) ?: __( 'Shopify customer', 'redeemid' ),
+				'display_name' => trim( $first . ' ' . $last ) ?: __( 'Member', 'redeemid' ),
 				'role'         => self::ROLE,
 			]
 		);
@@ -81,7 +83,7 @@ final class ShadowUsers {
 
 	public static function block_password_reset( $allow, $user_id ) {
 		return self::is_shadow( (int) $user_id )
-			? new \WP_Error( 'redeemid_no_reset', __( 'This account signs in with Shopify. Manage your sign-in from your Shopify account.', 'redeemid' ) )
+			? new \WP_Error( 'redeemid_no_reset', PasswordLogin::no_password_message() )
 			: $allow;
 	}
 

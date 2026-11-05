@@ -43,20 +43,25 @@ final class PasswordLogin {
 			return $user;
 		}
 
-		return new \WP_Error(
-			'redeemid_shopify_only',
-			sprintf(
-				/* translators: %s: sign-in link */
-				__( 'This account signs in with Shopify. <a href="%s">Log in with Shopify</a>.', 'redeemid' ),
-				esc_url( Flow::login_url( home_url( '/' ) ) )
-			)
+		return new \WP_Error( 'redeemid_shopify_only', self::no_password_message() );
+	}
+
+	/**
+	 * What an account without a password is told on the login and lost
+	 * password screens: no password needed, sign in with a code instead.
+	 */
+	public static function no_password_message(): string {
+		return sprintf(
+			/* translators: %s: sign-in link */
+			__( 'You don\'t need a password for this account. <a href="%s">Sign in with an email code</a> instead.', 'redeemid' ),
+			esc_url( Flow::login_url( home_url( '/' ) ) )
 		);
 	}
 
 	public static function allow_reset( mixed $allow, mixed $user_id ): mixed {
 		$user = get_userdata( (int) $user_id );
 
-		return $user && self::shopify_only( $user ) ? false : $allow;
+		return $user && self::shopify_only( $user ) ? new \WP_Error( 'redeemid_no_reset', self::no_password_message() ) : $allow;
 	}
 
 	public static function allow_app_passwords( mixed $available, mixed $user ): mixed {

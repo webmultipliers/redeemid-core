@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.5.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.6.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -66,7 +66,7 @@ Each event also fires a named shortcut with `( array $props, array $event )`:
 
 Stable:
 
-- **Sign-in:** `redeemid_auth_callback_slug`, `redeemid_default_redirect`, `redeemid_customer_admin_redirect`, `redeemid_sign_in_redirect`, `redeemid_offer_existing_account`
+- **Sign-in:** `redeemid_auth_callback_slug`, `redeemid_default_redirect`, `redeemid_customer_admin_redirect`, `redeemid_sign_in_redirect`, `redeemid_offer_existing_account` (return false to give a returning reader whose verified email matches an account here a separate account instead of signing them in to it), `redeemid_sign_in_locale` (the sign-in page language, such as `fr-CA`, from the site locale; `""` leaves it to Shopify)
 - **Settings:** `redeemid_setting_{key}`
 - **Access:** `redeemid_access_levels`, `redeemid_access_rules`, `redeemid_gated_post_types`, `redeemid_access_context`, `redeemid_effective_rule`, `redeemid_teaser_settings`, `redeemid_paywall_schema`, `redeemid_drip_days`
 - **Features:** `redeemid_features`, `redeemid_feature_tests`, `redeemid_feature_decision`

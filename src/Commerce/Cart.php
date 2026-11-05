@@ -70,7 +70,7 @@ final class Cart {
 			'cart_invalid'     => __( 'That option could not be found. Please choose again.', 'redeemid' ),
 			'cart_busy'        => __( 'Too many cart changes. Please wait a minute and try again.', 'redeemid' ),
 			'cart_unavailable' => __( 'The cart is temporarily unavailable. Please try again shortly.', 'redeemid' ),
-			'cart_refused'     => __( 'Shopify couldn’t make that change. The item may be sold out, or the code may not apply.', 'redeemid' ),
+			'cart_refused'     => __( 'That change couldn’t be made. The item may be sold out, or the code may not apply.', 'redeemid' ),
 			'cart_empty'       => __( 'Your cart is empty.', 'redeemid' ),
 			default            => '',
 		};
