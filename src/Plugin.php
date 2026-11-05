@@ -40,6 +40,7 @@ use RedeemID\Integrations\OfficialCartToggle;
 use RedeemID\Integrations\SeoPlugins;
 use RedeemID\Rest\Routes;
 use RedeemID\Rest\Status;
+use RedeemID\Strings\Text;
 use RedeemID\Support\Crypto;
 use RedeemID\Support\EventLog;
 use RedeemID\Support\Multisite;
@@ -59,6 +60,7 @@ final class Plugin {
 
 	public static function boot(): void {
 		Multisite::register();
+		Text::register();
 		add_action( 'init', [ Lifecycle::class, 'maintain' ], 1 );
 		ShadowUsers::register();
 		Flow::register();

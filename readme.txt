@@ -51,6 +51,12 @@ RedeemID is free and open source. There is no paid version.
 
 Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall Break, Access Badge, Member Account, Member Preferences, Membership Features, Refresh Membership, Shopify Account Status, Shopify Plan Card, Shopify Product, Shopify Collection, Shopify Cart and Shopify Cart Link. All of them render on the server and work without JavaScript. Personal pieces are dynamic islands, so pages stay cacheable behind a page cache or CDN.
 
+= In your own words =
+
+* **RedeemID → Text** lists every string the plugin shows, to visitors, members or staff, and lets you replace any of them: "Your account" can read "Your members area".
+* Swap a word everywhere at once: "account" to "portal" changes every string that has it, with the capital letters kept.
+* Replacements sit on top of translation, and can be set for every language or for one.
+
 = Sell from WordPress =
 
 * Plan cards, products and collections with live Shopify prices.
@@ -100,6 +106,10 @@ Yes. Personal pieces load after the page in one uncached request, so the page it
 = Does it work with SEO plugins? =
 
 Yes. With Yoast SEO, Rank Math or The SEO Framework, locked posts get teaser-only descriptions and paywall structured data, and locked posts you keep out of search are left out of their sitemaps. See [Works with](https://www.redeemid.com/docs/compatibility/).
+
+= Can I change the wording? =
+
+Yes. RedeemID → Text replaces any string the plugin shows, or swaps a word in all of them, without a translation file. See [Replacing text](https://www.redeemid.com/docs/replace-text/).
 
 = Where is my customers' data? =
 

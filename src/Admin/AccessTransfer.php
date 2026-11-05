@@ -124,6 +124,8 @@ final class AccessTransfer {
 			Transfer::TERM_RULES => __( 'Term rules', 'redeemid' ),
 			Transfer::FEATURES   => __( 'Feature mappings', 'redeemid' ),
 			Transfer::SETTINGS   => __( 'Membership settings', 'redeemid' ),
+			Transfer::STRINGS    => __( 'Replacement text', 'redeemid' ),
+			Transfer::WORDS      => __( 'Word swaps', 'redeemid' ),
 		];
 
 		if ( is_array( $report ) ) {
@@ -132,6 +134,11 @@ final class AccessTransfer {
 			if ( $report['skipped_terms'] ) {
 				/* translators: %s: comma-separated taxonomy/term pairs */
 				echo '<div class="notice notice-warning inline"><p>' . esc_html( sprintf( __( 'These term rules were skipped because the term doesn\'t exist on this site: %s. Create the terms and import again.', 'redeemid' ), implode( ', ', $report['skipped_terms'] ) ) ) . '</p></div>';
+			}
+
+			if ( ! empty( $report['dropped_strings'] ) ) {
+				/* translators: %s: comma-separated "language: original text" pairs */
+				echo '<div class="notice notice-warning inline"><p>' . esc_html( sprintf( __( 'This replacement text was skipped because its placeholders or HTML don\'t fit the original: %s.', 'redeemid' ), implode( ', ', $report['dropped_strings'] ) ) ) . '</p></div>';
 			}
 
 			if ( $report['managed'] ) {
@@ -144,7 +151,7 @@ final class AccessTransfer {
 			self::render_preview( $pending, $names );
 		}
 
-		Menu::panel_start( __( 'Export', 'redeemid' ), __( 'Download levels, content rules, term rules, feature mappings and membership settings as one JSON file. Customers, item settings, Shopify credentials and tokens are never included.', 'redeemid' ) );
+		Menu::panel_start( __( 'Export', 'redeemid' ), __( 'Download levels, content rules, term rules, feature mappings, membership settings, replacement text and word swaps as one JSON file. Customers, item settings, Shopify credentials and tokens are never included.', 'redeemid' ) );
 		echo '<div class="redeemid-panel__body">';
 		Menu::action_button( self::ACTION, 'export', __( 'Download settings', 'redeemid' ), [], 'primary' );
 		echo '</div>';

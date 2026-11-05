@@ -51,7 +51,7 @@ These eight values are the whole connection. Enter each in **RedeemID → Settin
 | `REDEEMID_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same channel. Replaces the public token and sends each buyer's IP, so Shopify doesn't throttle checkout |
 | `REDEEMID_ENCRYPTION_KEY` | no | Base64 32-byte key for encrypting secrets. Defaults to one derived from the WordPress salts; set it if you rotate salts |
 
-Everything else (levels, content rules, features, sign-in links, storefront pages, preferences, event webhooks, alerts) is set in the admin. See [Configuration](https://www.redeemid.com/docs/configuration/) and [Admin screens](https://www.redeemid.com/docs/admin/).
+Everything else (levels, content rules, features, sign-in links, storefront pages, preferences, event webhooks, alerts, and the plugin's own wording in **RedeemID → Text**) is set in the admin. See [Configuration](https://www.redeemid.com/docs/configuration/) and [Admin screens](https://www.redeemid.com/docs/admin/).
 
 ## Documentation
 
@@ -61,7 +61,7 @@ The docs live at [redeemid.com/docs](https://www.redeemid.com/docs/):
 - **Access and members:** [One customer account](https://www.redeemid.com/docs/identity/), [Access levels](https://www.redeemid.com/docs/levels/), [Paywall rules](https://www.redeemid.com/docs/paywall-rules/), [Editor's guide](https://www.redeemid.com/docs/editors/), [Member accounts](https://www.redeemid.com/docs/account/), [Member preferences](https://www.redeemid.com/docs/member-preferences/), [Member features](https://www.redeemid.com/docs/features/), [Protected files](https://www.redeemid.com/docs/protected-files/), [Selling memberships](https://www.redeemid.com/docs/commerce/), [Products, collections and the cart](https://www.redeemid.com/docs/storefront/), [Member emails](https://www.redeemid.com/docs/member-emails/)
 - **Tags and sync:** [Tagging customers with Shopify Flow](https://www.redeemid.com/docs/shopify-flow/), [How changes reach WordPress](https://www.redeemid.com/docs/sync/)
 - **Other plugins:** [Works with](https://www.redeemid.com/docs/compatibility/) (page caches, SEO, newsletters), [Moving off Shopify's WordPress plugin](https://www.redeemid.com/docs/official-plugin/), [From WooCommerce](https://www.redeemid.com/docs/woocommerce/), [From a WordPress membership plugin](https://www.redeemid.com/docs/membership-plugins/)
-- **Reference:** [Blocks](https://www.redeemid.com/docs/blocks/), [Admin screens](https://www.redeemid.com/docs/admin/), [Developer API](https://www.redeemid.com/docs/developer-api/), [Hooks, REST and WP-CLI](https://www.redeemid.com/docs/hooks/), [Event webhooks](https://www.redeemid.com/docs/event-webhooks/), [Abilities and AI agents](https://www.redeemid.com/docs/abilities/), [Privacy](https://www.redeemid.com/docs/privacy/), [Troubleshooting](https://www.redeemid.com/docs/troubleshoot/)
+- **Reference:** [Blocks](https://www.redeemid.com/docs/blocks/), [Admin screens](https://www.redeemid.com/docs/admin/), [Developer API](https://www.redeemid.com/docs/developer-api/), [Hooks, REST and WP-CLI](https://www.redeemid.com/docs/hooks/), [Event webhooks](https://www.redeemid.com/docs/event-webhooks/), [Replacing text](https://www.redeemid.com/docs/replace-text/), [Abilities and AI agents](https://www.redeemid.com/docs/abilities/), [Privacy](https://www.redeemid.com/docs/privacy/), [Troubleshooting](https://www.redeemid.com/docs/troubleshoot/)
 
 The developer pages are also in [`docs/`](docs/) in this repository, versioned with the code.
 
@@ -74,7 +74,7 @@ Plugins that build on RedeemID (a course, a forum, a download manager) can ask i
 - `redeemid_has_feature( $slug, $user = null )`: does the user hold a [feature](docs/features.md)?
 - `redeemid_preferences()` and `redeemid_set_preferences()`: the member's [preferences](docs/member-preferences.md), read from and saved to Shopify.
 
-They read the synced mirror, so they cost no Shopify call. The `redeemid_event` action and the `window.redeemid` browser client carry every event (walls, the meter, checkouts, level changes) in one vendor-neutral shape, and [event webhooks](docs/event-webhooks.md) send them to a CRM or automation tool without code. The REST namespace is `redeemid/v1`, and WP-CLI commands live under `wp redeemid` (resync, access, settings). What is stable is listed in [docs/developer-api.md](docs/developer-api.md); its version is `REDEEMID_API_VERSION` (currently 1.4.0).
+They read the synced mirror, so they cost no Shopify call. The `redeemid_event` action and the `window.redeemid` browser client carry every event (walls, the meter, checkouts, level changes) in one vendor-neutral shape, and [event webhooks](docs/event-webhooks.md) send them to a CRM or automation tool without code. The REST namespace is `redeemid/v1`, and WP-CLI commands live under `wp redeemid` (resync, access, settings). What is stable is listed in [docs/developer-api.md](docs/developer-api.md); its version is `REDEEMID_API_VERSION` (currently 1.5.0).
 
 ## Contributing
 
@@ -112,7 +112,7 @@ Psalm runs the same way as in CI: `composer global require vimeo/psalm:^6.5 huma
 
 Dependency review only works when **Dependency graph** is on for the repository (**Settings → Advanced Security → Dependency graph**). Until it is, that check fails on every pull request whatever the change; the other checks are unaffected.
 
-To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests` when strings change.
+To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests,node_modules` when strings change: RedeemID → Text lists every string from it, and CI fails when it is out of date.
 
 The rules every change follows:
 

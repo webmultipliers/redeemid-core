@@ -1003,3 +1003,64 @@ ul.redeemid-trace-list {
 		padding-right: 0;
 	}
 }
+
+/* RedeemID → Text */
+.redeemid-text-form-table .column-original {
+	width: 34%;
+}
+
+.redeemid-text-form-table .column-where {
+	width: 22%;
+}
+
+.redeemid-text-original {
+	font-weight: 600;
+}
+
+.redeemid-text-notes {
+	display: block;
+	margin-top: 6px;
+	color: var(--redeemid-muted, #50575e);
+	font-size: 12px;
+}
+
+.redeemid-text-notes code {
+	color: #3c434a;
+}
+
+.redeemid-text-notes .redeemid-error-text {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.redeemid-text-form {
+	display: block;
+	margin: 6px 0 2px;
+	font-size: 12px;
+}
+
+.redeemid-text-form:first-of-type {
+	margin-top: 0;
+}
+
+.redeemid-text-form-table [aria-invalid="true"] {
+	border-color: var(--redeemid-error);
+}
+
+.redeemid-text-filters .redeemid-inline-form {
+	margin: 0 0 8px;
+}
+
+.redeemid-text-words td {
+	vertical-align: middle;
+}
+
+.redeemid-text-words input.regular-text {
+	width: 100%;
+}
+
+.redeemid-text-search .search-box {
+	float: none;
+	margin: 0 0 8px;
+	text-align: right;
+}

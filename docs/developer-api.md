@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.4.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.5.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -72,7 +72,7 @@ Stable:
 - **Features:** `redeemid_features`, `redeemid_feature_tests`, `redeemid_feature_decision`
 - **Events:** `redeemid_outbound_payload`, the body of an [event webhook](event-webhooks.md) before it is queued (return `null` to skip it)
 - **Commerce:** `redeemid_context_country`, `redeemid_buyer_ip`, `redeemid_cart_attribution`, `redeemid_checkout_banner`, `redeemid_storefront_path`, `redeemid_product_url`, `redeemid_cart_enabled`
-- **Display:** `redeemid_locked_panel`, `redeemid_health_checks`
+- **Display:** `redeemid_locked_panel`, `redeemid_health_checks`, `redeemid_string_overrides` (replacement text, the same shape as RedeemID → Text saves: `locale => original => text`, where locale `''` is every language; see [Replacing text](replace-text.md)) and `redeemid_string_words` (word swaps: `locale => lower-case word => replacement`)
 - **Files:** `redeemid_file_sendfile`
 - **Admin:** `redeemid_customer_badges`
 - **Privacy:** `redeemid_reassign_user`, `redeemid_redact_opens_wp_request`

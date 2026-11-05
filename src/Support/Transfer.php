@@ -11,14 +11,16 @@ use RedeemID\Features\Feature;
 use RedeemID\Features\Registry;
 use RedeemID\Features\Route;
 use RedeemID\Settings;
+use RedeemID\Strings\Overrides;
+use RedeemID\Strings\Text;
 
 /**
  * Settings export and import, for moving a set-up site from staging to
  * production or keeping a copy before a big change.
  *
  * A file holds configuration only: levels, the content rule settings, term
- * rules (by taxonomy and term slug), feature mappings and the membership
- * settings. Never customers, the mirror, item rules, Shopify credentials or
+ * rules (by taxonomy and term slug), feature mappings, the membership
+ * settings, replacement text and word swaps. Never customers, the mirror, item rules, Shopify credentials or
  * tokens. Importing replaces each chosen section whole, so the target ends
  * up matching the file; diff() is the dry run that says what that changes.
  *
@@ -37,8 +39,10 @@ final class Transfer {
 	public const TERM_RULES = 'term_rules';
 	public const FEATURES   = 'features';
 	public const SETTINGS   = 'settings';
+	public const STRINGS    = 'strings';
+	public const WORDS      = 'words';
 
-	public const SECTIONS = [ self::LEVELS, self::RULES, self::TERM_RULES, self::FEATURES, self::SETTINGS ];
+	public const SECTIONS = [ self::LEVELS, self::RULES, self::TERM_RULES, self::FEATURES, self::SETTINGS, self::STRINGS, self::WORDS ];
 
 	/**
 	 * Everything this site would export, with the file header.
@@ -66,6 +70,8 @@ final class Transfer {
 				self::TERM_RULES => self::term_rules(),
 				self::FEATURES   => Registry::stored(),
 				self::SETTINGS   => (array) get_option( Settings::OPTION, [] ),
+				self::STRINGS    => Text::saved(),
+				self::WORDS      => Text::saved_words(),
 			]
 		);
 	}
@@ -167,6 +173,15 @@ final class Transfer {
 			ksort( $out[ self::SETTINGS ] );
 		}
 
+		if ( is_array( $data[ self::STRINGS ] ?? null ) ) {
+			// Each text is checked against its original by Text::replace() on import.
+			$out[ self::STRINGS ] = Overrides::normalize( $data[ self::STRINGS ] );
+		}
+
+		if ( is_array( $data[ self::WORDS ] ?? null ) ) {
+			$out[ self::WORDS ] = Overrides::normalize_words( $data[ self::WORDS ] );
+		}
+
 		return $out;
 	}
 
@@ -231,6 +246,10 @@ final class Transfer {
 	}
 
 	private static function flat( string $section, array $rows ): array {
+		if ( self::STRINGS === $section || self::WORDS === $section ) {
+			return Overrides::flat( $rows );
+		}
+
 		if ( self::TERM_RULES !== $section ) {
 			return $rows;
 		}
@@ -252,10 +271,10 @@ final class Transfer {
 	 * filter manages are written but flagged, since the filter still wins.
 	 *
 	 * @param string[] $only Sections to write; the rest of $sections is ignored.
-	 * @return array{written: string[], skipped_terms: string[], managed: string[]}
+	 * @return array{written: string[], skipped_terms: string[], managed: string[], dropped_strings: string[]}
 	 */
 	public static function apply( array $sections, array $only ): array {
-		$report = [ 'written' => [], 'skipped_terms' => [], 'managed' => [] ];
+		$report = [ 'written' => [], 'skipped_terms' => [], 'managed' => [], 'dropped_strings' => [] ];
 		$only   = array_values( array_intersect( self::SECTIONS, $only, array_keys( $sections ) ) );
 
 		foreach ( $only as $section ) {
@@ -280,6 +299,14 @@ final class Transfer {
 				case self::SETTINGS:
 					// A setting the file doesn't hold (an older export) keeps its current value.
 					update_option( Settings::OPTION, Settings::sanitize( $data + Settings::all() ), true );
+					break;
+				case self::STRINGS:
+					$report['dropped_strings'] = Text::replace( $data );
+					has_filter( 'redeemid_string_overrides' ) && $report['managed'][] = $section;
+					break;
+				case self::WORDS:
+					Text::replace_words( $data );
+					has_filter( 'redeemid_string_words' ) && $report['managed'][] = $section;
 					break;
 			}
 

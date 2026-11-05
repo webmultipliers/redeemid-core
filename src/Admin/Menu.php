@@ -12,6 +12,7 @@ use RedeemID\Settings;
  * - Setup: the checklist as a step-by-step wizard, opened once after first activation.
  * - Settings: the Shopify credentials (wp-config.php constants win) and the
  *   membership settings.
+ * - Text: replacement text for any string the plugin shows, per language.
  * - Customers: linked customers, with resync, tag editing and Shopify admin links.
  * - Webhooks: every delivery Shopify sent, and webhook registration.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
@@ -38,6 +39,7 @@ final class Menu {
 		add_filter( 'set_screen_option_redeemid_per_page', static fn( $keep, $option, $value ) => max( 10, min( 500, (int) $value ) ), 10, 3 );
 
 		SettingsPage::register();
+		TextPage::register();
 		Customers::register();
 		Webhooks::register();
 		Setup::register();
@@ -55,6 +57,7 @@ final class Menu {
 		add_submenu_page( self::SLUG, __( 'RedeemID overview', 'redeemid' ), __( 'Overview', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID settings', 'redeemid' ), __( 'Settings', 'redeemid' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
+		$text = add_submenu_page( self::SLUG, __( 'Replace text', 'redeemid' ), __( 'Text', 'redeemid' ), self::CAP, TextPage::PAGE, [ TextPage::class, 'render' ] );
 
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'redeemid' ), __( 'Customers', 'redeemid' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
 		$webhooks  = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'redeemid' ), __( 'Webhooks', 'redeemid' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
@@ -68,7 +71,7 @@ final class Menu {
 		}
 
 		// The list tables read the per-page screen option.
-		foreach ( [ $customers, $webhooks, $events ] as $hook ) {
+		foreach ( [ $customers, $webhooks, $events, $text ] as $hook ) {
 			if ( $hook ) {
 				add_action( 'load-' . $hook, static fn() => add_screen_option( 'per_page', [ 'default' => 50, 'option' => 'redeemid_per_page' ] ) );
 			}
@@ -81,7 +84,7 @@ final class Menu {
 	 * @return string[]
 	 */
 	public static function pages(): array {
-		return [ self::SLUG, Wizard::PAGE, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
+		return [ self::SLUG, Wizard::PAGE, SettingsPage::PAGE, TextPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
 	}
 
 	public static function enqueue(): void {
