@@ -20,7 +20,7 @@ use RedeemID\Strings\Text;
  *
  * A file holds configuration only: levels, the content rule settings, term
  * rules (by taxonomy and term slug), feature mappings, the membership
- * settings, replacement text and word swaps. Never customers, the mirror, item rules, Shopify credentials or
+ * settings and replacement text. Never customers, the mirror, item rules, Shopify credentials or
  * tokens. Importing replaces each chosen section whole, so the target ends
  * up matching the file; diff() is the dry run that says what that changes.
  *
@@ -40,9 +40,8 @@ final class Transfer {
 	public const FEATURES   = 'features';
 	public const SETTINGS   = 'settings';
 	public const STRINGS    = 'strings';
-	public const WORDS      = 'words';
 
-	public const SECTIONS = [ self::LEVELS, self::RULES, self::TERM_RULES, self::FEATURES, self::SETTINGS, self::STRINGS, self::WORDS ];
+	public const SECTIONS = [ self::LEVELS, self::RULES, self::TERM_RULES, self::FEATURES, self::SETTINGS, self::STRINGS ];
 
 	/**
 	 * Everything this site would export, with the file header.
@@ -71,7 +70,6 @@ final class Transfer {
 				self::FEATURES   => Registry::stored(),
 				self::SETTINGS   => (array) get_option( Settings::OPTION, [] ),
 				self::STRINGS    => Text::saved(),
-				self::WORDS      => Text::saved_words(),
 			]
 		);
 	}
@@ -178,10 +176,6 @@ final class Transfer {
 			$out[ self::STRINGS ] = Overrides::normalize( $data[ self::STRINGS ] );
 		}
 
-		if ( is_array( $data[ self::WORDS ] ?? null ) ) {
-			$out[ self::WORDS ] = Overrides::normalize_words( $data[ self::WORDS ] );
-		}
-
 		return $out;
 	}
 
@@ -246,7 +240,7 @@ final class Transfer {
 	}
 
 	private static function flat( string $section, array $rows ): array {
-		if ( self::STRINGS === $section || self::WORDS === $section ) {
+		if ( self::STRINGS === $section ) {
 			return Overrides::flat( $rows );
 		}
 
@@ -303,10 +297,6 @@ final class Transfer {
 				case self::STRINGS:
 					$report['dropped_strings'] = Text::replace( $data );
 					has_filter( 'redeemid_string_overrides' ) && $report['managed'][] = $section;
-					break;
-				case self::WORDS:
-					Text::replace_words( $data );
-					has_filter( 'redeemid_string_words' ) && $report['managed'][] = $section;
 					break;
 			}
 

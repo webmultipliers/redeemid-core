@@ -90,7 +90,6 @@ final class Contract {
 		'redeemid_locked_panel',
 		'redeemid_health_checks',
 		'redeemid_string_overrides',
-		'redeemid_string_words',
 		'redeemid_file_sendfile',
 		'redeemid_customer_badges',
 		'redeemid_reassign_user',

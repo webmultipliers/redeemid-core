@@ -17,7 +17,7 @@ final class TransferCli {
 
 	/**
 	 * Export levels, content rules, term rules, feature mappings,
-	 * membership settings, replacement text and word swaps as JSON. Never customers, credentials or tokens.
+	 * membership settings and replacement text as JSON. Never customers, credentials or tokens.
 	 *
 	 * ## OPTIONS
 	 *
@@ -53,7 +53,7 @@ final class TransferCli {
 	 * : A file from `wp redeemid settings export` or the Access screen.
 	 *
 	 * [--sections=<list>]
-	 * : Comma-separated: levels, rules, term_rules, features, settings, strings, words. Default: every section in the file.
+	 * : Comma-separated: levels, rules, term_rules, features, settings, strings. Default: every section in the file.
 	 *
 	 * [--dry-run]
 	 * : Show what would change, and change nothing.

@@ -18,17 +18,12 @@ use RedeemID\Strings\Text;
 final class TextPage {
 	public const PAGE   = 'redeemid-text';
 	public const ACTION = 'redeemid_save_text';
-	public const WORDS  = 'redeemid_save_text_words';
-
-	/** Empty rows the word swap form offers for new swaps. */
-	private const NEW_ROWS = 3;
 
 	/** Per user: what the last save refused, so the fields can show it. */
 	private const ERRORS = 'redeemid_text_errors_';
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'save' ] );
-		add_action( 'admin_post_' . self::WORDS, [ self::class, 'save_words' ] );
 	}
 
 	/**
@@ -84,7 +79,7 @@ final class TextPage {
 			's'        => trim( sanitize_text_field( wp_unslash( (string) ( $source['s'] ?? '' ) ) ) ),
 			'audience' => in_array( $audience, [ Catalog::MEMBERS, Catalog::STAFF ], true ) ? $audience : '',
 			'area'     => array_key_exists( $area, self::areas() ) ? $area : '',
-			'view'     => in_array( $view, [ 'changed', 'swapped', 'unused' ], true ) ? $view : '',
+			'view'     => in_array( $view, [ 'changed', 'unused' ], true ) ? $view : '',
 		];
 	}
 
@@ -136,105 +131,6 @@ final class TextPage {
 		exit;
 	}
 
-	public static function save_words(): void {
-		Menu::guard( self::WORDS );
-		// phpcs:disable WordPress.Security.NonceVerification -- checked by Menu::guard().
-		$f     = self::filters( $_POST );
-		$finds = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['find'] ?? [] ) );
-		$repls = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['replace'] ?? [] ) );
-		// phpcs:enable WordPress.Security.NonceVerification
-		$rows = [];
-
-		foreach ( $finds as $i => $find ) {
-			$rows[ (string) $find ] = (string) ( $repls[ $i ] ?? '' );
-		}
-
-		Text::save_words( $f['lang'], $rows );
-		wp_safe_redirect( Menu::url( self::PAGE, self::args( $f ) + [ 'result' => 'words_saved' ] ) . '#redeemid-text-words' );
-		exit;
-	}
-
-	/**
-	 * How many strings each word swap changes, in English (the template).
-	 *
-	 * @param array<string, string> $words
-	 * @return array<string, int> Find => strings it changes.
-	 */
-	private static function swap_counts( array $words ): array {
-		$counts = array_fill_keys( array_map( 'strval', array_keys( $words ) ), 0 );
-
-		foreach ( Catalog::all() as $entry ) {
-			foreach ( $counts as $find => $n ) {
-				if ( Overrides::swap( $entry['single'] . "\n" . $entry['plural'], [ $find => '#' ] ) !== $entry['single'] . "\n" . $entry['plural'] ) {
-					++$counts[ $find ];
-				}
-			}
-		}
-
-		return $counts;
-	}
-
-	/**
-	 * The word swap panel: find => replace rows for the chosen language.
-	 *
-	 * @param array{lang: string, s: string, audience: string, area: string, view: string} $f
-	 */
-	private static function words_panel( array $f ): void {
-		$words  = Text::saved_words()[ $f['lang'] ] ?? [];
-		$counts = self::swap_counts( $words );
-		$view   = Menu::url( self::PAGE, self::args( [ 'lang' => $f['lang'], 'view' => 'swapped' ] ) );
-		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-			<input type="hidden" name="action" value="<?php echo esc_attr( self::WORDS ); ?>">
-			<?php foreach ( self::args( $f ) as $key => $value ) : ?>
-				<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>">
-			<?php endforeach; ?>
-			<?php wp_nonce_field( self::WORDS ); ?>
-			<?php Menu::panel_start( __( 'Swap a word everywhere', 'redeemid' ), __( 'Change a word or phrase in every string that has it: "account" to "portal" changes "Your account", "Connect your Shopify account" and the rest at once, translated or not. Whole words only, any case; a capitalised word stays capitalised. Add plurals as their own swap ("accounts" to "portals"). A string\'s own replacement below wins, so to keep one string as it was, write the original into its field.', 'redeemid' ), '', 'redeemid-text-words' ); ?>
-				<div class="redeemid-panel__body redeemid-panel__body--flush">
-					<table class="widefat redeemid-text-words">
-						<thead>
-							<tr>
-								<th scope="col"><?php esc_html_e( 'Find', 'redeemid' ); ?></th>
-								<th scope="col"><?php esc_html_e( 'Replace with', 'redeemid' ); ?></th>
-								<th scope="col"><?php esc_html_e( 'Strings it changes', 'redeemid' ); ?></th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php $i = 0; ?>
-							<?php foreach ( array_merge( array_map( null, array_map( 'strval', array_keys( $words ) ), array_values( $words ) ), array_fill( 0, self::NEW_ROWS, [ '', '' ] ) ) as [ $find, $replace ] ) : ?>
-								<?php ++$i; ?>
-								<tr>
-									<td>
-										<label class="screen-reader-text" for="redeemid-word-find-<?php echo (int) $i; ?>">
-											<?php /* translators: %d: row number */ echo esc_html( sprintf( __( 'Word swap %d: find', 'redeemid' ), $i ) ); ?>
-										</label>
-										<input type="text" class="regular-text" maxlength="100" id="redeemid-word-find-<?php echo (int) $i; ?>" name="find[]" value="<?php echo esc_attr( $find ); ?>">
-									</td>
-									<td>
-										<label class="screen-reader-text" for="redeemid-word-replace-<?php echo (int) $i; ?>">
-											<?php /* translators: %d: row number */ echo esc_html( sprintf( __( 'Word swap %d: replace with', 'redeemid' ), $i ) ); ?>
-										</label>
-										<input type="text" class="regular-text" maxlength="200" id="redeemid-word-replace-<?php echo (int) $i; ?>" name="replace[]" value="<?php echo esc_attr( (string) $replace ); ?>">
-									</td>
-									<td><?php echo '' !== $find ? (int) ( $counts[ $find ] ?? 0 ) : '—'; ?></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
-				</div>
-				<div class="redeemid-panel__footer">
-					<?php submit_button( __( 'Save word swaps', 'redeemid' ), 'primary', 'submit', false ); ?>
-					<?php if ( $words ) : ?>
-						<a href="<?php echo esc_url( $view ); ?>"><?php esc_html_e( 'See every string they change', 'redeemid' ); ?></a>
-					<?php endif; ?>
-					<span class="description"><?php esc_html_e( 'Clear a row to remove it.', 'redeemid' ); ?></span>
-				</div>
-			<?php Menu::panel_end(); ?>
-		</form>
-		<?php
-	}
-
 	/**
 	 * Why a replacement was refused, for its field.
 	 */
@@ -250,8 +146,6 @@ final class TextPage {
 	}
 
 	public static function render(): void {
-		// This page shows RedeemID's own words, so a swap can never make it unreadable ("account" to "portal" would rewrite its own examples).
-		Text::$bypass = true;
 		$f      = self::filters();
 		$errors = get_transient( self::ERRORS . get_current_user_id() );
 		$errors = is_array( $errors ) ? $errors : [];
@@ -264,12 +158,11 @@ final class TextPage {
 			__( 'Text', 'redeemid' ),
 			__( 'Replace text', 'redeemid' ),
 			'',
-			__( 'Put RedeemID in your own words: any text the plugin shows, to visitors, members or staff, can read the way you want ("Account" can read "Portal"). Replacements sit on top of translation, so text you leave alone keeps its translation. Clear a field to go back to the original.', 'redeemid' )
+			__( 'Put RedeemID in your own words: any text the plugin shows, to visitors, members or staff, can read the way you want ("Account" can read "Portal"). Only the strings you give new text change. Replacements sit on top of translation, so text you leave alone keeps its translation. Each empty field shows the current text; clear a field to go back to it.', 'redeemid' )
 		);
 		Menu::result_notice(
 			[
 				'text_saved'   => [ 'success', __( 'Text saved.', 'redeemid' ) ],
-				'words_saved'  => [ 'success', __( 'Word swaps saved.', 'redeemid' ) ],
 				'text_invalid' => [ 'error', __( 'The rest was saved, but the replacements marked below were not.', 'redeemid' ) ],
 			]
 		);
@@ -304,8 +197,6 @@ final class TextPage {
 				<input type="hidden" name="lang" value="<?php echo esc_attr( $f['lang'] ); ?>">
 			<?php endif; ?>
 		</form>
-		<?php self::words_panel( $f ); ?>
-		<h2 class="redeemid-section-title"><?php esc_html_e( 'Every string', 'redeemid' ); ?></h2>
 		<form method="get" class="redeemid-text-search">
 			<?php foreach ( self::args( [ 'page' => self::PAGE ] + $f ) as $key => $value ) : ?>
 				<?php if ( 's' !== $key ) : ?>
@@ -332,6 +223,5 @@ final class TextPage {
 		</form>
 		<?php
 		Menu::page_end();
-		Text::$bypass = false;
 	}
 }

@@ -140,37 +140,4 @@ POT;
 		$this->assertSame( [ '*: Account' ], $diff['strings']['changed'] );
 		$this->assertSame( [ '*: Cart' ], $diff['strings']['removed'] );
 	}
-
-	public function test_swap_changes_whole_words_and_keeps_case(): void {
-		$words = [ 'account' => 'portal', 'accounts' => 'portals', 'sign in' => 'log in' ];
-
-		$this->assertSame( 'Your portal', Overrides::swap( 'Your account', $words ) );
-		$this->assertSame( 'Portal created', Overrides::swap( 'Account created', $words ) );
-		$this->assertSame( 'PORTAL', Overrides::swap( 'ACCOUNT', $words ) );
-		$this->assertSame( 'Two portals', Overrides::swap( 'Two accounts', $words ), 'The longer find wins.' );
-		$this->assertSame( 'accountable', Overrides::swap( 'accountable', $words ), 'Whole words only.' );
-		$this->assertSame( 'Log in to read', Overrides::swap( 'Sign  in to read', $words ) );
-		$this->assertSame( '<a href="/account" class="account">portal</a> %s', Overrides::swap( '<a href="/account" class="account">account</a> %s', $words ), 'Never inside a tag.' );
-		$this->assertSame( 'Portal', Overrides::swap( 'Account', [ 'account' => 'portal', 'portal' => 'gateway' ] ), 'Replaced text is not swapped again.' );
-		$this->assertSame( 'Ihr Konto', Overrides::swap( 'Ihr Konto', $words ) );
-	}
-
-	public function test_normalize_words_strips_markup_and_percent_signs(): void {
-		$out = Overrides::normalize_words(
-			[
-				''      => [ 'Account' => ' Portal ', 'Cart' => '', '<b>x</b>' => 'y', 'sale' => '50% off', 'same' => 'same' ],
-				'fr_FR' => [ 'compte' => 'portail' ],
-				'x/y'   => [ 'a' => 'b' ],
-			]
-		);
-
-		$this->assertSame( [ '' => [ 'account' => 'Portal', 'b x /b' => 'y', 'sale' => '50 off' ], 'fr_FR' => [ 'compte' => 'portail' ] ], $out );
-	}
-
-	public function test_transfer_carries_word_swaps(): void {
-		$file = Transfer::normalize( [ 'words' => [ '' => [ 'Account' => 'portal' ] ] ] );
-
-		$this->assertSame( [ '' => [ 'account' => 'portal' ] ], $file['words'] );
-		$this->assertSame( [ '*: account' ], Transfer::diff( [], $file )['words']['added'] );
-	}
 }

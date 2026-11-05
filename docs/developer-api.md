@@ -72,7 +72,7 @@ Stable:
 - **Features:** `redeemid_features`, `redeemid_feature_tests`, `redeemid_feature_decision`
 - **Events:** `redeemid_outbound_payload`, the body of an [event webhook](event-webhooks.md) before it is queued (return `null` to skip it)
 - **Commerce:** `redeemid_context_country`, `redeemid_buyer_ip`, `redeemid_cart_attribution`, `redeemid_checkout_banner`, `redeemid_storefront_path`, `redeemid_product_url`, `redeemid_cart_enabled`
-- **Display:** `redeemid_locked_panel`, `redeemid_health_checks`, `redeemid_string_overrides` (replacement text, the same shape as RedeemID → Text saves: `locale => original => text`, where locale `''` is every language; see [Replacing text](replace-text.md)) and `redeemid_string_words` (word swaps: `locale => lower-case word => replacement`)
+- **Display:** `redeemid_locked_panel`, `redeemid_health_checks`, `redeemid_string_overrides` (replacement text, the same shape as RedeemID → Text saves: `locale => original => text`, where locale `''` is every language; see [Replacing text](replace-text.md))
 - **Files:** `redeemid_file_sendfile`
 - **Admin:** `redeemid_customer_badges`
 - **Privacy:** `redeemid_reassign_user`, `redeemid_redact_opens_wp_request`

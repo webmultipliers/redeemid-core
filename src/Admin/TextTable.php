@@ -22,9 +22,6 @@ final class TextTable extends \WP_List_Table {
 	/** @var array<string, string> Key => the string as translated now, where it differs from the original. */
 	private array $translated = [];
 
-	/** @var array<string, string> The word swaps for the chosen language. */
-	private array $swaps = [];
-
 	/** @var array<string, array{error: string, value: mixed}> */
 	private array $errors;
 
@@ -50,9 +47,7 @@ final class TextTable extends \WP_List_Table {
 		$f           = TextPage::filters();
 		$all         = Text::saved();
 		$this->saved = $all[ $f['lang'] ] ?? [];
-		$this->swaps = Text::swaps_for( $f['lang'] );
-		$swaps       = $this->swaps;
-		$rows        = array_filter( self::rows( $this->saved ), static fn( array $row ): bool => self::matches( $row, $f, $all[ $f['lang'] ] ?? [], $swaps ) );
+		$rows        = array_filter( self::rows( $this->saved ), static fn( array $row ): bool => self::matches( $row, $f, $all[ $f['lang'] ] ?? [] ) );
 		$per_page    = $this->get_items_per_page( 'redeemid_per_page', 50 );
 		$this->items = array_slice( array_values( $rows ), ( $this->get_pagenum() - 1 ) * $per_page, $per_page );
 
@@ -94,16 +89,11 @@ final class TextTable extends \WP_List_Table {
 
 	/**
 	 * @param array{s: string, audience: string, area: string, view: string} $f
-	 * @param array<string, string>                                         $swaps
 	 */
-	private static function matches( array $row, array $f, array $saved, array $swaps = [] ): bool {
+	private static function matches( array $row, array $f, array $saved ): bool {
 		$replaced = isset( $saved[ $row['key'] ] );
 
 		if ( ( 'changed' === $f['view'] && ! $replaced ) || ( 'unused' === $f['view'] && empty( $row['unused'] ) ) ) {
-			return false;
-		}
-
-		if ( 'swapped' === $f['view'] && ( $replaced || ! self::swapped( $row, $swaps ) ) ) {
 			return false;
 		}
 
@@ -121,19 +111,9 @@ final class TextTable extends \WP_List_Table {
 	}
 
 	/**
-	 * Whether the word swaps change a string's English original.
-	 *
-	 * @param array<string, string> $swaps
-	 */
-	public static function swapped( array $row, array $swaps ): bool {
-		$text = $row['single'] . "\n" . $row['plural'];
-
-		return $swaps && Overrides::swap( $text, $swaps ) !== $text;
-	}
-
-	/**
 	 * The strings on this page as $locale translates them, unreplaced,
-	 * where that differs from the English original.
+	 * where that differs from the English original. A plural string's
+	 * "more than one" form is keyed key . "\0more".
 	 *
 	 * @return array<string, string>
 	 */
@@ -154,6 +134,16 @@ final class TextTable extends \WP_List_Table {
 
 			if ( $text !== $row['single'] ) {
 				$out[ $row['key'] ] = $text;
+			}
+
+			if ( '' !== $row['plural'] ) {
+				// phpcs:disable WordPress.WP.I18n -- as above.
+				$more = '' !== $row['context'] ? _nx( $row['single'], $row['plural'], 2, $row['context'], 'redeemid' ) : _n( $row['single'], $row['plural'], 2, 'redeemid' );
+				// phpcs:enable WordPress.WP.I18n
+
+				if ( $more !== $row['plural'] ) {
+					$out[ $row['key'] . "\0more" ] = $more;
+				}
 			}
 		}
 
@@ -176,14 +166,6 @@ final class TextTable extends \WP_List_Table {
 			/* translators: %d: number of replaced strings */
 			'changed' => sprintf( __( 'Replaced (%d)', 'redeemid' ), count( $saved ) ),
 		];
-
-		$swaps = Text::swaps_for( $f['lang'] );
-
-		if ( $swaps ) {
-			$count = count( array_filter( Catalog::all(), static fn( array $row ): bool => ! isset( $saved[ $row['key'] ] ) && self::swapped( $row, $swaps ) ) );
-			/* translators: %d: number of strings word swaps change */
-			$views['swapped'] = sprintf( __( 'Changed by word swaps (%d)', 'redeemid' ), $count );
-		}
 
 		if ( $unused ) {
 			/* translators: %d: number of replacements for strings this version doesn't have */
@@ -246,13 +228,6 @@ final class TextTable extends \WP_List_Table {
 			$meta[] = sprintf( esc_html__( 'Translated: %s', 'redeemid' ), '<span>' . esc_html( $this->translated[ $row['key'] ] ) . '</span>' );
 		}
 
-		$current = $this->translated[ $row['key'] ] ?? $row['single'];
-
-		if ( ! isset( $this->saved[ $row['key'] ] ) && $this->swaps && Overrides::swap( $current, $this->swaps ) !== $current ) {
-			/* translators: %s: the string after the site's word swaps */
-			$meta[] = sprintf( esc_html__( 'Shows as: %s', 'redeemid' ), '<strong>' . esc_html( Overrides::swap( $current, $this->swaps ) ) . '</strong>' );
-		}
-
 		if ( '' !== $row['context'] ) {
 			/* translators: %s: gettext context, e.g. "block title" */
 			$meta[] = esc_html( sprintf( __( 'Used as: %s', 'redeemid' ), $row['context'] ) );
@@ -288,26 +263,29 @@ final class TextTable extends \WP_List_Table {
 
 		if ( $plural ) {
 			$forms = is_array( $value ) ? $value : [ (string) $value, '' ];
-			$html .= $this->field( $id, $name . '[0]', (string) ( $forms[0] ?? '' ), __( 'One', 'redeemid' ), $row['single'], $described, (bool) $error );
-			$html .= $this->field( $id . '-more', $name . '[1]', (string) ( $forms[1] ?? '' ), __( 'More than one', 'redeemid' ), $row['plural'], $described, (bool) $error );
+			$html .= $this->field( $id, $name . '[0]', (string) ( $forms[0] ?? '' ), __( 'One', 'redeemid' ), $row['single'], $this->translated[ $row['key'] ] ?? $row['single'], $described, (bool) $error );
+			$html .= $this->field( $id . '-more', $name . '[1]', (string) ( $forms[1] ?? '' ), __( 'More than one', 'redeemid' ), $row['plural'], $this->translated[ $row['key'] . "\0more" ] ?? $row['plural'], $described, (bool) $error );
 		} else {
-			$html .= $this->field( $id, $name, is_array( $value ) ? (string) ( $value[0] ?? '' ) : (string) $value, '', $row['single'], $described, (bool) $error );
+			$html .= $this->field( $id, $name, is_array( $value ) ? (string) ( $value[0] ?? '' ) : (string) $value, '', $row['single'], $this->translated[ $row['key'] ] ?? $row['single'], $described, (bool) $error );
 		}
 
 		return $html . ( $notes ? '<span class="redeemid-text-notes">' . implode( '<br>', $notes ) . '</span>' : '' );
 	}
 
 	/**
-	 * One text field, labelled for screen readers with the string it replaces.
+	 * One text field, labelled for screen readers with the string it
+	 * replaces. Its placeholder is the text the string shows now (the
+	 * translation, else the original), so an empty field reads as what it is for.
 	 */
-	private function field( string $id, string $name, string $value, string $form, string $original, string $described, bool $invalid ): string {
+	private function field( string $id, string $name, string $value, string $form, string $original, string $current, string $described, bool $invalid ): string {
 		/* translators: %s: the original string */
 		$label = sprintf( __( 'Replace “%s”', 'redeemid' ), wp_html_excerpt( $original, 80, '…' ) );
 		$label = '' !== $form ? $form . ': ' . $label : $label;
 		$attrs = sprintf(
-			'id="%s" name="%s"%s%s',
+			'id="%s" name="%s" placeholder="%s"%s%s',
 			esc_attr( $id ),
 			esc_attr( $name ),
+			esc_attr( $current ),
 			'' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '',
 			$invalid ? ' aria-invalid="true"' : ''
 		);

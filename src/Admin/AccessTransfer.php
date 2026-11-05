@@ -125,7 +125,6 @@ final class AccessTransfer {
 			Transfer::FEATURES   => __( 'Feature mappings', 'redeemid' ),
 			Transfer::SETTINGS   => __( 'Membership settings', 'redeemid' ),
 			Transfer::STRINGS    => __( 'Replacement text', 'redeemid' ),
-			Transfer::WORDS      => __( 'Word swaps', 'redeemid' ),
 		];
 
 		if ( is_array( $report ) ) {
@@ -151,7 +150,7 @@ final class AccessTransfer {
 			self::render_preview( $pending, $names );
 		}
 
-		Menu::panel_start( __( 'Export', 'redeemid' ), __( 'Download levels, content rules, term rules, feature mappings, membership settings, replacement text and word swaps as one JSON file. Customers, item settings, Shopify credentials and tokens are never included.', 'redeemid' ) );
+		Menu::panel_start( __( 'Export', 'redeemid' ), __( 'Download levels, content rules, term rules, feature mappings, membership settings and replacement text as one JSON file. Customers, item settings, Shopify credentials and tokens are never included.', 'redeemid' ) );
 		echo '<div class="redeemid-panel__body">';
 		Menu::action_button( self::ACTION, 'export', __( 'Download settings', 'redeemid' ), [], 'primary' );
 		echo '</div>';

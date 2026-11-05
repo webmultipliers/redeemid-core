@@ -13,25 +13,16 @@ use RedeemID\Support\Logger;
  * translation it doesn't replace. A replacement set for one language wins
  * over one set for every language.
  *
- * Word swaps ("account" → "portal") change a word or phrase in every
- * string that has it, translated or not. A string's own replacement wins
- * over word swaps: write the original into its field to keep it as it is.
- *
- * Code can add or change both with the redeemid_string_overrides and
- * redeemid_string_words filters (the same shapes as the options).
+ * Only strings given a replacement change: there is deliberately no
+ * find-and-replace across strings, which would rewrite text nobody looked
+ * at. Code can add or change replacements with the
+ * redeemid_string_overrides filter (the same shape as the option).
  */
 final class Text {
 	public const OPTION = 'redeemid_strings';
-	public const WORDS  = 'redeemid_string_words';
 
 	/** @var array<string, array<string, string|array>>|null */
 	private static ?array $all = null;
-
-	/** @var array<string, array<string, string>>|null */
-	private static ?array $words = null;
-
-	/** @var array<string, string> Swapped strings, by locale, key and translation. */
-	private static array $swapped = [];
 
 	private static ?string $locale = null;
 
@@ -47,7 +38,6 @@ final class Text {
 			self::$locale = null;
 		} );
 		add_action( 'update_option_' . self::OPTION, [ self::class, 'reset' ] );
-		add_action( 'update_option_' . self::WORDS, [ self::class, 'reset' ] );
 	}
 
 	public static function gettext( string $translation, string $text ): string {
@@ -67,100 +57,22 @@ final class Text {
 	}
 
 	/**
-	 * The string's own replacement, else the translation with word swaps.
+	 * The string's own replacement, else its translation.
 	 */
 	private static function lookup( string $key, string $translation, ?int $count = null ): string {
 		if ( self::$bypass ) {
 			return $translation;
 		}
 
-		$all   = self::all();
-		$words = self::words();
+		$all = self::all();
 
-		if ( ! $all && ! $words ) {
+		if ( ! $all ) {
 			return $translation;
 		}
 
-		$locale = self::locale();
-		$value  = Overrides::pick( $all, $locale, $key );
+		$value = Overrides::pick( $all, self::locale(), $key );
 
-		if ( null !== $value ) {
-			return Overrides::form( $value, $count );
-		}
-
-		$swaps = self::swaps_for( $locale );
-
-		if ( ! $swaps ) {
-			return $translation;
-		}
-
-		$memo = $locale . "\x00" . $translation;
-
-		return self::$swapped[ $memo ] ??= Overrides::swap( $translation, $swaps );
-	}
-
-	/**
-	 * The word swaps for a language: every language's, then its own (which win).
-	 *
-	 * @return array<string, string>
-	 */
-	public static function swaps_for( string $locale ): array {
-		$words = self::words();
-
-		return array_merge( $words[ Overrides::EVERY ] ?? [], '' !== $locale ? ( $words[ $locale ] ?? [] ) : [] );
-	}
-
-	/**
-	 * The word swaps in use: the saved ones, then the code filter.
-	 *
-	 * @return array<string, array<string, string>>
-	 */
-	public static function words(): array {
-		if ( null !== self::$words ) {
-			return self::$words;
-		}
-
-		$words = Overrides::normalize_words( apply_filters( 'redeemid_string_words', self::saved_words() ) );
-
-		if ( did_action( 'after_setup_theme' ) ) {
-			self::$words = $words;
-		}
-
-		return $words;
-	}
-
-	/**
-	 * @return array<string, array<string, string>>
-	 */
-	public static function saved_words(): array {
-		return Overrides::normalize_words( get_option( self::WORDS, [] ) );
-	}
-
-	/**
-	 * Save one language's word swaps, replacing what it had.
-	 *
-	 * @param array<string, string> $rows Find => replacement. An empty side drops the row.
-	 */
-	public static function save_words( string $locale, array $rows ): void {
-		$all = self::saved_words();
-		unset( $all[ $locale ] );
-		$all[ $locale ] = $rows;
-		$all            = Overrides::normalize_words( $all );
-
-		if ( $all !== self::saved_words() ) {
-			Logger::log( 'admin.string_words_saved', [ 'locale' => '' === $locale ? '*' : $locale, 'count' => count( $all[ $locale ] ?? [] ) ] );
-		}
-
-		update_option( self::WORDS, $all, true );
-		self::reset();
-	}
-
-	/**
-	 * Replace every saved word swap (a settings import).
-	 */
-	public static function replace_words( array $data ): void {
-		update_option( self::WORDS, Overrides::normalize_words( $data ), true );
-		self::reset();
+		return null === $value ? $translation : Overrides::form( $value, $count );
 	}
 
 	/**
@@ -215,8 +127,7 @@ final class Text {
 	 * Whether code changes the saved replacements.
 	 */
 	public static function managed_in_code(): bool {
-		return ( has_filter( 'redeemid_string_overrides' ) && self::all() !== self::saved() )
-			|| ( has_filter( 'redeemid_string_words' ) && self::words() !== self::saved_words() );
+		return has_filter( 'redeemid_string_overrides' ) && self::all() !== self::saved();
 	}
 
 	/**
@@ -349,10 +260,8 @@ final class Text {
 	}
 
 	public static function reset(): void {
-		self::$all     = null;
-		self::$words   = null;
-		self::$locale  = null;
-		self::$swapped = [];
+		self::$all    = null;
+		self::$locale = null;
 	}
 
 	/**
@@ -370,25 +279,16 @@ final class Text {
 			}
 		}
 
-		$words = self::swaps_for( $locale );
-
-		if ( ! $map && ! $words ) {
+		if ( ! $map ) {
 			return '';
 		}
 
-		// The same swap as Overrides::swap(): whole words, outside tags, case following the match.
-		$finds = array_map( 'strval', array_keys( $words ) );
-		usort( $finds, static fn( string $a, string $b ): int => mb_strlen( $b ) <=> mb_strlen( $a ) );
-		$source = $finds ? '(?<![\\p{L}\\p{N}_])(?:' . implode( '|', array_map( static fn( string $f ): string => str_replace( ' ', '\\s+', (string) preg_replace( '/[.*+?^${}()|[\\]\\\\\\/]/', '\\\\$0', $f ) ), $finds ) ) . ')(?![\\p{L}\\p{N}_])' : '';
-
-		return '( function ( map, words, source, hooks ) {'
-			. 'var re = source ? new RegExp( source, "giu" ) : null;'
-			. 'var swap = function ( t ) { if ( ! re ) { return t; } return String( t ).split( /(<[^>]*>)/ ).map( function ( part ) { return "<" === part.charAt( 0 ) ? part : part.replace( re, function ( m ) { var r = words[ m.toLowerCase().replace( /\\s+/g, " " ) ]; if ( undefined === r ) { return m; } if ( m.length > 1 && m === m.toUpperCase() && m !== m.toLowerCase() ) { return r.toUpperCase(); } var f = m.charAt( 0 ); return f === f.toUpperCase() && f !== f.toLowerCase() ? r.charAt( 0 ).toUpperCase() + r.slice( 1 ) : r; } ); } ).join( "" ); };'
-			. 'var pick = function ( key, n, fallback ) { var v = map[ key ]; if ( undefined === v ) { return swap( fallback ); } return "string" === typeof v ? v : ( 1 === n || undefined === n ? v[ 0 ] : v[ 1 ] ); };'
+		return '( function ( map, hooks ) {'
+			. 'var pick = function ( key, n, fallback ) { var v = map[ key ]; if ( undefined === v ) { return fallback; } return "string" === typeof v ? v : ( 1 === n || undefined === n ? v[ 0 ] : v[ 1 ] ); };'
 			. 'hooks.addFilter( "i18n.gettext_redeemid", "redeemid/text", function ( t, text ) { return pick( text, undefined, t ); } );'
 			. 'hooks.addFilter( "i18n.gettext_with_context_redeemid", "redeemid/text", function ( t, text, ctx ) { return pick( ctx + "\u0004" + text, undefined, t ); } );'
 			. 'hooks.addFilter( "i18n.ngettext_redeemid", "redeemid/text", function ( t, one, more, n ) { return pick( one, n, t ); } );'
 			. 'hooks.addFilter( "i18n.ngettext_with_context_redeemid", "redeemid/text", function ( t, one, more, n, ctx ) { return pick( ctx + "\u0004" + one, n, t ); } );'
-			. '} )( ' . wp_json_encode( (object) $map ) . ', ' . wp_json_encode( (object) $words ) . ', ' . wp_json_encode( $source ) . ', wp.hooks );';
+			. '} )( ' . wp_json_encode( (object) $map ) . ', wp.hooks );';
 	}
 }

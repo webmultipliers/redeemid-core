@@ -54,7 +54,7 @@ Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall
 = In your own words =
 
 * **RedeemID → Text** lists every string the plugin shows, to visitors, members or staff, and lets you replace any of them: "Your account" can read "Your members area".
-* Swap a word everywhere at once: "account" to "portal" changes every string that has it, with the capital letters kept.
+* Each replacement is defined for one string, so nothing changes that you didn't choose.
 * Replacements sit on top of translation, and can be set for every language or for one.
 
 = Sell from WordPress =
@@ -109,7 +109,7 @@ Yes. With Yoast SEO, Rank Math or The SEO Framework, locked posts get teaser-onl
 
 = Can I change the wording? =
 
-Yes. RedeemID → Text replaces any string the plugin shows, or swaps a word in all of them, without a translation file. See [Replacing text](https://www.redeemid.com/docs/replace-text/).
+Yes. RedeemID → Text replaces any string the plugin shows, one string at a time, without a translation file. See [Replacing text](https://www.redeemid.com/docs/replace-text/).
 
 = Where is my customers' data? =
 
