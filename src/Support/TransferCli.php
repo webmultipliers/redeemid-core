@@ -16,8 +16,8 @@ final class TransferCli {
 	}
 
 	/**
-	 * Export levels, content rules, term rules, feature mappings and
-	 * membership settings as JSON. Never customers, credentials or tokens.
+	 * Export levels, content rules, term rules, feature mappings,
+	 * membership settings and replacement text as JSON. Never customers, credentials or tokens.
 	 *
 	 * ## OPTIONS
 	 *
@@ -53,7 +53,7 @@ final class TransferCli {
 	 * : A file from `wp redeemid settings export` or the Access screen.
 	 *
 	 * [--sections=<list>]
-	 * : Comma-separated: levels, rules, term_rules, features, settings. Default: every section in the file.
+	 * : Comma-separated: levels, rules, term_rules, features, settings, strings. Default: every section in the file.
 	 *
 	 * [--dry-run]
 	 * : Show what would change, and change nothing.
@@ -101,6 +101,10 @@ final class TransferCli {
 
 		foreach ( $report['skipped_terms'] as $term ) {
 			\WP_CLI::warning( 'Skipped term rule, no such term here: ' . $term );
+		}
+
+		foreach ( $report['dropped_strings'] as $string ) {
+			\WP_CLI::warning( 'Skipped replacement text whose placeholders or markup do not fit the original: ' . $string );
 		}
 
 		foreach ( $report['managed'] as $section ) {

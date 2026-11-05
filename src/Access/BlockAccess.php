@@ -286,6 +286,13 @@ final class BlockAccess {
 			) . ';',
 			'before'
 		);
+
+		// The site's replacement text (RedeemID → Text) for the strings this script shows.
+		$text = \RedeemID\Strings\Text::script();
+
+		if ( '' !== $text ) {
+			wp_add_inline_script( $handle, $text, 'before' );
+		}
 	}
 
 	/**

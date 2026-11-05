@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T03:44:58+00:00\n"
+"POT-Creation-Date: 2026-11-05T16:01:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: redeemid.php:3
 #: src/Abilities/Abilities.php:89
-#: src/Admin/Menu.php:54
-#: src/Admin/Menu.php:170
+#: src/Admin/Menu.php:56
+#: src/Admin/Menu.php:173
 #: src/Admin/Overview.php:87
 #: src/Files/Probe.php:90
 #: src/Privacy/PolicyText.php:18
@@ -498,7 +498,7 @@ msgstr ""
 
 #. translators: %s: human time difference
 #: blocks/member-account/index.php:125
-#: src/Admin/Menu.php:242
+#: src/Admin/Menu.php:245
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -960,7 +960,7 @@ msgstr ""
 #: src/Admin/AccessTermFields.php:44
 #: src/Admin/AccessTermFields.php:56
 #: src/Admin/AccessTermFields.php:120
-#: src/Admin/Menu.php:63
+#: src/Admin/Menu.php:66
 #: assets/block-access.js:101
 #: assets/block-access.js:200
 #: assets/block-access.js:205
@@ -1244,6 +1244,7 @@ msgstr ""
 
 #: src/Admin/Access.php:261
 #: src/Admin/AccessRules.php:221
+#: src/Admin/TextTable.php:197
 msgid "Everyone"
 msgstr ""
 
@@ -1266,7 +1267,7 @@ msgstr ""
 
 #: src/Admin/Access.php:276
 #: src/Admin/AccessFeatures.php:156
-#: src/Admin/Menu.php:145
+#: src/Admin/Menu.php:148
 #: src/Admin/Overview.php:123
 msgid "OK"
 msgstr ""
@@ -2184,96 +2185,106 @@ msgstr ""
 msgid "Membership settings"
 msgstr ""
 
+#: src/Admin/AccessTransfer.php:127
+msgid "Replacement text"
+msgstr ""
+
 #. translators: %s: comma-separated taxonomy/term pairs
-#: src/Admin/AccessTransfer.php:134
+#: src/Admin/AccessTransfer.php:135
 #, php-format
 msgid "These term rules were skipped because the term doesn't exist on this site: %s. Create the terms and import again."
 msgstr ""
 
+#. translators: %s: comma-separated "language: original text" pairs
+#: src/Admin/AccessTransfer.php:140
+#, php-format
+msgid "This replacement text was skipped because its placeholders or HTML don't fit the original: %s."
+msgstr ""
+
 #. translators: %s: comma-separated section names
-#: src/Admin/AccessTransfer.php:139
+#: src/Admin/AccessTransfer.php:145
 #, php-format
 msgid "Imported, but code on this site manages %s, so the code's values still win."
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:147
+#: src/Admin/AccessTransfer.php:153
 #: src/Admin/Customers.php:739
 msgid "Export"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:147
-msgid "Download levels, content rules, term rules, feature mappings and membership settings as one JSON file. Customers, item settings, Shopify credentials and tokens are never included."
+#: src/Admin/AccessTransfer.php:153
+msgid "Download levels, content rules, term rules, feature mappings, membership settings and replacement text as one JSON file. Customers, item settings, Shopify credentials and tokens are never included."
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:149
+#: src/Admin/AccessTransfer.php:155
 msgid "Download settings"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:153
-#: src/Admin/AccessTransfer.php:185
+#: src/Admin/AccessTransfer.php:159
+#: src/Admin/AccessTransfer.php:191
 msgid "Import"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:153
+#: src/Admin/AccessTransfer.php:159
 msgid "Load a file exported from another site. Nothing changes until you have seen what it would change and ticked the sections to import. Each ticked section replaces this site's."
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:159
+#: src/Admin/AccessTransfer.php:165
 msgid "File"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:160
+#: src/Admin/AccessTransfer.php:166
 msgid "Or paste the JSON"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:162
+#: src/Admin/AccessTransfer.php:168
 msgid "Load and preview"
 msgstr ""
 
 #. translators: 1: site address, 2: date
-#: src/Admin/AccessTransfer.php:175
+#: src/Admin/AccessTransfer.php:181
 #, php-format
 msgid "From %1$s, exported %2$s."
 msgstr ""
 
 #. translators: 1: site address, 2: date
-#: src/Admin/AccessTransfer.php:175
+#: src/Admin/AccessTransfer.php:181
 msgid "an unknown site"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:177
+#: src/Admin/AccessTransfer.php:183
 msgid "What this file would change"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:177
+#: src/Admin/AccessTransfer.php:183
 msgid "Addresses on that site are rewritten to this one."
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:185
+#: src/Admin/AccessTransfer.php:191
 msgid "Section"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:185
+#: src/Admin/AccessTransfer.php:191
 msgid "Added"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:185
+#: src/Admin/AccessTransfer.php:191
 msgid "Changed"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:185
+#: src/Admin/AccessTransfer.php:191
 msgid "Removed"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:191
+#: src/Admin/AccessTransfer.php:197
 msgid "(no change)"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:201
+#: src/Admin/AccessTransfer.php:207
 msgid "Import ticked sections"
 msgstr ""
 
-#: src/Admin/AccessTransfer.php:204
+#: src/Admin/AccessTransfer.php:210
 msgid "Discard the loaded file"
 msgstr ""
 
@@ -2309,12 +2320,12 @@ msgstr ""
 #: src/Admin/AdminBar.php:76
 #: src/Admin/Customers.php:570
 #: src/Admin/Customers.php:606
-#: src/Admin/Menu.php:59
+#: src/Admin/Menu.php:62
 msgid "Customers"
 msgstr ""
 
 #: src/Admin/Customers.php:65
-#: src/Admin/Menu.php:123
+#: src/Admin/Menu.php:126
 msgid "Not allowed."
 msgstr ""
 
@@ -2519,7 +2530,7 @@ msgid "Customers in Shopify"
 msgstr ""
 
 #: src/Admin/Customers.php:570
-#: src/Admin/Menu.php:59
+#: src/Admin/Menu.php:62
 msgid "Shopify customers"
 msgstr ""
 
@@ -2709,6 +2720,7 @@ msgstr ""
 
 #: src/Admin/CustomersTable.php:67
 #: src/Admin/EventsTable.php:83
+#: src/Admin/TextTable.php:165
 #: src/Admin/WebhooksTable.php:65
 msgid "All"
 msgstr ""
@@ -2731,6 +2743,7 @@ msgstr ""
 
 #: src/Admin/CustomersTable.php:94
 #: src/Admin/EventsTable.php:107
+#: src/Admin/TextTable.php:208
 #: src/Admin/WebhooksTable.php:91
 msgid "Filter"
 msgstr ""
@@ -2786,7 +2799,7 @@ msgid "Last attempt failed"
 msgstr ""
 
 #: src/Admin/Debug.php:72
-#: src/Admin/Menu.php:64
+#: src/Admin/Menu.php:67
 msgid "Debug"
 msgstr ""
 
@@ -2965,7 +2978,7 @@ msgstr ""
 
 #: src/Admin/Debug.php:183
 #: src/Admin/EventsTable.php:31
-#: src/Admin/Menu.php:60
+#: src/Admin/Menu.php:63
 #: src/Admin/Overview.php:54
 #: src/Admin/Webhooks.php:63
 msgid "Webhooks"
@@ -3116,12 +3129,12 @@ msgid "Unlocked"
 msgstr ""
 
 #: src/Admin/Events.php:38
-#: src/Admin/Menu.php:61
+#: src/Admin/Menu.php:64
 msgid "App events"
 msgstr ""
 
 #: src/Admin/Events.php:39
-#: src/Admin/Menu.php:61
+#: src/Admin/Menu.php:64
 msgid "Shopify app events"
 msgstr ""
 
@@ -3261,31 +3274,31 @@ msgstr ""
 msgid "Anything but Everyone moves the file to the protected folder, so its address checks access on every download."
 msgstr ""
 
-#: src/Admin/Menu.php:55
+#: src/Admin/Menu.php:57
 msgid "RedeemID overview"
 msgstr ""
 
-#: src/Admin/Menu.php:55
+#: src/Admin/Menu.php:57
 #: src/Admin/Overview.php:87
 #: src/Admin/Wizard.php:425
 msgid "Overview"
 msgstr ""
 
-#: src/Admin/Menu.php:56
+#: src/Admin/Menu.php:58
 #: src/Admin/Wizard.php:424
 msgid "Set up RedeemID"
 msgstr ""
 
-#: src/Admin/Menu.php:56
+#: src/Admin/Menu.php:58
 #: src/Admin/Wizard.php:423
 msgid "Setup"
 msgstr ""
 
-#: src/Admin/Menu.php:57
+#: src/Admin/Menu.php:59
 msgid "RedeemID settings"
 msgstr ""
 
-#: src/Admin/Menu.php:57
+#: src/Admin/Menu.php:59
 #: src/Admin/Overview.php:112
 #: src/Admin/Overview.php:143
 #: src/Admin/SettingsPage.php:141
@@ -3293,39 +3306,49 @@ msgid "Settings"
 msgstr ""
 
 #: src/Admin/Menu.php:60
+#: src/Admin/TextPage.php:159
+msgid "Replace text"
+msgstr ""
+
+#: src/Admin/Menu.php:60
+#: src/Admin/TextPage.php:158
+msgid "Text"
+msgstr ""
+
+#: src/Admin/Menu.php:63
 #: src/Admin/Webhooks.php:63
 msgid "Shopify webhooks"
 msgstr ""
 
-#: src/Admin/Menu.php:62
+#: src/Admin/Menu.php:65
 #: src/Admin/Reports.php:40
 msgid "Membership reports"
 msgstr ""
 
-#: src/Admin/Menu.php:62
+#: src/Admin/Menu.php:65
 #: src/Admin/Reports.php:39
 #: src/Admin/Wizard.php:1048
 msgid "Reports"
 msgstr ""
 
-#: src/Admin/Menu.php:63
+#: src/Admin/Menu.php:66
 msgid "RedeemID access"
 msgstr ""
 
-#: src/Admin/Menu.php:64
+#: src/Admin/Menu.php:67
 msgid "RedeemID debug"
 msgstr ""
 
-#: src/Admin/Menu.php:146
+#: src/Admin/Menu.php:149
 #: src/Admin/Webhooks.php:88
 msgid "Problem"
 msgstr ""
 
-#: src/Admin/Menu.php:182
+#: src/Admin/Menu.php:185
 msgid "Setup incomplete"
 msgstr ""
 
-#: src/Admin/Menu.php:182
+#: src/Admin/Menu.php:185
 msgid "Configured"
 msgstr ""
 
@@ -4094,6 +4117,205 @@ msgstr ""
 #: src/Admin/StaffLink.php:153
 msgid "Link"
 msgstr ""
+
+#: src/Admin/TextPage.php:36
+msgid "Blocks on the site"
+msgstr ""
+
+#: src/Admin/TextPage.php:37
+msgid "Sign-in and account"
+msgstr ""
+
+#: src/Admin/TextPage.php:38
+msgid "Paywall and access"
+msgstr ""
+
+#: src/Admin/TextPage.php:39
+msgid "Store pages and cart"
+msgstr ""
+
+#: src/Admin/TextPage.php:40
+msgid "Privacy"
+msgstr ""
+
+#: src/Admin/TextPage.php:41
+msgid "Block editor"
+msgstr ""
+
+#: src/Admin/TextPage.php:42
+msgid "Admin screens and emails"
+msgstr ""
+
+#: src/Admin/TextPage.php:43
+msgid "Plugins screen"
+msgstr ""
+
+#: src/Admin/TextPage.php:54
+msgid "Every language"
+msgstr ""
+
+#: src/Admin/TextPage.php:139
+msgid "Not saved: a percent sign on its own breaks this text. Write %% for one."
+msgstr ""
+
+#. translators: %s: the placeholders the original has, such as %s or %1$d
+#: src/Admin/TextPage.php:141
+#, php-format
+msgid "Not saved: use only the placeholders the original has (%s), with the same letters."
+msgstr ""
+
+#. translators: %s: the placeholders the original has, such as %s or %1$d
+#: src/Admin/TextPage.php:141
+msgid "Not saved: this text has a placeholder the original doesn't have."
+msgstr ""
+
+#: src/Admin/TextPage.php:142
+msgid "Not saved: keep it under 2,000 characters."
+msgstr ""
+
+#: src/Admin/TextPage.php:143
+msgid "Not saved: only the HTML the original uses is allowed."
+msgstr ""
+
+#: src/Admin/TextPage.php:144
+msgid "Not saved."
+msgstr ""
+
+#: src/Admin/TextPage.php:161
+msgid "Put RedeemID in your own words: any text the plugin shows, to visitors, members or staff, can read the way you want (\"Account\" can read \"Portal\"). Only the strings you give new text change. Replacements sit on top of translation, so text you leave alone keeps its translation. Each empty field shows the current text; clear a field to go back to it."
+msgstr ""
+
+#: src/Admin/TextPage.php:165
+msgid "Text saved."
+msgstr ""
+
+#: src/Admin/TextPage.php:166
+msgid "The rest was saved, but the replacements marked below were not."
+msgstr ""
+
+#: src/Admin/TextPage.php:171
+msgid "Code on this site also sets replacements (the redeemid_string_overrides filter). Where it sets one, the code's text is what shows."
+msgstr ""
+
+#: src/Admin/TextPage.php:175
+msgid "The list of strings (languages/redeemid.pot) is missing, so there is nothing to show. Reinstall the plugin."
+msgstr ""
+
+#: src/Admin/TextPage.php:187
+msgid "Replacements for"
+msgstr ""
+
+#: src/Admin/TextPage.php:193
+msgid "Switch"
+msgstr ""
+
+#: src/Admin/TextPage.php:194
+msgid "A replacement for one language wins over one for every language."
+msgstr ""
+
+#: src/Admin/TextPage.php:206
+msgid "Search text"
+msgstr ""
+
+#: src/Admin/TextPage.php:220
+msgid "Save text on this page"
+msgstr ""
+
+#: src/Admin/TextTable.php:38
+msgid "Original"
+msgstr ""
+
+#: src/Admin/TextTable.php:39
+msgid "Your text"
+msgstr ""
+
+#: src/Admin/TextTable.php:40
+msgid "Where it appears"
+msgstr ""
+
+#. translators: %d: number of replaced strings
+#: src/Admin/TextTable.php:167
+#, php-format
+msgid "Replaced (%d)"
+msgstr ""
+
+#. translators: %d: number of replacements for strings this version doesn't have
+#: src/Admin/TextTable.php:172
+#, php-format
+msgid "No longer used (%d)"
+msgstr ""
+
+#: src/Admin/TextTable.php:195
+msgid "Filter by who sees it"
+msgstr ""
+
+#: src/Admin/TextTable.php:198
+msgid "Visitors and members"
+msgstr ""
+
+#: src/Admin/TextTable.php:199
+msgid "Staff only"
+msgstr ""
+
+#: src/Admin/TextTable.php:201
+msgid "Filter by where it appears"
+msgstr ""
+
+#: src/Admin/TextTable.php:203
+msgid "All areas"
+msgstr ""
+
+#: src/Admin/TextTable.php:214
+msgid "No strings match. Try another search or filter."
+msgstr ""
+
+#. translators: %s: the string as the site's translation shows it
+#: src/Admin/TextTable.php:228
+#, php-format
+msgid "Translated: %s"
+msgstr ""
+
+#. translators: %s: gettext context, e.g. "block title"
+#: src/Admin/TextTable.php:233
+#, php-format
+msgid "Used as: %s"
+msgstr ""
+
+#. translators: %s: placeholders such as %s or %1$d
+#: src/Admin/TextTable.php:258
+#, php-format
+msgid "Keep %s: each is filled in when the text shows."
+msgstr ""
+
+#: src/Admin/TextTable.php:266
+msgid "One"
+msgstr ""
+
+#: src/Admin/TextTable.php:267
+msgid "More than one"
+msgstr ""
+
+#. translators: %s: the original string
+#: src/Admin/TextTable.php:282
+#, php-format
+msgid "Replace “%s”"
+msgstr ""
+
+#: src/Admin/TextTable.php:305
+msgid "Not in this version"
+msgstr ""
+
+#: src/Admin/TextTable.php:316
+msgid "Staff"
+msgstr ""
+
+#. translators: %d: number of other source files
+#: src/Admin/TextTable.php:319
+#, php-format
+msgid "and %d more file"
+msgid_plural "and %d more files"
+msgstr[0] ""
+msgstr[1] ""
 
 #: src/Admin/UserProfile.php:33
 msgid "Manage in RedeemID → Customers"

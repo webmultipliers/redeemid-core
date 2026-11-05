@@ -38,8 +38,19 @@ jobs:
         with:
           php-version: '8.3'
           coverage: none
-          tools: cs2pr
+          tools: cs2pr, wp-cli
       - run: composer install --prefer-dist --no-interaction --no-progress
+      # RedeemID → Text lists every string from the template, so it must hold every string in the code.
+      - name: Translation template is current
+        run: |
+          wp i18n make-pot . "$RUNNER_TEMP/redeemid.pot" --exclude=vendor,tests,node_modules --allow-root
+          # Compare the strings only: wp-cli versions differ in reference line numbers and comments.
+          strip() { grep -v -e '^#' -e '^msgstr' -e '^"POT-Creation-Date:' -e '^"X-Generator:' "$1"; }
+          if ! diff <(strip languages/redeemid.pot) <(strip "$RUNNER_TEMP/redeemid.pot") > "$RUNNER_TEMP/pot.diff"; then
+            head -n 60 "$RUNNER_TEMP/pot.diff"
+            echo "::error file=languages/redeemid.pot::Strings changed. Regenerate: wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests,node_modules"
+            exit 1
+          fi
       # Every finding is annotated, and any finding fails the job.
       - name: PHPCS
         env:
