@@ -106,7 +106,7 @@ final class PreferencesForm {
 	public static function messages(): array {
 		return [
 			'saved'   => __( 'Saved to your account.', 'redeemid' ),
-			'held'    => __( 'Saved in this browser. Log in with Shopify to keep them on your account.', 'redeemid' ),
+			'held'    => __( 'Saved in this browser. Sign in to keep them on your account.', 'redeemid' ),
 			'confirm' => __( 'You answered these before you logged in. Check them, then save them to your account.', 'redeemid' ),
 			'invalid' => __( 'Some answers could not be saved. Check the highlighted fields.', 'redeemid' ),
 			'busy'    => __( 'Too many changes. Please wait a minute and try again.', 'redeemid' ),

@@ -5,7 +5,6 @@ namespace RedeemID\Auth;
 use RedeemID\Access\LevelStore;
 use RedeemID\Access\Membership;
 use RedeemID\Config;
-use RedeemID\Plugin;
 use RedeemID\Shopify\Admin;
 use RedeemID\Shopify\CustomerAccount;
 use RedeemID\Shopify\Discovery;
@@ -35,12 +34,12 @@ final class Flow {
 		add_action( 'set_auth_cookie', [ TokenVault::class, 'capture_session_token' ], 10, 6 );
 		add_action( 'login_form_logout', [ self::class, 'handle_wp_logout' ] );
 
-		foreach ( [ 'login', 'logout', 'new_account' ] as $action ) {
+		foreach ( [ 'login', 'logout' ] as $action ) {
 			add_action( 'admin_post_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
 			add_action( 'admin_post_nopriv_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
 		}
 
-		foreach ( [ 'connect', 'link_confirm', 'disconnect', 'sync' ] as $action ) {
+		foreach ( [ 'connect', 'disconnect', 'sync' ] as $action ) {
 			add_action( 'admin_post_redeemid_' . $action, [ self::class, 'handle_' . $action ] );
 		}
 	}
@@ -84,14 +83,18 @@ final class Flow {
 			'redirect_to' => self::safe_redirect( $redirect_to ),
 		];
 
+		$hint = '';
+
 		if ( $link_user ) {
 			$data['link_user']  = $link_user;
 			$data['link_token'] = Linking::issue( $link_user );
+			// Confirming an email: Shopify's page opens with this account's address filled in, so only the code is left.
+			$hint = (string) ( get_userdata( $link_user )->user_email ?? '' );
 		}
 
 		$state = StateStore::create( $data );
 
-		return OAuth::authorize_url( $state, $nonce, Pkce::challenge( $verifier ) );
+		return OAuth::authorize_url( $state, $nonce, Pkce::challenge( $verifier ), OAuth::locale( determine_locale() ), $hint );
 	}
 
 	public static function handle_login(): void {
@@ -176,26 +179,14 @@ final class Flow {
 			$match = self::existing_account( $claims );
 
 			if ( $match ) {
-				// Never link by email on its own: ask, so their history isn't split into two accounts.
-				Logger::log( 'auth.existing_account', [ 'user' => $match->ID, 'customer' => $id->numeric ] );
+				// Shopify just proved they hold this inbox, as a password reset would: put the membership on the account they have.
+				Mirror::link( $match->ID, $id );
+				Logger::log( 'link.linked', [ 'user' => $match->ID, 'customer' => $id->numeric, 'source' => 'sign_in' ] );
+				do_action( 'redeemid_linked', $match->ID, $id );
 
-				return add_query_arg(
-					'redeemid_existing',
-					rawurlencode(
-						Linking::hold(
-							[
-								'kind'        => 'existing',
-								'user_id'     => $match->ID,
-								'customer'    => $id->numeric,
-								'email'       => (string) ( $claims['email'] ?? '' ),
-								'identity'    => $identity,
-								'tokens'      => Plugin::crypto()->encrypt( (string) wp_json_encode( $tokens ) ),
-								'redirect_to' => (string) $data['redirect_to'],
-							]
-						)
-					),
-					Config::callback_url()
-				);
+				$url = self::sign_in( $match, $id, $identity, $tokens, (string) $data['redirect_to'] );
+
+				return str_contains( $url, 'redeemid_notice=' ) ? $url : add_query_arg( 'redeemid_notice', 'welcome_back', $url );
 			}
 
 			$user = ShadowUsers::create( $id, $identity );
@@ -211,7 +202,9 @@ final class Flow {
 
 	/**
 	 * An existing WordPress account, not linked to Shopify and not staff, whose
-	 * email Shopify has verified as this customer's. Null when there is none.
+	 * email Shopify has verified as this customer's. Signing in links it, so a
+	 * returning reader keeps one account. Null when there is none, or when the
+	 * redeemid_offer_existing_account filter says no (a separate account is made).
 	 */
 	private static function existing_account( array $claims ): ?\WP_User {
 		$email = strtolower( trim( (string) ( $claims['email'] ?? '' ) ) );
@@ -227,34 +220,6 @@ final class Flow {
 		}
 
 		return $user;
-	}
-
-	/**
-	 * "Use a separate account" from the existing-account prompt: create the
-	 * shadow account after all and sign in.
-	 */
-	public static function handle_new_account(): void {
-		$pending = Linking::take( sanitize_text_field( wp_unslash( $_POST['ref'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification -- the single-use ref is the secret; the visitor is a guest.
-
-		if ( ! $pending || 'existing' !== ( $pending['kind'] ?? '' ) ) {
-			self::redirect( self::notice_url( 'existing_expired' ) );
-		}
-
-		$id     = CustomerId::parse( (string) $pending['customer'] );
-		$tokens = json_decode( (string) Plugin::crypto()->decrypt( (string) $pending['tokens'] ), true );
-
-		if ( ! $id || ! is_array( $tokens ) ) {
-			self::redirect( self::notice_url( 'existing_expired' ) );
-		}
-
-		$user = Mirror::find_user( $id ) ?? ShadowUsers::create( $id, (array) $pending['identity'] );
-
-		if ( is_wp_error( $user ) ) {
-			self::redirect( self::notice_url( 'profile_failed' ) );
-		}
-
-		Logger::log( 'auth.separate_account', [ 'user' => $user->ID, 'customer' => $id->numeric ] );
-		self::redirect( self::sign_in( $user, $id, (array) $pending['identity'], $tokens, (string) $pending['redirect_to'] ) );
 	}
 
 	/**
@@ -327,56 +292,15 @@ final class Flow {
 			return self::notice_url( $problem );
 		}
 
-		$ref = Linking::hold(
-			[
-				'user_id'     => $user_id,
-				'customer'    => $id->numeric,
-				'email'       => (string) $identity['email'],
-				'identity'    => $identity,
-				'tokens'      => Plugin::crypto()->encrypt( (string) wp_json_encode( $tokens ) ),
-				'redirect_to' => $redirect_to,
-			]
-		);
-
-		return add_query_arg( 'redeemid_confirm', rawurlencode( $ref ), Config::callback_url() );
-	}
-
-	public static function handle_link_confirm(): void {
-		check_admin_referer( 'redeemid_link_confirm' );
-
-		$ref     = sanitize_text_field( wp_unslash( $_POST['ref'] ?? '' ) );
-		$pending = Linking::take( $ref );
-		$user_id = get_current_user_id();
-
-		if ( ! $pending || (int) $pending['user_id'] !== $user_id ) {
-			self::redirect( self::notice_url( 'link_token_missing' ) );
-		}
-
-		if ( empty( $_POST['confirm'] ) ) {
-			self::redirect( self::notice_url( 'link_cancelled' ) );
-		}
-
-		$id       = CustomerId::parse( $pending['customer'] );
-		$existing = $id ? Mirror::find_user( $id ) : null;
-
-		if ( ! $id || ( $existing && $existing->ID !== $user_id ) || Linking::refusal( $user_id ) ) {
-			self::redirect( self::notice_url( 'customer_already_linked' ) );
-		}
-
 		Mirror::link( $user_id, $id );
-		self::apply_identity( $user_id, (array) $pending['identity'], 'link' );
+		self::apply_identity( $user_id, $identity, 'link' );
 		self::full_sync( $user_id, 'link' );
-
-		$tokens = json_decode( (string) Plugin::crypto()->decrypt( (string) $pending['tokens'] ), true );
-
-		if ( is_array( $tokens ) ) {
-			TokenVault::store( $user_id, $tokens );
-		}
+		TokenVault::store( $user_id, $tokens );
 
 		Logger::log( 'link.linked', [ 'user' => $user_id, 'customer' => $id->numeric ] );
 		do_action( 'redeemid_linked', $user_id, $id );
 
-		self::redirect( add_query_arg( 'redeemid_notice', 'linked', (string) $pending['redirect_to'] ) );
+		return add_query_arg( 'redeemid_notice', 'linked', self::safe_redirect( $redirect_to ) );
 	}
 
 	public static function handle_connect(): void {
@@ -563,28 +487,27 @@ final class Flow {
 	public static function message( string $code ): string {
 		return match ( $code ) {
 			'state_invalid'                                                                                  => __( 'Your sign-in link expired or was opened in a different browser. Please try again.', 'redeemid' ),
-			'shopify_denied'                                                                                 => __( 'Sign-in was cancelled at Shopify.', 'redeemid' ),
-			'exchange_failed'                                                                                => __( 'Shopify sign-in could not be completed. Please try again.', 'redeemid' ),
-			'profile_failed'                                                                                 => __( 'Your Shopify profile could not be loaded. Please try again.', 'redeemid' ),
+			'shopify_denied'                                                                                 => __( 'Sign-in was cancelled.', 'redeemid' ),
+			'exchange_failed'                                                                                => __( 'We couldn\'t sign you in. Please try again.', 'redeemid' ),
+			'profile_failed'                                                                                 => __( 'Your account details couldn\'t be loaded. Please try again.', 'redeemid' ),
 			'unavailable'                                                                                    => __( 'Sign-in is temporarily unavailable.', 'redeemid' ),
-			'id_token_missing', 'id_token_issuer', 'id_token_audience', 'id_token_expired', 'id_token_nonce' => __( 'Shopify sign-in could not be verified. Please try again.', 'redeemid' ),
-			'link_token_missing', 'link_token_mismatch'                                                      => __( 'That connect request is no longer valid. Start again from your account.', 'redeemid' ),
-			'link_token_expired'                                                                             => __( 'That connect request expired. Start again from your account.', 'redeemid' ),
-			'link_session_mismatch'                                                                          => __( 'That connect request belongs to a different session. Start again from your account.', 'redeemid' ),
-			'link_user_mismatch'                                                                             => __( 'Please sign in to the WordPress account you want to connect, then try again.', 'redeemid' ),
+			'id_token_missing', 'id_token_issuer', 'id_token_audience', 'id_token_expired', 'id_token_nonce' => __( 'We couldn\'t verify that sign-in. Please try again.', 'redeemid' ),
+			'link_token_missing', 'link_token_mismatch'                                                      => __( 'That confirmation is no longer valid. Start again from your account.', 'redeemid' ),
+			'link_token_expired'                                                                             => __( 'That confirmation expired. Start again from your account.', 'redeemid' ),
+			'link_session_mismatch'                                                                          => __( 'That confirmation was started in a different session. Start again from your account.', 'redeemid' ),
+			'link_user_mismatch'                                                                             => __( 'Please sign in to the account you want to use, then try again.', 'redeemid' ),
 			'admin_refused'                                                                                  => __( 'Staff accounts (anyone who can edit posts) cannot be connected to a Shopify customer.', 'redeemid' ),
 			'admin_sign_in_refused'                                                                          => __( 'Staff accounts (anyone who can edit posts) cannot sign in with Shopify. Use the WordPress login instead.', 'redeemid' ),
-			'already_shadow'                                                                                 => __( 'This account already signs in with Shopify.', 'redeemid' ),
-			'email_unverified'                                                                               => __( 'Shopify did not confirm that email address, so the accounts were not connected.', 'redeemid' ),
-			'email_mismatch'                                                                                 => __( 'Your Shopify email does not match this account\'s email, so the accounts were not connected.', 'redeemid' ),
-			'customer_already_linked'                                                                        => __( 'That Shopify customer is already connected to another account.', 'redeemid' ),
-			'link_cancelled'                                                                                 => __( 'The accounts were not connected.', 'redeemid' ),
-			'linked'                                                                                         => __( 'Your Shopify account is now connected.', 'redeemid' ),
-			'disconnected'                                                                                   => __( 'Your Shopify account was disconnected.', 'redeemid' ),
+			'already_shadow'                                                                                 => __( 'This account already signs in with an email code.', 'redeemid' ),
+			'email_unverified'                                                                               => __( 'That email address wasn\'t confirmed, so your membership wasn\'t added to this account.', 'redeemid' ),
+			'email_mismatch'                                                                                 => __( 'That isn\'t the email address this account uses, so nothing was changed. Confirm the email you use on this site.', 'redeemid' ),
+			'customer_already_linked'                                                                        => __( 'That email\'s membership is already on another account here.', 'redeemid' ),
+			'linked'                                                                                         => __( 'Your email is confirmed and your membership is on this account.', 'redeemid' ),
+			'disconnected'                                                                                   => __( 'Your membership was removed from this account.', 'redeemid' ),
 			'synced'                                                                                         => __( 'Your membership details were refreshed.', 'redeemid' ),
 			'sync_failed'                                                                                    => __( 'Your details could not be refreshed right now. Please try again later.', 'redeemid' ),
 			'sync_wait'                                                                                      => __( 'Your details were refreshed a moment ago.', 'redeemid' ),
-			'existing_expired'                                                                               => __( 'That sign-in expired. Please log in with Shopify again.', 'redeemid' ),
+			'welcome_back'                                                                                   => __( 'Welcome back. Your membership is on your account.', 'redeemid' ),
 			'privacy_export_sent'                                                                            => __( 'Check your email: confirm the request and we will send you a copy of your data.', 'redeemid' ),
 			'privacy_erase_sent'                                                                             => __( 'Check your email: confirm the request and we will erase your data here.', 'redeemid' ),
 			'privacy_pending'                                                                                => __( 'You already have a request waiting. Check your email for the confirmation link.', 'redeemid' ),
@@ -599,8 +522,7 @@ final class Flow {
 	}
 
 	/**
-	 * The callback page shows the outcome of a flow, or the explicit confirm
-	 * step for linking.
+	 * The callback page shows the outcome of a flow.
 	 */
 	public static function callback_notice( string $content ): string {
 		if ( ! get_query_var( self::QUERY_VAR ) || ! in_the_loop() || ! is_main_query() ) {
@@ -611,111 +533,9 @@ final class Flow {
 	}
 
 	private static function notice_html(): string {
-		// phpcs:disable WordPress.Security.NonceVerification -- display only.
-		$notice   = sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) );
-		$ref      = sanitize_text_field( wp_unslash( $_GET['redeemid_confirm'] ?? '' ) );
-		$existing = sanitize_text_field( wp_unslash( $_GET['redeemid_existing'] ?? '' ) );
-		$connect  = ! empty( $_GET['redeemid_connect'] );
-		$back     = self::safe_redirect( esc_url_raw( wp_unslash( $_GET['redirect_to'] ?? '' ) ) );
-		// phpcs:enable
-
-		if ( '' !== $existing ) {
-			return self::existing_html( $existing );
-		}
-
-		if ( $connect && is_user_logged_in() && ! Mirror::customer_id( get_current_user_id() ) && ! Linking::refusal( get_current_user_id() ) ) {
-			ob_start();
-			?>
-			<form class="redeemid-notice redeemid-link-confirm" data-redeemid-notice method="post" action="<?php echo esc_url( self::action_url() ); ?>">
-				<p><?php esc_html_e( 'You\'re signed in. Connect your Shopify account to this one so your membership works here.', 'redeemid' ); ?></p>
-				<input type="hidden" name="action" value="redeemid_connect">
-				<input type="hidden" name="redirect_to" value="<?php echo esc_attr( $back ); ?>">
-				<?php wp_nonce_field( 'redeemid_connect' ); ?>
-				<button type="submit" class="wp-element-button"><?php esc_html_e( 'Connect your Shopify account', 'redeemid' ); ?></button>
-			</form>
-			<?php
-			return (string) ob_get_clean();
-		}
-
-		if ( '' !== $ref ) {
-			$pending = Linking::peek( $ref );
-
-			if ( ! $pending || (int) $pending['user_id'] !== get_current_user_id() ) {
-				return '<div class="redeemid-notice" role="alert" data-redeemid-notice><p>' . esc_html( self::message( 'link_token_missing' ) ) . '</p></div>';
-			}
-
-			$user = wp_get_current_user();
-
-			ob_start();
-			?>
-			<form class="redeemid-notice redeemid-link-confirm" data-redeemid-notice method="post" action="<?php echo esc_url( self::action_url() ); ?>">
-				<p>
-					<?php
-					printf(
-						/* translators: 1: Shopify email, 2: WordPress username */
-						esc_html__( 'Connect the Shopify customer %1$s to your account %2$s?', 'redeemid' ),
-						'<strong>' . esc_html( (string) $pending['email'] ) . '</strong>',
-						'<strong>' . esc_html( $user->user_login ) . '</strong>'
-					);
-					?>
-				</p>
-				<input type="hidden" name="action" value="redeemid_link_confirm">
-				<input type="hidden" name="ref" value="<?php echo esc_attr( $ref ); ?>">
-				<?php wp_nonce_field( 'redeemid_link_confirm' ); ?>
-				<button type="submit" name="confirm" value="1" class="wp-element-button"><?php esc_html_e( 'Connect accounts', 'redeemid' ); ?></button>
-				<button type="submit" name="cancel" value="1" class="wp-element-button is-style-outline"><?php esc_html_e( 'Cancel', 'redeemid' ); ?></button>
-			</form>
-			<?php
-			return (string) ob_get_clean();
-		}
-
-		$message = self::message( $notice );
+		$message = self::message( sanitize_key( wp_unslash( $_GET['redeemid_notice'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification -- display only.
 
 		return '' === $message ? '' : '<div class="redeemid-notice" role="status" data-redeemid-notice><p>' . esc_html( $message ) . '</p></div>';
-	}
-
-	/**
-	 * Shopify verified an email that an existing account here uses. Offer to
-	 * sign in to that account and connect it, or to carry on separately.
-	 */
-	private static function existing_html( string $ref ): string {
-		$pending = Linking::peek( $ref );
-
-		if ( ! $pending || 'existing' !== ( $pending['kind'] ?? '' ) ) {
-			return '<div class="redeemid-notice" role="alert" data-redeemid-notice><p>' . esc_html( self::message( 'existing_expired' ) ) . '</p></div>';
-		}
-
-		$after = add_query_arg(
-			[
-				'redeemid_connect' => 1,
-				'redirect_to'  => rawurlencode( (string) $pending['redirect_to'] ),
-			],
-			Config::callback_url()
-		);
-
-		ob_start();
-		?>
-		<div class="redeemid-notice redeemid-existing" data-redeemid-notice>
-			<p>
-				<?php
-				printf(
-					/* translators: %s: email address */
-					esc_html__( 'You already have an account on this site with %s. Sign in to it and connect Shopify, so your comments, history and membership stay in one place.', 'redeemid' ),
-					'<strong>' . esc_html( (string) $pending['email'] ) . '</strong>'
-				);
-				?>
-			</p>
-			<p>
-				<a class="wp-element-button" href="<?php echo esc_url( wp_login_url( $after ) ); ?>"><?php esc_html_e( 'Sign in to my account', 'redeemid' ); ?></a>
-			</p>
-			<form method="post" action="<?php echo esc_url( self::action_url() ); ?>">
-				<input type="hidden" name="action" value="redeemid_new_account">
-				<input type="hidden" name="ref" value="<?php echo esc_attr( $ref ); ?>">
-				<button type="submit" class="redeemid-link-button"><?php esc_html_e( 'No thanks, use a separate account', 'redeemid' ); ?></button>
-			</form>
-		</div>
-		<?php
-		return (string) ob_get_clean();
 	}
 
 	private static function posted_redirect(): string {

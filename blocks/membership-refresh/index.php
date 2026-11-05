@@ -23,15 +23,15 @@ $redeemid_linked = ! empty( $redeemid_status['signedIn'] ) && ( ! empty( $redeem
 $redeemid_sync   = (int) ( $redeemid_status['lastSync'] ?? 0 );
 $redeemid_note   = $redeemid_sync
 	/* translators: %s: how long ago, such as "5 mins" */
-	? sprintf( __( 'Synced from Shopify %s ago.', 'redeemid' ), human_time_diff( $redeemid_sync ) )
+	? sprintf( __( 'Updated %s ago.', 'redeemid' ), human_time_diff( $redeemid_sync ) )
 	: __( 'Not synced yet.', 'redeemid' );
 
 // What script.view.js says while and after it refreshes, translated here.
 $redeemid_messages = [
-	'checking'    => __( 'Checking with Shopify…', 'redeemid' ),
+	'checking'    => __( 'Checking…', 'redeemid' ),
 	'synced'      => __( 'Membership updated. Reloading…', 'redeemid' ),
 	'sync_wait'   => __( 'You just refreshed. Try again in a minute.', 'redeemid' ),
-	'sync_failed' => __( 'Shopify could not be reached. Try again later.', 'redeemid' ),
+	'sync_failed' => __( 'We couldn\'t check right now. Try again later.', 'redeemid' ),
 ];
 
 // No early return: Blockstudio reads a template that returns as one that rendered nothing and skips script.view.js.

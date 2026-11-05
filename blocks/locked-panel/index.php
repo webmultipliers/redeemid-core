@@ -45,7 +45,7 @@ $redeemid_form = in_array( $a['formAction'] ?? '', [ 'redeemid_connect', 'redeem
 			</form>
 		<?php endif; ?>
 		<?php if ( ! empty( $a['signInUrl'] ) ) : ?>
-			<a class="wp-element-button is-style-outline" href="<?php echo esc_url( (string) $a['signInUrl'] ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a>
+			<a class="wp-element-button is-style-outline" href="<?php echo esc_url( (string) $a['signInUrl'] ); ?>" rel="nofollow"><?php esc_html_e( 'Sign in', 'redeemid' ); ?></a>
 		<?php endif; ?>
 		<?php if ( $redeemid_form ) : ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="redeemid-inline-form">

@@ -15,14 +15,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$redeemid_title  = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your Shopify account', 'redeemid' );
+$redeemid_title  = '' !== trim( (string) ( $a['title'] ?? '' ) ) ? (string) $a['title'] : __( 'Your account', 'redeemid' );
 $redeemid_rows   = [
 	'signedIn'  => __( 'Signed in', 'redeemid' ),
 	'name'      => __( 'Display name', 'redeemid' ),
-	'linked'    => __( 'Linked to a Shopify customer', 'redeemid' ),
-	'shadow'    => __( 'Account created by Shopify sign-in', 'redeemid' ),
+	'linked'    => __( 'Email confirmed for membership', 'redeemid' ),
+	'shadow'    => __( 'Signs in with an email code only', 'redeemid' ),
 	'lastSync'  => __( 'Membership last synced', 'redeemid' ),
-	'available' => __( 'Shopify sign-in available', 'redeemid' ),
+	'available' => __( 'Sign-in available', 'redeemid' ),
 	'nonces'    => __( 'Session ready for account actions', 'redeemid' ),
 ];
 $redeemid_values = array_fill_keys( array_keys( $redeemid_rows ), '…' );
@@ -56,13 +56,13 @@ if ( $isEditor ) {
 	];
 
 	if ( empty( $redeemid_status['available'] ) ) {
-		$redeemid_note = __( 'Shopify sign-in is not available right now.', 'redeemid' );
+		$redeemid_note = __( 'Sign-in is not available right now.', 'redeemid' );
 	} elseif ( ! $redeemid_in ) {
-		$redeemid_note = __( 'You are not signed in. Log in with Shopify to see your membership.', 'redeemid' );
+		$redeemid_note = __( 'You are not signed in. Sign in to see your membership.', 'redeemid' );
 	} elseif ( empty( $redeemid_status['linked'] ) && empty( $redeemid_status['shadow'] ) ) {
-		$redeemid_note = __( 'You are signed in, but your account is not connected to Shopify yet.', 'redeemid' );
+		$redeemid_note = __( 'You are signed in. Confirm your email to use your membership on this account.', 'redeemid' );
 	} else {
-		$redeemid_note = __( 'Signed in and connected to Shopify.', 'redeemid' );
+		$redeemid_note = __( 'Signed in, with your membership on this account.', 'redeemid' );
 	}
 }
 

@@ -30,7 +30,7 @@
 		{
 			"name": "connect",
 			"title": "Connect Shopify Account",
-			"description": "Lets a signed-in WordPress user link their Shopify customer account.",
+			"description": "Lets a signed-in WordPress user confirm their email by code, which links their Shopify customer account.",
 			"icon": "admin-links",
 			"attributes": { "mode": { "value": "connect" } },
 			"scope": [ "inserter", "transform" ]
@@ -53,8 +53,8 @@
 			{
 				"id": "loginLabel",
 				"type": "text",
-				"label": "Log in label",
-				"default": "Log in with Shopify",
+				"label": "Sign in label",
+				"default": "Sign in",
 				"conditions": [
 					[
 						{ "id": "mode", "operator": "!=", "value": "logout" },
@@ -65,8 +65,8 @@
 			{
 				"id": "logoutLabel",
 				"type": "text",
-				"label": "Log out label",
-				"default": "Log out",
+				"label": "Sign out label",
+				"default": "Sign out",
 				"conditions": [
 					[ { "id": "mode", "operator": "==", "value": "auto" } ],
 					[ { "id": "mode", "operator": "==", "value": "logout" } ]
@@ -76,7 +76,7 @@
 				"id": "connectLabel",
 				"type": "text",
 				"label": "Connect label",
-				"default": "Connect Shopify account",
+				"default": "Confirm your email",
 				"conditions": [
 					[ { "id": "mode", "operator": "==", "value": "auto" } ],
 					[ { "id": "mode", "operator": "==", "value": "connect" } ]

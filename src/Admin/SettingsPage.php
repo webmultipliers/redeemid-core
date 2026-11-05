@@ -329,9 +329,9 @@ final class SettingsPage {
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Sign-in links', 'redeemid' ); ?></th>
 					<td>
-						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[login_button]" value="1" <?php checked( ! empty( $settings['login_button'] ) ); ?>> <?php esc_html_e( 'Show "Log in with Shopify" on the WordPress login screen', 'redeemid' ); ?></label><br>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[login_button]" value="1" <?php checked( ! empty( $settings['login_button'] ) ); ?>> <?php esc_html_e( 'Show the member "Sign in with an email code" button on the WordPress login screen', 'redeemid' ); ?></label><br>
 						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[shopify_login_links]" value="1" <?php checked( ! empty( $settings['shopify_login_links'] ) ); ?>> <?php esc_html_e( 'Send visitors to Shopify sign-in from the site\'s login links (comment forms, themes, other plugins)', 'redeemid' ); ?></label>
-						<p class="description"><?php esc_html_e( 'Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Log in and Log out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode.', 'redeemid' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Sign in and Sign out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
 				<tr>

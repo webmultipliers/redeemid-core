@@ -55,13 +55,13 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 	<?php elseif ( ! $redeemid_view ) : ?>
 		<p class="redeemid-account__loading"><?php $redeemid_sells ? esc_html_e( 'Loading your membership…', 'redeemid' ) : esc_html_e( 'Loading your account…', 'redeemid' ); ?></p>
 	<?php elseif ( 'guest' === $redeemid_view['state'] ) : ?>
-		<p><?php $redeemid_sells ? esc_html_e( 'Log in with Shopify to see your membership.', 'redeemid' ) : esc_html_e( 'Log in with Shopify to see your account.', 'redeemid' ); ?></p>
-		<p><a class="wp-element-button" href="<?php echo esc_url( \RedeemID\Auth\Flow::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a></p>
+		<p><?php $redeemid_sells ? esc_html_e( 'Sign in to see your membership.', 'redeemid' ) : esc_html_e( 'Sign in to see your account.', 'redeemid' ); ?></p>
+		<p><a class="wp-element-button" href="<?php echo esc_url( \RedeemID\Auth\Flow::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Sign in', 'redeemid' ); ?></a></p>
 	<?php elseif ( 'not_linked' === $redeemid_view['state'] ) : ?>
-		<p><?php esc_html_e( 'Your account here isn\'t connected to a Shopify customer yet.', 'redeemid' ); ?></p>
-		<?php $redeemid_form( 'redeemid_connect', __( 'Connect your Shopify account', 'redeemid' ), 'wp-element-button' ); ?>
+		<p><?php esc_html_e( 'Confirm your email to use your membership on this account. We\'ll send you a code.', 'redeemid' ); ?></p>
+		<?php $redeemid_form( 'redeemid_connect', __( 'Confirm your email', 'redeemid' ), 'wp-element-button' ); ?>
 	<?php elseif ( 'syncing' === $redeemid_view['state'] ) : ?>
-		<p><?php $redeemid_sells ? esc_html_e( 'Your membership details are on their way from Shopify.', 'redeemid' ) : esc_html_e( 'Your account details are on their way from Shopify.', 'redeemid' ); ?></p>
+		<p><?php $redeemid_sells ? esc_html_e( 'Your membership details are on their way.', 'redeemid' ) : esc_html_e( 'Your account details are on their way.', 'redeemid' ); ?></p>
 	<?php else : ?>
 		<?php if ( 'disabled' === $redeemid_view['state'] ) : ?>
 			<p class="redeemid-account__alert"><?php esc_html_e( 'Your account is disabled. Contact the store for help.', 'redeemid' ); ?></p>
@@ -116,7 +116,7 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 				<dd><?php echo esc_html( implode( ', ', $redeemid_view['features'] ) ); ?></dd>
 			<?php endif; ?>
 
-			<dt><?php esc_html_e( 'Last updated from Shopify', 'redeemid' ); ?></dt>
+			<dt><?php esc_html_e( 'Last updated', 'redeemid' ); ?></dt>
 			<dd>
 				<?php
 				echo esc_html(
@@ -130,14 +130,14 @@ $redeemid_form = static function ( string $action, string $label, string $class 
 		</dl>
 
 		<div class="redeemid-account__actions">
-			<?php $redeemid_form( 'redeemid_sync', $redeemid_sells ? __( 'Refresh membership', 'redeemid' ) : __( 'Refresh from Shopify', 'redeemid' ) ); ?>
+			<?php $redeemid_form( 'redeemid_sync', $redeemid_sells ? __( 'Refresh membership', 'redeemid' ) : __( 'Check for updates', 'redeemid' ) ); ?>
 			<?php if ( '' !== $redeemid_view['subscription_url'] ) : ?>
 				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $redeemid_view['subscription_url'] ); ?>"><?php esc_html_e( 'Manage subscription', 'redeemid' ); ?></a>
 			<?php endif; ?>
 			<?php if ( '' !== $redeemid_view['account_url'] ) : ?>
-				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $redeemid_view['account_url'] ); ?>"><?php esc_html_e( 'Orders and account in Shopify', 'redeemid' ); ?></a>
+				<a class="wp-element-button is-style-outline" href="<?php echo esc_url( $redeemid_view['account_url'] ); ?>"><?php esc_html_e( 'Orders and addresses', 'redeemid' ); ?></a>
 			<?php endif; ?>
-			<?php $redeemid_form( 'redeemid_logout', __( 'Log out', 'redeemid' ), 'redeemid-link-button' ); ?>
+			<?php $redeemid_form( 'redeemid_logout', __( 'Sign out', 'redeemid' ), 'redeemid-link-button' ); ?>
 		</div>
 
 		<?php if ( ! empty( $a['showPrivacyLinks'] ) ) : ?>

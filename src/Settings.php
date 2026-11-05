@@ -16,7 +16,7 @@ final class Settings {
 		'quiet_days'           => 7,
 		'alert_email'          => false,
 		'login_button'         => true,
-		'shopify_login_links'  => false,
+		'shopify_login_links'  => true,
 		'subscription_url'     => '',
 		'storefront_pages'     => true,
 		'product_path'         => 'products',

@@ -77,11 +77,11 @@ $redeemid_editable = array_filter( $redeemid_fields, static fn( $f ) => ! empty(
 	<?php elseif ( 'placeholder' === $redeemid_state ) : ?>
 		<p class="redeemid-preferences__loading"><?php esc_html_e( 'Loading your preferences…', 'redeemid' ); ?></p>
 	<?php elseif ( 'not_linked' === $redeemid_state ) : ?>
-		<p><?php esc_html_e( 'Connect your Shopify account to set your preferences.', 'redeemid' ); ?></p>
+		<p><?php esc_html_e( 'Confirm your email on your account page to set your preferences.', 'redeemid' ); ?></p>
 	<?php elseif ( 'error' === $redeemid_state ) : ?>
 		<p><?php esc_html_e( 'Your preferences can\'t be loaded right now. Try again later.', 'redeemid' ); ?></p>
 	<?php elseif ( 'guest_off' === $redeemid_state ) : ?>
-		<p><a class="wp-element-button" href="<?php echo esc_url( PreferencesForm::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify to set your preferences', 'redeemid' ); ?></a></p>
+		<p><a class="wp-element-button" href="<?php echo esc_url( PreferencesForm::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Sign in to set your preferences', 'redeemid' ); ?></a></p>
 	<?php elseif ( ! $redeemid_fields ) : ?>
 		<p><?php esc_html_e( 'There is nothing to set here yet.', 'redeemid' ); ?></p>
 	<?php else : ?>
@@ -102,8 +102,8 @@ $redeemid_editable = array_filter( $redeemid_fields, static fn( $f ) => ! empty(
 		</form>
 		<?php if ( 'guest' === $redeemid_state ) : ?>
 			<p class="redeemid-preferences__login">
-				<?php esc_html_e( 'Your answers are kept on your Shopify customer account.', 'redeemid' ); ?>
-				<a href="<?php echo esc_url( PreferencesForm::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Log in with Shopify', 'redeemid' ); ?></a>
+				<?php esc_html_e( 'Your answers are saved to your account.', 'redeemid' ); ?>
+				<a href="<?php echo esc_url( PreferencesForm::login_url( $redeemid_here ) ); ?>" rel="nofollow"><?php esc_html_e( 'Sign in', 'redeemid' ); ?></a>
 			</p>
 		<?php endif; ?>
 	<?php endif; ?>
