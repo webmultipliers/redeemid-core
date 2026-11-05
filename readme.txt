@@ -60,7 +60,7 @@ Every piece a visitor sees is a block: Shopify Sign-in, Membership Gate, Paywall
 
 = For developers =
 
-A PHP API, REST routes, WP-CLI commands, an event stream with a vendor-neutral browser client, signed event webhooks for CRMs and automation tools, and WordPress Abilities for AI agents through the MCP Adapter. Built on [Blockstudio](https://blockstudio.dev), tested with PHPUnit, and checked against the WordPress VIP coding standards.
+A PHP API, REST routes, WP-CLI commands, an event stream with a vendor-neutral browser client, signed event webhooks for CRMs and automation tools, and WordPress Abilities for AI agents through the MCP Adapter. Built on [Blockstudio](https://blockstudio.dev), tested with PHPUnit and leak tests on a running WordPress, and checked on every change against the WordPress VIP coding standards, axe-core accessibility (WCAG 2.2 AA), Lighthouse, Psalm taint analysis and CodeQL.
 
 = Documentation =
 
@@ -75,9 +75,9 @@ RedeemID is in early development. Expect breaking changes before 1.0.0.
 
 1. Download `redeemid-core.zip` from the [latest release](https://github.com/webmultipliers/redeemid-core/releases/latest), then upload it in **Plugins → Add New → Upload Plugin** and activate it.
 2. Turn on pretty permalinks (**Settings → Permalinks**). Shopify sign-in returns to `/auth-callback/`, which needs them.
-3. **RedeemID → Setup** opens on activation and walks through connecting your Shopify store.
+3. **RedeemID → Setup** opens on activation and walks through connecting your Shopify store, with a link to each Shopify screen it needs. When the connection test passes, it publishes the sign-in callback page and registers Shopify's webhooks for you.
 
-You need PHP 8.2 or later with `sodium`, WordPress 6.7 or later, and a Shopify store with a headless or custom app that has Customer Account API access. On multisite, each site connects its own Shopify store. See [Install](https://www.redeemid.com/docs/install/) and [Connect Shopify](https://www.redeemid.com/docs/connect/).
+You need PHP 8.2 or later with `sodium`, WordPress 6.7 or later, and a Shopify store on the new customer accounts, with a headless or custom app that has Customer Account API access. On multisite, each site connects its own Shopify store. See [Install](https://www.redeemid.com/docs/install/) and [Connect Shopify](https://www.redeemid.com/docs/connect/).
 
 == Frequently Asked Questions ==
 
