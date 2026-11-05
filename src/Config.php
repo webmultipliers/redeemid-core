@@ -165,10 +165,9 @@ final class Config {
 	 * The store's myshopify host, normalised (no scheme, no path, lower case).
 	 */
 	public static function store_domain(): string {
-		$domain = strtolower( self::get( 'REDEEMID_STORE_DOMAIN' ) );
-		$domain = preg_replace( '#^https?://#', '', $domain );
+		$domain = self::get( 'REDEEMID_STORE_DOMAIN' );
 
-		return rtrim( (string) $domain, '/' );
+		return '' === trim( $domain ) ? '' : ConfigValues::normalise_domain( $domain );
 	}
 
 	/**

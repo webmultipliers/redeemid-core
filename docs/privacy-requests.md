@@ -13,7 +13,7 @@ Shopify stays the record of the customer. WordPress never erases Shopify data it
 | Shopify: the store owner erases a customer | An erase request marked "Shopify redacted this customer". RedeemID's data is already gone | If the WordPress account stays, decide whether to erase the rest of their WordPress data (comments, other plugins), or mark the request complete. A shadow user is deleted, so that request is already complete |
 | Shopify: the app is uninstalled (`shop/redact`) | Nothing per person. Every account is unlinked and customer numbers are cleared from the logs | Nothing |
 
-Shopify sends its requests only to apps that declare the compliance topics. The setup wizard's **Register webhooks** step shows the lines to add to your Dev Dashboard app, with this site's URL. RedeemID → Debug shows when the last one arrived.
+Shopify sends its requests only to apps that declare the compliance topics. The setup wizard's **Webhooks** step shows the lines to add to your Dev Dashboard app, with this site's URL. RedeemID → Debug shows when the last one arrived.
 
 ## Exporting
 

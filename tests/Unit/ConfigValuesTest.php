@@ -111,6 +111,18 @@ final class ConfigValuesTest extends TestCase {
 		$this->assertSame( 'demo-store.myshopify.com', $bad['stored']['REDEEMID_STORE_DOMAIN'], 'An invalid value keeps the previous one.' );
 	}
 
+	public function test_the_store_domain_takes_the_forms_people_copy_from_shopify(): void {
+		$this->assertSame( 'demo-store.myshopify.com', ConfigValues::normalise_domain( 'https://admin.shopify.com/store/Demo-Store/customers?query=x' ) );
+		$this->assertSame( 'demo-store.myshopify.com', ConfigValues::normalise_domain( 'admin.shopify.com/store/demo-store' ) );
+		$this->assertSame( 'demo-store.myshopify.com', ConfigValues::normalise_domain( ' demo-store ' ) );
+		$this->assertSame( 'demo-store.myshopify.com', ConfigValues::normalise_domain( 'demo-store.myshopify.com?x=1' ) );
+		$this->assertSame( 'shop.example.com', ConfigValues::normalise_domain( 'shop.example.com/' ), 'A custom domain is left alone, so it is refused.' );
+		$this->assertSame( 'admin.shopify.com', ConfigValues::normalise_domain( 'admin.shopify.com/settings' ), 'An admin URL with no store is not guessed at.' );
+
+		$ok = $this->values()->apply( [ 'REDEEMID_STORE_DOMAIN' => 'https://admin.shopify.com/store/demo-store/' ] );
+		$this->assertSame( 'demo-store.myshopify.com', $ok['stored']['REDEEMID_STORE_DOMAIN'] );
+	}
+
 	public function test_values_with_spaces_or_line_breaks_are_refused(): void {
 		$result = $this->values()->apply( [ 'REDEEMID_CLIENT_ID' => "abc\ndef", 'REDEEMID_ADMIN_CLIENT_SECRET' => 'a b' ] );
 
