@@ -52,8 +52,41 @@ final class Menu {
 		Debug::register();
 	}
 
+	/**
+	 * Bar and gap widths of the barcode, the same list as $redeemid-bars in the
+	 * redeemid.com theme. Only the start fits the 20px mark.
+	 */
+	private const BARS = [ 1, 2, 2, 4, 1, 1, 4, 3, 1, 2, 2, 1, 2, 2, 1, 1, 2, 3 ];
+
+	/**
+	 * The RedeemID mark: the wordmark's barcode run-out, bars that fade out to
+	 * the right, as a 20x20 SVG.
+	 *
+	 * The fade is fill-opacity on each bar, not a mask, so core's svg-painter
+	 * can recolour the menu icon by swapping the fill to the admin colour scheme.
+	 *
+	 * @param string $fill The bar colour, 'black' for the menu icon or 'currentColor' inline.
+	 */
+	public static function mark( string $fill ): string {
+		$rects = '';
+		$at    = 0;
+		foreach ( self::BARS as $i => $width ) {
+			if ( $at + $width > 20 ) {
+				break;
+			}
+			if ( 0 === $i % 2 ) {
+				$middle  = $at + $width / 2;
+				$opacity = $middle <= 6 ? 1 : max( 0.15, 1 - ( $middle - 6 ) / 15 );
+				$rects  .= sprintf( '<rect x="%d" y="2" width="%d" height="16" fill-opacity="%s"/>', $at, $width, round( $opacity, 2 ) );
+			}
+			$at += $width;
+		}
+
+		return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="' . $fill . '" aria-hidden="true" focusable="false">' . $rects . '</svg>';
+	}
+
 	public static function menu(): void { // phpcs:ignore Generic.NamingConventions.ConstructorName -- not a constructor in a namespaced class.
-		add_menu_page( __( 'RedeemID', 'redeemid' ), __( 'RedeemID', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'dashicons-cart', 58 );
+		add_menu_page( __( 'RedeemID', 'redeemid' ), __( 'RedeemID', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'data:image/svg+xml;base64,' . base64_encode( self::mark( 'black' ) ), 58 ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- core needs the menu icon as a base64 data URI.
 		add_submenu_page( self::SLUG, __( 'RedeemID overview', 'redeemid' ), __( 'Overview', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID settings', 'redeemid' ), __( 'Settings', 'redeemid' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
@@ -170,7 +203,7 @@ final class Menu {
 		$missing = array_filter( Config::definitions(), static fn( $def, $name ) => $def['required'] && ! Config::has( $name ), ARRAY_FILTER_USE_BOTH );
 		?>
 		<div class="redeemid-topbar">
-			<a class="redeemid-topbar__brand" href="<?php echo esc_url( self::url() ); ?>"><span class="dashicons dashicons-cart" aria-hidden="true"></span><?php esc_html_e( 'RedeemID', 'redeemid' ); ?></a>
+			<a class="redeemid-topbar__brand" href="<?php echo esc_url( self::url() ); ?>"><?php echo self::mark( 'currentColor' ); // phpcs:ignore WordPress.Security.EscapeOutput -- built from constants. ?><?php esc_html_e( 'RedeemID', 'redeemid' ); ?></a>
 			<?php if ( self::SLUG !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
 				<span class="redeemid-topbar__sep" aria-hidden="true">/</span>
 				<span class="redeemid-topbar__page"><?php echo esc_html( $section ); ?></span>
