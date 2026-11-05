@@ -44,7 +44,8 @@ jobs:
       - name: Translation template is current
         run: |
           wp i18n make-pot . "$RUNNER_TEMP/redeemid.pot" --exclude=vendor,tests,node_modules --allow-root
-          strip() { grep -v -e '^"POT-Creation-Date:' -e '^"X-Generator:' "$1"; }
+          # Compare the strings only: wp-cli versions differ in reference line numbers and comments.
+          strip() { grep -v -e '^#' -e '^msgstr' -e '^"POT-Creation-Date:' -e '^"X-Generator:' "$1"; }
           if ! diff <(strip languages/redeemid.pot) <(strip "$RUNNER_TEMP/redeemid.pot") > "$RUNNER_TEMP/pot.diff"; then
             head -n 60 "$RUNNER_TEMP/pot.diff"
             echo "::error file=languages/redeemid.pot::Strings changed. Regenerate: wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests,node_modules"
