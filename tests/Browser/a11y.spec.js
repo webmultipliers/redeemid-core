@@ -73,6 +73,8 @@ test.describe( 'admin', () => {
 	// new screen is checked without editing this file. Setup is left out of the
 	// menu, so it is added by hand.
 	test( 'every RedeemID screen', async ( { page } ) => {
+		// One test walks every screen and tab (about 25), so the default 30 s is too short.
+		test.setTimeout( 180_000 );
 		await page.goto( '/wp-admin/admin.php?page=redeemid' );
 		const screens = await page.locator( '#toplevel_page_redeemid .wp-submenu a' ).evaluateAll( ( links ) => links.map( ( a ) => a.href ) );
 		expect( screens.length ).toBeGreaterThan( 0 );
