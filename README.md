@@ -14,7 +14,7 @@ Shopify stays the single source of truth. RedeemID links each Shopify customer a
 - **Built for the block editor and page caches.** Every piece a visitor sees is a block that renders on the server and works without JavaScript. Personal pieces are Blockstudio dynamic islands, so pages stay cacheable.
 - **For developers.** A PHP API, REST routes, WP-CLI, a vendor-neutral event stream with signed outbound event webhooks, and WordPress Abilities for AI agents. Works beside Shopify's own WordPress plugin, or replaces it.
 
-> **Status: 0.0.10, early development.** Expect breaking changes before 1.0.0. See the [changelog](https://www.redeemid.com/changelog/) and [releases](https://github.com/webmultipliers/redeemid-core/releases).
+> **Status: 0.0.11, early development.** Expect breaking changes before 1.0.0. See the [changelog](https://www.redeemid.com/changelog/) and [releases](https://github.com/webmultipliers/redeemid-core/releases).
 
 ## Requirements
 
@@ -42,7 +42,7 @@ These eight values are the whole connection. Enter each in **RedeemID → Settin
 
 | Constant | Required | Purpose |
 |---|---|---|
-| `REDEEMID_STORE_DOMAIN` | yes | `your-store.myshopify.com` (the handle or an `admin.shopify.com/store/…` address also works) |
+| `REDEEMID_STORE_DOMAIN` | yes | `your-store.myshopify.com` (the handle or an `admin.shopify.com/store/…` address also works; in Settings, so does the store's own web address, such as `shop.example.com`) |
 | `REDEEMID_CLIENT_ID` | yes | Customer Account API client ID, for sign-in |
 | `REDEEMID_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client |
 | `REDEEMID_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store, for resync, tag editing and webhooks |
@@ -74,7 +74,7 @@ Plugins that build on RedeemID (a course, a forum, a download manager) can ask i
 - `redeemid_has_feature( $slug, $user = null )`: does the user hold a [feature](docs/features.md)?
 - `redeemid_preferences()` and `redeemid_set_preferences()`: the member's [preferences](docs/member-preferences.md), read from and saved to Shopify.
 
-They read the synced mirror, so they cost no Shopify call. The `redeemid_event` action and the `window.redeemid` browser client carry every event (walls, the meter, checkouts, level changes) in one vendor-neutral shape, and [event webhooks](docs/event-webhooks.md) send them to a CRM or automation tool without code. The REST namespace is `redeemid/v1`, and WP-CLI commands live under `wp redeemid` (resync, access, settings). What is stable is listed in [docs/developer-api.md](docs/developer-api.md); its version is `REDEEMID_API_VERSION` (currently 1.6.0).
+They read the synced mirror, so they cost no Shopify call. The `redeemid_event` action and the `window.redeemid` browser client carry every event (walls, the meter, checkouts, level changes) in one vendor-neutral shape, and [event webhooks](docs/event-webhooks.md) send them to a CRM or automation tool without code. The REST namespace is `redeemid/v1`, and WP-CLI commands live under `wp redeemid` (resync, access, settings). What is stable is listed in [docs/developer-api.md](docs/developer-api.md); its version is `REDEEMID_API_VERSION` (currently 1.7.0).
 
 ## Contributing
 

@@ -5,7 +5,7 @@ namespace RedeemID\Blocks;
 use RedeemID\Access\LevelStore;
 use RedeemID\Access\Membership;
 use RedeemID\Auth\ShadowUsers;
-use RedeemID\Config;
+use RedeemID\Shopify\Domains;
 use RedeemID\Features\Registry;
 use RedeemID\Settings;
 use RedeemID\Sync\LevelHistory;
@@ -101,7 +101,7 @@ final class Account {
 		$view['gift_until']   = self::upcoming( (string) get_user_meta( $user_id, Mirror::GIFT_UNTIL, true ), wp_date( 'Y-m-d' ) );
 		$view['synced']       = (int) $member->last_sync;
 		$view['checking_out'] = PostCheckout::active( $user_id );
-		$view['account_url']  = '' !== Config::store_domain() ? 'https://' . Config::store_domain() . '/account' : '';
+		$view['account_url']  = Domains::account();
 
 		foreach ( $top as $slug ) {
 			$level  = $levels->get( $slug );

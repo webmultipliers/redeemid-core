@@ -10,6 +10,7 @@ use RedeemID\Settings;
 use RedeemID\Shopify\Admin;
 use RedeemID\Shopify\AdminToken;
 use RedeemID\Shopify\Discovery;
+use RedeemID\Shopify\Domains;
 use RedeemID\Support\ConfigValues;
 use RedeemID\Support\Logger;
 use RedeemID\Webhooks\Registrar;
@@ -70,7 +71,8 @@ final class SettingsPage {
 		$input  = wp_unslash( $_POST['config'] ?? [] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- ConfigValues::apply validates each field.
 		$clear  = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['clear'] ?? [] ) );
 		// phpcs:enable WordPress.Security.NonceVerification
-		$result = Config::values()->apply( is_array( $input ) ? $input : [], $clear );
+		$input  = is_array( $input ) ? self::resolve_store( $input ) : [];
+		$result = Config::values()->apply( $input, $clear );
 
 		update_option( Config::OPTION, $result['stored'], true );
 		Config::reset();
@@ -82,6 +84,30 @@ final class SettingsPage {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * An owner may enter the store's own web address (shop.example.com)
+	 * rather than its myshopify.com domain. Ask that storefront which store
+	 * it is, and save the myshopify.com domain the APIs need.
+	 *
+	 * @param array<string, mixed> $input The posted config[] fields.
+	 * @return array<string, mixed>
+	 */
+	private static function resolve_store( array $input ): array {
+		$value = is_scalar( $input['REDEEMID_STORE_DOMAIN'] ?? null ) ? trim( (string) $input['REDEEMID_STORE_DOMAIN'] ) : '';
+
+		if ( '' === $value || null === ConfigValues::invalid( 'REDEEMID_STORE_DOMAIN', $value ) ) {
+			return $input;
+		}
+
+		$found = Domains::myshopify_for( ConfigValues::normalise_domain( $value ) );
+
+		if ( '' !== $found ) {
+			$input['REDEEMID_STORE_DOMAIN'] = $found;
+		}
+
+		return $input;
 	}
 
 	/**
@@ -124,6 +150,7 @@ final class SettingsPage {
 	private static function after_change( array $changed ): void {
 		if ( in_array( 'REDEEMID_STORE_DOMAIN', $changed, true ) ) {
 			Discovery::forget_store();
+			Domains::forget();
 		}
 
 		if ( array_intersect( [ 'REDEEMID_STORE_DOMAIN', 'REDEEMID_ADMIN_CLIENT_ID', 'REDEEMID_ADMIN_CLIENT_SECRET' ], $changed ) ) {
@@ -295,7 +322,7 @@ final class SettingsPage {
 
 	private static function reason( string $code ): string {
 		return match ( $code ) {
-			ConfigValues::BAD_DOMAIN => __( 'use the store\'s your-store.myshopify.com domain, not a custom domain.', 'redeemid' ),
+			ConfigValues::BAD_DOMAIN => __( 'that address isn\'t a Shopify store. Use the store\'s web address or its your-store.myshopify.com domain.', 'redeemid' ),
 			ConfigValues::TOO_LONG   => __( 'that is longer than any Shopify credential.', 'redeemid' ),
 			ConfigValues::NO_KEY     => __( 'no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY.', 'redeemid' ),
 			default                  => __( 'paste the value without spaces or line breaks.', 'redeemid' ),

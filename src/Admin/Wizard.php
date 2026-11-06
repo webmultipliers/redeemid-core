@@ -715,7 +715,7 @@ final class Wizard {
 		self::copy_field( 'redeemid-js-origin', __( 'JavaScript origin', 'redeemid' ), untrailingslashit( home_url() ) );
 		self::copy_field( 'redeemid-logout-uri', __( 'Logout URI', 'redeemid' ), home_url( '/' ) );
 		?>
-		<p><?php esc_html_e( 'Then enter the store and client here. The store can be its your-store.myshopify.com domain, its handle, or any admin.shopify.com/store/… address copied from the browser. Saving tests sign-in at once and, when it answers, publishes the callback page.', 'redeemid' ); ?></p>
+		<p><?php esc_html_e( 'Then enter the store and client here. The store can be its own web address, its your-store.myshopify.com domain, its handle, or any admin.shopify.com/store/… address copied from the browser. Saving tests sign-in at once and, when it answers, publishes the callback page.', 'redeemid' ); ?></p>
 		<?php
 		self::config_form( 'sign_in' );
 		self::test_line( $facts, 'sign_in' );

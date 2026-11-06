@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: RedeemID 0.0.10\n"
+"Project-Id-Version: RedeemID 0.0.11\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/redeemid-core\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T21:52:25+00:00\n"
+"POT-Creation-Date: 2026-11-06T02:37:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: redeemid.php:3
 #: src/Abilities/Abilities.php:89
-#: src/Admin/Menu.php:56
-#: src/Admin/Menu.php:173
+#: src/Admin/Menu.php:89
+#: src/Admin/Menu.php:206
 #: src/Admin/Overview.php:87
 #: src/Files/Probe.php:90
 #: src/Privacy/PolicyText.php:18
@@ -436,7 +436,7 @@ msgid "Signed in as"
 msgstr ""
 
 #: blocks/member-account/index.php:75
-#: src/Admin/SettingsPage.php:313
+#: src/Admin/SettingsPage.php:340
 msgid "Membership"
 msgstr ""
 
@@ -494,7 +494,7 @@ msgstr ""
 
 #. translators: %s: human time difference
 #: blocks/member-account/index.php:131
-#: src/Admin/Menu.php:245
+#: src/Admin/Menu.php:278
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -964,7 +964,7 @@ msgstr ""
 #: src/Admin/AccessTermFields.php:44
 #: src/Admin/AccessTermFields.php:56
 #: src/Admin/AccessTermFields.php:120
-#: src/Admin/Menu.php:66
+#: src/Admin/Menu.php:99
 #: assets/block-access.js:101
 #: assets/block-access.js:200
 #: assets/block-access.js:205
@@ -1271,7 +1271,7 @@ msgstr ""
 
 #: src/Admin/Access.php:276
 #: src/Admin/AccessFeatures.php:156
-#: src/Admin/Menu.php:148
+#: src/Admin/Menu.php:181
 #: src/Admin/Overview.php:123
 msgid "OK"
 msgstr ""
@@ -2323,12 +2323,12 @@ msgstr ""
 #: src/Admin/AdminBar.php:76
 #: src/Admin/Customers.php:570
 #: src/Admin/Customers.php:606
-#: src/Admin/Menu.php:62
+#: src/Admin/Menu.php:95
 msgid "Customers"
 msgstr ""
 
 #: src/Admin/Customers.php:65
-#: src/Admin/Menu.php:126
+#: src/Admin/Menu.php:159
 msgid "Not allowed."
 msgstr ""
 
@@ -2533,7 +2533,7 @@ msgid "Customers in Shopify"
 msgstr ""
 
 #: src/Admin/Customers.php:570
-#: src/Admin/Menu.php:62
+#: src/Admin/Menu.php:95
 msgid "Shopify customers"
 msgstr ""
 
@@ -2801,7 +2801,7 @@ msgid "Last attempt failed"
 msgstr ""
 
 #: src/Admin/Debug.php:72
-#: src/Admin/Menu.php:67
+#: src/Admin/Menu.php:100
 msgid "Debug"
 msgstr ""
 
@@ -2899,7 +2899,7 @@ msgid "Shopify API version"
 msgstr ""
 
 #: src/Admin/Debug.php:147
-#: src/Admin/SettingsPage.php:160
+#: src/Admin/SettingsPage.php:187
 msgid "Shopify connection"
 msgstr ""
 
@@ -2914,7 +2914,7 @@ msgstr ""
 #: src/Admin/Debug.php:154
 #: src/Admin/Overview.php:46
 #: src/Admin/Overview.php:140
-#: src/Admin/SettingsPage.php:194
+#: src/Admin/SettingsPage.php:221
 msgid "Admin API"
 msgstr ""
 
@@ -2939,7 +2939,7 @@ msgid "Last token request failed:"
 msgstr ""
 
 #: src/Admin/Debug.php:171
-#: src/Admin/SettingsPage.php:195
+#: src/Admin/SettingsPage.php:222
 msgid "Storefront API"
 msgstr ""
 
@@ -2980,7 +2980,7 @@ msgstr ""
 
 #: src/Admin/Debug.php:183
 #: src/Admin/EventsTable.php:31
-#: src/Admin/Menu.php:63
+#: src/Admin/Menu.php:96
 #: src/Admin/Overview.php:54
 #: src/Admin/Webhooks.php:63
 msgid "Webhooks"
@@ -3007,7 +3007,7 @@ msgid "Would this linked customer pass a tag rule right now? Uses their synced r
 msgstr ""
 
 #: src/Admin/Debug.php:207
-#: src/Admin/SettingsPage.php:225
+#: src/Admin/SettingsPage.php:252
 msgid "wp-config.php"
 msgstr ""
 
@@ -3016,7 +3016,7 @@ msgid "Settings (database)"
 msgstr ""
 
 #: src/Admin/Debug.php:209
-#: src/Admin/SettingsPage.php:227
+#: src/Admin/SettingsPage.php:254
 msgid "Unreadable"
 msgstr ""
 
@@ -3131,12 +3131,12 @@ msgid "Unlocked"
 msgstr ""
 
 #: src/Admin/Events.php:38
-#: src/Admin/Menu.php:64
+#: src/Admin/Menu.php:97
 msgid "App events"
 msgstr ""
 
 #: src/Admin/Events.php:39
-#: src/Admin/Menu.php:64
+#: src/Admin/Menu.php:97
 msgid "Shopify app events"
 msgstr ""
 
@@ -3276,81 +3276,81 @@ msgstr ""
 msgid "Anything but Everyone moves the file to the protected folder, so its address checks access on every download."
 msgstr ""
 
-#: src/Admin/Menu.php:57
+#: src/Admin/Menu.php:90
 msgid "RedeemID overview"
 msgstr ""
 
-#: src/Admin/Menu.php:57
+#: src/Admin/Menu.php:90
 #: src/Admin/Overview.php:87
 #: src/Admin/Wizard.php:425
 msgid "Overview"
 msgstr ""
 
-#: src/Admin/Menu.php:58
+#: src/Admin/Menu.php:91
 #: src/Admin/Wizard.php:424
 msgid "Set up RedeemID"
 msgstr ""
 
-#: src/Admin/Menu.php:58
+#: src/Admin/Menu.php:91
 #: src/Admin/Wizard.php:423
 msgid "Setup"
 msgstr ""
 
-#: src/Admin/Menu.php:59
+#: src/Admin/Menu.php:92
 msgid "RedeemID settings"
 msgstr ""
 
-#: src/Admin/Menu.php:59
+#: src/Admin/Menu.php:92
 #: src/Admin/Overview.php:112
 #: src/Admin/Overview.php:143
-#: src/Admin/SettingsPage.php:141
+#: src/Admin/SettingsPage.php:168
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/Menu.php:60
+#: src/Admin/Menu.php:93
 #: src/Admin/TextPage.php:159
 msgid "Replace text"
 msgstr ""
 
-#: src/Admin/Menu.php:60
+#: src/Admin/Menu.php:93
 #: src/Admin/TextPage.php:158
 msgid "Text"
 msgstr ""
 
-#: src/Admin/Menu.php:63
+#: src/Admin/Menu.php:96
 #: src/Admin/Webhooks.php:63
 msgid "Shopify webhooks"
 msgstr ""
 
-#: src/Admin/Menu.php:65
+#: src/Admin/Menu.php:98
 #: src/Admin/Reports.php:40
 msgid "Membership reports"
 msgstr ""
 
-#: src/Admin/Menu.php:65
+#: src/Admin/Menu.php:98
 #: src/Admin/Reports.php:39
 #: src/Admin/Wizard.php:1048
 msgid "Reports"
 msgstr ""
 
-#: src/Admin/Menu.php:66
+#: src/Admin/Menu.php:99
 msgid "RedeemID access"
 msgstr ""
 
-#: src/Admin/Menu.php:67
+#: src/Admin/Menu.php:100
 msgid "RedeemID debug"
 msgstr ""
 
-#: src/Admin/Menu.php:149
+#: src/Admin/Menu.php:182
 #: src/Admin/Webhooks.php:88
 msgid "Problem"
 msgstr ""
 
-#: src/Admin/Menu.php:185
+#: src/Admin/Menu.php:218
 msgid "Setup incomplete"
 msgstr ""
 
-#: src/Admin/Menu.php:185
+#: src/Admin/Menu.php:218
 msgid "Configured"
 msgstr ""
 
@@ -3371,7 +3371,7 @@ msgid "Open settings"
 msgstr ""
 
 #: src/Admin/Overview.php:38
-#: src/Admin/SettingsPage.php:193
+#: src/Admin/SettingsPage.php:220
 msgid "Customer sign-in"
 msgstr ""
 
@@ -3732,363 +3732,363 @@ msgstr ""
 msgid "Week ending"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:141
+#: src/Admin/SettingsPage.php:168
 msgid "Shopify settings"
 msgstr ""
 
 #. translators: %d: number of values changed
-#: src/Admin/SettingsPage.php:145
+#: src/Admin/SettingsPage.php:172
 #, php-format
 msgid "Connection saved. %d values changed."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:146
+#: src/Admin/SettingsPage.php:173
 #: src/Admin/Wizard.php:470
 msgid "Some values were not saved. They are marked below."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:147
+#: src/Admin/SettingsPage.php:174
 msgid "A new signing secret was made. Give it to every receiver: the old one no longer verifies."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:148
+#: src/Admin/SettingsPage.php:175
 msgid "No encryption key is available, so a signing secret cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:149
+#: src/Admin/SettingsPage.php:176
 msgid "The test event was delivered."
 msgstr ""
 
 #. translators: %d: HTTP status code, or 0 when there was no answer
-#: src/Admin/SettingsPage.php:151
+#: src/Admin/SettingsPage.php:178
 #, php-format
 msgid "The test event was not accepted (HTTP status %d; 0 means no answer within five seconds, or the address could not be reached)."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:160
+#: src/Admin/SettingsPage.php:187
 msgid "Enter the store's credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or REDEEMID_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:174
+#: src/Admin/SettingsPage.php:201
 msgid "Save connection"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:192
+#: src/Admin/SettingsPage.php:219
 msgid "Store"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:196
+#: src/Admin/SettingsPage.php:223
 msgid "Encryption"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:214
+#: src/Admin/SettingsPage.php:241
 msgid "Other"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:226
+#: src/Admin/SettingsPage.php:253
 msgid "Saved"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:228
-#: src/Admin/SettingsPage.php:248
+#: src/Admin/SettingsPage.php:255
+#: src/Admin/SettingsPage.php:275
 msgid "Required"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:228
+#: src/Admin/SettingsPage.php:255
 #: src/Admin/Wizard.php:530
 msgid "Optional"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:255
+#: src/Admin/SettingsPage.php:282
 msgid "(empty)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:255
-#: src/Admin/SettingsPage.php:270
+#: src/Admin/SettingsPage.php:282
+#: src/Admin/SettingsPage.php:297
 msgid "Not set"
 msgstr ""
 
 #. translators: %s: constant name
-#: src/Admin/SettingsPage.php:261
+#: src/Admin/SettingsPage.php:288
 #, php-format
 msgid "Set in wp-config.php by %s, which always wins. Remove the constant to edit it here."
 msgstr ""
 
 #. translators: %s: constant name
-#: src/Admin/SettingsPage.php:264
+#: src/Admin/SettingsPage.php:291
 #, php-format
 msgid "Only read from wp-config.php: define %s there."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:270
+#: src/Admin/SettingsPage.php:297
 msgid "Saved. Leave blank to keep it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:273
+#: src/Admin/SettingsPage.php:300
 msgid "Remove the saved value"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:276
+#: src/Admin/SettingsPage.php:303
 msgid "A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or REDEEMID_ENCRYPTION_KEY changed since it was saved. Enter it again."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:284
+#: src/Admin/SettingsPage.php:311
 msgid "Not saved:"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:298
-msgid "use the store's your-store.myshopify.com domain, not a custom domain."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:299
-msgid "that is longer than any Shopify credential."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:300
-msgid "no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:301
-msgid "paste the value without spaces or line breaks."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:313
-msgid "How members sign in and come back from checkout, what happens on sign-out, and when to warn you about webhooks."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:317
-msgid "Membership tags"
-msgstr ""
-
-#: src/Admin/SettingsPage.php:319
-msgid "Customers get their tags in Shopify, from Shopify Flow or a subscription or membership app. This plugin only reads them. See docs/shopify-flow.md for recipes."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:323
-msgid "Shared devices"
-msgstr ""
-
 #: src/Admin/SettingsPage.php:325
-msgid "Clear the cart on sign-out"
+msgid "that address isn't a Shopify store. Use the store's web address or its your-store.myshopify.com domain."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:326
-msgid "With Shopify's plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in."
+msgid "that is longer than any Shopify credential."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:330
-msgid "Sign-in links"
+#: src/Admin/SettingsPage.php:327
+msgid "no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:332
-msgid "Show the member \"Sign in with an email code\" button on the WordPress login screen"
-msgstr ""
-
-#: src/Admin/SettingsPage.php:333
-msgid "Send visitors to Shopify sign-in from the site's login links (comment forms, themes, other plugins)"
-msgstr ""
-
-#: src/Admin/SettingsPage.php:334
-msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Sign in and Sign out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:338
-msgid "WordPress passwords"
+#: src/Admin/SettingsPage.php:328
+msgid "paste the value without spaces or line breaks."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:340
-msgid "Linked members sign in with Shopify only"
+msgid "How members sign in and come back from checkout, what happens on sign-out, and when to warn you about webhooks."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:341
-msgid "Off: a WordPress user who links a Shopify customer keeps their WordPress password too. On: their password, password reset and application passwords stop working, and Shopify is the only way in. Nothing is deleted, so turning this off gives the password back. Staff are never affected."
+#: src/Admin/SettingsPage.php:344
+msgid "Membership tags"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:345
-msgid "Signed-in browsers per member"
+#: src/Admin/SettingsPage.php:346
+msgid "Customers get their tags in Shopify, from Shopify Flow or a subscription or membership app. This plugin only reads them. See docs/shopify-flow.md for recipes."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:348
-msgid "Slows down one membership shared by many people: when a linked member signs in on more browsers than this, their oldest sessions on this site end. Their Shopify account is untouched, and staff are never capped. 0 turns it off."
+#: src/Admin/SettingsPage.php:350
+msgid "Shared devices"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:352
-msgid "Subscription management"
+msgid "Clear the cart on sign-out"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:355
-msgid "Where members manage or cancel a subscription, such as your subscription app's customer portal. Shown on the Member Account block; leave empty to hide the link."
+#: src/Admin/SettingsPage.php:353
+msgid "With Shopify's plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:357
+msgid "Sign-in links"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:359
+msgid "Show the member \"Sign in with an email code\" button on the WordPress login screen"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:360
-msgid "Return link for Shopify"
+msgid "Send visitors to Shopify sign-in from the site's login links (comment forms, themes, other plugins)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:363
-msgid "Add this as a \"Return to the site\" link on Shopify's order status page and in the order confirmation email. Signed-in buyers go back to the page they bought from; guests are asked to log in with the email from their order."
+#: src/Admin/SettingsPage.php:361
+msgid "Staff keep the WordPress login: wp-admin still goes to wp-login.php. Menus can add Sign in and Sign out under Appearance → Menus → Shopify, and classic themes can use the [redeemid_login] shortcode."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:365
+msgid "WordPress passwords"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:367
+msgid "Linked members sign in with Shopify only"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:368
+msgid "Off: a WordPress user who links a Shopify customer keeps their WordPress password too. On: their password, password reset and application passwords stop working, and Shopify is the only way in. Nothing is deleted, so turning this off gives the password back. Staff are never affected."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:372
+msgid "Signed-in browsers per member"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:375
+msgid "Slows down one membership shared by many people: when a linked member signs in on more browsers than this, their oldest sessions on this site end. Their Shopify account is untouched, and staff are never capped. 0 turns it off."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:379
+msgid "Subscription management"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:382
+msgid "Where members manage or cancel a subscription, such as your subscription app's customer portal. Shown on the Member Account block; leave empty to hide the link."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:387
+msgid "Return link for Shopify"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:390
+msgid "Add this as a \"Return to the site\" link on Shopify's order status page and in the order confirmation email. Signed-in buyers go back to the page they bought from; guests are asked to log in with the email from their order."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:394
 msgid "Webhook silence warning"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:369
+#: src/Admin/SettingsPage.php:396
 msgid "days"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:370
+#: src/Admin/SettingsPage.php:397
 msgid "Warn when no webhook has arrived for this long while customers are linked. Quiet stores can raise it; 0 turns the warning off. Access never expires: this only tells you deliveries may have stopped."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:374
+#: src/Admin/SettingsPage.php:401
 msgid "Alerts"
 msgstr ""
 
 #. translators: %s: email address
-#: src/Admin/SettingsPage.php:376
+#: src/Admin/SettingsPage.php:403
 #, php-format
 msgid "Email %s when webhook delivery has a problem"
 msgstr ""
 
 #. translators: %s: email address
-#: src/Admin/SettingsPage.php:377
+#: src/Admin/SettingsPage.php:404
 msgid "Sent by the daily check: at once for a new problem, then at most once a day while it lasts."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:381
+#: src/Admin/SettingsPage.php:408
 msgid "Storefront pages"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:383
+#: src/Admin/SettingsPage.php:410
 msgid "Serve product, collection and cart pages"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:384
+#: src/Admin/SettingsPage.php:411
 msgid "Pages built from the Shopify Product, Shopify Collection and Shopify Cart blocks, with titles, descriptions and product structured data. Block themes can edit them under Appearance → Editor → Templates. A path a published WordPress page already uses is left alone."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:388
+#: src/Admin/SettingsPage.php:415
 #: src/Support/Health.php:82
 msgid "Product pages"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:389
+#: src/Admin/SettingsPage.php:416
 #: src/Support/Health.php:82
 msgid "Collection pages"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:390
+#: src/Admin/SettingsPage.php:417
 #: src/Support/Health.php:82
 msgid "Cart page"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:399
+#: src/Admin/SettingsPage.php:426
 msgid "RedeemID takes precedence over Shopify’s WordPress plugin"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:400
+#: src/Admin/SettingsPage.php:427
 msgid "Off: while Shopify’s plugin is active, RedeemID leaves any of these paths it has claimed (it always claims /cart) and its cart stays the only cart. On: RedeemID answers its paths and runs the cart, and stops signing in Shopify’s plugin’s cart. Paths that differ from Shopify’s never clash either way."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:425
+#: src/Admin/SettingsPage.php:452
 msgid "Hidden"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:426
+#: src/Admin/SettingsPage.php:453
 msgid "Members can see"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:427
+#: src/Admin/SettingsPage.php:454
 msgid "Members can change"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:431
+#: src/Admin/SettingsPage.php:458
 msgid "Member preferences"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:433
+#: src/Admin/SettingsPage.php:460
 msgid "Customer metafields defined in Shopify (Settings → Custom data → Customers). Choose which ones members may see or change. Answers are saved to the customer in Shopify, never in WordPress, and your theme, a forms plugin or a headless front end shows them through redeemid_preferences() and redeemid_set_preferences() or GET and POST /redeemid/v1/account/preferences. Fields in the membership namespace are never offered."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:435
+#: src/Admin/SettingsPage.php:462
 msgid "Needs the Admin API (Shopify connection above)."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:435
+#: src/Admin/SettingsPage.php:462
 msgid "Shopify could not be reached, so the fields can't be listed right now. Saved choices are kept."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:440
+#: src/Admin/SettingsPage.php:467
 msgid "No customer metafields are defined in Shopify yet."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:458
+#: src/Admin/SettingsPage.php:485
 msgid "Used by RedeemID for membership dates"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:458
+#: src/Admin/SettingsPage.php:485
 msgid "Type not supported"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:479
+#: src/Admin/SettingsPage.php:506
 msgid "Event webhooks"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:479
+#: src/Admin/SettingsPage.php:506
 msgid "Send RedeemID's events as signed JSON to one address: a CRM, an email service, Zapier, Make or your own endpoint. Sent in the background and retried for about 15 hours. Off while the address is empty."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:484
+#: src/Admin/SettingsPage.php:511
 msgid "Send events to"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:487
+#: src/Admin/SettingsPage.php:514
 msgid "An https address. Redirects are not followed, and anything but a 2xx answer within five seconds counts as a failure."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:491
-#: src/Admin/SettingsPage.php:494
+#: src/Admin/SettingsPage.php:518
+#: src/Admin/SettingsPage.php:521
 msgid "Events"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:499
+#: src/Admin/SettingsPage.php:526
 msgid "wall_shown fires on page views and meter_used on metered reads, so each can mean one background job per view on a busy site."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:503
+#: src/Admin/SettingsPage.php:530
 msgid "Matching people"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:505
+#: src/Admin/SettingsPage.php:532
 msgid "Include the Shopify customer ID for linked members"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:506
+#: src/Admin/SettingsPage.php:533
 msgid "Lets a CRM or email service that syncs your Shopify customers match the person. Events never carry an email address or Shopify tags. Once sent, an event is the receiver's: erasing a member here does not remove it there, so list the receiver in your privacy policy."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:527
+#: src/Admin/SettingsPage.php:554
 msgid "Send a test event"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:528
+#: src/Admin/SettingsPage.php:555
 msgid "Make a new secret"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:529
-#: src/Admin/SettingsPage.php:537
+#: src/Admin/SettingsPage.php:556
+#: src/Admin/SettingsPage.php:564
 msgid "Signing secret"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:529
+#: src/Admin/SettingsPage.php:556
 msgid "Every event webhook carries X-RedeemID-Signature: t=<time>,v1=<HMAC-SHA256 of \"<time>.<body>\" with this secret>. Check it, and that the time is recent, before trusting a delivery."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:533
+#: src/Admin/SettingsPage.php:560
 msgid "No encryption key is available, so no signing secret can be stored and nothing is sent. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:536
+#: src/Admin/SettingsPage.php:563
 msgid "Show the secret"
 msgstr ""
 
@@ -4857,7 +4857,7 @@ msgid "Under Application setup, add these three values exactly:"
 msgstr ""
 
 #: src/Admin/Wizard.php:718
-msgid "Then enter the store and client here. The store can be its your-store.myshopify.com domain, its handle, or any admin.shopify.com/store/… address copied from the browser. Saving tests sign-in at once and, when it answers, publishes the callback page."
+msgid "Then enter the store and client here. The store can be its own web address, its your-store.myshopify.com domain, its handle, or any admin.shopify.com/store/… address copied from the browser. Saving tests sign-in at once and, when it answers, publishes the callback page."
 msgstr ""
 
 #: src/Admin/Wizard.php:730

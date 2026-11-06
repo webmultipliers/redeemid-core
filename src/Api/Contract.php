@@ -21,7 +21,7 @@ namespace RedeemID\Api;
  * carries it at runtime.
  */
 final class Contract {
-	public const VERSION = '1.6.0';
+	public const VERSION = '1.7.0';
 
 	/** Global functions that exist only for Blockstudio's "populate", not for other code. */
 	public const INTERNAL_FUNCTIONS = [ 'redeemid_level_options' ];
@@ -36,6 +36,7 @@ final class Contract {
 		'redeemid_meter',
 		'redeemid_preferences',
 		'redeemid_set_preferences',
+		'redeemid_store_url',
 	];
 
 	public const ACTIONS = [
