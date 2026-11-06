@@ -88,7 +88,7 @@ final class Customers {
 			$linked = in_array( $result, [ 'staff_linked', 'staff_linked_flagged' ], true );
 			$who    = sanitize_text_field( wp_unslash( $_POST['link_user'] ?? '' ) );
 			$user   = $linked ? ( is_email( $who ) ? get_user_by( 'email', $who ) : get_user_by( 'login', $who ) ) : null;
-			self::finish( $result, 1, $user ? $user->ID : 0 );
+			self::finish( $result, 1, $user ? $user->ID : 0, 'link' );
 		}
 
 		if ( StaffLink::DO_CLEAR === $do ) {
@@ -101,11 +101,11 @@ final class Customers {
 
 		if ( 'activation_refresh' === $do ) {
 			Activation::forget();
-			self::finish( '', 0 );
+			self::finish( '', 0, 0, 'activation' );
 		}
 
 		if ( str_starts_with( $do, 'bulk_' ) ) {
-			self::finish( self::bulk( $do ), 0 );
+			self::finish( self::bulk( $do ), 0, 0, 'resync' );
 		}
 
 		$detail = 'detail' === sanitize_key( wp_unslash( $_REQUEST['back'] ?? '' ) ) && 'unlink' !== $do;
@@ -297,14 +297,13 @@ final class Customers {
 		$stats = Activation::stats();
 
 		if ( ! $stats['levels'] && null === $stats['shopify_total'] ) {
+			Menu::panel_start( '' );
+			echo '<div class="redeemid-panel__body"><p>' . esc_html__( 'Nothing to count yet: define a level under Access, and connect the Admin API so Shopify can be asked how many customers hold it.', 'redeemid' ) . '</p></div>';
+			Menu::panel_end();
 			return;
 		}
 
-		Menu::panel_start(
-			__( 'Activation', 'redeemid' ),
-			__( 'Customers Shopify tags for each level, and how many of them have signed in to this site. Members who haven\'t can be pointed at the sign-in page. Counted once an hour.', 'redeemid' ),
-			self::bulk_button( 'activation_refresh', __( 'Count again', 'redeemid' ) )
-		);
+		Menu::panel_start( __( 'By level', 'redeemid' ), '', self::bulk_button( 'activation_refresh', __( 'Count again', 'redeemid' ) ) );
 		?>
 		<div class="redeemid-panel__body redeemid-panel__body--flush">
 			<table class="widefat striped">
@@ -366,12 +365,7 @@ final class Customers {
 			$buttons .= self::bulk_button( 'bulk_cancel', __( 'Cancel', 'redeemid' ) );
 		}
 
-		Menu::panel_start(
-			__( 'Resync all customers', 'redeemid' ),
-			__( 'Re-reads every linked customer\'s tags and status from Shopify, 50 per request, using only the spare half of the store\'s API budget so sign-ins and webhooks are never slowed. It runs in the background: you can leave this page. Nothing starts it on a schedule.', 'redeemid' ),
-			$buttons,
-			'redeemid-bulk'
-		);
+		Menu::panel_start( __( 'Resync all customers', 'redeemid' ), $job ? '' : __( 'Not run yet on this site.', 'redeemid' ), $buttons, 'redeemid-bulk' );
 
 		if ( $job ) :
 			[ $state, $label ] = $statuses[ $job['status'] ] ?? [ 'neutral', $job['status'] ];
@@ -502,11 +496,16 @@ final class Customers {
 		return [ 'add' => $add, 'remove' => $remove ];
 	}
 
-	private static function finish( string $result, int $count, int $user_id = 0 ): never {
+	/**
+	 * Back to a customer's page when there is one, otherwise to $tab of the list.
+	 */
+	private static function finish( string $result, int $count, int $user_id = 0, string $tab = '' ): never {
 		$args = [ 'result' => $result, 'n' => $count ];
 
 		if ( $user_id ) {
 			$args['user'] = $user_id;
+		} elseif ( '' !== $tab ) {
+			$args['tab'] = $tab;
 		}
 
 		wp_safe_redirect( Menu::url( self::PAGE, $args ) );
@@ -557,21 +556,57 @@ final class Customers {
 		);
 	}
 
+	/**
+	 * The list page's tabs: slug => label.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function tabs(): array {
+		return [
+			'customers'  => __( 'Linked customers', 'redeemid' ),
+			'activation' => __( 'Activation', 'redeemid' ),
+			'resync'     => __( 'Resync all', 'redeemid' ),
+			'link'       => __( 'Link a user', 'redeemid' ),
+		];
+	}
+
 	private static function list(): void {
-		$table   = new CustomersTable();
+		$tabs    = self::tabs();
+		$tab     = Menu::tab( $tabs );
 		$actions = '';
+		$intros  = [
+			'customers'  => __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'redeemid' ),
+			'activation' => __( 'Customers Shopify tags for each level, and how many of them have signed in to this site. Members who haven\'t can be pointed at the sign-in page. Counted once an hour.', 'redeemid' ),
+			'resync'     => __( 'Re-reads every linked customer\'s tags and status from Shopify, 50 per request, using only the spare half of the store\'s API budget so sign-ins and webhooks are never slowed. It runs in the background: you can leave this page. Nothing starts it on a schedule.', 'redeemid' ),
+			'link'       => __( 'For a member whose WordPress and Shopify emails differ, so signing in can\'t link them. The account is flagged until you clear it. Staff accounts can\'t be linked.', 'redeemid' ),
+		];
 
 		if ( '' !== Config::admin_url() ) {
 			$actions .= sprintf( '<a class="page-title-action" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( Config::admin_url( 'customers' ) ), esc_html__( 'Customers in Shopify', 'redeemid' ) );
 		}
 
+		Menu::page_start( __( 'Customers', 'redeemid' ), __( 'Shopify customers', 'redeemid' ), $actions );
+		Menu::tabs( self::PAGE, $tabs, $tab, __( 'Customer sections', 'redeemid' ) );
+		echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
+		self::notices();
+
+		match ( $tab ) {
+			'activation' => self::activation_panel(),
+			'resync'     => self::bulk_panel(),
+			'link'       => StaffLink::panel(),
+			default      => self::table(),
+		};
+	}
+
+	private static function table(): void {
+		$table   = new CustomersTable();
 		$filters = CustomerQuery::filters();
 		$table->prepare_items();
-		Menu::page_start( __( 'Customers', 'redeemid' ), __( 'Shopify customers', 'redeemid' ), $actions, __( 'WordPress users linked to a Shopify customer. Tags are read from Shopify; edits are written back to Shopify, never kept only in WordPress.', 'redeemid' ) );
-		self::notices();
-		self::activation_panel();
-		self::bulk_panel();
-		StaffLink::panel();
+		$job = BulkResync::job();
+
+		if ( $job && BulkJob::is_open( $job ) ) {
+			printf( '<div class="notice notice-info inline"><p>%s <a href="%s">%s</a></p></div>', esc_html__( 'A resync of every customer is in progress.', 'redeemid' ), esc_url( Menu::url( self::PAGE, [ 'tab' => 'resync' ] ) ), esc_html__( 'See its progress', 'redeemid' ) );
+		}
 		?>
 		<?php $table->views(); ?>
 		<form method="get" id="redeemid-customer-filters">

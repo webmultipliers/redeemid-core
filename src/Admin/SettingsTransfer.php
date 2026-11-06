@@ -6,14 +6,14 @@ use RedeemID\Support\Logger;
 use RedeemID\Support\Transfer;
 
 /**
- * RedeemID → Access → Export / import: download this site's settings as
+ * RedeemID → Settings → Export / import: download this site's settings as
  * JSON, or load a file, see what it would change (the dry run), and import
  * the sections you tick. See Support\Transfer for what a file holds.
  *
  * A loaded file waits in a short-lived transient for the person who loaded
  * it, so the preview and the import read exactly the same data.
  */
-final class AccessTransfer {
+final class SettingsTransfer {
 	public const ACTION = 'redeemid_transfer';
 
 	private const PENDING = 'redeemid_transfer_';
@@ -82,7 +82,7 @@ final class AccessTransfer {
 				break;
 		}
 
-		wp_safe_redirect( Menu::url( Access::PAGE, $args ) );
+		wp_safe_redirect( Menu::url( SettingsPage::PAGE, $args ) );
 		exit;
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
@@ -99,7 +99,7 @@ final class AccessTransfer {
 	}
 
 	/**
-	 * Notices for Access::render(): result code => [ type, text ].
+	 * Notices for SettingsPage::render(): result code => [ type, text ].
 	 *
 	 * @return array<string, array{0: string, 1: string}>
 	 */

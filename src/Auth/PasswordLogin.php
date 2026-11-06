@@ -6,7 +6,7 @@ use RedeemID\Settings;
 use RedeemID\Sync\Mirror;
 
 /**
- * Optional: linked members sign in with Shopify only (Settings → Membership →
+ * Optional: linked members sign in with Shopify only (Settings → Sign-in →
  * "Linked members sign in with Shopify only", off by default).
  *
  * An existing WordPress user who links a Shopify customer keeps their

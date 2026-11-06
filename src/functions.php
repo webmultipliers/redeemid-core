@@ -96,7 +96,7 @@ function redeemid_meter( int|\WP_User|null $user = null ): array {
 
 /**
  * A member's preferences: the customer metafields the site owner lets
- * members see or change (RedeemID → Settings → Member preferences), with
+ * members see or change (RedeemID → Settings → Members), with
  * their current values read from Shopify. Each field carries key
  * (namespace.key), name, description, type, choices, min, max, editable
  * and value. No user: the current visitor. A visitor who isn't a linked

@@ -41,8 +41,29 @@ final class Settings {
 		return apply_filters( 'redeemid_setting_' . $key, self::all()[ $key ] ?? null );
 	}
 
+	/**
+	 * The posted field that names the settings a form holds, so a form that
+	 * shows only some of them (one Settings tab) leaves the others as saved.
+	 */
+	public const FIELDS = '_fields';
+
+	/**
+	 * The hidden field a form showing only $keys adds, as HTML.
+	 *
+	 * @param string[] $keys
+	 */
+	public static function fields_input( array $keys ): string {
+		return '<input type="hidden" name="' . esc_attr( self::OPTION . '[' . self::FIELDS . ']' ) . '" value="' . esc_attr( implode( ',', $keys ) ) . '">';
+	}
+
 	public static function sanitize( mixed $input ): array {
 		$input = is_array( $input ) ? $input : [];
+
+		if ( isset( $input[ self::FIELDS ] ) ) {
+			// Only these keys were on the form: an unticked box among them is off, every other key keeps its saved value.
+			$keys  = array_flip( array_intersect( explode( ',', (string) $input[ self::FIELDS ] ), array_keys( self::DEFAULTS ) ) );
+			$input = array_intersect_key( $input, $keys ) + array_diff_key( self::all(), $keys );
+		}
 
 		return [
 			'clear_cart_on_logout' => ! empty( $input['clear_cart_on_logout'] ),

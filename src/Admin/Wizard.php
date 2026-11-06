@@ -685,7 +685,7 @@ final class Wizard {
 		<?php endif; ?>
 		<p class="description">
 			<?php esc_html_e( 'Moving from another RedeemID site?', 'redeemid' ); ?>
-			<a href="<?php echo esc_url( Menu::url( Access::PAGE, [ 'tab' => 'transfer' ] ) ); ?>"><?php esc_html_e( 'Import its levels, rules and settings', 'redeemid' ); ?></a>
+			<a href="<?php echo esc_url( Menu::url( SettingsPage::PAGE, [ 'tab' => 'transfer' ] ) ); ?>"><?php esc_html_e( 'Import its levels, rules and settings', 'redeemid' ); ?></a>
 		</p>
 		<?php
 	}

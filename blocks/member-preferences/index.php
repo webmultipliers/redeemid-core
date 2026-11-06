@@ -73,7 +73,7 @@ $redeemid_editable = array_filter( $redeemid_fields, static fn( $f ) => ! empty(
 	<p class="redeemid-preferences__status" role="status" data-redeemid-notice><?php echo isset( $redeemid_msgs[ $redeemid_said ] ) && 'field' !== $redeemid_said ? esc_html( $redeemid_msgs[ $redeemid_said ] ) : ''; ?></p>
 
 	<?php if ( $isEditor ) : ?>
-		<p><?php esc_html_e( 'Each member sees the fields you set to Members can see or Members can change under RedeemID → Settings → Member preferences, with their own answers. Guests see the fields they can change.', 'redeemid' ); ?></p>
+		<p><?php esc_html_e( 'Each member sees the fields you set to Members can see or Members can change under RedeemID → Settings → Members, with their own answers. Guests see the fields they can change.', 'redeemid' ); ?></p>
 	<?php elseif ( 'placeholder' === $redeemid_state ) : ?>
 		<p class="redeemid-preferences__loading"><?php esc_html_e( 'Loading your preferences…', 'redeemid' ); ?></p>
 	<?php elseif ( 'not_linked' === $redeemid_state ) : ?>

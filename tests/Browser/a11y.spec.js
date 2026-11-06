@@ -70,14 +70,15 @@ test.describe( 'admin', () => {
 	} );
 
 	// Every screen under the RedeemID menu, and every tab on those screens, so a
-	// new screen is checked without editing this file.
+	// new screen is checked without editing this file. Setup is left out of the
+	// menu, so it is added by hand.
 	test( 'every RedeemID screen', async ( { page } ) => {
 		await page.goto( '/wp-admin/admin.php?page=redeemid' );
 		const screens = await page.locator( '#toplevel_page_redeemid .wp-submenu a' ).evaluateAll( ( links ) => links.map( ( a ) => a.href ) );
 		expect( screens.length ).toBeGreaterThan( 0 );
 
 		const seen = new Set();
-		const queue = [ ...screens ];
+		const queue = [ ...screens, new URL( '/wp-admin/admin.php?page=redeemid-setup', page.url() ).href ];
 
 		while ( queue.length ) {
 			const url = queue.shift();

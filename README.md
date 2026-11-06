@@ -28,7 +28,7 @@ If PHP, WordPress or `sodium` is missing, activation stops with a notice instead
 
 ## Install
 
-Download `redeemid-core.zip` from the [latest release](https://github.com/webmultipliers/redeemid-core/releases/latest) and upload it in **Plugins → Add New → Upload Plugin**. The zip includes `vendor/`. On a site that isn't connected yet, activation opens **RedeemID → Setup**, a step-by-step wizard that connects the store, checks HTTPS and permalinks, and creates a first level. Each step links to the Shopify screen it needs (the Headless channel, customer accounts settings, the Dev Dashboard, Shopify Flow). Once **Test connection** passes, it publishes the sign-in callback page and registers the webhooks itself. A store still on classic customer accounts fails the test with a plain notice, because sign-in needs the new customer accounts.
+Download `redeemid-core.zip` from the [latest release](https://github.com/webmultipliers/redeemid-core/releases/latest) and upload it in **Plugins → Add New → Upload Plugin**. The zip includes `vendor/`. On a site that isn't connected yet, activation opens **RedeemID → Setup**, a step-by-step wizard (reopen it any time with **Set up step by step** on RedeemID → Overview) that connects the store, checks HTTPS and permalinks, and creates a first level. Each step links to the Shopify screen it needs (the Headless channel, customer accounts settings, the Dev Dashboard, Shopify Flow). Once **Test connection** passes, it publishes the sign-in callback page and registers the webhooks itself. A store still on classic customer accounts fails the test with a plain notice, because sign-in needs the new customer accounts.
 
 From source, or when your host syncs the plugin folder from Git, run `composer build-prod` in the plugin folder after each sync. That is the only build step. Blockstudio compiles block styles on first load, so `blocks/*/_dist/` must be writable.
 
@@ -51,7 +51,7 @@ These eight values are the whole connection. Enter each in **RedeemID → Settin
 | `REDEEMID_STOREFRONT_PRIVATE_TOKEN` | recommended | Storefront API private token from the same channel. Replaces the public token and sends each buyer's IP, so Shopify doesn't throttle checkout |
 | `REDEEMID_ENCRYPTION_KEY` | no | Base64 32-byte key for encrypting secrets. Defaults to one derived from the WordPress salts; set it if you rotate salts |
 
-Everything else (levels, content rules, features, sign-in links, storefront pages, preferences, event webhooks, alerts, and the plugin's own wording in **RedeemID → Text**) is set in the admin. See [Configuration](https://www.redeemid.com/docs/configuration/) and [Admin screens](https://www.redeemid.com/docs/admin/).
+Everything else (levels, content rules, features, sign-in links, storefront pages, preferences, event webhooks, alerts, and the plugin's own wording in **RedeemID → Settings → Text**) is set in the admin. See [Configuration](https://www.redeemid.com/docs/configuration/) and [Admin screens](https://www.redeemid.com/docs/admin/).
 
 ## Documentation
 
@@ -112,7 +112,7 @@ Psalm runs the same way as in CI: `composer global require vimeo/psalm:^6.5 huma
 
 Dependency review only works when **Dependency graph** is on for the repository (**Settings → Advanced Security → Dependency graph**). Until it is, that check fails on every pull request whatever the change; the other checks are unaffected.
 
-To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests,node_modules` when strings change: RedeemID → Text lists every string from it, and CI fails when it is out of date.
+To release, bump `Version:` in `redeemid.php`, `REDEEMID_VERSION` and the `Stable tag` in `readme.txt` together. When that reaches `main`, GitHub Actions builds `redeemid-core.zip` (without the files in `.distignore`) and publishes release `v<version>`; a version with a suffix such as `0.1.0-beta.1` is a pre-release. Regenerate `languages/redeemid.pot` with `wp i18n make-pot . languages/redeemid.pot --exclude=vendor,tests,node_modules` when strings change: RedeemID → Settings → Text lists every string from it, and CI fails when it is out of date.
 
 The rules every change follows:
 

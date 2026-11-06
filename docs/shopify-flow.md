@@ -100,7 +100,7 @@ They are read on every resync (a member's **Refresh Membership**, staff's resync
 
 ## Bringing customers back after checkout
 
-In Shopify, Settings → Checkout → Order status page → Additional scripts, or in the order confirmation email template, add a link to the return link shown under RedeemID → Settings in WordPress (it ends in `/?redeemid_return=1`). A customer who bought while signed in goes back to the page they bought from, and sees "Your membership is ready" as soon as the tag lands. A guest is asked to log in with Shopify using the email from their order.
+In Shopify, Settings → Checkout → Order status page → Additional scripts, or in the order confirmation email template, add a link to the return link shown under RedeemID → Settings → Sign-in in WordPress (it ends in `/?redeemid_return=1`). A customer who bought while signed in goes back to the page they bought from, and sees "Your membership is ready" as soon as the tag lands. A guest is asked to log in with Shopify using the email from their order.
 
 ## Checking it works
 

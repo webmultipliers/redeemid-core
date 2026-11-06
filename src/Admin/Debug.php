@@ -5,22 +5,20 @@ namespace RedeemID\Admin;
 use RedeemID\Blocks\Registration;
 use RedeemID\Commerce\CartBridge;
 use RedeemID\Config;
-use RedeemID\Entitlement\Rule;
 use RedeemID\Integrations\OfficialPlugin;
 use RedeemID\Requirements;
-use RedeemID\Settings;
 use RedeemID\Shopify\Admin as AdminApi;
 use RedeemID\Shopify\AdminToken;
 use RedeemID\Shopify\Discovery;
 use RedeemID\Shopify\Storefront;
 use RedeemID\Support\ConfigValues;
-use RedeemID\Support\CustomerId;
-use RedeemID\Sync\Mirror;
 
 /**
- * RedeemID → Debug: where each config value comes from, platform checks, the Shopify
- * connection, maintenance actions and the dry-run entitlement check.
- * Secret values are never displayed, only their presence.
+ * RedeemID → Debug. The Connection tab: where each config value comes from,
+ * the Shopify connection and its maintenance actions. The Platform tab:
+ * platform checks and Shopify's own WordPress plugin. Secret values are
+ * never displayed, only their presence. (A dry run of who gets what is
+ * Access → Test.)
  */
 final class Debug {
 	public const PAGE   = 'redeemid-debug';
@@ -48,14 +46,6 @@ final class Debug {
 				Discovery::flush();
 				$result = Discovery::available() ? 'discovery_ok' : 'discovery_error';
 				break;
-			case 'dryrun':
-				$query = [
-					'dry_customer' => sanitize_text_field( wp_unslash( $_POST['customer'] ?? '' ) ),
-					'dry_tags'     => sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) ),
-					'dry_mode'     => 'all' === sanitize_key( wp_unslash( $_POST['mode'] ?? '' ) ) ? 'all' : 'any',
-				];
-				wp_safe_redirect( Menu::url( self::PAGE, $query ) . '#dry-run' );
-				exit;
 		}
 
 		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
@@ -64,12 +54,11 @@ final class Debug {
 	}
 
 	public static function render(): void {
-		$blocks    = get_option( Registration::STATUS_OPTION );
-		$problems  = Requirements::problems();
-		$token_err = get_option( 'redeemid_admin_token_error' );
-		$ok        = [ Menu::class, 'dot' ];
-		$fmt_time  = [ Menu::class, 'time' ];
-		Menu::page_start( __( 'Debug', 'redeemid' ), __( 'Shopify debug', 'redeemid' ), '', __( 'Where each config value comes from, platform and connection checks, and maintenance tools. Secret values are never shown, only whether they are present.', 'redeemid' ) );
+		$tabs = self::tabs();
+		$tab  = Menu::tab( $tabs );
+		Menu::page_start( __( 'Debug', 'redeemid' ), __( 'Shopify debug', 'redeemid' ) );
+		Menu::tabs( self::PAGE, $tabs, $tab, __( 'Debug sections', 'redeemid' ) );
+		echo '<p class="redeemid-intro">' . esc_html( 'platform' === $tab ? __( 'What this site runs on, and how RedeemID shares the site with Shopify\'s own WordPress plugin.', 'redeemid' ) : __( 'Where each config value comes from and whether each Shopify API answers, with maintenance tools. Secret values are never shown, only whether they are present.', 'redeemid' ) ) . '</p>';
 		Menu::result_notice(
 			[
 				'discovery_ok'    => [ 'success', __( 'Shopify discovery refreshed.', 'redeemid' ) ],
@@ -78,8 +67,34 @@ final class Debug {
 				'token_error'     => [ 'error', __( 'Shopify refused the Admin token request. See below and App events.', 'redeemid' ) ],
 			]
 		);
-		?>
 
+		if ( 'platform' === $tab ) {
+			self::platform();
+			self::official_plugin();
+		} else {
+			self::connection();
+		}
+
+		Menu::page_end();
+	}
+
+	/**
+	 * The page's tabs: slug => label.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function tabs(): array {
+		return [
+			'connection' => __( 'Connection', 'redeemid' ),
+			'platform'   => __( 'Platform', 'redeemid' ),
+		];
+	}
+
+	private static function connection(): void {
+		$token_err = get_option( 'redeemid_admin_token_error' );
+		$ok        = [ Menu::class, 'dot' ];
+		$fmt_time  = [ Menu::class, 'time' ];
+		?>
 			<?php
 			Menu::panel_start(
 				__( 'Configuration', 'redeemid' ),
@@ -111,38 +126,6 @@ final class Debug {
 					</table>
 				</div>
 			<?php Menu::panel_end(); ?>
-
-			<div class="redeemid-columns">
-				<?php Menu::panel_start( __( 'Platform', 'redeemid' ) ); ?>
-					<ul class="redeemid-checks">
-						<li>
-							<span class="redeemid-checks__label"><?php echo $ok( ! $problems ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'PHP and WordPress', 'redeemid' ); ?></span>
-							<span class="redeemid-checks__detail">PHP <?php echo esc_html( PHP_VERSION ); ?> (≥ <?php echo esc_html( Requirements::MIN_PHP ); ?>), WordPress <?php echo esc_html( get_bloginfo( 'version' ) ); ?> (≥ <?php echo esc_html( Requirements::MIN_WP ); ?>)</span>
-						</li>
-						<li>
-							<span class="redeemid-checks__label"><?php echo $ok( defined( 'BLOCKSTUDIO_VERSION' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>Blockstudio</span>
-							<span class="redeemid-checks__detail"><?php echo esc_html( defined( 'BLOCKSTUDIO_VERSION' ) ? BLOCKSTUDIO_VERSION : __( 'not loaded', 'redeemid' ) ); ?></span>
-						</li>
-						<li>
-							<span class="redeemid-checks__label"><?php echo $ok( is_array( $blocks ) && 'ok' === $blocks['status'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Plugin blocks', 'redeemid' ); ?></span>
-							<span class="redeemid-checks__detail">
-								<?php echo esc_html( is_array( $blocks ) ? $blocks['status'] . ( $blocks['missing'] ?? [] ? ' (' . implode( ', ', $blocks['missing'] ) . ')' : '' ) : __( 'not checked yet', 'redeemid' ) ); ?>.
-								<?php if ( is_array( $blocks ) ) : ?>
-									<?php echo esc_html( sprintf( /* translators: 1: yes/no 2: yes/no */ __( 'Theme has Blockstudio blocks: %1$s. Theme block path untouched: %2$s.', 'redeemid' ), ! empty( $blocks['theme_blockstudio'] ) ? 'yes' : 'no', ! empty( $blocks['theme_path_intact'] ) ? 'yes' : 'no' ) ); ?>
-								<?php endif; ?>
-							</span>
-						</li>
-						<li>
-							<span class="redeemid-checks__label"><?php echo $ok( '' !== get_option( 'permalink_structure' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Pretty permalinks', 'redeemid' ); ?></span>
-							<span class="redeemid-checks__detail"><?php esc_html_e( 'The sign-in callback needs them.', 'redeemid' ); ?></span>
-						</li>
-						<li>
-							<span class="redeemid-checks__label"><?php esc_html_e( 'Shopify API version', 'redeemid' ); ?></span>
-							<span class="redeemid-checks__detail"><code><?php echo esc_html( Config::api_version() ); ?></code></span>
-						</li>
-					</ul>
-				<?php Menu::panel_end(); ?>
-			</div>
 
 			<?php Menu::panel_start( __( 'Shopify connection', 'redeemid' ) ); ?>
 				<ul class="redeemid-checks">
@@ -181,7 +164,7 @@ final class Debug {
 					</li>
 					<li>
 						<span class="redeemid-checks__label"><?php esc_html_e( 'Webhooks', 'redeemid' ); ?></span>
-						<span class="redeemid-checks__detail"><a href="<?php echo esc_url( Menu::url( Webhooks::PAGE ) ); ?>"><?php esc_html_e( 'RedeemID → Webhooks', 'redeemid' ); ?></a></span>
+						<span class="redeemid-checks__detail"><a href="<?php echo esc_url( Menu::url( Webhooks::PAGE, [ 'tab' => 'health' ] ) ); ?>"><?php esc_html_e( 'RedeemID → Webhooks → Health and setup', 'redeemid' ); ?></a></span>
 					</li>
 				</ul>
 				<div class="redeemid-panel__footer">
@@ -189,14 +172,44 @@ final class Debug {
 					<?php Menu::action_button( self::ACTION, 'token', __( 'Request a fresh Admin token', 'redeemid' ) ); ?>
 				</div>
 			<?php Menu::panel_end(); ?>
-
-			<?php self::official_plugin(); ?>
-
-			<?php Menu::panel_start( __( 'Dry-run entitlement check', 'redeemid' ), __( 'Would this linked customer pass a tag rule right now? Uses their synced record, as the site does.', 'redeemid' ), '', 'dry-run' ); ?>
-				<?php self::dry_run(); ?>
-			<?php Menu::panel_end(); ?>
 		<?php
-		Menu::page_end();
+	}
+
+	private static function platform(): void {
+		$blocks   = get_option( Registration::STATUS_OPTION );
+		$problems = Requirements::problems();
+		$ok       = [ Menu::class, 'dot' ];
+		?>
+				<?php Menu::panel_start( __( 'Platform', 'redeemid' ) ); ?>
+					<ul class="redeemid-checks">
+						<li>
+							<span class="redeemid-checks__label"><?php echo $ok( ! $problems ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'PHP and WordPress', 'redeemid' ); ?></span>
+							<span class="redeemid-checks__detail">PHP <?php echo esc_html( PHP_VERSION ); ?> (≥ <?php echo esc_html( Requirements::MIN_PHP ); ?>), WordPress <?php echo esc_html( get_bloginfo( 'version' ) ); ?> (≥ <?php echo esc_html( Requirements::MIN_WP ); ?>)</span>
+						</li>
+						<li>
+							<span class="redeemid-checks__label"><?php echo $ok( defined( 'BLOCKSTUDIO_VERSION' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>Blockstudio</span>
+							<span class="redeemid-checks__detail"><?php echo esc_html( defined( 'BLOCKSTUDIO_VERSION' ) ? BLOCKSTUDIO_VERSION : __( 'not loaded', 'redeemid' ) ); ?></span>
+						</li>
+						<li>
+							<span class="redeemid-checks__label"><?php echo $ok( is_array( $blocks ) && 'ok' === $blocks['status'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Plugin blocks', 'redeemid' ); ?></span>
+							<span class="redeemid-checks__detail">
+								<?php echo esc_html( is_array( $blocks ) ? $blocks['status'] . ( $blocks['missing'] ?? [] ? ' (' . implode( ', ', $blocks['missing'] ) . ')' : '' ) : __( 'not checked yet', 'redeemid' ) ); ?>.
+								<?php if ( is_array( $blocks ) ) : ?>
+									<?php echo esc_html( sprintf( /* translators: 1: yes/no 2: yes/no */ __( 'Theme has Blockstudio blocks: %1$s. Theme block path untouched: %2$s.', 'redeemid' ), ! empty( $blocks['theme_blockstudio'] ) ? 'yes' : 'no', ! empty( $blocks['theme_path_intact'] ) ? 'yes' : 'no' ) ); ?>
+								<?php endif; ?>
+							</span>
+						</li>
+						<li>
+							<span class="redeemid-checks__label"><?php echo $ok( '' !== get_option( 'permalink_structure' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Pretty permalinks', 'redeemid' ); ?></span>
+							<span class="redeemid-checks__detail"><?php esc_html_e( 'The sign-in callback needs them.', 'redeemid' ); ?></span>
+						</li>
+						<li>
+							<span class="redeemid-checks__label"><?php esc_html_e( 'Shopify API version', 'redeemid' ); ?></span>
+							<span class="redeemid-checks__detail"><code><?php echo esc_html( Config::api_version() ); ?></code></span>
+						</li>
+					</ul>
+				<?php Menu::panel_end(); ?>
+		<?php
 	}
 
 	/**
@@ -239,47 +252,5 @@ final class Debug {
 		</ul>
 		<?php
 		Menu::panel_end();
-	}
-
-	private static function dry_run(): void {
-		// phpcs:disable WordPress.Security.NonceVerification -- read-only display.
-		$customer = sanitize_text_field( wp_unslash( $_GET['dry_customer'] ?? '' ) );
-		$tags     = sanitize_text_field( wp_unslash( $_GET['dry_tags'] ?? '' ) );
-		$mode     = 'all' === sanitize_key( wp_unslash( $_GET['dry_mode'] ?? '' ) ) ? 'all' : 'any';
-		// phpcs:enable
-		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="redeemid-panel__body redeemid-inline-form">
-			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
-			<input type="hidden" name="do" value="dryrun">
-			<?php wp_nonce_field( self::ACTION ); ?>
-			<input type="text" name="customer" aria-label="<?php esc_attr_e( 'Shopify customer ID', 'redeemid' ); ?>" placeholder="<?php esc_attr_e( 'Shopify customer ID', 'redeemid' ); ?>" value="<?php echo esc_attr( $customer ); ?>">
-			<input type="text" name="tags" class="regular-text" aria-label="<?php esc_attr_e( 'Required tags', 'redeemid' ); ?>" placeholder="<?php esc_attr_e( 'Required tags, comma separated', 'redeemid' ); ?>" value="<?php echo esc_attr( $tags ); ?>">
-			<select name="mode" aria-label="<?php esc_attr_e( 'Match', 'redeemid' ); ?>"><option value="any"><?php esc_html_e( 'any', 'redeemid' ); ?></option><option value="all" <?php selected( 'all', $mode ); ?>><?php esc_html_e( 'all', 'redeemid' ); ?></option></select>
-			<?php submit_button( __( 'Check', 'redeemid' ), 'secondary', 'submit', false ); ?>
-		</form>
-		<?php
-		if ( '' === $customer ) {
-			return;
-		}
-
-		$id   = CustomerId::parse( $customer );
-		$user = $id ? Mirror::find_user( $id ) : null;
-
-		if ( ! $user ) {
-			echo '<div class="redeemid-panel__body"><p>' . esc_html__( 'No WordPress user is linked to that customer.', 'redeemid' ) . '</p></div>';
-			return;
-		}
-
-		$member   = Mirror::member( $user->ID );
-		$decision = Settings::evaluator()->decide( Rule::from_attributes( [ 'requiredTags' => $tags, 'matchMode' => $mode ] ), $member, time() );
-		?>
-		<table class="widefat striped redeemid-kv redeemid-dry-result">
-			<tr><th><?php esc_html_e( 'WordPress user', 'redeemid' ); ?></th><td>#<?php echo (int) $user->ID; ?></td></tr>
-			<tr><th><?php esc_html_e( 'Synced tags', 'redeemid' ); ?></th><td><?php echo esc_html( implode( ', ', $member->tags ) ?: '—' ); ?></td></tr>
-			<tr><th><?php esc_html_e( 'Status', 'redeemid' ); ?></th><td><?php echo esc_html( $member->status ); ?></td></tr>
-			<tr><th><?php esc_html_e( 'Last sync', 'redeemid' ); ?></th><td><?php echo $member->last_sync ? esc_html( wp_date( 'Y-m-d H:i', $member->last_sync ) ) : '—'; ?> (<?php echo esc_html( (string) get_user_meta( $user->ID, Mirror::SYNC_SOURCE, true ) ); ?>)</td></tr>
-			<tr><th><?php esc_html_e( 'Decision', 'redeemid' ); ?></th><td><strong><?php echo esc_html( $decision->granted ? __( 'Unlocked', 'redeemid' ) : __( 'Locked', 'redeemid' ) ); ?></strong> (<?php echo esc_html( $decision->reason ); ?>)</td></tr>
-		</table>
-		<?php
 	}
 }

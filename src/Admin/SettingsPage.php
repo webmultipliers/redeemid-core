@@ -16,7 +16,9 @@ use RedeemID\Support\Logger;
 use RedeemID\Webhooks\Registrar;
 
 /**
- * RedeemID → Settings: the Shopify connection and the plugin's behaviour.
+ * RedeemID → Settings, one tab per subject: the Shopify connection, sign-in,
+ * members, the storefront, event webhooks, replacement text (TextPage) and
+ * export / import (SettingsTransfer).
  *
  * Every Config::definitions() value can be saved here, in the options table,
  * so a site can be set up without editing wp-config.php. A constant of the
@@ -50,7 +52,7 @@ final class SettingsPage {
 			$args['n']      = is_int( $status ) ? $status : 0;
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, $args ) . '#redeemid-outbound' );
+		wp_safe_redirect( Menu::url( self::PAGE, [ 'tab' => 'events' ] + $args ) );
 		exit;
 	}
 
@@ -163,50 +165,87 @@ final class SettingsPage {
 		}
 	}
 
+	/**
+	 * The page's tabs: slug => label.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function tabs(): array {
+		return [
+			'connection' => __( 'Shopify connection', 'redeemid' ),
+			'sign-in'    => __( 'Sign-in', 'redeemid' ),
+			'members'    => __( 'Members', 'redeemid' ),
+			'storefront' => __( 'Storefront', 'redeemid' ),
+			'events'     => __( 'Event webhooks', 'redeemid' ),
+			'text'       => __( 'Text', 'redeemid' ),
+			'transfer'   => __( 'Export / import', 'redeemid' ),
+		];
+	}
+
 	public static function render(): void {
-		$invalid = self::invalid_fields();
-		Menu::page_start( __( 'Settings', 'redeemid' ), __( 'Shopify settings', 'redeemid' ) );
+		$tabs   = self::tabs();
+		$tab    = Menu::tab( $tabs );
+		$intros = [
+			'connection' => __( 'Enter the store\'s credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or REDEEMID_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it.', 'redeemid' ),
+			'sign-in'    => __( 'How members sign in, what happens when they sign out, and how buyers come back from checkout.', 'redeemid' ),
+			'members'    => __( 'What members can manage themselves. Customers get their membership tags in Shopify, from Shopify Flow or a subscription or membership app; RedeemID only reads them. See docs/shopify-flow.md for recipes.', 'redeemid' ),
+			'storefront' => __( 'Product, collection and cart pages served from your Shopify catalog.', 'redeemid' ),
+			'events'     => __( 'Send RedeemID\'s events as signed JSON to one address: a CRM, an email service, Zapier, Make or your own endpoint. Sent in the background and retried for about 15 hours. Off while the address is empty.', 'redeemid' ),
+			'text'       => __( 'Put RedeemID in your own words: any text the plugin shows, to visitors, members or staff, can read the way you want ("Account" can read "Portal"). Only the strings you give new text change. Replacements sit on top of translation, so text you leave alone keeps its translation. Each empty field shows the current text; clear a field to go back to it.', 'redeemid' ),
+			'transfer'   => __( 'Move a set-up site\'s levels, rules and settings to another site, such as staging to production, or keep a copy before a big change.', 'redeemid' ),
+		];
+
+		Menu::page_start( __( 'Settings', 'redeemid' ), __( 'Settings', 'redeemid' ) );
+		Menu::tabs( self::PAGE, $tabs, $tab, __( 'Settings sections', 'redeemid' ) );
+		echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
 		Menu::result_notice(
 			[
 				/* translators: %d: number of values changed */
-				'config_saved'   => [ 'success', __( 'Connection saved. %d values changed.', 'redeemid' ) ],
-				'config_invalid' => [ 'error', __( 'Some values were not saved. They are marked below.', 'redeemid' ) ],
+				'config_saved'         => [ 'success', __( 'Connection saved. %d values changed.', 'redeemid' ) ],
+				'config_invalid'       => [ 'error', __( 'Some values were not saved. They are marked below.', 'redeemid' ) ],
 				'outbound_rotated'     => [ 'success', __( 'A new signing secret was made. Give it to every receiver: the old one no longer verifies.', 'redeemid' ) ],
 				'outbound_no_key'      => [ 'error', __( 'No encryption key is available, so a signing secret cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY.', 'redeemid' ) ],
 				'outbound_test_ok'     => [ 'success', __( 'The test event was delivered.', 'redeemid' ) ],
 				/* translators: %d: HTTP status code, or 0 when there was no answer */
 				'outbound_test_failed' => [ 'error', __( 'The test event was not accepted (HTTP status %d; 0 means no answer within five seconds, or the address could not be reached).', 'redeemid' ) ],
-			]
+			] + SettingsTransfer::messages()
 		);
+		// options.php leaves its "Settings saved." here; core prints it only on its own Settings screens.
+		settings_errors();
 
-		$sections = self::sections();
-		?>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" autocomplete="off">
-				<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
-				<?php wp_nonce_field( self::ACTION ); ?>
-				<?php Menu::panel_start( __( 'Shopify connection', 'redeemid' ), __( 'Enter the store\'s credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or REDEEMID_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it.', 'redeemid' ) ); ?>
-					<div class="redeemid-panel__body redeemid-panel__body--flush">
-						<table class="form-table" role="presentation">
-							<?php foreach ( $sections as [ $heading, $names ] ) : ?>
-								<tr class="redeemid-section-row">
-									<th colspan="2" scope="colgroup"><?php echo esc_html( $heading ); ?></th>
-								</tr>
-								<?php foreach ( $names as $name ) : ?>
-									<?php self::field( $name, Config::definitions()[ $name ], $invalid[ $name ] ?? '' ); ?>
-								<?php endforeach; ?>
-							<?php endforeach; ?>
-						</table>
-					</div>
-					<div class="redeemid-panel__footer">
-						<?php submit_button( __( 'Save connection', 'redeemid' ), 'primary', 'submit', false ); ?>
-					</div>
-				<?php Menu::panel_end(); ?>
-			</form>
+		match ( $tab ) {
+			'sign-in'    => self::sign_in(),
+			'members'    => self::members(),
+			'storefront' => self::storefront(),
+			'events'     => self::events(),
+			'text'       => TextPage::render(),
+			'transfer'   => SettingsTransfer::render(),
+			default      => self::connection(),
+		};
 
-			<?php self::behaviour(); ?>
-			<?php self::outbound_secret(); ?>
-		<?php
 		Menu::page_end();
+	}
+
+	private static function connection(): void {
+		$invalid = self::invalid_fields();
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" autocomplete="off">
+			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
+			<?php wp_nonce_field( self::ACTION ); ?>
+			<?php foreach ( self::sections() as [ $heading, $names ] ) : ?>
+				<?php Menu::panel_start( $heading ); ?>
+				<div class="redeemid-panel__body redeemid-panel__body--flush">
+					<table class="form-table" role="presentation">
+						<?php foreach ( $names as $name ) : ?>
+							<?php self::field( $name, Config::definitions()[ $name ], $invalid[ $name ] ?? '' ); ?>
+						<?php endforeach; ?>
+					</table>
+				</div>
+				<?php Menu::panel_end(); ?>
+			<?php endforeach; ?>
+			<p class="submit"><?php submit_button( __( 'Save connection', 'redeemid' ), 'primary', 'submit', false ); ?></p>
+		</form>
+		<?php
 	}
 
 	/**
@@ -330,29 +369,64 @@ final class SettingsPage {
 	}
 
 	/**
-	 * The non-secret behaviour settings (Settings::OPTION), saved through options.php.
+	 * A form for some of the non-secret settings (Settings::OPTION), saved
+	 * through options.php. Settings on other tabs keep their saved values.
+	 *
+	 * @param string[] $keys The settings the rows hold.
+	 * @param callable $rows Prints the form-table rows, given Settings::all().
 	 */
-	private static function behaviour(): void {
-		$settings = Settings::all();
+	private static function settings_form( array $keys, callable $rows, string $title = '' ): void {
 		?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'redeemid' ); ?>
-			<?php Menu::panel_start( __( 'Membership', 'redeemid' ), __( 'How members sign in and come back from checkout, what happens on sign-out, and when to warn you about webhooks.', 'redeemid' ) ); ?>
+			<?php echo Settings::fields_input( $keys ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped by Settings::fields_input(). ?>
+			<?php Menu::panel_start( $title ); ?>
 			<div class="redeemid-panel__body redeemid-panel__body--flush">
 			<table class="form-table" role="presentation">
+				<?php $rows( Settings::all() ); ?>
+			</table>
+			</div>
+			<div class="redeemid-panel__footer">
+				<?php submit_button( null, 'primary', 'submit', false ); ?>
+			</div>
+			<?php Menu::panel_end(); ?>
+		</form>
+		<?php
+	}
+
+	/**
+	 * The webhook warning settings, for the Webhooks page's Health tab.
+	 */
+	public static function webhook_warnings(): void {
+		self::settings_form(
+			[ 'quiet_days', 'alert_email' ],
+			static function ( array $settings ): void {
+				?>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Membership tags', 'redeemid' ); ?></th>
+					<th scope="row"><label for="redeemid-quiet-days"><?php esc_html_e( 'Webhook silence warning', 'redeemid' ); ?></label></th>
 					<td>
-						<p class="description"><?php esc_html_e( 'Customers get their tags in Shopify, from Shopify Flow or a subscription or membership app. This plugin only reads them. See docs/shopify-flow.md for recipes.', 'redeemid' ); ?></p>
+						<input type="number" min="0" max="90" id="redeemid-quiet-days" class="small-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[quiet_days]" value="<?php echo (int) $settings['quiet_days']; ?>"> <?php esc_html_e( 'days', 'redeemid' ); ?>
+						<p class="description"><?php esc_html_e( 'Warn when no webhook has arrived for this long while customers are linked. Quiet stores can raise it; 0 turns the warning off. Access never expires: this only tells you deliveries may have stopped.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Shared devices', 'redeemid' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Alerts', 'redeemid' ); ?></th>
 					<td>
-						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'redeemid' ); ?></label>
-						<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'redeemid' ); ?></p>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[alert_email]" value="1" <?php checked( ! empty( $settings['alert_email'] ) ); ?>> <?php echo esc_html( sprintf( /* translators: %s: email address */ __( 'Email %s when webhook delivery has a problem', 'redeemid' ), (string) get_option( 'admin_email' ) ) ); ?></label>
+						<p class="description"><?php esc_html_e( 'Sent by the daily check: at once for a new problem, then at most once a day while it lasts.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
+				<?php
+			},
+			__( 'Warnings', 'redeemid' )
+		);
+	}
+
+	private static function sign_in(): void {
+		self::settings_form(
+			[ 'login_button', 'shopify_login_links', 'shopify_only_login', 'session_limit', 'clear_cart_on_logout' ],
+			static function ( array $settings ): void {
+				?>
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Sign-in links', 'redeemid' ); ?></th>
 					<td>
@@ -376,13 +450,12 @@ final class SettingsPage {
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="redeemid-subscription-url"><?php esc_html_e( 'Subscription management', 'redeemid' ); ?></label></th>
+					<th scope="row"><?php esc_html_e( 'Shared devices', 'redeemid' ); ?></th>
 					<td>
-						<input type="url" id="redeemid-subscription-url" class="regular-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[subscription_url]" value="<?php echo esc_attr( (string) $settings['subscription_url'] ); ?>" placeholder="https://">
-						<p class="description"><?php esc_html_e( 'Where members manage or cancel a subscription, such as your subscription app\'s customer portal. Shown on the Member Account block; leave empty to hide the link.', 'redeemid' ); ?></p>
+						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[clear_cart_on_logout]" value="1" <?php checked( ! empty( $settings['clear_cart_on_logout'] ) ); ?>> <?php esc_html_e( 'Clear the cart on sign-out', 'redeemid' ); ?></label>
+						<p class="description"><?php esc_html_e( 'With Shopify\'s plugin active, a cart signed in to a customer is always dropped after sign-out. This also drops guest items added while signed in.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
-				<?php self::member_fields( (array) $settings['member_fields'] ); ?>
 				<tr>
 					<th scope="row"><label for="redeemid-return-url"><?php esc_html_e( 'Return link for Shopify', 'redeemid' ); ?></label></th>
 					<td>
@@ -390,52 +463,75 @@ final class SettingsPage {
 						<p class="description"><?php esc_html_e( 'Add this as a "Return to the site" link on Shopify\'s order status page and in the order confirmation email. Signed-in buyers go back to the page they bought from; guests are asked to log in with the email from their order.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
+				<?php
+			}
+		);
+	}
+
+	private static function members(): void {
+		self::settings_form(
+			[ 'subscription_url', 'member_fields' ],
+			static function ( array $settings ): void {
+				?>
 				<tr>
-					<th scope="row"><label for="redeemid-quiet-days"><?php esc_html_e( 'Webhook silence warning', 'redeemid' ); ?></label></th>
+					<th scope="row"><label for="redeemid-subscription-url"><?php esc_html_e( 'Subscription management', 'redeemid' ); ?></label></th>
 					<td>
-						<input type="number" min="0" max="90" id="redeemid-quiet-days" class="small-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[quiet_days]" value="<?php echo (int) $settings['quiet_days']; ?>"> <?php esc_html_e( 'days', 'redeemid' ); ?>
-						<p class="description"><?php esc_html_e( 'Warn when no webhook has arrived for this long while customers are linked. Quiet stores can raise it; 0 turns the warning off. Access never expires: this only tells you deliveries may have stopped.', 'redeemid' ); ?></p>
+						<input type="url" id="redeemid-subscription-url" class="regular-text" name="<?php echo esc_attr( Settings::OPTION ); ?>[subscription_url]" value="<?php echo esc_attr( (string) $settings['subscription_url'] ); ?>" placeholder="https://">
+						<p class="description"><?php esc_html_e( 'Where members manage or cancel a subscription, such as your subscription app\'s customer portal. Shown on the Member Account block; leave empty to hide the link.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Alerts', 'redeemid' ); ?></th>
-					<td>
-						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[alert_email]" value="1" <?php checked( ! empty( $settings['alert_email'] ) ); ?>> <?php echo esc_html( sprintf( /* translators: %s: email address */ __( 'Email %s when webhook delivery has a problem', 'redeemid' ), (string) get_option( 'admin_email' ) ) ); ?></label>
-						<p class="description"><?php esc_html_e( 'Sent by the daily check: at once for a new problem, then at most once a day while it lasts.', 'redeemid' ); ?></p>
-					</td>
-				</tr>
+				<?php
+				self::member_fields( (array) $settings['member_fields'] );
+			}
+		);
+	}
+
+	private static function storefront(): void {
+		self::settings_form(
+			[ 'storefront_pages', 'product_path', 'collection_path', 'cart_path', 'storefront_first' ],
+			static function ( array $settings ): void {
+				?>
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Storefront pages', 'redeemid' ); ?></th>
 					<td>
 						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[storefront_pages]" value="1" <?php checked( ! empty( $settings['storefront_pages'] ) ); ?>> <?php esc_html_e( 'Serve product, collection and cart pages', 'redeemid' ); ?></label>
 						<p class="description"><?php esc_html_e( 'Pages built from the Shopify Product, Shopify Collection and Shopify Cart blocks, with titles, descriptions and product structured data. Block themes can edit them under Appearance → Editor → Templates. A path a published WordPress page already uses is left alone.', 'redeemid' ); ?></p>
-						<?php
-						foreach (
-							[
-								'product_path'    => [ __( 'Product pages', 'redeemid' ), '/{handle}/' ],
-								'collection_path' => [ __( 'Collection pages', 'redeemid' ), '/{handle}/' ],
-								'cart_path'       => [ __( 'Cart page', 'redeemid' ), '/' ],
-							] as $redeemid_key => [ $redeemid_label, $redeemid_tail ]
-						) :
-							?>
-							<p>
-								<label for="redeemid-<?php echo esc_attr( $redeemid_key ); ?>"><?php echo esc_html( $redeemid_label ); ?></label><br>
-								<code><?php echo esc_html( untrailingslashit( home_url() ) ); ?>/</code><input type="text" id="redeemid-<?php echo esc_attr( $redeemid_key ); ?>" class="regular-text code" name="<?php echo esc_attr( Settings::OPTION ); ?>[<?php echo esc_attr( $redeemid_key ); ?>]" value="<?php echo esc_attr( (string) $settings[ $redeemid_key ] ); ?>"><code><?php echo esc_html( $redeemid_tail ); ?></code>
-							</p>
-						<?php endforeach; ?>
+					</td>
+				</tr>
+				<?php
+				foreach (
+					[
+						'product_path'    => [ __( 'Product pages', 'redeemid' ), '/{handle}/' ],
+						'collection_path' => [ __( 'Collection pages', 'redeemid' ), '/{handle}/' ],
+						'cart_path'       => [ __( 'Cart page', 'redeemid' ), '/' ],
+					] as $redeemid_key => [ $redeemid_label, $redeemid_tail ]
+				) :
+					?>
+					<tr>
+						<th scope="row"><label for="redeemid-<?php echo esc_attr( $redeemid_key ); ?>"><?php echo esc_html( $redeemid_label ); ?></label></th>
+						<td>
+							<code><?php echo esc_html( untrailingslashit( home_url() ) ); ?>/</code><input type="text" id="redeemid-<?php echo esc_attr( $redeemid_key ); ?>" class="regular-text code" name="<?php echo esc_attr( Settings::OPTION ); ?>[<?php echo esc_attr( $redeemid_key ); ?>]" value="<?php echo esc_attr( (string) $settings[ $redeemid_key ] ); ?>"><code><?php echo esc_html( $redeemid_tail ); ?></code>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Shopify’s WordPress plugin', 'redeemid' ); ?></th>
+					<td>
 						<label><input type="checkbox" name="<?php echo esc_attr( Settings::OPTION ); ?>[storefront_first]" value="1" <?php checked( ! empty( $settings['storefront_first'] ) ); ?>> <?php esc_html_e( 'RedeemID takes precedence over Shopify’s WordPress plugin', 'redeemid' ); ?></label>
 						<p class="description"><?php esc_html_e( 'Off: while Shopify’s plugin is active, RedeemID leaves any of these paths it has claimed (it always claims /cart) and its cart stays the only cart. On: RedeemID answers its paths and runs the cart, and stops signing in Shopify’s plugin’s cart. Paths that differ from Shopify’s never clash either way.', 'redeemid' ); ?></p>
 					</td>
 				</tr>
-			</table>
-			</div>
-			<div class="redeemid-panel__footer">
-				<?php submit_button( null, 'primary', 'submit', false ); ?>
-			</div>
-			<?php Menu::panel_end(); ?>
-			<?php self::outbound( $settings ); ?>
-		</form>
-		<?php
+				<?php
+			}
+		);
+	}
+
+	private static function events(): void {
+		self::settings_form(
+			[ 'outbound_url', 'outbound_events', 'outbound_customer' ],
+			[ self::class, 'outbound' ]
+		);
+		self::outbound_secret();
 	}
 
 	/**
@@ -459,7 +555,7 @@ final class SettingsPage {
 			<td>
 				<p class="description"><?php esc_html_e( 'Customer metafields defined in Shopify (Settings → Custom data → Customers). Choose which ones members may see or change. Answers are saved to the customer in Shopify, never in WordPress, and your theme, a forms plugin or a headless front end shows them through redeemid_preferences() and redeemid_set_preferences() or GET and POST /redeemid/v1/account/preferences. Fields in the membership namespace are never offered.', 'redeemid' ); ?></p>
 				<?php if ( is_wp_error( $definitions ) ) : ?>
-					<p><?php echo esc_html( 'shopify_admin_unconfigured' === $definitions->get_error_code() ? __( 'Needs the Admin API (Shopify connection above).', 'redeemid' ) : __( 'Shopify could not be reached, so the fields can\'t be listed right now. Saved choices are kept.', 'redeemid' ) ); ?></p>
+					<p><?php echo esc_html( 'shopify_admin_unconfigured' === $definitions->get_error_code() ? __( 'Needs the Admin API: add its credentials on the Shopify connection tab.', 'redeemid' ) : __( 'Shopify could not be reached, so the fields can\'t be listed right now. Saved choices are kept.', 'redeemid' ) ); ?></p>
 					<?php foreach ( Preferences::clean_modes( $modes ) as $redeemid_key => $redeemid_mode ) : ?>
 						<input type="hidden" name="<?php echo esc_attr( $name . '[' . $redeemid_key . ']' ); ?>" value="<?php echo esc_attr( $redeemid_mode ); ?>">
 					<?php endforeach; ?>
@@ -496,17 +592,14 @@ final class SettingsPage {
 	}
 
 	/**
-	 * The event webhook fields, inside the behaviour form.
+	 * The event webhook rows.
 	 *
 	 * @param array<string, mixed> $settings
 	 */
-	private static function outbound( array $settings ): void {
+	public static function outbound( array $settings ): void {
 		$name   = Settings::OPTION;
 		$chosen = Outbound::sanitize_events( $settings['outbound_events'] );
-		Menu::panel_start( __( 'Event webhooks', 'redeemid' ), __( 'Send RedeemID\'s events as signed JSON to one address: a CRM, an email service, Zapier, Make or your own endpoint. Sent in the background and retried for about 15 hours. Off while the address is empty.', 'redeemid' ), '', 'redeemid-outbound' );
 		?>
-		<div class="redeemid-panel__body redeemid-panel__body--flush">
-		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><label for="redeemid-outbound-url"><?php esc_html_e( 'Send events to', 'redeemid' ); ?></label></th>
 				<td>
@@ -533,13 +626,7 @@ final class SettingsPage {
 					<p class="description"><?php esc_html_e( 'Lets a CRM or email service that syncs your Shopify customers match the person. Events never carry an email address or Shopify tags. Once sent, an event is the receiver\'s: erasing a member here does not remove it there, so list the receiver in your privacy policy.', 'redeemid' ); ?></p>
 				</td>
 			</tr>
-		</table>
-		</div>
-		<div class="redeemid-panel__footer">
-			<?php submit_button( null, 'primary', 'submit', false ); ?>
-		</div>
 		<?php
-		Menu::panel_end();
 	}
 
 	/**

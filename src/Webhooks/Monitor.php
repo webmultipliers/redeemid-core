@@ -79,7 +79,7 @@ final class Monitor {
 		Menu::guard( self::ACTION );
 		self::run();
 
-		wp_safe_redirect( Menu::url( \RedeemID\Admin\Webhooks::PAGE, [ 'result' => self::problems() ? 'checked_problems' : 'checked_ok' ] ) );
+		wp_safe_redirect( Menu::url( \RedeemID\Admin\Webhooks::PAGE, [ 'tab' => 'health', 'result' => self::problems() ? 'checked_problems' : 'checked_ok' ] ) );
 		exit;
 	}
 
@@ -179,7 +179,7 @@ final class Monitor {
 		$wide     = $screen && in_array( $screen->id, [ 'dashboard', 'plugins' ], true );
 
 		// Failures everywhere staff land first; warnings only on the plugin's own pages.
-		// RedeemID → Webhooks lists them in its Delivery health panel instead.
+		// RedeemID → Webhooks → Health and setup lists them instead.
 		if ( ! $worst || \RedeemID\Admin\Webhooks::PAGE === $page || ( Watchdog::WARN === $worst && ! $ours ) || ( Watchdog::FAIL === $worst && ! $ours && ! $wide ) ) {
 			return;
 		}
@@ -189,7 +189,7 @@ final class Monitor {
 			Watchdog::FAIL === $worst ? 'error' : 'warning',
 			esc_html__( 'Shopify tag updates may not be reaching WordPress', 'redeemid' ),
 			implode( '', array_map( static fn( $m ) => '<li>' . esc_html( $m ) . '</li>', self::messages() ) ), // phpcs:ignore WordPress.Security.EscapeOutput -- escaped per item.
-			esc_url( Menu::url( \RedeemID\Admin\Webhooks::PAGE ) ),
+			esc_url( Menu::url( \RedeemID\Admin\Webhooks::PAGE, [ 'tab' => 'health' ] ) ),
 			esc_html__( 'Open RedeemID → Webhooks', 'redeemid' )
 		);
 	}
@@ -216,7 +216,7 @@ final class Monitor {
 			'description' => $worst
 				? '<ul>' . implode( '', array_map( static fn( $m ) => '<li>' . esc_html( $m ) . '</li>', self::messages() ) ) . '</ul>'
 				: '<p>' . esc_html__( 'Members gain and lose access when Shopify sends tag changes. Subscriptions, the processing queue and WP-Cron all look healthy.', 'redeemid' ) . '</p>',
-			'actions'     => sprintf( '<p><a href="%s">%s</a></p>', esc_url( Menu::url( \RedeemID\Admin\Webhooks::PAGE ) ), esc_html__( 'Open RedeemID → Webhooks', 'redeemid' ) ),
+			'actions'     => sprintf( '<p><a href="%s">%s</a></p>', esc_url( Menu::url( \RedeemID\Admin\Webhooks::PAGE, [ 'tab' => 'health' ] ) ), esc_html__( 'Open RedeemID → Webhooks', 'redeemid' ) ),
 			'test'        => 'redeemid_webhooks',
 		];
 	}
@@ -268,7 +268,7 @@ final class Monitor {
 			(string) get_option( 'admin_email' ),
 			/* translators: %s: site name */
 			sprintf( __( '[%s] Shopify tag updates may not be reaching WordPress', 'redeemid' ), wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES ) ),
-			implode( "\n", $lines ) . "\n\n" . Menu::url( \RedeemID\Admin\Webhooks::PAGE )
+			implode( "\n", $lines ) . "\n\n" . Menu::url( \RedeemID\Admin\Webhooks::PAGE, [ 'tab' => 'health' ] )
 		);
 
 		$state['alerted_at'] = time();

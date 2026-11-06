@@ -13,8 +13,9 @@ use RedeemID\Webhooks\Topics;
 use RedeemID\Webhooks\WpdbInboxStore;
 
 /**
- * RedeemID → Webhooks: what Shopify sent, what became of it, and the app's
- * webhook subscriptions. Deliveries with a bad signature never reach the
+ * RedeemID → Webhooks: the Received tab lists what Shopify sent and what
+ * became of it; Health and setup holds the app's webhook subscriptions, the
+ * daily check and the warning settings. Deliveries with a bad signature never reach the
  * inbox; they are listed from the event log instead.
  */
 final class Webhooks {
@@ -49,27 +50,78 @@ final class Webhooks {
 			}
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
+		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] + ( 'retry' === $do ? [] : [ 'tab' => 'health' ] ) ) );
 		exit;
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
+	/**
+	 * The page's tabs: slug => label.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function tabs(): array {
+		return [
+			'received' => __( 'Received', 'redeemid' ),
+			'health'   => __( 'Health and setup', 'redeemid' ),
+		];
+	}
+
 	public static function render(): void {
-		$secret_set = '' !== Config::webhook_secret();
-		$hooks      = get_option( Registrar::RESULT );
-		$rejected   = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
-		$table      = new WebhooksTable();
-		$table->prepare_items();
-		Menu::page_start( __( 'Webhooks', 'redeemid' ), __( 'Shopify webhooks', 'redeemid' ), '', __( 'What Shopify sent, what became of it, and the app\'s webhook subscriptions.', 'redeemid' ) );
+		$tabs = self::tabs();
+		$tab  = Menu::tab( $tabs );
+		Menu::page_start( __( 'Webhooks', 'redeemid' ), __( 'Shopify webhooks', 'redeemid' ) );
+		Menu::tabs( self::PAGE, $tabs, $tab, __( 'Webhook sections', 'redeemid' ) );
 		Menu::result_notice(
 			[
-				'registered'      => [ 'success', __( 'Webhook subscriptions are in place.', 'redeemid' ) ],
-				'register_failed' => [ 'error', __( 'Some webhook subscriptions could not be created. Details below.', 'redeemid' ) ],
-				'requeued'        => [ 'success', __( 'The webhook was queued again.', 'redeemid' ) ],
+				'registered'       => [ 'success', __( 'Webhook subscriptions are in place.', 'redeemid' ) ],
+				'register_failed'  => [ 'error', __( 'Some webhook subscriptions could not be created. Details below.', 'redeemid' ) ],
+				'requeued'         => [ 'success', __( 'The webhook was queued again.', 'redeemid' ) ],
 				'checked_ok'       => [ 'success', __( 'Checked with Shopify: subscriptions are in place and deliveries look healthy.', 'redeemid' ) ],
 				'checked_problems' => [ 'warning', __( 'Checked with Shopify. Some problems need attention; see Delivery health.', 'redeemid' ) ],
 			]
 		);
+
+		if ( 'health' === $tab ) {
+			echo '<p class="redeemid-intro">' . esc_html__( 'Members gain and lose access only when Shopify sends tag changes. These are the app\'s webhook subscriptions, the daily check that keeps them in place, and when to warn you.', 'redeemid' ) . '</p>';
+			settings_errors();
+			self::health();
+		} else {
+			self::received();
+		}
+
+		Menu::page_end();
+	}
+
+	/**
+	 * What Shopify sent, and what became of it.
+	 */
+	private static function received(): void {
+		$table = new WebhooksTable();
+		$table->prepare_items();
+		?>
+			<p class="redeemid-intro"><?php echo esc_html( sprintf( /* translators: %d: days */ __( 'What Shopify sent, and what became of it. Kept for %d days. Payloads are not stored; only the fields the plugin acts on, until the delivery is processed.', 'redeemid' ), WpdbInboxStore::RETENTION / DAY_IN_SECONDS ) ); ?></p>
+			<?php if ( Monitor::messages() ) : ?>
+				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Webhook delivery needs attention.', 'redeemid' ); ?> <a href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'health' ] ) ); ?>"><?php esc_html_e( 'See Health and setup', 'redeemid' ); ?></a></p></div>
+			<?php endif; ?>
+			<?php $table->views(); ?>
+			<form method="get">
+				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
+				<?php if ( WebhooksTable::filters()['status'] ) : ?>
+					<input type="hidden" name="status" value="<?php echo esc_attr( WebhooksTable::filters()['status'] ); ?>">
+				<?php endif; ?>
+				<?php $table->display(); ?>
+			</form>
+		<?php
+	}
+
+	/**
+	 * Delivery health, the subscriptions, rejected deliveries and the warning settings.
+	 */
+	private static function health(): void {
+		$secret_set = '' !== Config::webhook_secret();
+		$hooks      = get_option( Registrar::RESULT );
+		$rejected   = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
 		$monitor  = Monitor::state();
 		$messages = Monitor::messages();
 		?>
@@ -77,7 +129,7 @@ final class Webhooks {
 			<?php
 			Menu::panel_start(
 				__( 'Delivery health', 'redeemid' ),
-				__( 'Members gain and lose access only when Shopify sends tag changes, so the plugin checks once a day that the subscriptions still exist (re-creating any Shopify removed) and keeps watch on the processing queue and WP-Cron.', 'redeemid' ),
+				__( 'Once a day the plugin checks that the subscriptions still exist (re-creating any Shopify removed) and keeps watch on the processing queue and WP-Cron.', 'redeemid' ),
 				Menu::action_button_html( Monitor::ACTION, 'check', __( 'Check now', 'redeemid' ) ),
 				'health'
 			);
@@ -180,17 +232,7 @@ final class Webhooks {
 				<?php Menu::panel_end(); ?>
 			<?php endif; ?>
 
-			<h2 class="redeemid-section-title"><?php esc_html_e( 'Received', 'redeemid' ); ?></h2>
-			<p class="description"><?php echo esc_html( sprintf( /* translators: %d: days */ __( 'Kept for %d days. Payloads are not stored; only the fields the plugin acts on, until the delivery is processed.', 'redeemid' ), WpdbInboxStore::RETENTION / DAY_IN_SECONDS ) ); ?></p>
-			<?php $table->views(); ?>
-			<form method="get">
-				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
-				<?php if ( WebhooksTable::filters()['status'] ) : ?>
-					<input type="hidden" name="status" value="<?php echo esc_attr( WebhooksTable::filters()['status'] ); ?>">
-				<?php endif; ?>
-				<?php $table->display(); ?>
-			</form>
+			<?php SettingsPage::webhook_warnings(); ?>
 		<?php
-		Menu::page_end();
 	}
 }

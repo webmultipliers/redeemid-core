@@ -89,7 +89,7 @@ final class Health {
 				match ( true ) {
 					! Pages::enabled()     => __( 'off in Settings', 'redeemid' ),
 					'redeemid' === $owner => sprintf( /* translators: %s: path */ __( 'RedeemID, at %s', 'redeemid' ), $path ),
-					'shopify' === $owner  => sprintf( /* translators: %s: path */ __( '%s is Shopify’s plugin’s; RedeemID stands down (Settings → RedeemID takes precedence)', 'redeemid' ), $path ),
+					'shopify' === $owner  => sprintf( /* translators: %s: path */ __( '%s is Shopify’s plugin’s; RedeemID stands down (Settings → Storefront → RedeemID takes precedence)', 'redeemid' ), $path ),
 					default               => sprintf( /* translators: %s: path */ __( 'not served at %s: a WordPress page uses it, or permalinks need saving', 'redeemid' ), $path ),
 				}
 			);

@@ -132,10 +132,10 @@ final class StaffLink {
 	}
 
 	/**
-	 * The panel on the Customers list.
+	 * The Link a user tab of the Customers list.
 	 */
 	public static function panel(): void {
-		Menu::panel_start( __( 'Link a user by hand', 'redeemid' ), __( 'For a member whose WordPress and Shopify emails differ, so signing in can\'t link them. The account is flagged until you clear it. Staff accounts can\'t be linked.', 'redeemid' ) );
+		Menu::panel_start( __( 'Link a user by hand', 'redeemid' ) );
 		?>
 		<form class="redeemid-panel__body" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="<?php echo esc_attr( Customers::ACTION ); ?>">
