@@ -14,7 +14,8 @@ use RedeemID\Features\Route;
  *
  * Each level lists its tags with a health check (tags no synced customer
  * carries, usually a tag renamed in Shopify) and a dry run of how many linked
- * customers hold it today. The Features tab (AccessFeatures) maps registered
+ * customers hold it today; a level is added or edited on its own view of the
+ * tab (?edit=new or ?edit=<slug>). The Features tab (AccessFeatures) maps registered
  * features to levels and tags; a level's form shows the same mapping from
  * the other side. The Content rules tab (AccessRules) holds the
  * site default and the post type and taxonomy controls, and the Test tab
@@ -81,7 +82,8 @@ final class Access {
 				break;
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
+		// A refused level goes back to its form; everything else to the list.
+		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] + ( 'bad_slug' === $result ? [ 'edit' => 'new' ] : [] ) ) );
 		exit;
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
@@ -162,28 +164,33 @@ final class Access {
 		return $out;
 	}
 
+	/**
+	 * The page's tabs: slug => label.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function tabs(): array {
+		return [
+			'levels'   => __( 'Levels', 'redeemid' ),
+			'rules'    => __( 'Content rules', 'redeemid' ),
+			'features' => __( 'Features', 'redeemid' ),
+			'test'     => __( 'Test', 'redeemid' ),
+		];
+	}
+
 	public static function render(): void {
-		$tab = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$tab = in_array( $tab, [ 'rules', 'features', 'test', 'transfer' ], true ) ? $tab : 'levels';
+		$tabs   = self::tabs();
+		$tab    = Menu::tab( $tabs );
 		$intros = [
 			'levels'   => __( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'redeemid' ),
 			'rules'    => __( 'The rule an item gets, from strongest to weakest: the item\'s own setting, then its terms, then its post type, then the site default. Leave every level unticked for "no rule here". Blocks inside an item can only narrow its rule.', 'redeemid' ),
 			'features' => __( 'A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost.', 'redeemid' ),
-			'transfer' => __( 'Move a set-up site\'s access settings to another site, such as staging to production, or keep a copy before a big change.', 'redeemid' ),
 			'test'     => __( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'redeemid' ),
 		];
 
 		Menu::page_start( __( 'Access', 'redeemid' ), __( 'Access', 'redeemid' ) );
-		?>
-			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'Access sections', 'redeemid' ); ?>">
-				<a class="nav-tab <?php echo 'levels' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE ) ); ?>"><?php esc_html_e( 'Levels', 'redeemid' ); ?></a>
-				<a class="nav-tab <?php echo 'rules' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Content rules', 'redeemid' ); ?></a>
-				<a class="nav-tab <?php echo 'features' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'features' ] ) ); ?>"><?php esc_html_e( 'Features', 'redeemid' ); ?></a>
-				<a class="nav-tab <?php echo 'test' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'test' ] ) ); ?>"><?php esc_html_e( 'Test', 'redeemid' ); ?></a>
-				<a class="nav-tab <?php echo 'transfer' === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'transfer' ] ) ); ?>"><?php esc_html_e( 'Export / import', 'redeemid' ); ?></a>
-			</nav>
-			<?php
-			echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
+		Menu::tabs( self::PAGE, $tabs, $tab, __( 'Access sections', 'redeemid' ) );
+		echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
 
 			Menu::result_notice(
 				[
@@ -195,14 +202,13 @@ final class Access {
 					'rules_saved'       => [ 'success', __( 'Content rules saved. Every item picks them up on its next view.', 'redeemid' ) ],
 					'feature_saved'     => [ 'success', __( 'Feature mapping saved. It applies on every page from the next request.', 'redeemid' ) ],
 					'feature_forgotten' => [ 'success', __( 'Stored condition removed.', 'redeemid' ) ],
-				] + AccessTransfer::messages()
+				]
 			);
 
 			match ( $tab ) {
 				'rules'    => AccessRules::render(),
 				'features' => AccessFeatures::render(),
 				'test'     => AccessTest::render(),
-				'transfer' => AccessTransfer::render(),
 				default    => self::render_levels(),
 			};
 
@@ -214,19 +220,26 @@ final class Access {
 		$known   = LevelStore::known_tags();
 		$counts  = LevelStore::dry_run();
 		$managed = LevelStore::managed_in_code();
-		$edit    = $levels->get( sanitize_key( wp_unslash( $_GET['edit'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$asked   = sanitize_key( wp_unslash( $_GET['edit'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$edit    = $levels->get( $asked );
 		$edit    = $edit && ! $edit->builtin() ? $edit : null;
+		$adding  = 'new' === $asked;
 		$words   = [
 			'no_condition'    => __( 'No tags, so it grants nobody.', 'redeemid' ),
 			'missing_tags'    => __( 'Some tags are not on any synced customer. Was a tag renamed or deleted in Shopify?', 'redeemid' ),
 			'unknown_include' => __( 'Includes a level that does not exist.', 'redeemid' ),
 		];
 		?>
+		<?php if ( ! $managed && ( $edit || $adding ) ) : ?>
+			<?php self::level_form( $edit ); ?>
+			<?php return; ?>
+		<?php endif; ?>
+
 		<?php if ( $managed ) : ?>
 			<div class="notice notice-info inline"><p><?php esc_html_e( 'Managed in code: the redeemid_access_levels filter sets these levels, so they are read-only here.', 'redeemid' ); ?></p></div>
 		<?php endif; ?>
 
-		<?php Menu::panel_start( __( 'Levels', 'redeemid' ), '', $managed ? '' : sprintf( '<a class="button button-primary" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) . '#level-form' ), esc_html__( 'Add a level', 'redeemid' ) ) ); ?>
+		<?php Menu::panel_start( __( 'Levels', 'redeemid' ), '', $managed ? '' : sprintf( '<a class="button button-primary" href="%s">%s</a>', esc_url( Menu::url( self::PAGE, [ 'edit' => 'new' ] ) ), esc_html__( 'Add a level', 'redeemid' ) ) ); ?>
 			<div class="redeemid-panel__body redeemid-panel__body--flush redeemid-table-scroll">
 				<table class="widefat striped">
 					<thead>
@@ -289,7 +302,7 @@ final class Access {
 							<td><?php echo esc_html( implode( ', ', self::level_features( $slug ) ) ?: '—' ); ?></td>
 							<td class="redeemid-row-actions">
 								<?php if ( ! $level->builtin() && ! $managed ) : ?>
-									<a class="button button-small" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'edit' => $slug ] ) . '#level-form' ); ?>"><?php esc_html_e( 'Edit', 'redeemid' ); ?></a>
+									<a class="button button-small" href="<?php echo esc_url( Menu::url( self::PAGE, [ 'edit' => $slug ] ) ); ?>"><?php esc_html_e( 'Edit', 'redeemid' ); ?></a>
 									<?php Menu::action_button( self::ACTION, 'delete_level', __( 'Delete', 'redeemid' ), [ 'slug' => $slug ], 'delete small' ); ?>
 								<?php endif; ?>
 							</td>
@@ -324,8 +337,14 @@ final class Access {
 				<?php endif; ?>
 			</div>
 		<?php Menu::panel_end(); ?>
+		<?php
+	}
 
-		<?php if ( ! $managed ) : ?>
+	/**
+	 * Add a level, or edit $edit: its own view of the Levels tab.
+	 */
+	private static function level_form( ?Level $edit ): void {
+		?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
 				<input type="hidden" name="do" value="save_level">
@@ -335,7 +354,7 @@ final class Access {
 					/* translators: %s: level label */
 					$edit ? sprintf( __( 'Edit %s', 'redeemid' ), $edit->label ) : __( 'Add a level', 'redeemid' ),
 					__( 'Name the level, say which customer tags grant it, and what locked visitors see.', 'redeemid' ),
-					$edit ? sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) . '#level-form' ), esc_html__( 'Cancel', 'redeemid' ) ) : '',
+					sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( self::PAGE ) ), esc_html__( 'Cancel', 'redeemid' ) ),
 					'level-form'
 				);
 				?>
@@ -421,7 +440,6 @@ final class Access {
 				</div>
 				<?php Menu::panel_end(); ?>
 			</form>
-			<?php endif; ?>
 		<?php
 	}
 }

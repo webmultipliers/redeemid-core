@@ -6,7 +6,7 @@ Shopify publishes its own WordPress plugin for the Sell on WordPress sales chann
 
 | Shopify's plugin | RedeemID | Status |
 |---|---|---|
-| Connect with an install code (store URL and public Storefront token) | Settings and the setup wizard: store domain, Storefront private or public token, Admin app, sign-in client | Covered |
+| Connect with an install code (store URL and public Storefront token) | Connection and the setup wizard: store domain, Storefront private or public token, Admin app, sign-in client | Covered |
 | Product block | **Shopify Product** (`redeemid/product`): live price, options, quantity, buy-now, no JavaScript | Covered |
 | Collection block with pagination | **Shopify Collection** (`redeemid/collection`): server-rendered grid, link-based pages | Covered |
 | Membership or plan purchase | **Shopify Plan Card** (`redeemid/plan-card`), member-aware, selling plans | Covered (RedeemID only) |
@@ -22,7 +22,7 @@ Until a site removes Shopify's plugin, RedeemID follows these rules so the two n
 
 - **Names.** RedeemID's blocks are `redeemid/*`, its options `redeemid_*`, its CSS `.redeemid-*` and its query vars `redeemid_*`. Shopify's plugin uses `shopify-product/*`, `shopify-collection/*`, `create-block/*`, `shopify_*` options and `shopify_*` query vars.
 - **No web components.** RedeemID renders on the server and prints no `<shopify-store>`, `<shopify-cart>` or other Storefront Web Components, so nothing collides with the ones Shopify's plugin prints on every page.
-- **URLs.** Shopify's plugin prepends its rewrite rules for `/cart` (always) and `/products/*` and `/collections/*` (unless turned off). RedeemID uses the same paths by default, so links survive the switch. By default it stands down on any path Shopify's plugin has claimed. A site can give RedeemID other paths (Settings → Storefront pages), and then the two never meet, or turn on **RedeemID takes precedence**: RedeemID then adds its rules after Shopify's plugin has added its own, so RedeemID's win, through every permalink flush. Health shows who answers each path.
+- **URLs.** Shopify's plugin prepends its rewrite rules for `/cart` (always) and `/products/*` and `/collections/*` (unless turned off). RedeemID uses the same paths by default, so links survive the switch. By default it stands down on any path Shopify's plugin has claimed. A site can give RedeemID other paths (RedeemID → Settings → Storefront), and then the two never meet, or turn on **RedeemID takes precedence**: RedeemID then adds its rules after Shopify's plugin has added its own, so RedeemID's win, through every permalink flush. Health shows who answers each path.
 - **One cart.** While Shopify's plugin answers the cart path, RedeemID's cart and cart link switch off and RedeemID keeps signing that plugin's cart in for linked customers (`Commerce\CartBridge`, `POST /cart/identity`). When RedeemID answers it, the bridge switches off. The toggle keyboard fix switches off when the plugin is gone.
 - **Credentials.** RedeemID never reads its Storefront token (`shopify_api_key`). It reads only `shopify_store_url`, to check both plugins use the same store; a different store is an error on Overview.
 

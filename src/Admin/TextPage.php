@@ -7,7 +7,7 @@ use RedeemID\Strings\Overrides;
 use RedeemID\Strings\Text;
 
 /**
- * RedeemID → Text: replace any of RedeemID's strings with the site's own
+ * RedeemID → Settings → Text: replace any of RedeemID's strings with the site's own
  * words ("Account" → "Portal"), for every language or for one.
  *
  * The list is read from the bundled translation template, so it holds every
@@ -16,7 +16,6 @@ use RedeemID\Strings\Text;
  * a string with no replacement keeps its translation.
  */
 final class TextPage {
-	public const PAGE   = 'redeemid-text';
 	public const ACTION = 'redeemid_save_text';
 
 	/** Per user: what the last save refused, so the fields can show it. */
@@ -24,6 +23,13 @@ final class TextPage {
 
 	public static function register(): void {
 		add_action( 'admin_post_' . self::ACTION, [ self::class, 'save' ] );
+	}
+
+	/**
+	 * The Text tab of RedeemID → Settings.
+	 */
+	public static function url( array $args = [] ): string {
+		return Menu::url( SettingsPage::PAGE, [ 'tab' => 'text' ] + $args );
 	}
 
 	/**
@@ -127,7 +133,7 @@ final class TextPage {
 			$args['paged'] = $paged;
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, $args ) );
+		wp_safe_redirect( self::url( $args ) );
 		exit;
 	}
 
@@ -154,12 +160,6 @@ final class TextPage {
 		$table = new TextTable( $errors );
 		$table->prepare_items();
 
-		Menu::page_start(
-			__( 'Text', 'redeemid' ),
-			__( 'Replace text', 'redeemid' ),
-			'',
-			__( 'Put RedeemID in your own words: any text the plugin shows, to visitors, members or staff, can read the way you want ("Account" can read "Portal"). Only the strings you give new text change. Replacements sit on top of translation, so text you leave alone keeps its translation. Each empty field shows the current text; clear a field to go back to it.', 'redeemid' )
-		);
 		Menu::result_notice(
 			[
 				'text_saved'   => [ 'success', __( 'Text saved.', 'redeemid' ) ],
@@ -178,7 +178,8 @@ final class TextPage {
 		$languages = self::languages();
 		?>
 		<form method="get" id="redeemid-text-filters" class="redeemid-text-filters">
-			<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>">
+			<input type="hidden" name="page" value="<?php echo esc_attr( SettingsPage::PAGE ); ?>">
+			<input type="hidden" name="tab" value="text">
 			<?php foreach ( array_intersect_key( self::args( $f ), [ 'view' => 1, 's' => 1 ] ) as $key => $value ) : ?>
 				<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>">
 			<?php endforeach; ?>
@@ -198,7 +199,7 @@ final class TextPage {
 			<?php endif; ?>
 		</form>
 		<form method="get" class="redeemid-text-search">
-			<?php foreach ( self::args( [ 'page' => self::PAGE ] + $f ) as $key => $value ) : ?>
+			<?php foreach ( self::args( [ 'page' => SettingsPage::PAGE, 'tab' => 'text' ] + $f ) as $key => $value ) : ?>
 				<?php if ( 's' !== $key ) : ?>
 					<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>">
 				<?php endif; ?>
@@ -222,6 +223,5 @@ final class TextPage {
 			<?php endif; ?>
 		</form>
 		<?php
-		Menu::page_end();
 	}
 }

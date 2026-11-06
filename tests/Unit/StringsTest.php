@@ -70,7 +70,7 @@ POT;
 	public function test_the_bundled_template_lists_the_plugins_strings(): void {
 		$all = Catalog::all();
 
-		$this->assertArrayHasKey( 'Replace text', $all, 'The .pot is current: the Text page\'s own title is in it.' );
+		$this->assertArrayHasKey( 'Settings sections', $all, 'The .pot is current: the Settings page\'s tab bar label is in it.' );
 		$this->assertGreaterThan( 1000, count( $all ) );
 	}
 

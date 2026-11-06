@@ -1,6 +1,6 @@
 # Replacing text
 
-**RedeemID → Text** lets a site put RedeemID in its own words. Every string the plugin can show is listed there, read from the bundled translation template (`languages/redeemid.pot`): block text, sign-in and account messages, paywall and meter text, store pages, privacy text, the block editor's labels and the admin screens.
+**RedeemID → Settings → Text** lets a site put RedeemID in its own words. Every string the plugin can show is listed there, read from the bundled translation template (`languages/redeemid.pot`): block text, sign-in and account messages, paywall and meter text, store pages, privacy text, the block editor's labels and the admin screens.
 
 ## Replacing a string
 
@@ -26,7 +26,7 @@ Search matches the original, its plural, its context and your replacement. Filte
 
 ## Moving and keeping replacements
 
-Settings export and import (RedeemID → Access, or `wp redeemid settings export|import`) carry replacements as the `strings` section. Import checks each replacement against its original and skips any that don't fit. Uninstalling removes them.
+Settings export and import (RedeemID → Settings → Export / import, or `wp redeemid settings export|import`) carry replacements as the `strings` section. Import checks each replacement against its original and skips any that don't fit. Uninstalling removes them.
 
 ## From code
 

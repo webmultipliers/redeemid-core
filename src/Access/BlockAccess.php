@@ -287,7 +287,7 @@ final class BlockAccess {
 			'before'
 		);
 
-		// The site's replacement text (RedeemID → Text) for the strings this script shows.
+		// The site's replacement text (RedeemID → Settings → Text) for the strings this script shows.
 		$text = \RedeemID\Strings\Text::script();
 
 		if ( '' !== $text ) {

@@ -13,7 +13,7 @@ if ( ! class_exists( \WP_List_Table::class ) ) {
 }
 
 /**
- * RedeemID → Text: every string, with a field for the site's own text.
+ * RedeemID → Settings → Text: every string, with a field for the site's own text.
  */
 final class TextTable extends \WP_List_Table {
 	/** @var array<string, string|array{0: string, 1: string}> This language's saved replacements. */
@@ -175,7 +175,7 @@ final class TextTable extends \WP_List_Table {
 		$out = [];
 
 		foreach ( $views as $key => $label ) {
-			$out[ $key ?: 'all' ] = sprintf( '<a href="%s"%s>%s</a>', esc_url( Menu::url( TextPage::PAGE, $base + array_filter( [ 'view' => $key ] ) ) ), $f['view'] === $key ? ' class="current" aria-current="page"' : '', esc_html( $label ) );
+			$out[ $key ?: 'all' ] = sprintf( '<a href="%s"%s>%s</a>', esc_url( TextPage::url( $base + array_filter( [ 'view' => $key ] ) ) ), $f['view'] === $key ? ' class="current" aria-current="page"' : '', esc_html( $label ) );
 		}
 
 		return $out;

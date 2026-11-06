@@ -12,7 +12,7 @@ use RedeemID\Webhooks\Monitor;
 use RedeemID\Webhooks\WpdbInboxStore;
 
 /**
- * RedeemID → Overview: is everything connected. Settings live in SettingsPage.
+ * RedeemID → Overview: is everything connected. Credentials live in ConnectionPage, settings in SettingsPage.
  */
 final class Overview {
 	public static function render(): void {
@@ -28,10 +28,10 @@ final class Overview {
 			[
 				Config::has( 'REDEEMID_STORE_DOMAIN' ) && ! $missing,
 				__( 'Configuration', 'redeemid' ),
-				$missing ? sprintf( /* translators: %s: setting names */ __( 'Missing: %s. Add them in Settings or wp-config.php.', 'redeemid' ), implode( ', ', array_map( static fn( $name ) => Config::definitions()[ $name ]['label'], $missing ) ) ) : sprintf( /* translators: %s: store domain */ __( 'Store %s', 'redeemid' ), Config::store_domain() ),
-				Menu::url( SettingsPage::PAGE ),
+				$missing ? sprintf( /* translators: %s: setting names */ __( 'Missing: %s. Add them under Connection or in wp-config.php.', 'redeemid' ), implode( ', ', array_map( static fn( $name ) => Config::definitions()[ $name ]['label'], $missing ) ) ) : sprintf( /* translators: %s: store domain */ __( 'Store %s', 'redeemid' ), Config::store_domain() ),
+				Menu::url( ConnectionPage::PAGE ),
 				'admin-settings',
-				__( 'Open settings', 'redeemid' ),
+				__( 'Open connection', 'redeemid' ),
 			],
 			[
 				Discovery::available(),
@@ -53,7 +53,7 @@ final class Overview {
 				$last && ! $health,
 				__( 'Webhooks', 'redeemid' ),
 				$health ? $health[0] : ( $last ? sprintf( /* translators: 1: topic 2: time */ __( 'Last: %1$s, %2$s ago', 'redeemid' ), $last['topic'], human_time_diff( (int) $last['received_at'] ) ) : __( 'Nothing received yet.', 'redeemid' ) ),
-				Menu::url( Webhooks::PAGE ) . '#health',
+				Menu::url( Webhooks::PAGE, [ 'tab' => 'health' ] ),
 				'controls-repeat',
 				__( 'View webhooks', 'redeemid' ),
 			],
@@ -69,7 +69,7 @@ final class Overview {
 				in_array( OfficialPlugin::state(), [ OfficialPlugin::ABSENT, OfficialPlugin::SAME_STORE ], true ),
 				__( 'Shopify\'s WordPress plugin', 'redeemid' ),
 				OfficialPlugin::summary(),
-				Menu::url( Debug::PAGE ) . '#official-plugin',
+				Menu::url( Debug::PAGE, [ 'tab' => 'platform' ] ),
 				'admin-plugins',
 				__( 'Details', 'redeemid' ),
 			],
@@ -109,7 +109,7 @@ final class Overview {
 						</h2>
 						<p><?php esc_html_e( 'Sign-in, memberships and webhooks at a glance. Select a card for the details.', 'redeemid' ); ?></p>
 					</div>
-					<a class="button <?php echo $missing ? 'button-primary' : ''; ?>" href="<?php echo esc_url( Menu::url( SettingsPage::PAGE ) ); ?>"><?php esc_html_e( 'Settings', 'redeemid' ); ?></a>
+					<a class="button <?php echo $missing ? 'button-primary' : ''; ?>" href="<?php echo esc_url( Menu::url( ConnectionPage::PAGE ) ); ?>"><?php esc_html_e( 'Connection', 'redeemid' ); ?></a>
 				</div>
 			</section>
 
@@ -140,7 +140,7 @@ final class Overview {
 		$names = [ 'sign_in' => __( 'sign-in', 'redeemid' ), 'admin' => __( 'Admin API', 'redeemid' ), 'storefront' => __( 'Storefront', 'redeemid' ) ];
 		$flow  = 'https://github.com/webmultipliers/redeemid-core/blob/main/docs/shopify-flow.md';
 		$text  = [
-			'config'     => [ __( 'Connect your store', 'redeemid' ), __( 'Store domain, Customer Account API client ID and the Admin app credentials.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( SettingsPage::PAGE ) ), esc_html__( 'Settings', 'redeemid' ) ) ],
+			'config'     => [ __( 'Connect your store', 'redeemid' ), __( 'Store domain, Customer Account API client ID and the Admin app credentials.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( ConnectionPage::PAGE ) ), esc_html__( 'Connection', 'redeemid' ) ) ],
 			'test'       => [ __( 'Test the connection', 'redeemid' ), __( 'Asks each configured Shopify API once.', 'redeemid' ), Menu::action_button_html( Setup::ACTION, 'test', __( 'Test connection', 'redeemid' ) ) ],
 			'permalinks' => [ __( 'Turn on pretty permalinks', 'redeemid' ), __( 'Sign-in returns to a pretty URL.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( admin_url( 'options-permalink.php' ) ), esc_html__( 'Permalinks', 'redeemid' ) ) ],
 			/* translators: %s: callback path */

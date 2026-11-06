@@ -195,7 +195,7 @@ final class Outbound {
 	}
 
 	/**
-	 * Send a "test" event now, for Settings → Send a test event.
+	 * Send a "test" event now, for Settings → Event webhooks → Send a test event.
 	 */
 	public static function test(): int|\WP_Error {
 		$payload = self::payload(

@@ -9,16 +9,19 @@ use RedeemID\Settings;
  * The top-level RedeemID menu:
  *
  * - Overview: connection summary and the setup checklist.
- * - Setup: the checklist as a step-by-step wizard, opened once after first activation.
- * - Settings: the Shopify credentials (wp-config.php constants win) and the
- *   membership settings.
- * - Text: replacement text for any string the plugin shows, per language.
- * - Customers: linked customers, with resync, tag editing and Shopify admin links.
- * - Webhooks: every delivery Shopify sent, and webhook registration.
+ * - Customers: linked customers (tabs: list, activation, resync all, link by hand).
+ * - Access: levels, content rules, features and the access test, one tab each.
+ * - Reports: joins, leaves, sign-ins and meter use.
+ * - Connection: the Shopify credentials (tabs: store, customer sign-in, Admin
+ *   API, Storefront API, encryption).
+ * - Settings: one tab each for sign-in, members, the storefront, event
+ *   webhooks, replacement text and export / import.
+ * - Webhooks: every delivery Shopify sent, and a tab for delivery health and setup.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
- * - Access: the named access levels gating rules point at, with a health
- *   check, and the content rules for the site, post types and taxonomies.
- * - Debug: where each config value comes from, platform checks, maintenance actions, dry run.
+ * - Debug: where each config value comes from, the Shopify connection, platform checks.
+ *
+ * Setup, the checklist as a step-by-step wizard, is not in the menu: it opens
+ * once after first activation and from the Overview checklist.
  *
  * Other code can add pages under the menu with
  * add_submenu_page( REDEEMID_ADMIN_MENU, ... ) on admin_menu after priority 10.
@@ -38,6 +41,7 @@ final class Menu {
 		// Runs before admin_menu, so it is added here.
 		add_filter( 'set_screen_option_redeemid_per_page', static fn( $keep, $option, $value ) => max( 10, min( 500, (int) $value ) ), 10, 3 );
 
+		ConnectionPage::register();
 		SettingsPage::register();
 		TextPage::register();
 		Customers::register();
@@ -48,7 +52,7 @@ final class Menu {
 		Access::register();
 		AccessRules::register();
 		AccessFeatures::register();
-		AccessTransfer::register();
+		SettingsTransfer::register();
 		Debug::register();
 	}
 
@@ -88,26 +92,40 @@ final class Menu {
 	public static function menu(): void { // phpcs:ignore Generic.NamingConventions.ConstructorName -- not a constructor in a namespaced class.
 		add_menu_page( __( 'RedeemID', 'redeemid' ), __( 'RedeemID', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'data:image/svg+xml;base64,' . base64_encode( self::mark( 'black' ) ), 58 ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- core needs the menu icon as a base64 data URI.
 		add_submenu_page( self::SLUG, __( 'RedeemID overview', 'redeemid' ), __( 'Overview', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
-		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
-		add_submenu_page( self::SLUG, __( 'RedeemID settings', 'redeemid' ), __( 'Settings', 'redeemid' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
-		$text = add_submenu_page( self::SLUG, __( 'Replace text', 'redeemid' ), __( 'Text', 'redeemid' ), self::CAP, TextPage::PAGE, [ TextPage::class, 'render' ] );
-
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'redeemid' ), __( 'Customers', 'redeemid' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
-		$webhooks  = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'redeemid' ), __( 'Webhooks', 'redeemid' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
-		$events    = add_submenu_page( self::SLUG, __( 'Shopify app events', 'redeemid' ), __( 'App events', 'redeemid' ), self::CAP, Events::PAGE, [ Events::class, 'render' ] );
-		add_submenu_page( self::SLUG, __( 'Membership reports', 'redeemid' ), __( 'Reports', 'redeemid' ), self::CAP, Reports::PAGE, [ Reports::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID access', 'redeemid' ), __( 'Access', 'redeemid' ), self::CAP, Access::PAGE, [ Access::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Membership reports', 'redeemid' ), __( 'Reports', 'redeemid' ), self::CAP, Reports::PAGE, [ Reports::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Shopify connection', 'redeemid' ), __( 'Connection', 'redeemid' ), self::CAP, ConnectionPage::PAGE, [ ConnectionPage::class, 'render' ] );
+		$settings = add_submenu_page( self::SLUG, __( 'RedeemID settings', 'redeemid' ), __( 'Settings', 'redeemid' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
+		$webhooks = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'redeemid' ), __( 'Webhooks', 'redeemid' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
+		$events   = add_submenu_page( self::SLUG, __( 'Shopify app events', 'redeemid' ), __( 'App events', 'redeemid' ), self::CAP, Events::PAGE, [ Events::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID debug', 'redeemid' ), __( 'Debug', 'redeemid' ), self::CAP, Debug::PAGE, [ Debug::class, 'render' ] );
+
+		// Setup is reachable but not listed: Overview links to it. It is taken out
+		// of the menu only once core has checked access, just before the menu prints.
+		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
+		add_action( 'admin_head', static fn() => remove_submenu_page( self::SLUG, Wizard::PAGE ) );
+
+		if ( Wizard::PAGE === self::requested_page() ) {
+			add_filter( 'parent_file', static fn() => self::SLUG );
+			add_filter( 'submenu_file', static fn() => self::SLUG );
+		}
 
 		if ( $customers ) {
 			add_action( 'load-' . $customers, [ Customers::class, 'load' ] );
 		}
 
 		// The list tables read the per-page screen option.
-		foreach ( [ $customers, $webhooks, $events, $text ] as $hook ) {
+		$per_page = static fn() => add_screen_option( 'per_page', [ 'default' => 50, 'option' => 'redeemid_per_page' ] );
+
+		foreach ( [ $customers, $webhooks, $events ] as $hook ) {
 			if ( $hook ) {
-				add_action( 'load-' . $hook, static fn() => add_screen_option( 'per_page', [ 'default' => 50, 'option' => 'redeemid_per_page' ] ) );
+				add_action( 'load-' . $hook, $per_page );
 			}
+		}
+
+		if ( $settings ) {
+			add_action( 'load-' . $settings, static fn() => 'text' === self::tab( SettingsPage::tabs() ) && $per_page() );
 		}
 	}
 
@@ -117,13 +135,18 @@ final class Menu {
 	 * @return string[]
 	 */
 	public static function pages(): array {
-		return [ self::SLUG, Wizard::PAGE, SettingsPage::PAGE, TextPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
+		return [ self::SLUG, Wizard::PAGE, ConnectionPage::PAGE, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
+	}
+
+	/**
+	 * The admin page the request is for, from ?page=.
+	 */
+	public static function requested_page(): string {
+		return sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
 
 	public static function enqueue(): void {
-		$page = sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-		if ( in_array( $page, self::pages(), true ) ) {
+		if ( in_array( self::requested_page(), self::pages(), true ) ) {
 			wp_enqueue_style( 'redeemid-admin', REDEEMID_URL . 'assets/admin.css', [], REDEEMID_VERSION );
 		}
 	}
@@ -134,6 +157,42 @@ final class Menu {
 
 	public static function url( string $page = self::SLUG, array $args = [] ): string {
 		return add_query_arg( array_merge( [ 'page' => $page ], $args ), admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * The tab the request asks for (?tab=), or the first of $tabs.
+	 *
+	 * @param array<string, string> $tabs Slug => label, as tabs() takes them.
+	 */
+	public static function tab( array $tabs ): string {
+		$tab = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		return array_key_exists( $tab, $tabs ) ? $tab : (string) array_key_first( $tabs );
+	}
+
+	/**
+	 * A page's tab, as a URL. The first tab is the page itself, with no tab arg.
+	 *
+	 * @param array<string, string> $tabs Slug => label.
+	 */
+	public static function tab_url( string $page, array $tabs, string $tab, array $args = [] ): string {
+		return self::url( $page, ( array_key_first( $tabs ) === $tab ? [] : [ 'tab' => $tab ] ) + $args );
+	}
+
+	/**
+	 * The tab bar under a page's title: core's nav-tab pattern, one link per tab.
+	 *
+	 * @param array<string, string> $tabs  Slug => label.
+	 * @param string                $label What the tabs are, for screen readers.
+	 */
+	public static function tabs( string $page, array $tabs, string $current, string $label ): void {
+		?>
+		<nav class="nav-tab-wrapper redeemid-tabs" aria-label="<?php echo esc_attr( $label ); ?>">
+			<?php foreach ( $tabs as $tab => $name ) : ?>
+				<a class="nav-tab<?php echo $tab === $current ? ' nav-tab-active' : ''; ?>" href="<?php echo esc_url( self::tab_url( $page, $tabs, $tab ) ); ?>"<?php echo $tab === $current ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $name ); ?></a>
+			<?php endforeach; ?>
+		</nav>
+		<?php
 	}
 
 	/**
@@ -204,7 +263,7 @@ final class Menu {
 		?>
 		<div class="redeemid-topbar">
 			<a class="redeemid-topbar__brand" href="<?php echo esc_url( self::url() ); ?>"><?php echo self::mark( 'currentColor' ); // phpcs:ignore WordPress.Security.EscapeOutput -- built from constants. ?><?php esc_html_e( 'RedeemID', 'redeemid' ); ?></a>
-			<?php if ( self::SLUG !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
+			<?php if ( self::SLUG !== self::requested_page() ) : ?>
 				<span class="redeemid-topbar__sep" aria-hidden="true">/</span>
 				<span class="redeemid-topbar__page"><?php echo esc_html( $section ); ?></span>
 			<?php endif; ?>
@@ -214,7 +273,7 @@ final class Menu {
 				<?php elseif ( '' !== $domain ) : ?>
 					<?php echo esc_html( $domain ); ?>
 				<?php endif; ?>
-				<a class="redeemid-topbar__status" href="<?php echo esc_url( self::url( SettingsPage::PAGE ) ); ?>">
+				<a class="redeemid-topbar__status" href="<?php echo esc_url( self::url( ConnectionPage::PAGE ) ); ?>">
 					<?php echo $missing ? self::status( 'warn', __( 'Setup incomplete', 'redeemid' ) ) : self::status( 'ok', __( 'Configured', 'redeemid' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				</a>
 			</span>
@@ -234,7 +293,8 @@ final class Menu {
 	}
 
 	/**
-	 * Open a panel: a titled white box. The caller adds the body
+	 * Open a panel: a white box, titled unless $title is empty (when the page's
+	 * tab already names it). The caller adds the body
 	 * (.redeemid-panel__body) and footer, then closes it with panel_end().
 	 *
 	 * @param string $actions Escaped HTML shown at the right of the title.
@@ -242,6 +302,7 @@ final class Menu {
 	public static function panel_start( string $title, string $description = '', string $actions = '', string $id = '' ): void {
 		?>
 		<section class="redeemid-panel"<?php echo '' !== $id ? ' id="' . esc_attr( $id ) . '"' : ''; ?>>
+			<?php if ( '' !== $title ) : ?>
 			<div class="redeemid-panel__header">
 				<div>
 					<h2><?php echo esc_html( $title ); ?></h2>
@@ -253,6 +314,7 @@ final class Menu {
 					<div class="redeemid-panel__actions"><?php echo $actions; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped by the caller. ?></div>
 				<?php endif; ?>
 			</div>
+			<?php endif; ?>
 		<?php
 	}
 

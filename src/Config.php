@@ -8,12 +8,12 @@ use RedeemID\Support\Crypto;
 /**
  * The plugin's configuration. Each value comes from a
  * wp-config.php constant when one is defined, and that always wins. Otherwise
- * it comes from RedeemID → Settings, saved in the options table, with secrets
+ * it comes from RedeemID → Connection, saved in the options table, with secrets
  * encrypted at rest (Support\Crypto, keyed from REDEEMID_ENCRYPTION_KEY or
  * the WordPress salts). Secret values are never shown back in the admin.
  */
 final class Config {
-	/** Values saved from RedeemID → Settings. Secrets are stored as ciphertext. */
+	/** Values saved from RedeemID → Connection. Secrets are stored as ciphertext. */
 	public const OPTION = 'redeemid_config';
 
 	private static ?ConfigValues $values = null;
@@ -28,7 +28,7 @@ final class Config {
 	 * Every value the plugin reads, for Settings and Debug. This is the whole
 	 * configuration surface: anything not listed here is not read. Each can be
 	 * a wp-config.php constant of that name or, unless `editable` is false, a
-	 * value saved in RedeemID → Settings.
+	 * value saved in RedeemID → Connection.
 	 *
 	 * @return array<string, array{label: string, secret: bool, required: bool, help: string, editable?: bool}>
 	 */
