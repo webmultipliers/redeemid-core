@@ -610,25 +610,7 @@ a.redeemid-card:focus-visible {
 	font-variant-numeric: tabular-nums;
 }
 
-/* Setup checklist on Overview. */
-.redeemid-setup > summary {
-	cursor: pointer;
-	list-style: none;
-}
-
-.redeemid-setup > summary::-webkit-details-marker {
-	display: none;
-}
-
-.redeemid-setup > summary h2::after {
-	content: " \25BE";
-	color: var(--redeemid-muted);
-}
-
-.redeemid-setup:not([open]) > summary {
-	border-bottom: 0;
-}
-
+/* Setup → Checklist. */
 .redeemid-setup__steps > li {
 	grid-template-columns: minmax(200px, 260px) 1fr auto;
 	align-items: center;

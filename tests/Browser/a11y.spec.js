@@ -70,8 +70,7 @@ test.describe( 'admin', () => {
 	} );
 
 	// Every screen under the RedeemID menu, and every tab on those screens, so a
-	// new screen is checked without editing this file. Setup is left out of the
-	// menu, so it is added by hand.
+	// new screen is checked without editing this file.
 	test( 'every RedeemID screen', async ( { page } ) => {
 		// One test walks every screen and tab (about 25), so the default 30 s is too short.
 		test.setTimeout( 180_000 );
@@ -80,7 +79,7 @@ test.describe( 'admin', () => {
 		expect( screens.length ).toBeGreaterThan( 0 );
 
 		const seen = new Set();
-		const queue = [ ...screens, new URL( '/wp-admin/admin.php?page=redeemid-setup', page.url() ).href ];
+		const queue = [ ...screens ];
 
 		while ( queue.length ) {
 			const url = queue.shift();

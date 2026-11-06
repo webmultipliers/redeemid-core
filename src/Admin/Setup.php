@@ -12,7 +12,7 @@ use RedeemID\Support\Logger;
 use RedeemID\Webhooks\Registrar;
 
 /**
- * The setup checklist on RedeemID → Overview: each thing a new site needs, in
+ * The setup checklist on RedeemID → Setup → Checklist: each thing a new site needs, in
  * the order to do it, with the button that does it where the plugin can.
  *
  * - Test connection asks each Shopify API once and keeps the answers. When
@@ -51,7 +51,7 @@ final class Setup {
 			$result = 'tags_checked';
 		}
 
-		wp_safe_redirect( Menu::url( Menu::SLUG, [ 'result' => $result ] ) . '#setup' );
+		wp_safe_redirect( Menu::url( Wizard::PAGE, [ 'tab' => 'checklist', 'result' => $result ] ) );
 		exit;
 	}
 

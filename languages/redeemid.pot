@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-06T03:29:10+00:00\n"
+"POT-Creation-Date: 2026-11-06T03:49:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -18,8 +18,8 @@ msgstr ""
 #: redeemid.php
 #: src/Abilities/Abilities.php:89
 #: src/Admin/Menu.php:93
-#: src/Admin/Menu.php:265
-#: src/Admin/Overview.php:87
+#: src/Admin/Menu.php:256
+#: src/Admin/Overview.php:88
 #: src/Files/Probe.php:90
 #: src/Privacy/PolicyText.php:18
 #: src/Webhooks/Monitor.php:215
@@ -358,7 +358,7 @@ msgid "Previous"
 msgstr ""
 
 #: blocks/collection/index.php:165
-#: src/Admin/Wizard.php:558
+#: src/Admin/Wizard.php:654
 msgid "Next"
 msgstr ""
 
@@ -493,7 +493,7 @@ msgstr ""
 
 #. translators: %s: human time difference
 #: blocks/member-account/index.php:131
-#: src/Admin/Menu.php:340
+#: src/Admin/Menu.php:331
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -961,7 +961,7 @@ msgstr ""
 #: src/Admin/AccessTermFields.php:44
 #: src/Admin/AccessTermFields.php:56
 #: src/Admin/AccessTermFields.php:120
-#: src/Admin/Menu.php:96
+#: src/Admin/Menu.php:97
 #: assets/block-access.js:101
 #: assets/block-access.js:200
 #: assets/block-access.js:205
@@ -1115,8 +1115,8 @@ msgstr ""
 #: src/Admin/Access.php:174
 #: src/Admin/Access.php:242
 #: src/Admin/CustomersTable.php:30
-#: src/Admin/Overview.php:149
 #: src/Admin/SettingsTransfer.php:122
+#: src/Admin/Wizard.php:509
 #: assets/block-access.js:114
 msgid "Levels"
 msgstr ""
@@ -1213,7 +1213,7 @@ msgstr ""
 #: src/Admin/Access.php:247
 #: src/Admin/Customers.php:310
 #: src/Admin/Reports.php:68
-#: src/Admin/Wizard.php:857
+#: src/Admin/Wizard.php:953
 msgid "Level"
 msgstr ""
 
@@ -1260,8 +1260,8 @@ msgstr ""
 
 #: src/Admin/Access.php:289
 #: src/Admin/AccessFeatures.php:156
-#: src/Admin/Menu.php:240
-#: src/Admin/Overview.php:123
+#: src/Admin/Menu.php:231
+#: src/Admin/Overview.php:113
 msgid "OK"
 msgstr ""
 
@@ -1986,7 +1986,7 @@ msgstr ""
 #: src/Admin/Customers.php:691
 #: src/Admin/CustomersTable.php:31
 #: src/Admin/UserProfile.php:56
-#: src/Admin/Wizard.php:857
+#: src/Admin/Wizard.php:953
 msgid "Tags"
 msgstr ""
 
@@ -2164,15 +2164,15 @@ msgstr ""
 #: src/Admin/AdminBar.php:76
 #: src/Admin/Customers.php:588
 #: src/Admin/Customers.php:641
-#: src/Admin/Menu.php:95
+#: src/Admin/Menu.php:96
 msgid "Customers"
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:47
-#: src/Admin/Debug.php:88
-#: src/Admin/Menu.php:98
-#: src/Admin/Overview.php:112
-#: src/Admin/Overview.php:143
+#: src/Admin/Debug.php:97
+#: src/Admin/Menu.php:99
+#: src/Admin/Overview.php:104
+#: src/Admin/Wizard.php:503
 msgid "Connection"
 msgstr ""
 
@@ -2191,7 +2191,7 @@ msgid "Connection saved. %d values changed."
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:54
-#: src/Admin/Wizard.php:470
+#: src/Admin/Wizard.php:566
 msgid "Some values were not saved. They are marked below."
 msgstr ""
 
@@ -2208,7 +2208,7 @@ msgid "Which Shopify store this site belongs to. Its web address works too: Rede
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:199
-#: src/Admin/Overview.php:38
+#: src/Admin/Overview.php:39
 msgid "Customer sign-in"
 msgstr ""
 
@@ -2217,9 +2217,9 @@ msgid "The Customer Account API client that members sign in with, from the Headl
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:200
-#: src/Admin/Debug.php:137
-#: src/Admin/Overview.php:46
-#: src/Admin/Overview.php:140
+#: src/Admin/Debug.php:151
+#: src/Admin/Overview.php:47
+#: src/Admin/Wizard.php:500
 msgid "Admin API"
 msgstr ""
 
@@ -2228,7 +2228,7 @@ msgid "The Admin app's credentials, from the Dev Dashboard. RedeemID reads custo
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:201
-#: src/Admin/Debug.php:154
+#: src/Admin/Debug.php:168
 msgid "Storefront API"
 msgstr ""
 
@@ -2249,7 +2249,7 @@ msgid "Other"
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:231
-#: src/Admin/Debug.php:220
+#: src/Admin/Debug.php:234
 msgid "wp-config.php"
 msgstr ""
 
@@ -2258,7 +2258,7 @@ msgid "Saved"
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:233
-#: src/Admin/Debug.php:222
+#: src/Admin/Debug.php:236
 msgid "Unreadable"
 msgstr ""
 
@@ -2268,7 +2268,7 @@ msgid "Required"
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:234
-#: src/Admin/Wizard.php:530
+#: src/Admin/Wizard.php:626
 msgid "Optional"
 msgstr ""
 
@@ -2326,7 +2326,7 @@ msgid "paste the value without spaces or line breaks."
 msgstr ""
 
 #: src/Admin/Customers.php:65
-#: src/Admin/Menu.php:218
+#: src/Admin/Menu.php:209
 msgid "Not allowed."
 msgstr ""
 
@@ -2358,7 +2358,7 @@ msgid "By level"
 msgstr ""
 
 #: src/Admin/Customers.php:306
-#: src/Admin/Wizard.php:1012
+#: src/Admin/Wizard.php:1108
 msgid "Count again"
 msgstr ""
 
@@ -2528,7 +2528,7 @@ msgid "Flag cleared."
 msgstr ""
 
 #: src/Admin/Customers.php:566
-#: src/Admin/Overview.php:62
+#: src/Admin/Overview.php:63
 msgid "Linked customers"
 msgstr ""
 
@@ -2565,7 +2565,7 @@ msgid "Customers in Shopify"
 msgstr ""
 
 #: src/Admin/Customers.php:588
-#: src/Admin/Menu.php:95
+#: src/Admin/Menu.php:96
 msgid "Shopify customers"
 msgstr ""
 
@@ -2844,283 +2844,288 @@ msgstr ""
 msgid "Last attempt failed"
 msgstr ""
 
-#: src/Admin/Debug.php:59
-#: src/Admin/Menu.php:102
+#: src/Admin/Debug.php:60
+#: src/Admin/Menu.php:103
 msgid "Debug"
 msgstr ""
 
-#: src/Admin/Debug.php:59
+#: src/Admin/Debug.php:60
 msgid "Shopify debug"
 msgstr ""
 
-#: src/Admin/Debug.php:60
+#: src/Admin/Debug.php:61
 msgid "Debug sections"
 msgstr ""
 
-#: src/Admin/Debug.php:61
-msgid "What this site runs on, and how RedeemID shares the site with Shopify's own WordPress plugin."
-msgstr ""
-
-#: src/Admin/Debug.php:61
-msgid "Where each config value comes from and whether each Shopify API answers, with maintenance tools. Secret values are never shown, only whether they are present."
+#: src/Admin/Debug.php:63
+msgid "Where each config value comes from. Secret values are never shown, only whether they are present."
 msgstr ""
 
 #: src/Admin/Debug.php:64
-msgid "Shopify discovery refreshed."
+msgid "Whether each Shopify API answers, with maintenance tools."
 msgstr ""
 
 #: src/Admin/Debug.php:65
+msgid "What this site runs on, and how RedeemID shares the site with Shopify's own WordPress plugin."
+msgstr ""
+
+#: src/Admin/Debug.php:70
+msgid "Shopify discovery refreshed."
+msgstr ""
+
+#: src/Admin/Debug.php:71
 msgid "Shopify discovery failed. Check the store domain."
 msgstr ""
 
-#: src/Admin/Debug.php:66
+#: src/Admin/Debug.php:72
 msgid "A fresh Admin token was issued."
 msgstr ""
 
-#: src/Admin/Debug.php:67
+#: src/Admin/Debug.php:73
 msgid "Shopify refused the Admin token request. See below and App events."
 msgstr ""
 
-#: src/Admin/Debug.php:89
-#: src/Admin/Debug.php:183
-msgid "Platform"
-msgstr ""
-
-#: src/Admin/Debug.php:100
-#: src/Admin/Overview.php:30
+#: src/Admin/Debug.php:96
+#: src/Admin/Debug.php:107
+#: src/Admin/Overview.php:31
 msgid "Configuration"
 msgstr ""
 
-#: src/Admin/Debug.php:101
+#: src/Admin/Debug.php:98
+#: src/Admin/Debug.php:197
+msgid "Platform"
+msgstr ""
+
+#: src/Admin/Debug.php:108
 msgid "These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from RedeemID → Connection."
 msgstr ""
 
-#: src/Admin/Debug.php:102
+#: src/Admin/Debug.php:109
 msgid "Edit connection"
 msgstr ""
 
-#: src/Admin/Debug.php:109
+#: src/Admin/Debug.php:116
 msgid "Constant"
 msgstr ""
 
-#: src/Admin/Debug.php:110
+#: src/Admin/Debug.php:117
 msgid "Value"
 msgstr ""
 
-#: src/Admin/Debug.php:111
+#: src/Admin/Debug.php:118
 msgid "Source"
 msgstr ""
 
-#: src/Admin/Debug.php:112
+#: src/Admin/Debug.php:119
 msgid "What it is for"
 msgstr ""
 
-#: src/Admin/Debug.php:130
-#: src/Admin/Menu.php:98
+#: src/Admin/Debug.php:144
+#: src/Admin/Menu.php:99
 msgid "Shopify connection"
 msgstr ""
 
-#: src/Admin/Debug.php:133
+#: src/Admin/Debug.php:147
 msgid "Customer Account API"
 msgstr ""
 
-#: src/Admin/Debug.php:134
+#: src/Admin/Debug.php:148
 msgid "Discovery, last fetched"
 msgstr ""
 
-#: src/Admin/Debug.php:139
+#: src/Admin/Debug.php:153
 msgid "Dev Dashboard app, 24-hour tokens renewed automatically:"
 msgstr ""
 
-#: src/Admin/Debug.php:143
+#: src/Admin/Debug.php:157
 msgid "granted scopes"
 msgstr ""
 
-#: src/Admin/Debug.php:143
+#: src/Admin/Debug.php:157
 msgid "no token requested yet."
 msgstr ""
 
-#: src/Admin/Debug.php:145
+#: src/Admin/Debug.php:159
 msgid "not configured."
 msgstr ""
 
-#: src/Admin/Debug.php:148
+#: src/Admin/Debug.php:162
 msgid "Last token request failed:"
 msgstr ""
 
-#: src/Admin/Debug.php:155
+#: src/Admin/Debug.php:169
 msgid "Plan cards and buy-now:"
 msgstr ""
 
-#: src/Admin/Debug.php:155
+#: src/Admin/Debug.php:169
 msgid "private access token present; buy-now and cart calls send the buyer's IP."
 msgstr ""
 
-#: src/Admin/Debug.php:155
+#: src/Admin/Debug.php:169
 msgid "public access token present. Add the Storefront private access token so Shopify doesn't throttle checkout as if every visitor were one IP."
 msgstr ""
 
-#: src/Admin/Debug.php:155
+#: src/Admin/Debug.php:169
 msgid "no Storefront private or public access token is set, so plan cards show as unavailable."
 msgstr ""
 
-#: src/Admin/Debug.php:158
+#: src/Admin/Debug.php:172
 msgid "Shopify app settings"
 msgstr ""
 
-#: src/Admin/Debug.php:160
-#: src/Admin/Wizard.php:714
+#: src/Admin/Debug.php:174
+#: src/Admin/Wizard.php:810
 msgid "Callback URI"
 msgstr ""
 
-#: src/Admin/Debug.php:161
-#: src/Admin/Wizard.php:715
+#: src/Admin/Debug.php:175
+#: src/Admin/Wizard.php:811
 msgid "JavaScript origin"
 msgstr ""
 
-#: src/Admin/Debug.php:162
-#: src/Admin/Wizard.php:716
+#: src/Admin/Debug.php:176
+#: src/Admin/Wizard.php:812
 msgid "Logout URI"
 msgstr ""
 
-#: src/Admin/Debug.php:166
+#: src/Admin/Debug.php:180
 #: src/Admin/EventsTable.php:31
-#: src/Admin/Menu.php:100
-#: src/Admin/Overview.php:54
+#: src/Admin/Menu.php:101
+#: src/Admin/Overview.php:55
 #: src/Admin/Webhooks.php:73
 msgid "Webhooks"
 msgstr ""
 
-#: src/Admin/Debug.php:167
+#: src/Admin/Debug.php:181
 msgid "RedeemID → Webhooks → Health and setup"
 msgstr ""
 
-#: src/Admin/Debug.php:171
+#: src/Admin/Debug.php:185
 msgid "Refresh Shopify discovery"
 msgstr ""
 
-#: src/Admin/Debug.php:172
+#: src/Admin/Debug.php:186
 msgid "Request a fresh Admin token"
 msgstr ""
 
-#: src/Admin/Debug.php:186
+#: src/Admin/Debug.php:200
 msgid "PHP and WordPress"
 msgstr ""
 
-#: src/Admin/Debug.php:191
+#: src/Admin/Debug.php:205
 msgid "not loaded"
 msgstr ""
 
-#: src/Admin/Debug.php:194
+#: src/Admin/Debug.php:208
 msgid "Plugin blocks"
 msgstr ""
 
-#: src/Admin/Debug.php:196
+#: src/Admin/Debug.php:210
 msgid "not checked yet"
 msgstr ""
 
 #. translators: 1: yes/no 2: yes/no
-#: src/Admin/Debug.php:198
+#: src/Admin/Debug.php:212
 #, php-format
 msgid "Theme has Blockstudio blocks: %1$s. Theme block path untouched: %2$s."
 msgstr ""
 
-#: src/Admin/Debug.php:203
-#: src/Admin/Wizard.php:658
+#: src/Admin/Debug.php:217
+#: src/Admin/Wizard.php:754
 #: src/Support/Health.php:56
 msgid "Pretty permalinks"
 msgstr ""
 
-#: src/Admin/Debug.php:204
+#: src/Admin/Debug.php:218
 msgid "The sign-in callback needs them."
 msgstr ""
 
-#: src/Admin/Debug.php:207
+#: src/Admin/Debug.php:221
 msgid "Shopify API version"
 msgstr ""
 
-#: src/Admin/Debug.php:221
+#: src/Admin/Debug.php:235
 msgid "Settings (database)"
 msgstr ""
 
-#: src/Admin/Debug.php:222
+#: src/Admin/Debug.php:236
 msgid "Saved under Connection but unreadable: the encryption key changed. Enter it again."
 msgstr ""
 
-#: src/Admin/Debug.php:223
+#: src/Admin/Debug.php:237
 msgid "Missing (required)"
 msgstr ""
 
-#: src/Admin/Debug.php:223
+#: src/Admin/Debug.php:237
 msgid "Not set (optional)"
 msgstr ""
 
-#: src/Admin/Debug.php:236
-#: src/Admin/Overview.php:70
+#: src/Admin/Debug.php:250
+#: src/Admin/Overview.php:71
 msgid "Shopify's WordPress plugin"
 msgstr ""
 
-#: src/Admin/Debug.php:236
+#: src/Admin/Debug.php:250
 msgid "RedeemID runs with or without it. When it is active, it owns the anonymous storefront and RedeemID owns sign-in and access. RedeemID never reads its access token."
 msgstr ""
 
-#: src/Admin/Debug.php:238
+#: src/Admin/Debug.php:252
 #: src/Admin/UserProfile.php:51
 msgid "Status"
 msgstr ""
 
-#: src/Admin/Debug.php:240
+#: src/Admin/Debug.php:254
 msgid "Owns /cart"
 msgstr ""
 
-#: src/Admin/Debug.php:240
+#: src/Admin/Debug.php:254
 msgid "yes. Its rewrite rule wins over any page at /cart."
 msgstr ""
 
-#: src/Admin/Debug.php:240
+#: src/Admin/Debug.php:254
 msgid "no (rewrite rules not flushed yet, or removed)."
 msgstr ""
 
-#: src/Admin/Debug.php:241
+#: src/Admin/Debug.php:255
 msgid "Serves /products/{handle}"
 msgstr ""
 
-#: src/Admin/Debug.php:241
+#: src/Admin/Debug.php:255
 msgid "yes. Product SEO is the official plugin's."
 msgstr ""
 
-#: src/Admin/Debug.php:241
+#: src/Admin/Debug.php:255
 msgid "no."
 msgstr ""
 
-#: src/Admin/Debug.php:242
+#: src/Admin/Debug.php:256
 #: src/Support/Health.php:127
 msgid "Cart sign-in bridge"
 msgstr ""
 
-#: src/Admin/Debug.php:244
+#: src/Admin/Debug.php:258
 msgid "active. Signed-in customers check out from its cart as themselves."
 msgstr ""
 
-#: src/Admin/Debug.php:244
+#: src/Admin/Debug.php:258
 msgid "off. It needs the same store and a Storefront token."
 msgstr ""
 
-#: src/Admin/Debug.php:245
+#: src/Admin/Debug.php:259
 msgid "Last attached:"
 msgstr ""
 
-#: src/Admin/Debug.php:247
+#: src/Admin/Debug.php:261
 msgid "Last failure:"
 msgstr ""
 
 #: src/Admin/Events.php:38
-#: src/Admin/Menu.php:101
+#: src/Admin/Menu.php:102
 msgid "App events"
 msgstr ""
 
 #: src/Admin/Events.php:39
-#: src/Admin/Menu.php:101
+#: src/Admin/Menu.php:102
 msgid "Shopify app events"
 msgstr ""
 
@@ -3213,7 +3218,7 @@ msgid "From"
 msgstr ""
 
 #: src/Admin/EventsTable.php:51
-#: src/Admin/Overview.php:74
+#: src/Admin/Overview.php:75
 msgid "Details"
 msgstr ""
 
@@ -3266,317 +3271,166 @@ msgid "RedeemID overview"
 msgstr ""
 
 #: src/Admin/Menu.php:94
-#: src/Admin/Overview.php:87
-#: src/Admin/Wizard.php:425
+#: src/Admin/Overview.php:88
 msgid "Overview"
 msgstr ""
 
-#: src/Admin/Menu.php:96
-msgid "RedeemID access"
+#: src/Admin/Menu.php:95
+#: src/Admin/Wizard.php:433
+#: src/Admin/Wizard.php:455
+msgid "Set up RedeemID"
+msgstr ""
+
+#: src/Admin/Menu.php:95
+#: src/Admin/Wizard.php:433
+#: src/Admin/Wizard.php:455
+msgid "Setup"
 msgstr ""
 
 #: src/Admin/Menu.php:97
+msgid "RedeemID access"
+msgstr ""
+
+#: src/Admin/Menu.php:98
 #: src/Admin/Reports.php:40
 msgid "Membership reports"
 msgstr ""
 
-#: src/Admin/Menu.php:97
+#: src/Admin/Menu.php:98
 #: src/Admin/Reports.php:39
-#: src/Admin/Wizard.php:1048
+#: src/Admin/Wizard.php:1144
 msgid "Reports"
 msgstr ""
 
-#: src/Admin/Menu.php:99
+#: src/Admin/Menu.php:100
 msgid "RedeemID settings"
 msgstr ""
 
-#: src/Admin/Menu.php:99
+#: src/Admin/Menu.php:100
 #: src/Admin/SettingsPage.php:72
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/Menu.php:100
+#: src/Admin/Menu.php:101
 #: src/Admin/Webhooks.php:73
 msgid "Shopify webhooks"
 msgstr ""
 
-#: src/Admin/Menu.php:102
+#: src/Admin/Menu.php:103
 msgid "RedeemID debug"
 msgstr ""
 
-#: src/Admin/Menu.php:106
-#: src/Admin/Wizard.php:424
-msgid "Set up RedeemID"
-msgstr ""
-
-#: src/Admin/Menu.php:106
-#: src/Admin/Wizard.php:423
-msgid "Setup"
-msgstr ""
-
-#: src/Admin/Menu.php:241
+#: src/Admin/Menu.php:232
 #: src/Admin/Webhooks.php:140
 msgid "Problem"
 msgstr ""
 
-#: src/Admin/Menu.php:277
+#: src/Admin/Menu.php:268
 msgid "Setup incomplete"
 msgstr ""
 
-#: src/Admin/Menu.php:277
+#: src/Admin/Menu.php:268
 msgid "Configured"
 msgstr ""
 
 #. translators: %s: setting names
-#: src/Admin/Overview.php:31
+#: src/Admin/Overview.php:32
 #, php-format
 msgid "Missing: %s. Add them under Connection or in wp-config.php."
 msgstr ""
 
 #. translators: %s: store domain
-#: src/Admin/Overview.php:31
+#: src/Admin/Overview.php:32
 #, php-format
 msgid "Store %s"
 msgstr ""
 
-#: src/Admin/Overview.php:34
+#: src/Admin/Overview.php:35
 msgid "Open connection"
 msgstr ""
 
-#: src/Admin/Overview.php:39
+#: src/Admin/Overview.php:40
 msgid "Customer Account API reachable."
 msgstr ""
 
-#: src/Admin/Overview.php:39
+#: src/Admin/Overview.php:40
 msgid "Shopify discovery failed, so sign-in is off."
 msgstr ""
 
-#: src/Admin/Overview.php:42
+#: src/Admin/Overview.php:43
 msgid "Check in Debug"
 msgstr ""
 
-#: src/Admin/Overview.php:47
+#: src/Admin/Overview.php:48
 msgid "The last token request failed."
 msgstr ""
 
-#: src/Admin/Overview.php:47
+#: src/Admin/Overview.php:48
 msgid "Dev Dashboard app, tokens renewed automatically."
 msgstr ""
 
-#: src/Admin/Overview.php:47
+#: src/Admin/Overview.php:48
 msgid "Not configured."
 msgstr ""
 
-#: src/Admin/Overview.php:50
-#: src/Admin/Overview.php:82
+#: src/Admin/Overview.php:51
+#: src/Admin/Overview.php:83
 msgid "View app events"
 msgstr ""
 
 #. translators: 1: topic 2: time
-#: src/Admin/Overview.php:55
+#: src/Admin/Overview.php:56
 #, php-format
 msgid "Last: %1$s, %2$s ago"
 msgstr ""
 
 #. translators: 1: topic 2: time
-#: src/Admin/Overview.php:55
+#: src/Admin/Overview.php:56
 msgid "Nothing received yet."
 msgstr ""
 
-#: src/Admin/Overview.php:58
+#: src/Admin/Overview.php:59
 msgid "View webhooks"
 msgstr ""
 
 #. translators: %d: count
-#: src/Admin/Overview.php:63
+#: src/Admin/Overview.php:64
 #, php-format
 msgid "%d linked."
 msgstr ""
 
-#: src/Admin/Overview.php:66
+#: src/Admin/Overview.php:67
 msgid "View customers"
 msgstr ""
 
-#: src/Admin/Overview.php:78
+#: src/Admin/Overview.php:79
 msgid "Last 24 hours"
 msgstr ""
 
 #. translators: %d: count
-#: src/Admin/Overview.php:79
+#: src/Admin/Overview.php:80
 #, php-format
 msgid "%d failed Shopify calls or rejected webhooks."
 msgstr ""
 
-#: src/Admin/Overview.php:90
-msgid "Connection test passed: every configured Shopify API answered."
-msgstr ""
-
-#: src/Admin/Overview.php:91
-msgid "Connection test failed for at least one API. See the setup checklist and App events."
-msgstr ""
-
-#: src/Admin/Overview.php:92
-msgid "The callback page is published."
-msgstr ""
-
-#: src/Admin/Overview.php:93
-#: src/Admin/Wizard.php:476
-msgid "The callback page could not be created."
-msgstr ""
-
-#: src/Admin/Overview.php:94
-msgid "Level tags checked against Shopify again."
-msgstr ""
-
 #. translators: %d: number of checks that need attention
-#: src/Admin/Overview.php:106
+#: src/Admin/Overview.php:98
 #, php-format
 msgid "%d check needs attention"
 msgid_plural "%d checks need attention"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Overview.php:107
+#: src/Admin/Overview.php:99
 msgid "Everything is connected"
 msgstr ""
 
-#: src/Admin/Overview.php:110
+#: src/Admin/Overview.php:102
 msgid "Sign-in, memberships and webhooks at a glance. Select a card for the details."
 msgstr ""
 
-#: src/Admin/Overview.php:123
+#: src/Admin/Overview.php:113
 msgid "Attention"
-msgstr ""
-
-#: src/Admin/Overview.php:140
-msgid "sign-in"
-msgstr ""
-
-#: src/Admin/Overview.php:140
-#: src/Admin/SettingsPage.php:53
-msgid "Storefront"
-msgstr ""
-
-#: src/Admin/Overview.php:143
-msgid "Connect your store"
-msgstr ""
-
-#: src/Admin/Overview.php:143
-msgid "Store domain, Customer Account API client ID and the Admin app credentials."
-msgstr ""
-
-#: src/Admin/Overview.php:144
-msgid "Test the connection"
-msgstr ""
-
-#: src/Admin/Overview.php:144
-msgid "Asks each configured Shopify API once."
-msgstr ""
-
-#: src/Admin/Overview.php:144
-msgid "Test connection"
-msgstr ""
-
-#: src/Admin/Overview.php:145
-msgid "Turn on pretty permalinks"
-msgstr ""
-
-#: src/Admin/Overview.php:145
-msgid "Sign-in returns to a pretty URL."
-msgstr ""
-
-#: src/Admin/Overview.php:145
-msgid "Permalinks"
-msgstr ""
-
-#. translators: %s: callback path
-#: src/Admin/Overview.php:147
-#: src/Admin/Wizard.php:408
-msgid "Publish the callback page"
-msgstr ""
-
-#. translators: %s: callback path
-#: src/Admin/Overview.php:147
-#, php-format
-msgid "Sign-in results show on %s, inside your theme."
-msgstr ""
-
-#. translators: %s: callback path
-#: src/Admin/Overview.php:147
-#: src/Admin/Wizard.php:841
-msgid "Create the page"
-msgstr ""
-
-#: src/Admin/Overview.php:148
-#: src/Admin/Wizard.php:407
-#: src/Admin/Wizard.php:782
-msgid "Register webhooks"
-msgstr ""
-
-#: src/Admin/Overview.php:148
-msgid "Shopify tells WordPress when a customer's tags change."
-msgstr ""
-
-#: src/Admin/Overview.php:148
-msgid "Register"
-msgstr ""
-
-#: src/Admin/Overview.php:149
-msgid "Define membership levels"
-msgstr ""
-
-#: src/Admin/Overview.php:149
-msgid "Each level names the Shopify customer tags that grant it. They are checked against the tags your customers have."
-msgstr ""
-
-#: src/Admin/Overview.php:149
-msgid "Check tags again"
-msgstr ""
-
-#: src/Admin/Overview.php:150
-#: src/Admin/Wizard.php:411
-msgid "Tag members in Shopify"
-msgstr ""
-
-#: src/Admin/Overview.php:150
-msgid "A Shopify Flow workflow or a subscription app adds the level tag when someone buys and removes it when the membership ends. Done once a linked customer holds a level."
-msgstr ""
-
-#: src/Admin/Overview.php:150
-#: src/Admin/Wizard.php:996
-msgid "Flow recipes"
-msgstr ""
-
-#. translators: %d: steps left
-#: src/Admin/Overview.php:159
-#, php-format
-msgid "Setup: %d step left"
-msgid_plural "Setup: %d steps left"
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/Admin/Overview.php:160
-msgid "Setup: done"
-msgstr ""
-
-#: src/Admin/Overview.php:168
-msgid "(optional for a sign-in-only site)"
-msgstr ""
-
-#. translators: %s: API names
-#: src/Admin/Overview.php:175
-#, php-format
-msgid "Failed: %s"
-msgstr ""
-
-#. translators: %s: tags
-#: src/Admin/Overview.php:182
-#, php-format
-msgid "No customer in Shopify has these tags yet: %s. Check the spelling."
-msgstr ""
-
-#: src/Admin/Overview.php:193
-msgid "Set up step by step"
 msgstr ""
 
 #: src/Admin/Reports.php:26
@@ -3691,6 +3545,11 @@ msgstr ""
 
 #: src/Admin/Reports.php:199
 msgid "Week ending"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:53
+#: src/Admin/Wizard.php:500
+msgid "Storefront"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:54
@@ -4411,12 +4270,12 @@ msgid "Webhook sections"
 msgstr ""
 
 #: src/Admin/Webhooks.php:77
-#: src/Admin/Wizard.php:473
+#: src/Admin/Wizard.php:569
 msgid "Webhook subscriptions are in place."
 msgstr ""
 
 #: src/Admin/Webhooks.php:78
-#: src/Admin/Wizard.php:474
+#: src/Admin/Wizard.php:570
 msgid "Some webhook subscriptions could not be created. Details below."
 msgstr ""
 
@@ -4620,6 +4479,18 @@ msgstr ""
 msgid "Add Storefront tokens"
 msgstr ""
 
+#: src/Admin/Wizard.php:407
+#: src/Admin/Wizard.php:508
+#: src/Admin/Wizard.php:878
+msgid "Register webhooks"
+msgstr ""
+
+#. translators: %s: callback path
+#: src/Admin/Wizard.php:408
+#: src/Admin/Wizard.php:507
+msgid "Publish the callback page"
+msgstr ""
+
 #: src/Admin/Wizard.php:409
 msgid "Create your first level"
 msgstr ""
@@ -4628,546 +4499,698 @@ msgstr ""
 msgid "Lock some content"
 msgstr ""
 
+#: src/Admin/Wizard.php:411
+#: src/Admin/Wizard.php:510
+msgid "Tag members in Shopify"
+msgstr ""
+
 #: src/Admin/Wizard.php:412
 msgid "Try it"
 msgstr ""
 
-#: src/Admin/Wizard.php:426
-msgid "Ten short steps from a fresh install to a member reading locked content. Come back any time: each step checks the site as it is now."
+#: src/Admin/Wizard.php:424
+msgid "Step by step"
 msgstr ""
 
-#: src/Admin/Wizard.php:431
-msgid "Setup steps"
+#: src/Admin/Wizard.php:425
+msgid "Checklist"
+msgstr ""
+
+#: src/Admin/Wizard.php:434
+#: src/Admin/Wizard.php:456
+msgid "Setup views"
+msgstr ""
+
+#: src/Admin/Wizard.php:435
+msgid "Everything a new site needs, on one screen, with a button for each step."
+msgstr ""
+
+#: src/Admin/Wizard.php:438
+msgid "Connection test passed: every configured Shopify API answered."
 msgstr ""
 
 #: src/Admin/Wizard.php:439
-msgid "optional"
+msgid "Connection test failed for at least one API. See the checklist and App events."
+msgstr ""
+
+#: src/Admin/Wizard.php:440
+msgid "The callback page is published."
+msgstr ""
+
+#: src/Admin/Wizard.php:441
+#: src/Admin/Wizard.php:572
+msgid "The callback page could not be created."
 msgstr ""
 
 #: src/Admin/Wizard.php:442
-msgid "(not done)"
+msgid "Level tags checked against Shopify again."
 msgstr ""
 
-#: src/Admin/Wizard.php:467
-msgid "Saved and tested: Shopify answered."
+#: src/Admin/Wizard.php:457
+msgid "Ten short steps from a fresh install to a member reading locked content. Come back any time: each step checks the site as it is now."
 msgstr ""
 
-#: src/Admin/Wizard.php:468
-msgid "Saved, but Shopify did not answer every test. See the step below and RedeemID → App events."
+#: src/Admin/Wizard.php:461
+msgid "Setup steps"
 msgstr ""
 
 #: src/Admin/Wizard.php:469
-msgid "Saved."
-msgstr ""
-
-#: src/Admin/Wizard.php:471
-msgid "Permalinks now use the post name."
+msgid "optional"
 msgstr ""
 
 #: src/Admin/Wizard.php:472
+msgid "(not done)"
+msgstr ""
+
+#: src/Admin/Wizard.php:500
+msgid "sign-in"
+msgstr ""
+
+#: src/Admin/Wizard.php:503
+msgid "Connect your store"
+msgstr ""
+
+#: src/Admin/Wizard.php:503
+msgid "Store domain, Customer Account API client ID and the Admin app credentials."
+msgstr ""
+
+#: src/Admin/Wizard.php:504
+msgid "Test the connection"
+msgstr ""
+
+#: src/Admin/Wizard.php:504
+msgid "Asks each configured Shopify API once."
+msgstr ""
+
+#: src/Admin/Wizard.php:504
+msgid "Test connection"
+msgstr ""
+
+#: src/Admin/Wizard.php:505
+msgid "Turn on pretty permalinks"
+msgstr ""
+
+#: src/Admin/Wizard.php:505
+msgid "Sign-in returns to a pretty URL."
+msgstr ""
+
+#: src/Admin/Wizard.php:505
+msgid "Permalinks"
+msgstr ""
+
+#. translators: %s: callback path
+#: src/Admin/Wizard.php:507
+#, php-format
+msgid "Sign-in results show on %s, inside your theme."
+msgstr ""
+
+#. translators: %s: callback path
+#: src/Admin/Wizard.php:507
+#: src/Admin/Wizard.php:937
+msgid "Create the page"
+msgstr ""
+
+#: src/Admin/Wizard.php:508
+msgid "Shopify tells WordPress when a customer's tags change."
+msgstr ""
+
+#: src/Admin/Wizard.php:508
+msgid "Register"
+msgstr ""
+
+#: src/Admin/Wizard.php:509
+msgid "Define membership levels"
+msgstr ""
+
+#: src/Admin/Wizard.php:509
+msgid "Each level names the Shopify customer tags that grant it. They are checked against the tags your customers have."
+msgstr ""
+
+#: src/Admin/Wizard.php:509
+msgid "Check tags again"
+msgstr ""
+
+#: src/Admin/Wizard.php:510
+msgid "A Shopify Flow workflow or a subscription app adds the level tag when someone buys and removes it when the membership ends. Done once a linked customer holds a level."
+msgstr ""
+
+#: src/Admin/Wizard.php:510
+#: src/Admin/Wizard.php:1092
+msgid "Flow recipes"
+msgstr ""
+
+#. translators: %d: steps left
+#: src/Admin/Wizard.php:519
+#, php-format
+msgid "%d step left"
+msgid_plural "%d steps left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Wizard.php:520
+msgid "Every step is done"
+msgstr ""
+
+#: src/Admin/Wizard.php:528
+msgid "(optional for a sign-in-only site)"
+msgstr ""
+
+#. translators: %s: API names
+#: src/Admin/Wizard.php:535
+#, php-format
+msgid "Failed: %s"
+msgstr ""
+
+#. translators: %s: tags
+#: src/Admin/Wizard.php:542
+#, php-format
+msgid "No customer in Shopify has these tags yet: %s. Check the spelling."
+msgstr ""
+
+#: src/Admin/Wizard.php:553
+msgid "Set up step by step"
+msgstr ""
+
+#: src/Admin/Wizard.php:563
+msgid "Saved and tested: Shopify answered."
+msgstr ""
+
+#: src/Admin/Wizard.php:564
+msgid "Saved, but Shopify did not answer every test. See the step below and RedeemID → App events."
+msgstr ""
+
+#: src/Admin/Wizard.php:565
+msgid "Saved."
+msgstr ""
+
+#: src/Admin/Wizard.php:567
+msgid "Permalinks now use the post name."
+msgstr ""
+
+#: src/Admin/Wizard.php:568
 msgid "The site already has a permalink structure, so nothing changed."
 msgstr ""
 
-#: src/Admin/Wizard.php:475
+#: src/Admin/Wizard.php:571
 msgid "Callback page published."
 msgstr ""
 
-#: src/Admin/Wizard.php:477
+#: src/Admin/Wizard.php:573
 msgid "Level created."
 msgstr ""
 
-#: src/Admin/Wizard.php:478
+#: src/Admin/Wizard.php:574
 msgid "A level with that name already exists. Edit it under RedeemID → Access."
 msgstr ""
 
-#: src/Admin/Wizard.php:479
+#: src/Admin/Wizard.php:575
 msgid "Give the level a Shopify customer tag."
 msgstr ""
 
-#: src/Admin/Wizard.php:480
+#: src/Admin/Wizard.php:576
 msgid "Levels or rules are set in code on this site, so they can't be changed here."
 msgstr ""
 
-#: src/Admin/Wizard.php:481
+#: src/Admin/Wizard.php:577
 msgid "Locked. Use the Try it step to check it from a member's side."
 msgstr ""
 
-#: src/Admin/Wizard.php:482
+#: src/Admin/Wizard.php:578
 msgid "Pick what to lock and a level."
 msgstr ""
 
-#: src/Admin/Wizard.php:483
+#: src/Admin/Wizard.php:579
 msgid "Finish sign-in, the Admin app and webhooks first, so members aren't locked out."
 msgstr ""
 
-#: src/Admin/Wizard.php:484
+#: src/Admin/Wizard.php:580
 msgid "Counted again from Shopify."
 msgstr ""
 
-#: src/Admin/Wizard.php:490
+#: src/Admin/Wizard.php:586
 msgid "Sign-in answered, so the callback page was published for you."
 msgstr ""
 
-#: src/Admin/Wizard.php:491
+#: src/Admin/Wizard.php:587
 msgid "The Admin app answered, so webhooks were registered for you."
 msgstr ""
 
-#: src/Admin/Wizard.php:511
+#: src/Admin/Wizard.php:607
 msgid "(opens in a new tab)"
 msgstr ""
 
 #. translators: 1: step number, 2: number of steps, 3: step title
-#: src/Admin/Wizard.php:528
+#: src/Admin/Wizard.php:624
 #, php-format
 msgid "Step %1$d of %2$d: %3$s"
 msgstr ""
 
-#: src/Admin/Wizard.php:530
+#: src/Admin/Wizard.php:626
 msgid "Done"
 msgstr ""
 
-#: src/Admin/Wizard.php:530
+#: src/Admin/Wizard.php:626
 msgid "To do"
 msgstr ""
 
-#: src/Admin/Wizard.php:555
+#: src/Admin/Wizard.php:651
 msgid "Back"
 msgstr ""
 
-#: src/Admin/Wizard.php:558
+#: src/Admin/Wizard.php:654
 msgid "Skip for now"
 msgstr ""
 
-#: src/Admin/Wizard.php:567
+#: src/Admin/Wizard.php:663
 msgid "Finish the Admin app step first: webhooks are registered through it."
 msgstr ""
 
-#: src/Admin/Wizard.php:568
+#: src/Admin/Wizard.php:664
 msgid "Finish sign-in, the Admin app, webhooks and a level first. Locking content before members can sign in would shut them out."
 msgstr ""
 
-#: src/Admin/Wizard.php:569
+#: src/Admin/Wizard.php:665
 msgid "Create a level first, so there is a tag to give members."
 msgstr ""
 
-#: src/Admin/Wizard.php:570
+#: src/Admin/Wizard.php:666
 msgid "Finish the site check, sign-in, the callback page and a level first."
 msgstr ""
 
-#: src/Admin/Wizard.php:583
-#: src/Admin/Wizard.php:618
-#: src/Admin/Wizard.php:814
+#: src/Admin/Wizard.php:679
+#: src/Admin/Wizard.php:714
+#: src/Admin/Wizard.php:910
 msgid "Copied"
 msgstr ""
 
-#: src/Admin/Wizard.php:583
-#: src/Admin/Wizard.php:618
-#: src/Admin/Wizard.php:814
+#: src/Admin/Wizard.php:679
+#: src/Admin/Wizard.php:714
+#: src/Admin/Wizard.php:910
 msgid "Copy"
 msgstr ""
 
-#: src/Admin/Wizard.php:612
+#: src/Admin/Wizard.php:708
 msgid "Save and test"
 msgstr ""
 
-#: src/Admin/Wizard.php:615
+#: src/Admin/Wizard.php:711
 msgid "Rather keep these in wp-config.php?"
 msgstr ""
 
-#: src/Admin/Wizard.php:616
+#: src/Admin/Wizard.php:712
 msgid "Constants keep the values out of the database and always win over what is saved here. Add these lines above \"That's all, stop editing!\" and replace the placeholders."
 msgstr ""
 
-#: src/Admin/Wizard.php:638
+#: src/Admin/Wizard.php:734
 msgid "Shopify answered"
 msgstr ""
 
-#: src/Admin/Wizard.php:638
+#: src/Admin/Wizard.php:734
 msgid "Test failed"
 msgstr ""
 
 #. translators: %s: time ago
-#: src/Admin/Wizard.php:641
+#: src/Admin/Wizard.php:737
 #, php-format
 msgid "Last tested %s."
 msgstr ""
 
 #. translators: %s: error code
-#: src/Admin/Wizard.php:645
+#: src/Admin/Wizard.php:741
 #, php-format
 msgid "Error: %s."
 msgstr ""
 
-#: src/Admin/Wizard.php:657
+#: src/Admin/Wizard.php:753
 msgid "HTTPS"
 msgstr ""
 
-#: src/Admin/Wizard.php:657
+#: src/Admin/Wizard.php:753
 msgid "The site address uses https, which Shopify requires for the sign-in callback."
 msgstr ""
 
-#: src/Admin/Wizard.php:657
+#: src/Admin/Wizard.php:753
 msgid "Shopify only returns sign-in to an https address. Turn on HTTPS for this site and set both addresses under Settings → General to https."
 msgstr ""
 
-#: src/Admin/Wizard.php:658
+#: src/Admin/Wizard.php:754
 msgid "On. Sign-in returns to a pretty URL."
 msgstr ""
 
-#: src/Admin/Wizard.php:658
+#: src/Admin/Wizard.php:754
 msgid "Sign-in returns to /auth-callback/, which needs pretty permalinks. Shopify rejects a callback with a query string."
 msgstr ""
 
-#: src/Admin/Wizard.php:659
+#: src/Admin/Wizard.php:755
 msgid "Scheduled tasks"
 msgstr ""
 
-#: src/Admin/Wizard.php:659
+#: src/Admin/Wizard.php:755
 msgid "WP-Cron is on, so webhooks are processed and the daily check runs."
 msgstr ""
 
-#: src/Admin/Wizard.php:659
+#: src/Admin/Wizard.php:755
 msgid "DISABLE_WP_CRON is set. Make sure a real cron job calls wp-cron.php every few minutes, or webhooks wait in the queue."
 msgstr ""
 
-#: src/Admin/Wizard.php:664
+#: src/Admin/Wizard.php:760
 #: src/Files/Probe.php:127
 msgid "Protected files"
 msgstr ""
 
-#: src/Admin/Wizard.php:664
+#: src/Admin/Wizard.php:760
 msgid "Files in the protected folder can be downloaded directly. Add the server rule from docs/protected-files.md."
 msgstr ""
 
-#: src/Admin/Wizard.php:664
+#: src/Admin/Wizard.php:760
 msgid "The protected folder was checked with a loopback request."
 msgstr ""
 
-#: src/Admin/Wizard.php:667
+#: src/Admin/Wizard.php:763
 msgid "What this site needs before Shopify can send members back to it. Red items block sign-in; amber ones are advice."
 msgstr ""
 
-#: src/Admin/Wizard.php:671
+#: src/Admin/Wizard.php:767
 msgid "Advice"
 msgstr ""
 
-#: src/Admin/Wizard.php:677
+#: src/Admin/Wizard.php:773
 msgid "This changes every URL on the site to /post-name/. Old ?p= links keep working. Continue?"
 msgstr ""
 
-#: src/Admin/Wizard.php:682
+#: src/Admin/Wizard.php:778
 msgid "Use post name permalinks"
 msgstr ""
 
-#: src/Admin/Wizard.php:684
+#: src/Admin/Wizard.php:780
 msgid "Choose another structure"
 msgstr ""
 
-#: src/Admin/Wizard.php:687
+#: src/Admin/Wizard.php:783
 msgid "Moving from another RedeemID site?"
 msgstr ""
 
-#: src/Admin/Wizard.php:688
+#: src/Admin/Wizard.php:784
 msgid "Import its levels, rules and settings"
 msgstr ""
 
-#: src/Admin/Wizard.php:698
+#: src/Admin/Wizard.php:794
 msgid "Members sign in with their Shopify customer account. Shopify needs a Customer Account API client that knows this site."
 msgstr ""
 
-#: src/Admin/Wizard.php:700
+#: src/Admin/Wizard.php:796
 msgid "This store still uses classic customer accounts, which can't sign members in. Turn on new customer accounts in Shopify (Settings → Customer accounts), then test again."
 msgstr ""
 
-#: src/Admin/Wizard.php:704
+#: src/Admin/Wizard.php:800
 msgid "Get the Headless channel"
 msgstr ""
 
-#: src/Admin/Wizard.php:705
+#: src/Admin/Wizard.php:801
 msgid "Customer accounts settings"
 msgstr ""
 
-#: src/Admin/Wizard.php:709
+#: src/Admin/Wizard.php:805
 msgid "In your Shopify admin, add the Headless sales channel (free, from the Shopify App Store) and create a storefront in it."
 msgstr ""
 
-#: src/Admin/Wizard.php:710
+#: src/Admin/Wizard.php:806
 msgid "Open Customer Account API settings. A public client is fine; copy its client ID."
 msgstr ""
 
-#: src/Admin/Wizard.php:711
+#: src/Admin/Wizard.php:807
 msgid "Under Application setup, add these three values exactly:"
 msgstr ""
 
-#: src/Admin/Wizard.php:718
+#: src/Admin/Wizard.php:814
 msgid "Then enter the store and client here. The store can be its own web address, its your-store.myshopify.com domain, its handle, or any admin.shopify.com/store/… address copied from the browser. Saving tests sign-in at once and, when it answers, publishes the callback page."
 msgstr ""
 
-#: src/Admin/Wizard.php:730
+#: src/Admin/Wizard.php:826
 msgid "An app on the store lets WordPress read customers' tags, resync members, edit tags in Shopify for you and register webhooks. It never runs a scheduled bulk sync."
 msgstr ""
 
-#: src/Admin/Wizard.php:731
+#: src/Admin/Wizard.php:827
 msgid "Open the Dev Dashboard"
 msgstr ""
 
-#: src/Admin/Wizard.php:733
+#: src/Admin/Wizard.php:829
 msgid "In Shopify's Dev Dashboard, create an app and give it these Admin API scopes:"
 msgstr ""
 
-#: src/Admin/Wizard.php:734
+#: src/Admin/Wizard.php:830
 msgid "Optional: add this scope too, so staff can ask Shopify to erase a customer from Tools → Erase Personal Data:"
 msgstr ""
 
-#: src/Admin/Wizard.php:735
+#: src/Admin/Wizard.php:831
 msgid "Release a version and install the app on this store."
 msgstr ""
 
-#: src/Admin/Wizard.php:736
+#: src/Admin/Wizard.php:832
 msgid "Copy the app's client ID and secret into the fields below. When the test passes, webhooks are registered for you."
 msgstr ""
 
 #. translators: %s: comma-separated scope names
-#: src/Admin/Wizard.php:744
+#: src/Admin/Wizard.php:840
 #, php-format
 msgid "The app is missing these scopes: %s. Add them in the Dev Dashboard, release a new version, then test again."
 msgstr ""
 
-#: src/Admin/Wizard.php:747
+#: src/Admin/Wizard.php:843
 msgid "Test again"
 msgstr ""
 
 #. translators: %s: comma-separated scope names
-#: src/Admin/Wizard.php:752
+#: src/Admin/Wizard.php:848
 #, php-format
 msgid "Granted scopes: %s."
 msgstr ""
 
-#: src/Admin/Wizard.php:764
+#: src/Admin/Wizard.php:860
 msgid "Optional. Storefront tokens power plan cards and buy-now, with live prices and checkout. Sign-in and paywalls work without them."
 msgstr ""
 
-#: src/Admin/Wizard.php:766
+#: src/Admin/Wizard.php:862
 msgid "In the same Headless storefront, open Storefront API settings."
 msgstr ""
 
-#: src/Admin/Wizard.php:767
+#: src/Admin/Wizard.php:863
 msgid "Copy the private access token (recommended) and, if you like, the public one."
 msgstr ""
 
-#: src/Admin/Wizard.php:780
+#: src/Admin/Wizard.php:876
 msgid "Shopify tells WordPress the moment a customer's tags change, so access follows Shopify without any scheduled sync. They are registered for you as soon as the Admin app test passes; use the button to register them again."
 msgstr ""
 
-#: src/Admin/Wizard.php:782
+#: src/Admin/Wizard.php:878
 msgid "Register again"
 msgstr ""
 
-#: src/Admin/Wizard.php:787
+#: src/Admin/Wizard.php:883
 msgid "Last registration"
 msgstr ""
 
 #. translators: 1: subscriptions created, 2: subscriptions already there
-#: src/Admin/Wizard.php:792
+#: src/Admin/Wizard.php:888
 #, php-format
 msgid "%1$d created, %2$d already there."
 msgstr ""
 
 #. translators: 1: webhook topic, 2: scope
-#: src/Admin/Wizard.php:800
+#: src/Admin/Wizard.php:896
 #, php-format
 msgid "%1$s skipped: the app needs the %2$s scope."
 msgstr ""
 
-#: src/Admin/Wizard.php:811
+#: src/Admin/Wizard.php:907
 msgid "Shopify sends its privacy requests (a customer asking for their data, or for it to be erased) only to apps that declare them in the app version. Add the compliance webhooks to your Dev Dashboard app with this URL, or put this in shopify.app.toml, then release a new version. RedeemID turns each one into a request under Tools → Export / Erase Personal Data."
 msgstr ""
 
-#: src/Admin/Wizard.php:816
+#: src/Admin/Wizard.php:912
 msgid "Every delivery is listed under RedeemID → Webhooks."
 msgstr ""
 
 #. translators: %s: callback path
-#: src/Admin/Wizard.php:835
+#: src/Admin/Wizard.php:931
 #, php-format
 msgid "Sign-in results show on %s, inside your theme. It is published for you once the sign-in test passes, unless a page with that address already exists; you can edit its text like any page."
 msgstr ""
 
-#: src/Admin/Wizard.php:839
+#: src/Admin/Wizard.php:935
 msgid "View the page"
 msgstr ""
 
-#: src/Admin/Wizard.php:854
+#: src/Admin/Wizard.php:950
 msgid "A level is a name for a Shopify customer tag. Anyone Shopify tags with it holds the level; nobody else does. Creating a level gives it to no one."
 msgstr ""
 
-#: src/Admin/Wizard.php:857
+#: src/Admin/Wizard.php:953
 msgid "Customers tagged in Shopify"
 msgstr ""
 
 #. translators: %s: comma-separated tags
-#: src/Admin/Wizard.php:874
+#: src/Admin/Wizard.php:970
 #, php-format
 msgid "No customer in Shopify has these tags yet: %s. Check the spelling, or tag a test customer."
 msgstr ""
 
-#: src/Admin/Wizard.php:879
+#: src/Admin/Wizard.php:975
 msgid "Levels are set in code on this site."
 msgstr ""
 
-#: src/Admin/Wizard.php:882
+#: src/Admin/Wizard.php:978
 msgid "Add another level"
 msgstr ""
 
-#: src/Admin/Wizard.php:882
+#: src/Admin/Wizard.php:978
 msgid "New level"
 msgstr ""
 
-#: src/Admin/Wizard.php:890
+#: src/Admin/Wizard.php:986
 msgid "Name"
 msgstr ""
 
-#: src/Admin/Wizard.php:891
+#: src/Admin/Wizard.php:987
 msgid "Gold members"
 msgstr ""
 
-#: src/Admin/Wizard.php:894
+#: src/Admin/Wizard.php:990
 msgid "Shopify customer tag"
 msgstr ""
 
-#: src/Admin/Wizard.php:907
+#: src/Admin/Wizard.php:1003
 msgid "Pick a tag your customers already have, or type a new one for Flow to add."
 msgstr ""
 
-#: src/Admin/Wizard.php:908
+#: src/Admin/Wizard.php:1004
 msgid "Type the tag Flow or your subscription app will add, such as member-gold."
 msgstr ""
 
-#: src/Admin/Wizard.php:914
+#: src/Admin/Wizard.php:1010
 msgid "Create level"
 msgstr ""
 
-#: src/Admin/Wizard.php:916
+#: src/Admin/Wizard.php:1012
 msgid "Several tags, levels that include others, badges and messages are under RedeemID → Access."
 msgstr ""
 
-#: src/Admin/Wizard.php:929
+#: src/Admin/Wizard.php:1025
 msgid "Optional here: you can lock single posts from the editor later. Pick a content type or a category and the level that can read it. Others see a teaser and a way to join."
 msgstr ""
 
-#: src/Admin/Wizard.php:934
+#: src/Admin/Wizard.php:1030
 msgid "Content rules are set in code on this site."
 msgstr ""
 
-#: src/Admin/Wizard.php:944
+#: src/Admin/Wizard.php:1040
 msgid "Lock"
 msgstr ""
 
-#: src/Admin/Wizard.php:947
+#: src/Admin/Wizard.php:1043
 msgid "What to lock"
 msgstr ""
 
-#: src/Admin/Wizard.php:949
+#: src/Admin/Wizard.php:1045
 msgid "Every item of a content type:"
 msgstr ""
 
-#: src/Admin/Wizard.php:950
+#: src/Admin/Wizard.php:1046
 msgid "Content type"
 msgstr ""
 
-#: src/Admin/Wizard.php:959
+#: src/Admin/Wizard.php:1055
 msgid "Posts in one category:"
 msgstr ""
 
-#: src/Admin/Wizard.php:960
+#: src/Admin/Wizard.php:1056
 msgid "Category"
 msgstr ""
 
-#: src/Admin/Wizard.php:972
+#: src/Admin/Wizard.php:1068
 msgid "Readable by"
 msgstr ""
 
-#: src/Admin/Wizard.php:982
+#: src/Admin/Wizard.php:1078
 msgid "Lock it"
 msgstr ""
 
-#: src/Admin/Wizard.php:984
+#: src/Admin/Wizard.php:1080
 msgid "Teasers, archive windows, the meter and every other rule are under RedeemID → Access → Content rules."
 msgstr ""
 
-#: src/Admin/Wizard.php:993
+#: src/Admin/Wizard.php:1089
 msgid "RedeemID reads tags; it never adds them. A Shopify Flow workflow or your subscription app should add the level tag when someone buys and remove it when the membership ends."
 msgstr ""
 
-#: src/Admin/Wizard.php:997
+#: src/Admin/Wizard.php:1093
 msgid "Open Shopify Flow"
 msgstr ""
 
-#: src/Admin/Wizard.php:1003
+#: src/Admin/Wizard.php:1099
 msgid "Shopify's customer counts can't be read until the Admin app is connected."
 msgstr ""
 
 #. translators: %d: number of customers
-#: src/Admin/Wizard.php:1006
+#: src/Admin/Wizard.php:1102
 #, php-format
 msgid "%d customer in Shopify holds a level tag."
 msgid_plural "%d customers in Shopify hold a level tag."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Wizard.php:1008
+#: src/Admin/Wizard.php:1104
 msgid "Tag yourself or a test customer to see it work."
 msgstr ""
 
-#: src/Admin/Wizard.php:1021
+#: src/Admin/Wizard.php:1117
 msgid "Check it from a member's side:"
 msgstr ""
 
-#: src/Admin/Wizard.php:1023
+#: src/Admin/Wizard.php:1119
 msgid "Open a private window, so you aren't signed in to WordPress as yourself, and paste this sign-in link:"
 msgstr ""
 
-#: src/Admin/Wizard.php:1025
+#: src/Admin/Wizard.php:1121
 msgid "Sign-in link"
 msgstr ""
 
-#: src/Admin/Wizard.php:1027
+#: src/Admin/Wizard.php:1123
 msgid "Sign in with a Shopify customer who has the level tag."
 msgstr ""
 
-#: src/Admin/Wizard.php:1028
+#: src/Admin/Wizard.php:1124
 msgid "Open something you locked: it should open. Sign out, or use a customer without the tag, and you should see the teaser."
 msgstr ""
 
 #. translators: %d: number of members
-#: src/Admin/Wizard.php:1033
+#: src/Admin/Wizard.php:1129
 #, php-format
 msgid "%d linked customer holds a level."
 msgid_plural "%d linked customers hold a level."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Wizard.php:1036
+#: src/Admin/Wizard.php:1132
 msgid "Explain why an item opens or not"
 msgstr ""
 
-#: src/Admin/Wizard.php:1041
+#: src/Admin/Wizard.php:1137
 msgid "Setup is done"
 msgstr ""
 
-#: src/Admin/Wizard.php:1041
+#: src/Admin/Wizard.php:1137
 msgid "Every required step passes. Optional ones can wait."
 msgstr ""
 
-#: src/Admin/Wizard.php:1044
+#: src/Admin/Wizard.php:1140
 msgid "Members sign in with Shopify, their tags decide what they read, and webhooks keep WordPress current."
 msgstr ""
 
-#: src/Admin/Wizard.php:1046
+#: src/Admin/Wizard.php:1142
 msgid "Go to the overview"
 msgstr ""
 
-#: src/Admin/Wizard.php:1047
+#: src/Admin/Wizard.php:1143
 msgid "Levels and rules"
 msgstr ""
 

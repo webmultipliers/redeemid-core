@@ -17,8 +17,8 @@ use RedeemID\Support\Logger;
 use RedeemID\Webhooks\Registrar;
 
 /**
- * RedeemID → Setup: the Overview checklist as a guided walk, one step at a
- * time, with what to paste into Shopify and a button for each thing the
+ * RedeemID → Setup. Step by step: the setup checklist as a guided walk, one
+ * step at a time, with what to paste into Shopify and a button for each thing the
  * plugin can do itself.
  *
  * Nothing about progress is stored. Each step's state comes from the site as
@@ -413,18 +413,48 @@ final class Wizard {
 		];
 	}
 
+	/**
+	 * The page's tabs: slug => label. The first is the guided walk, which
+	 * takes ?step=; Checklist shows every step at once.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function tabs(): array {
+		return [
+			'guide'     => __( 'Step by step', 'redeemid' ),
+			'checklist' => __( 'Checklist', 'redeemid' ),
+		];
+	}
+
 	public static function render(): void {
+		$tab = Menu::tab( self::tabs() );
+
+		if ( 'checklist' === $tab ) {
+			Menu::page_start( __( 'Setup', 'redeemid' ), __( 'Set up RedeemID', 'redeemid' ) );
+			Menu::tabs( self::PAGE, self::tabs(), $tab, __( 'Setup views', 'redeemid' ) );
+			echo '<p class="redeemid-intro">' . esc_html__( 'Everything a new site needs, on one screen, with a button for each step.', 'redeemid' ) . '</p>';
+			Menu::result_notice(
+				[
+					'test_ok'          => [ 'success', __( 'Connection test passed: every configured Shopify API answered.', 'redeemid' ) ],
+					'test_failed'      => [ 'error', __( 'Connection test failed for at least one API. See the checklist and App events.', 'redeemid' ) ],
+					'callback_created' => [ 'success', __( 'The callback page is published.', 'redeemid' ) ],
+					'callback_failed'  => [ 'error', __( 'The callback page could not be created.', 'redeemid' ) ],
+					'tags_checked'     => [ 'success', __( 'Level tags checked against Shopify again.', 'redeemid' ) ],
+				]
+			);
+			self::checklist();
+			Menu::page_end();
+			return;
+		}
+
 		$facts   = self::facts();
 		$steps   = self::steps( $facts );
 		$current = self::current( $steps, sanitize_key( wp_unslash( $_GET['step'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$titles  = self::titles();
 
-		Menu::page_start(
-			__( 'Setup', 'redeemid' ),
-			__( 'Set up RedeemID', 'redeemid' ),
-			sprintf( '<a class="page-title-action" href="%s">%s</a>', esc_url( Menu::url() ), esc_html__( 'Overview', 'redeemid' ) ),
-			__( 'Ten short steps from a fresh install to a member reading locked content. Come back any time: each step checks the site as it is now.', 'redeemid' )
-		);
+		Menu::page_start( __( 'Setup', 'redeemid' ), __( 'Set up RedeemID', 'redeemid' ) );
+		Menu::tabs( self::PAGE, self::tabs(), $tab, __( 'Setup views', 'redeemid' ) );
+		echo '<p class="redeemid-intro">' . esc_html__( 'Ten short steps from a fresh install to a member reading locked content. Come back any time: each step checks the site as it is now.', 'redeemid' ) . '</p>';
 		self::notices();
 		?>
 		<div class="redeemid-wizard">
@@ -459,6 +489,72 @@ final class Wizard {
 		<p class="screen-reader-text" id="redeemid-copy-status" aria-live="polite"></p>
 		<?php
 		Menu::page_end();
+	}
+
+	/**
+	 * The Checklist tab: every step on one screen, with its quick action.
+	 */
+	private static function checklist(): void {
+		$steps = Setup::steps( Setup::facts() );
+		$left  = Setup::left( $steps );
+		$names = [ 'sign_in' => __( 'sign-in', 'redeemid' ), 'admin' => __( 'Admin API', 'redeemid' ), 'storefront' => __( 'Storefront', 'redeemid' ) ];
+		$flow  = 'https://github.com/webmultipliers/redeemid-core/blob/main/docs/shopify-flow.md';
+		$text  = [
+			'config'     => [ __( 'Connect your store', 'redeemid' ), __( 'Store domain, Customer Account API client ID and the Admin app credentials.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( ConnectionPage::PAGE ) ), esc_html__( 'Connection', 'redeemid' ) ) ],
+			'test'       => [ __( 'Test the connection', 'redeemid' ), __( 'Asks each configured Shopify API once.', 'redeemid' ), Menu::action_button_html( Setup::ACTION, 'test', __( 'Test connection', 'redeemid' ) ) ],
+			'permalinks' => [ __( 'Turn on pretty permalinks', 'redeemid' ), __( 'Sign-in returns to a pretty URL.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( admin_url( 'options-permalink.php' ) ), esc_html__( 'Permalinks', 'redeemid' ) ) ],
+			/* translators: %s: callback path */
+			'callback'   => [ __( 'Publish the callback page', 'redeemid' ), sprintf( __( 'Sign-in results show on %s, inside your theme.', 'redeemid' ), '/' . Config::callback_slug() . '/' ), Menu::action_button_html( Setup::ACTION, 'callback', __( 'Create the page', 'redeemid' ) ) ],
+			'webhooks'   => [ __( 'Register webhooks', 'redeemid' ), __( 'Shopify tells WordPress when a customer\'s tags change.', 'redeemid' ), Menu::action_button_html( Webhooks::ACTION, 'register', __( 'Register', 'redeemid' ) ) ],
+			'levels'     => [ __( 'Define membership levels', 'redeemid' ), __( 'Each level names the Shopify customer tags that grant it. They are checked against the tags your customers have.', 'redeemid' ), sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( Access::PAGE ) ), esc_html__( 'Levels', 'redeemid' ) ) . ' ' . Menu::action_button_html( Setup::ACTION, 'tags', __( 'Check tags again', 'redeemid' ) ) ],
+			'flow'       => [ __( 'Tag members in Shopify', 'redeemid' ), __( 'A Shopify Flow workflow or a subscription app adds the level tag when someone buys and removes it when the membership ends. Done once a linked customer holds a level.', 'redeemid' ), sprintf( '<a class="button" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( $flow ), esc_html__( 'Flow recipes', 'redeemid' ) ) ],
+		];
+		?>
+		<section class="redeemid-panel redeemid-setup" id="setup">
+			<div class="redeemid-panel__header">
+				<h2>
+					<?php
+					echo $left
+						/* translators: %d: steps left */
+						? esc_html( sprintf( _n( '%d step left', '%d steps left', $left, 'redeemid' ), $left ) )
+						: esc_html__( 'Every step is done', 'redeemid' );
+					?>
+				</h2>
+			</div>
+			<ol class="redeemid-checks redeemid-setup__steps">
+				<?php foreach ( $steps as $step ) : ?>
+					<?php [ $title, $help, $button ] = $text[ $step['key'] ]; ?>
+					<li class="<?php echo $step['done'] ? 'is-done' : ''; ?>">
+						<span class="redeemid-checks__label"><?php echo Menu::dot( $step['done'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $title ); ?><?php echo $step['optional'] && ! $step['done'] ? ' ' . esc_html__( '(optional for a sign-in-only site)', 'redeemid' ) : ''; ?></span>
+						<span class="redeemid-checks__detail">
+							<?php echo esc_html( $help ); ?>
+							<?php if ( 'test' === $step['key'] && '' !== $step['detail'] ) : ?>
+								<br><strong class="redeemid-error-text">
+									<?php
+									/* translators: %s: API names */
+									echo esc_html( sprintf( __( 'Failed: %s', 'redeemid' ), implode( ', ', array_map( static fn( $key ) => $names[ $key ] ?? $key, explode( ', ', $step['detail'] ) ) ) ) );
+									?>
+								</strong>
+							<?php elseif ( 'levels' === $step['key'] && '' !== $step['detail'] ) : ?>
+								<br><strong class="redeemid-error-text">
+									<?php
+									/* translators: %s: tags */
+									echo esc_html( sprintf( __( 'No customer in Shopify has these tags yet: %s. Check the spelling.', 'redeemid' ), $step['detail'] ) );
+									?>
+								</strong>
+							<?php endif; ?>
+						</span>
+						<span class="redeemid-setup__action"><?php echo $button; // phpcs:ignore WordPress.Security.EscapeOutput -- built above from escaped parts. ?></span>
+					</li>
+				<?php endforeach; ?>
+			</ol>
+			<?php if ( $left ) : ?>
+				<div class="redeemid-panel__footer">
+					<a class="button button-primary" href="<?php echo esc_url( self::url() ); ?>"><?php esc_html_e( 'Set up step by step', 'redeemid' ); ?></a>
+				</div>
+			<?php endif; ?>
+		</section>
+		<?php
 	}
 
 	private static function notices(): void {

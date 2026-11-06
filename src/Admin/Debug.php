@@ -14,8 +14,9 @@ use RedeemID\Shopify\Storefront;
 use RedeemID\Support\ConfigValues;
 
 /**
- * RedeemID → Debug. The Connection tab: where each config value comes from,
- * the Shopify connection and its maintenance actions. The Platform tab:
+ * RedeemID → Debug. The Configuration tab: where each config value comes
+ * from. The Connection tab: the Shopify connection and its maintenance
+ * actions. The Platform tab:
  * platform checks and Shopify's own WordPress plugin. Secret values are
  * never displayed, only their presence. (A dry run of who gets what is
  * Access → Test.)
@@ -48,7 +49,7 @@ final class Debug {
 				break;
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] ) );
+		wp_safe_redirect( Menu::url( self::PAGE, [ 'tab' => 'connection', 'result' => $result ] ) );
 		exit;
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
@@ -58,7 +59,12 @@ final class Debug {
 		$tab  = Menu::tab( $tabs );
 		Menu::page_start( __( 'Debug', 'redeemid' ), __( 'Shopify debug', 'redeemid' ) );
 		Menu::tabs( self::PAGE, $tabs, $tab, __( 'Debug sections', 'redeemid' ) );
-		echo '<p class="redeemid-intro">' . esc_html( 'platform' === $tab ? __( 'What this site runs on, and how RedeemID shares the site with Shopify\'s own WordPress plugin.', 'redeemid' ) : __( 'Where each config value comes from and whether each Shopify API answers, with maintenance tools. Secret values are never shown, only whether they are present.', 'redeemid' ) ) . '</p>';
+		$intros = [
+			'configuration' => __( 'Where each config value comes from. Secret values are never shown, only whether they are present.', 'redeemid' ),
+			'connection'    => __( 'Whether each Shopify API answers, with maintenance tools.', 'redeemid' ),
+			'platform'      => __( 'What this site runs on, and how RedeemID shares the site with Shopify\'s own WordPress plugin.', 'redeemid' ),
+		];
+		echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
 		Menu::result_notice(
 			[
 				'discovery_ok'    => [ 'success', __( 'Shopify discovery refreshed.', 'redeemid' ) ],
@@ -71,8 +77,10 @@ final class Debug {
 		if ( 'platform' === $tab ) {
 			self::platform();
 			self::official_plugin();
-		} else {
+		} elseif ( 'connection' === $tab ) {
 			self::connection();
+		} else {
+			self::configuration();
 		}
 
 		Menu::page_end();
@@ -85,15 +93,14 @@ final class Debug {
 	 */
 	public static function tabs(): array {
 		return [
-			'connection' => __( 'Connection', 'redeemid' ),
+			'configuration' => __( 'Configuration', 'redeemid' ),
+			'connection'    => __( 'Connection', 'redeemid' ),
 			'platform'   => __( 'Platform', 'redeemid' ),
 		];
 	}
 
-	private static function connection(): void {
-		$token_err = get_option( 'redeemid_admin_token_error' );
-		$ok        = [ Menu::class, 'dot' ];
-		$fmt_time  = [ Menu::class, 'time' ];
+	private static function configuration(): void {
+		$ok = [ Menu::class, 'dot' ];
 		?>
 			<?php
 			Menu::panel_start(
@@ -126,7 +133,14 @@ final class Debug {
 					</table>
 				</div>
 			<?php Menu::panel_end(); ?>
+		<?php
+	}
 
+	private static function connection(): void {
+		$token_err = get_option( 'redeemid_admin_token_error' );
+		$ok        = [ Menu::class, 'dot' ];
+		$fmt_time  = [ Menu::class, 'time' ];
+		?>
 			<?php Menu::panel_start( __( 'Shopify connection', 'redeemid' ) ); ?>
 				<ul class="redeemid-checks">
 					<li>
