@@ -12,8 +12,10 @@ use RedeemID\Access\Teaser;
 use RedeemID\Access\TermRules;
 
 /**
- * RedeemID → Access → Content rules: the site default, how several term
- * rules combine, and the controls for each post type and taxonomy.
+ * RedeemID → Access → Site rules, Post types and Taxonomies: the site
+ * default, how several term rules combine and the meter; the controls for
+ * each post type; and the controls for each taxonomy. One tab each, and each
+ * saves only its own part.
  */
 final class AccessRules {
 	public const ACTION = 'redeemid_access_rules';
@@ -33,6 +35,9 @@ final class AccessRules {
 
 		// phpcs:disable WordPress.Security.ValidatedSanitizedInput -- every value is cleaned by Rules::from_array() and the casts below.
 		$post       = wp_unslash( $_POST );
+		$section    = sanitize_key( (string) ( $post['section'] ?? '' ) );
+		$section    = in_array( $section, self::SECTIONS, true ) ? $section : 'rules';
+		$saved      = RuleStore::rules()->to_array();
 		$types      = [];
 		$taxonomies = [];
 
@@ -57,20 +62,21 @@ final class AccessRules {
 			];
 		}
 
-		RuleStore::save(
-			Rules::from_array(
-				[
-					'site_levels' => array_map( 'sanitize_key', (array) ( $post['site_levels'] ?? [] ) ),
-					'conflict'    => sanitize_key( (string) ( $post['conflict'] ?? '' ) ),
-					'types'       => $types,
-					'taxonomies'  => $taxonomies,
-					'meter'       => [ 'limit' => (int) ( $post['meter_limit'] ?? 0 ), 'period' => sanitize_key( (string) ( $post['meter_period'] ?? '' ) ) ],
-				]
-			)
-		);
+		// Each tab posts one part; the parts it doesn't hold keep their saved values.
+		$posted = match ( $section ) {
+			'post-types' => [ 'types' => $types ],
+			'taxonomies' => [ 'taxonomies' => $taxonomies ],
+			default      => [
+				'site_levels' => array_map( 'sanitize_key', (array) ( $post['site_levels'] ?? [] ) ),
+				'conflict'    => sanitize_key( (string) ( $post['conflict'] ?? '' ) ),
+				'meter'       => [ 'limit' => (int) ( $post['meter_limit'] ?? 0 ), 'period' => sanitize_key( (string) ( $post['meter_period'] ?? '' ) ) ],
+			],
+		};
+
+		RuleStore::save( Rules::from_array( $posted + $saved ) );
 		// phpcs:enable WordPress.Security.ValidatedSanitizedInput
 
-		wp_safe_redirect( Menu::url( Access::PAGE, [ 'tab' => 'rules', 'result' => 'rules_saved' ] ) );
+		wp_safe_redirect( Menu::url( Access::PAGE, [ 'tab' => $section, 'result' => 'rules_saved' ] ) );
 		exit;
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
@@ -106,7 +112,18 @@ final class AccessRules {
 		return $out;
 	}
 
-	public static function render(): void {
+	/**
+	 * Which tab of Access each part of the rules sits on: tab slug => what it holds.
+	 */
+	public const SECTIONS = [ 'rules', 'post-types', 'taxonomies' ];
+
+	/**
+	 * One part of the rules, on its own Access tab: the site rules (default,
+	 * conflict mode, meter), the post types or the taxonomies. Each saves only
+	 * its own part.
+	 */
+	public static function render( string $section = 'rules' ): void {
+		$section  = in_array( $section, self::SECTIONS, true ) ? $section : 'rules';
 		$rules    = RuleStore::rules();
 		$levels   = array_filter( LevelStore::levels()->all(), static fn( Level $l ) => Level::PUBLIC !== $l->slug );
 		$managed  = RuleStore::managed_in_code();
@@ -137,8 +154,10 @@ final class AccessRules {
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
+			<input type="hidden" name="section" value="<?php echo esc_attr( $section ); ?>">
 			<?php wp_nonce_field( self::ACTION ); ?>
 
+			<?php if ( 'rules' === $section ) : ?>
 			<?php Menu::panel_start( __( 'Defaults', 'redeemid' ), __( 'The fallback rule, and how an item in several gated terms is decided.', 'redeemid' ) ); ?>
 			<div class="redeemid-panel__body redeemid-panel__body--flush">
 			<table class="form-table" role="presentation">
@@ -179,7 +198,9 @@ final class AccessRules {
 			</table>
 			</div>
 			<?php Menu::panel_end(); ?>
+			<?php endif; ?>
 
+			<?php if ( 'post-types' === $section ) : ?>
 			<?php Menu::panel_start( __( 'Post types', 'redeemid' ), __( 'Which post types can be gated, what every item needs, and what locked visitors get.', 'redeemid' ) ); ?>
 			<div class="redeemid-panel__body redeemid-panel__body--flush redeemid-table-scroll">
 			<table class="widefat striped">
@@ -234,7 +255,9 @@ final class AccessRules {
 
 			</div>
 			<?php Menu::panel_end(); ?>
+			<?php endif; ?>
 
+			<?php if ( 'taxonomies' === $section ) : ?>
 			<?php Menu::panel_start( __( 'Taxonomies', 'redeemid' ), __( 'Which taxonomies\' term rules count. Rules are set on each term\'s edit screen.', 'redeemid' ) ); ?>
 			<div class="redeemid-panel__body redeemid-panel__body--flush redeemid-table-scroll">
 			<table class="widefat striped">
@@ -287,6 +310,7 @@ final class AccessRules {
 			</p>
 			</div>
 			<?php Menu::panel_end(); ?>
+			<?php endif; ?>
 
 			<?php if ( ! $managed ) : ?>
 				<?php submit_button( __( 'Save content rules', 'redeemid' ) ); ?>

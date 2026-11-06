@@ -179,7 +179,7 @@ final class Monitor {
 		$wide     = $screen && in_array( $screen->id, [ 'dashboard', 'plugins' ], true );
 
 		// Failures everywhere staff land first; warnings only on the plugin's own pages.
-		// RedeemID → Webhooks → Health and setup lists them instead.
+		// RedeemID → Webhooks → Health lists them instead.
 		if ( ! $worst || \RedeemID\Admin\Webhooks::PAGE === $page || ( Watchdog::WARN === $worst && ! $ours ) || ( Watchdog::FAIL === $worst && ! $ours && ! $wide ) ) {
 			return;
 		}

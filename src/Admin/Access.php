@@ -17,8 +17,9 @@ use RedeemID\Features\Route;
  * customers hold it today; a level is added or edited on its own view of the
  * tab (?edit=new or ?edit=<slug>). The Features tab (AccessFeatures) maps registered
  * features to levels and tags; a level's form shows the same mapping from
- * the other side. The Content rules tab (AccessRules) holds the
- * site default and the post type and taxonomy controls, and the Test tab
+ * the other side. The Site rules, Post types and Taxonomies tabs
+ * (AccessRules) hold the site default and meter, the post type controls and
+ * the taxonomy controls, and the Test tab
  * (AccessTest) explains how one item resolves for one viewer.
  */
 final class Access {
@@ -171,21 +172,26 @@ final class Access {
 	 */
 	public static function tabs(): array {
 		return [
-			'levels'   => __( 'Levels', 'redeemid' ),
-			'rules'    => __( 'Content rules', 'redeemid' ),
-			'features' => __( 'Features', 'redeemid' ),
-			'test'     => __( 'Test', 'redeemid' ),
+			'levels'     => __( 'Levels', 'redeemid' ),
+			'rules'      => __( 'Site rules', 'redeemid' ),
+			'post-types' => __( 'Post types', 'redeemid' ),
+			'taxonomies' => __( 'Taxonomies', 'redeemid' ),
+			'features'   => __( 'Features', 'redeemid' ),
+			'test'       => __( 'Test', 'redeemid' ),
 		];
 	}
 
 	public static function render(): void {
 		$tabs   = self::tabs();
 		$tab    = Menu::tab( $tabs );
+		$layers = __( 'The rule an item gets, from strongest to weakest: the item\'s own setting, then its terms, then its post type, then the site default. Leave every level unticked for "no rule here". Blocks inside an item can only narrow its rule.', 'redeemid' );
 		$intros = [
-			'levels'   => __( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'redeemid' ),
-			'rules'    => __( 'The rule an item gets, from strongest to weakest: the item\'s own setting, then its terms, then its post type, then the site default. Leave every level unticked for "no rule here". Blocks inside an item can only narrow its rule.', 'redeemid' ),
-			'features' => __( 'A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost.', 'redeemid' ),
-			'test'     => __( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'redeemid' ),
+			'levels'     => __( 'A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too.', 'redeemid' ),
+			'rules'      => $layers,
+			'post-types' => $layers,
+			'taxonomies' => $layers,
+			'features'   => __( 'A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost.', 'redeemid' ),
+			'test'       => __( 'Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get.', 'redeemid' ),
 		];
 
 		Menu::page_start( __( 'Access', 'redeemid' ), __( 'Access', 'redeemid' ) );
@@ -206,7 +212,7 @@ final class Access {
 			);
 
 			match ( $tab ) {
-				'rules'    => AccessRules::render(),
+				'rules', 'post-types', 'taxonomies' => AccessRules::render( $tab ),
 				'features' => AccessFeatures::render(),
 				'test'     => AccessTest::render(),
 				default    => self::render_levels(),

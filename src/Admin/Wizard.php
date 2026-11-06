@@ -1077,7 +1077,7 @@ final class Wizard {
 			</table>
 			<p><?php submit_button( __( 'Lock it', 'redeemid' ), 'primary', 'submit', false ); ?></p>
 		</form>
-		<p class="description"><a href="<?php echo esc_url( Menu::url( Access::PAGE, [ 'tab' => 'rules' ] ) ); ?>"><?php esc_html_e( 'Teasers, archive windows, the meter and every other rule are under RedeemID → Access → Content rules.', 'redeemid' ); ?></a></p>
+		<p class="description"><a href="<?php echo esc_url( Menu::url( Access::PAGE, [ 'tab' => 'post-types' ] ) ); ?>"><?php esc_html_e( 'Teasers, archive windows and every other post type rule are under RedeemID → Access → Post types; the meter is on Site rules.', 'redeemid' ); ?></a></p>
 		<?php
 	}
 
