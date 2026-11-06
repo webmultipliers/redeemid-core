@@ -1,6 +1,6 @@
 # Developer API
 
-RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.6.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
+RedeemID's developer API is what other code may rely on: PHP functions, actions, filters, REST routes, the browser client and the event stream. Its version is `REDEEMID_API_VERSION` (currently 1.7.0). The minor part goes up when something is added, and the major part when something listed as stable changes or goes away.
 
 - **Stable** means it changes only with a changelog entry and a version bump. Before RedeemID 1.0.0 a breaking change can still happen, but never silently.
 - **Experimental** means public and documented, but its shape may change in any release.
@@ -22,8 +22,9 @@ One rule runs through all of it: **extensions read access, they never store it.*
 | `redeemid_meter( int\|WP_User\|null $user = null ): array` | `{on, used, limit, period}`: the meter as this user sees it this period. |
 | `redeemid_preferences( int\|WP_User\|null $user = null ): array\|WP_Error` | The member's [preferences](member-preferences.md): each field the owner chose, with `key`, `name`, `description`, `type`, `choices`, `min`, `max`, `editable` and `value`, read from Shopify. |
 | `redeemid_set_preferences( array $values, int\|WP_User\|null $user = null ): array\|WP_Error` | Saves `namespace.key => value` to the member's own Shopify customer and returns the fields again. Refused fields are listed in the error's data. |
+| `redeemid_store_url( string $path = '' ): string` | The store's web address with `$path` on it: its custom domain when it has one, else its myshopify.com domain. For links and forms that go to the store. `''` with no store set. |
 
-No user means the current visitor. None returns Shopify tags, an email or the customer record. Only the two preference functions call Shopify. A page that prints member-only output from these must not be served from a shared page cache.
+No user means the current visitor. None returns Shopify tags, an email or the customer record. Only the two preference functions call Shopify on every use; `redeemid_store_url()` asks once a day and caches the answer. A page that prints member-only output from these must not be served from a shared page cache.
 
 ## The event stream (stable)
 

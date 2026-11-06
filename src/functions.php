@@ -131,3 +131,13 @@ function redeemid_set_preferences( array $values, int|\WP_User|null $user = null
 
 	return \RedeemID\Preferences\Preferences::write( $user_id, $values );
 }
+
+/**
+ * The store's web address, with an optional path: its primary domain when
+ * it has a custom one (shop.example.com), else its myshopify.com domain.
+ * Use it for links and forms that go to the store, such as a cart/add form.
+ * '' when no store is set. Cached for a day; never waits on Shopify twice.
+ */
+function redeemid_store_url( string $path = '' ): string {
+	return \RedeemID\Shopify\Domains::storefront( $path );
+}

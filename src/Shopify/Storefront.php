@@ -725,7 +725,7 @@ GRAPHQL;
 	/**
 	 * @param bool $buyer The request comes from a buyer's action (buy-now, cart), not a cached catalog read.
 	 */
-	private static function headers( bool $buyer = false ): array {
+	public static function headers( bool $buyer = false ): array {
 		$private = Config::get( 'REDEEMID_STOREFRONT_PRIVATE_TOKEN' );
 
 		if ( '' === $private ) {

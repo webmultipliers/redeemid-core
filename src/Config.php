@@ -38,7 +38,7 @@ final class Config {
 				'label'    => 'Store domain',
 				'secret'   => false,
 				'required' => true,
-				'help'     => 'The store\'s *.myshopify.com domain.',
+				'help'     => 'The store\'s *.myshopify.com domain. In Settings the store\'s own web address also works; it is saved as the myshopify.com domain.',
 			],
 			'REDEEMID_CLIENT_ID'           => [
 				'label'    => 'Customer Account API client ID',
