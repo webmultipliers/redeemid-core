@@ -8,7 +8,9 @@ use RedeemID\Settings;
 /**
  * The top-level RedeemID menu:
  *
- * - Overview: connection summary and the setup checklist.
+ * - Overview: is everything connected, one card per part.
+ * - Setup: the guided walk from a fresh install, and the same steps as one
+ *   checklist (tabs: step by step, checklist). Opens once after first activation.
  * - Customers: linked customers (tabs: list, activation, resync all, link by hand).
  * - Access: levels, content rules, features and the access test, one tab each.
  * - Reports: joins, leaves, sign-ins and meter use.
@@ -18,10 +20,8 @@ use RedeemID\Settings;
  *   webhooks, replacement text and export / import.
  * - Webhooks: every delivery Shopify sent, and a tab for delivery health and setup.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
- * - Debug: where each config value comes from, the Shopify connection, platform checks.
- *
- * Setup, the checklist as a step-by-step wizard, is not in the menu: it opens
- * once after first activation and from the Overview checklist.
+ * - Debug: where each config value comes from, the Shopify connection and
+ *   platform checks, one tab each.
  *
  * Other code can add pages under the menu with
  * add_submenu_page( REDEEMID_ADMIN_MENU, ... ) on admin_menu after priority 10.
@@ -92,6 +92,7 @@ final class Menu {
 	public static function menu(): void { // phpcs:ignore Generic.NamingConventions.ConstructorName -- not a constructor in a namespaced class.
 		add_menu_page( __( 'RedeemID', 'redeemid' ), __( 'RedeemID', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ], 'data:image/svg+xml;base64,' . base64_encode( self::mark( 'black' ) ), 58 ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- core needs the menu icon as a base64 data URI.
 		add_submenu_page( self::SLUG, __( 'RedeemID overview', 'redeemid' ), __( 'Overview', 'redeemid' ), self::CAP, self::SLUG, [ Overview::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'redeemid' ), __( 'Customers', 'redeemid' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID access', 'redeemid' ), __( 'Access', 'redeemid' ), self::CAP, Access::PAGE, [ Access::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Membership reports', 'redeemid' ), __( 'Reports', 'redeemid' ), self::CAP, Reports::PAGE, [ Reports::class, 'render' ] );
@@ -100,16 +101,6 @@ final class Menu {
 		$webhooks = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'redeemid' ), __( 'Webhooks', 'redeemid' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
 		$events   = add_submenu_page( self::SLUG, __( 'Shopify app events', 'redeemid' ), __( 'App events', 'redeemid' ), self::CAP, Events::PAGE, [ Events::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID debug', 'redeemid' ), __( 'Debug', 'redeemid' ), self::CAP, Debug::PAGE, [ Debug::class, 'render' ] );
-
-		// Setup is reachable but not listed: Overview links to it. It is taken out
-		// of the menu only once core has checked access, just before the menu prints.
-		add_submenu_page( self::SLUG, __( 'Set up RedeemID', 'redeemid' ), __( 'Setup', 'redeemid' ), self::CAP, Wizard::PAGE, [ Wizard::class, 'render' ] );
-		add_action( 'admin_head', static fn() => remove_submenu_page( self::SLUG, Wizard::PAGE ) );
-
-		if ( Wizard::PAGE === self::requested_page() ) {
-			add_filter( 'parent_file', static fn() => self::SLUG );
-			add_filter( 'submenu_file', static fn() => self::SLUG );
-		}
 
 		if ( $customers ) {
 			add_action( 'load-' . $customers, [ Customers::class, 'load' ] );
