@@ -6,7 +6,7 @@ Shopify publishes its own WordPress plugin for the Sell on WordPress sales chann
 
 | Shopify's plugin | RedeemID | Status |
 |---|---|---|
-| Connect with an install code (store URL and public Storefront token) | Settings and the setup wizard: store domain, Storefront private or public token, Admin app, sign-in client | Covered |
+| Connect with an install code (store URL and public Storefront token) | Connection and the setup wizard: store domain, Storefront private or public token, Admin app, sign-in client | Covered |
 | Product block | **Shopify Product** (`redeemid/product`): live price, options, quantity, buy-now, no JavaScript | Covered |
 | Collection block with pagination | **Shopify Collection** (`redeemid/collection`): server-rendered grid, link-based pages | Covered |
 | Membership or plan purchase | **Shopify Plan Card** (`redeemid/plan-card`), member-aware, selling plans | Covered (RedeemID only) |

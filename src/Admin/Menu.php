@@ -12,8 +12,10 @@ use RedeemID\Settings;
  * - Customers: linked customers (tabs: list, activation, resync all, link by hand).
  * - Access: levels, content rules, features and the access test, one tab each.
  * - Reports: joins, leaves, sign-ins and meter use.
- * - Settings: one tab each for the Shopify connection, sign-in, members, the
- *   storefront, event webhooks, replacement text and export / import.
+ * - Connection: the Shopify credentials (tabs: store, customer sign-in, Admin
+ *   API, Storefront API, encryption).
+ * - Settings: one tab each for sign-in, members, the storefront, event
+ *   webhooks, replacement text and export / import.
  * - Webhooks: every delivery Shopify sent, and a tab for delivery health and setup.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
  * - Debug: where each config value comes from, the Shopify connection, platform checks.
@@ -39,6 +41,7 @@ final class Menu {
 		// Runs before admin_menu, so it is added here.
 		add_filter( 'set_screen_option_redeemid_per_page', static fn( $keep, $option, $value ) => max( 10, min( 500, (int) $value ) ), 10, 3 );
 
+		ConnectionPage::register();
 		SettingsPage::register();
 		TextPage::register();
 		Customers::register();
@@ -92,6 +95,7 @@ final class Menu {
 		$customers = add_submenu_page( self::SLUG, __( 'Shopify customers', 'redeemid' ), __( 'Customers', 'redeemid' ), self::CAP, Customers::PAGE, [ Customers::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'RedeemID access', 'redeemid' ), __( 'Access', 'redeemid' ), self::CAP, Access::PAGE, [ Access::class, 'render' ] );
 		add_submenu_page( self::SLUG, __( 'Membership reports', 'redeemid' ), __( 'Reports', 'redeemid' ), self::CAP, Reports::PAGE, [ Reports::class, 'render' ] );
+		add_submenu_page( self::SLUG, __( 'Shopify connection', 'redeemid' ), __( 'Connection', 'redeemid' ), self::CAP, ConnectionPage::PAGE, [ ConnectionPage::class, 'render' ] );
 		$settings = add_submenu_page( self::SLUG, __( 'RedeemID settings', 'redeemid' ), __( 'Settings', 'redeemid' ), self::CAP, SettingsPage::PAGE, [ SettingsPage::class, 'render' ] );
 		$webhooks = add_submenu_page( self::SLUG, __( 'Shopify webhooks', 'redeemid' ), __( 'Webhooks', 'redeemid' ), self::CAP, Webhooks::PAGE, [ Webhooks::class, 'render' ] );
 		$events   = add_submenu_page( self::SLUG, __( 'Shopify app events', 'redeemid' ), __( 'App events', 'redeemid' ), self::CAP, Events::PAGE, [ Events::class, 'render' ] );
@@ -131,7 +135,7 @@ final class Menu {
 	 * @return string[]
 	 */
 	public static function pages(): array {
-		return [ self::SLUG, Wizard::PAGE, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
+		return [ self::SLUG, Wizard::PAGE, ConnectionPage::PAGE, SettingsPage::PAGE, Customers::PAGE, Webhooks::PAGE, Events::PAGE, Reports::PAGE, Access::PAGE, Debug::PAGE ];
 	}
 
 	/**
@@ -269,7 +273,7 @@ final class Menu {
 				<?php elseif ( '' !== $domain ) : ?>
 					<?php echo esc_html( $domain ); ?>
 				<?php endif; ?>
-				<a class="redeemid-topbar__status" href="<?php echo esc_url( self::url( SettingsPage::PAGE ) ); ?>">
+				<a class="redeemid-topbar__status" href="<?php echo esc_url( self::url( ConnectionPage::PAGE ) ); ?>">
 					<?php echo $missing ? self::status( 'warn', __( 'Setup incomplete', 'redeemid' ) ) : self::status( 'ok', __( 'Configured', 'redeemid' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				</a>
 			</span>

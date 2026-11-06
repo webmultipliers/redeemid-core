@@ -116,9 +116,9 @@ final class Wizard {
 
 		switch ( $do ) {
 			case 'config':
-				$saved = SettingsPage::store_posted();
+				$saved = ConnectionPage::store_posted();
 				$test  = Setup::test();
-				$args  = SettingsPage::result_args( $saved );
+				$args  = ConnectionPage::result_args( $saved );
 
 				if ( ! $saved['errors'] ) {
 					$args['result'] = in_array( false, $test['results'], true ) ? 'test_failed' : 'test_ok';
@@ -587,11 +587,11 @@ final class Wizard {
 	}
 
 	/**
-	 * The step's settings fields, the same rows Settings shows, saved and tested in one go.
+	 * The step's settings fields, the same rows Connection shows, saved and tested in one go.
 	 */
 	private static function config_form( string $step ): void {
 		$names   = self::FIELDS[ $step ];
-		$invalid = SettingsPage::invalid_fields();
+		$invalid = ConnectionPage::invalid_fields();
 		$values  = [];
 
 		foreach ( $names as $name ) {
@@ -606,7 +606,7 @@ final class Wizard {
 			<?php wp_nonce_field( self::ACTION ); ?>
 			<table class="form-table" role="presentation">
 				<?php foreach ( $names as $name ) : ?>
-					<?php SettingsPage::field( $name, Config::definitions()[ $name ], $invalid[ $name ] ?? '' ); ?>
+					<?php ConnectionPage::field( $name, Config::definitions()[ $name ], $invalid[ $name ] ?? '' ); ?>
 				<?php endforeach; ?>
 			</table>
 			<p><?php submit_button( __( 'Save and test', 'redeemid' ), 'primary', 'submit', false ); ?></p>

@@ -159,7 +159,7 @@ final class Webhooks {
 					</li>
 					<li>
 						<span class="redeemid-checks__label"><?php echo Menu::dot( $secret_set ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Signatures', 'redeemid' ); ?></span>
-						<span class="redeemid-checks__detail"><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'redeemid' ) : esc_html__( 'The Admin app client secret is missing, so every delivery is rejected. Add it in Settings.', 'redeemid' ); ?></span>
+						<span class="redeemid-checks__detail"><?php echo $secret_set ? esc_html__( 'Signatures are checked with the Admin app client secret.', 'redeemid' ) : esc_html__( 'The Admin app client secret is missing, so every delivery is rejected. Add it under Connection → Admin API.', 'redeemid' ); ?></span>
 					</li>
 					<li>
 						<span class="redeemid-checks__label"><?php echo Menu::dot( is_array( $hooks ) && ! $hooks['error'] && ! $hooks['failed'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Subscriptions through the app', 'redeemid' ); ?></span>

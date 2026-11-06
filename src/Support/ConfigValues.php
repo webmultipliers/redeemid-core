@@ -73,9 +73,11 @@ final class ConfigValues {
 	}
 
 	/**
-	 * Apply a form submission. Locked and constant-only fields are ignored. A
-	 * blank secret keeps what is stored; $clear removes it. A blank plain field
-	 * removes it. An invalid value keeps the previous one and is reported.
+	 * Apply a form submission. Locked and constant-only fields are ignored, and
+	 * so is any field the form didn't hold, so a form showing some fields (one
+	 * Connection tab, one setup step) leaves the others alone. A blank secret
+	 * keeps what is stored; $clear removes it. A blank plain field removes it.
+	 * An invalid value keeps the previous one and is reported.
 	 *
 	 * @param array<string, mixed> $input Field name => submitted value.
 	 * @param string[]             $clear Secret names to remove.
@@ -87,7 +89,7 @@ final class ConfigValues {
 		$errors  = [];
 
 		foreach ( $this->definitions as $name => $def ) {
-			if ( ! $this->editable( $name ) || $this->locked( $name ) ) {
+			if ( ! $this->editable( $name ) || $this->locked( $name ) || ( ! array_key_exists( $name, $input ) && ! in_array( $name, $clear, true ) ) ) {
 				continue;
 			}
 

@@ -98,8 +98,8 @@ final class Debug {
 			<?php
 			Menu::panel_start(
 				__( 'Configuration', 'redeemid' ),
-				__( 'These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from RedeemID → Settings.', 'redeemid' ),
-				sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( SettingsPage::PAGE ) ), esc_html__( 'Edit settings', 'redeemid' ) )
+				__( 'These are the only values the plugin reads. Each comes from a wp-config.php constant of that name, which always wins, or from RedeemID → Connection.', 'redeemid' ),
+				sprintf( '<a class="button" href="%s">%s</a>', esc_url( Menu::url( ConnectionPage::PAGE ) ), esc_html__( 'Edit connection', 'redeemid' ) )
 			);
 			?>
 				<div class="redeemid-panel__body redeemid-panel__body--flush redeemid-table-scroll">
@@ -219,7 +219,7 @@ final class Debug {
 		return match ( $source ) {
 			ConfigValues::CONSTANT   => Menu::status( 'ok', __( 'wp-config.php', 'redeemid' ) ),
 			ConfigValues::SETTINGS   => Menu::status( 'ok', __( 'Settings (database)', 'redeemid' ) ),
-			ConfigValues::UNREADABLE => Menu::status( 'error', __( 'Unreadable', 'redeemid' ) ) . '<br><span class="redeemid-error-text">' . esc_html__( 'Saved in Settings but unreadable: the encryption key changed. Enter it again.', 'redeemid' ) . '</span>',
+			ConfigValues::UNREADABLE => Menu::status( 'error', __( 'Unreadable', 'redeemid' ) ) . '<br><span class="redeemid-error-text">' . esc_html__( 'Saved under Connection but unreadable: the encryption key changed. Enter it again.', 'redeemid' ) . '</span>',
 			default                  => $required ? Menu::status( 'error', __( 'Missing (required)', 'redeemid' ) ) : Menu::status( 'neutral', __( 'Not set (optional)', 'redeemid' ) ),
 		};
 	}

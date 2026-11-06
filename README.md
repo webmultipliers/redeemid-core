@@ -38,11 +38,11 @@ Full steps: [Install](https://www.redeemid.com/docs/install/) and [Connect Shopi
 
 ## Configure
 
-These eight values are the whole connection. Enter each in **RedeemID → Settings**, or define a constant of the same name in `wp-config.php`. A constant always wins and locks its field; it is the more secure choice because the value never touches the database. Secrets saved in Settings are encrypted (libsodium) and write-only. RedeemID → Debug shows where each value comes from, never the value.
+These eight values are the whole connection. Enter each in **RedeemID → Connection** (one tab per part: Store, Customer sign-in, Admin API, Storefront API, Encryption), or define a constant of the same name in `wp-config.php`. A constant always wins and locks its field; it is the more secure choice because the value never touches the database. Secrets saved there are encrypted (libsodium) and write-only. RedeemID → Debug shows where each value comes from, never the value.
 
 | Constant | Required | Purpose |
 |---|---|---|
-| `REDEEMID_STORE_DOMAIN` | yes | `your-store.myshopify.com` (the handle or an `admin.shopify.com/store/…` address also works; in Settings, so does the store's own web address, such as `shop.example.com`) |
+| `REDEEMID_STORE_DOMAIN` | yes | `your-store.myshopify.com` (the handle or an `admin.shopify.com/store/…` address also works; under Connection, so does the store's own web address, such as `shop.example.com`) |
 | `REDEEMID_CLIENT_ID` | yes | Customer Account API client ID, for sign-in |
 | `REDEEMID_CLIENT_SECRET` | confidential clients | Customer Account API client secret. Leave unset for a public client |
 | `REDEEMID_ADMIN_CLIENT_ID` | yes | Client ID of the Dev Dashboard app installed on the store, for resync, tag editing and webhooks |

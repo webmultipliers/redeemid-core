@@ -137,4 +137,11 @@ final class ConfigValuesTest extends TestCase {
 
 		$this->assertArrayNotHasKey( 'REDEEMID_CLIENT_ID', $result['stored'] );
 	}
+
+	public function test_a_form_without_a_field_leaves_it_saved(): void {
+		$result = $this->values( [ 'REDEEMID_STORE_DOMAIN' => 'demo-store.myshopify.com', 'REDEEMID_CLIENT_ID' => 'abc' ] )->apply( [ 'REDEEMID_CLIENT_ID' => '' ] );
+
+		$this->assertSame( [ 'REDEEMID_STORE_DOMAIN' => 'demo-store.myshopify.com' ], $result['stored'], 'Only the posted field changes; a blank one is removed.' );
+		$this->assertSame( [ 'REDEEMID_CLIENT_ID' ], $result['changed'] );
+	}
 }

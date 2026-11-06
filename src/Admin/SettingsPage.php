@@ -4,35 +4,20 @@ namespace RedeemID\Admin;
 
 use RedeemID\Api\Events;
 use RedeemID\Api\Outbound;
-use RedeemID\Config;
 use RedeemID\Preferences\Preferences;
 use RedeemID\Settings;
 use RedeemID\Shopify\Admin;
-use RedeemID\Shopify\AdminToken;
-use RedeemID\Shopify\Discovery;
-use RedeemID\Shopify\Domains;
-use RedeemID\Support\ConfigValues;
-use RedeemID\Support\Logger;
-use RedeemID\Webhooks\Registrar;
 
 /**
- * RedeemID → Settings, one tab per subject: the Shopify connection, sign-in,
- * members, the storefront, event webhooks, replacement text (TextPage) and
- * export / import (SettingsTransfer).
- *
- * Every Config::definitions() value can be saved here, in the options table,
- * so a site can be set up without editing wp-config.php. A constant of the
- * same name always wins, and its field shows as locked. Secrets are encrypted
- * before they are stored, are write-only (the field is always empty, a blank
- * submission keeps what is stored) and are never printed back.
+ * RedeemID → Settings, one tab per subject: sign-in, members, the storefront,
+ * event webhooks, replacement text (TextPage) and export / import
+ * (SettingsTransfer). The Shopify credentials are on ConnectionPage.
  */
 final class SettingsPage {
-	public const PAGE   = 'redeemid-settings';
-	public const ACTION   = 'redeemid_save_config';
+	public const PAGE     = 'redeemid-settings';
 	public const OUTBOUND = 'redeemid_outbound';
 
 	public static function register(): void {
-		add_action( 'admin_post_' . self::ACTION, [ self::class, 'save' ] );
 		add_action( 'admin_post_' . self::OUTBOUND, [ self::class, 'outbound_action' ] );
 	}
 
@@ -56,115 +41,6 @@ final class SettingsPage {
 		exit;
 	}
 
-	public static function save(): void {
-		Menu::guard( self::ACTION );
-		wp_safe_redirect( Menu::url( self::PAGE, self::result_args( self::store_posted() ) ) );
-		exit;
-	}
-
-	/**
-	 * Save the posted config[] and clear[] fields. The caller checks the nonce.
-	 * Setup (the wizard) saves its steps' fields through here too.
-	 *
-	 * @return array{stored: array, changed: string[], errors: array<string, string>}
-	 */
-	public static function store_posted(): array {
-		// phpcs:disable WordPress.Security.NonceVerification -- checked by the caller.
-		$input  = wp_unslash( $_POST['config'] ?? [] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- ConfigValues::apply validates each field.
-		$clear  = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['clear'] ?? [] ) );
-		// phpcs:enable WordPress.Security.NonceVerification
-		$input  = is_array( $input ) ? self::resolve_store( $input ) : [];
-		$result = Config::values()->apply( $input, $clear );
-
-		update_option( Config::OPTION, $result['stored'], true );
-		Config::reset();
-		self::after_change( $result['changed'] );
-
-		if ( $result['changed'] ) {
-			// Names only: no value, secret or not, is ever logged.
-			Logger::log( 'admin.config_saved', [ 'changed' => implode( ',', $result['changed'] ) ] );
-		}
-
-		return $result;
-	}
-
-	/**
-	 * An owner may enter the store's own web address (shop.example.com)
-	 * rather than its myshopify.com domain. Ask that storefront which store
-	 * it is, and save the myshopify.com domain the APIs need.
-	 *
-	 * @param array<string, mixed> $input The posted config[] fields.
-	 * @return array<string, mixed>
-	 */
-	private static function resolve_store( array $input ): array {
-		$value = is_scalar( $input['REDEEMID_STORE_DOMAIN'] ?? null ) ? trim( (string) $input['REDEEMID_STORE_DOMAIN'] ) : '';
-
-		if ( '' === $value || null === ConfigValues::invalid( 'REDEEMID_STORE_DOMAIN', $value ) ) {
-			return $input;
-		}
-
-		$found = Domains::myshopify_for( ConfigValues::normalise_domain( $value ) );
-
-		if ( '' !== $found ) {
-			$input['REDEEMID_STORE_DOMAIN'] = $found;
-		}
-
-		return $input;
-	}
-
-	/**
-	 * The query args a page shows a save's outcome from: result, n and invalid.
-	 *
-	 * @param array{changed: string[], errors: array<string, string>} $result From store_posted().
-	 * @return array<string, string|int>
-	 */
-	public static function result_args( array $result ): array {
-		$args = [ 'result' => $result['errors'] ? 'config_invalid' : 'config_saved', 'n' => count( $result['changed'] ) ];
-
-		if ( $result['errors'] ) {
-			$args['invalid'] = implode( ',', array_map( static fn( $name, $code ) => $name . ':' . $code, array_keys( $result['errors'] ), $result['errors'] ) );
-		}
-
-		return $args;
-	}
-
-	/**
-	 * Why the last save refused each field, from the invalid query arg.
-	 *
-	 * @return array<string, string> Config name => ConfigValues code.
-	 */
-	public static function invalid_fields(): array {
-		$invalid = [];
-
-		foreach ( explode( ',', sanitize_text_field( wp_unslash( $_GET['invalid'] ?? '' ) ) ) as $pair ) { // phpcs:ignore WordPress.Security.NonceVerification
-			[ $name, $code ] = array_pad( explode( ':', $pair, 2 ), 2, '' );
-			$invalid[ $name ] = sanitize_key( $code );
-		}
-
-		return $invalid;
-	}
-
-	/**
-	 * Drop what was cached for the old values.
-	 *
-	 * @param string[] $changed
-	 */
-	private static function after_change( array $changed ): void {
-		if ( in_array( 'REDEEMID_STORE_DOMAIN', $changed, true ) ) {
-			Discovery::forget_store();
-			Domains::forget();
-		}
-
-		if ( array_intersect( [ 'REDEEMID_STORE_DOMAIN', 'REDEEMID_ADMIN_CLIENT_ID', 'REDEEMID_ADMIN_CLIENT_SECRET' ], $changed ) ) {
-			AdminToken::forget();
-			delete_option( 'redeemid_admin_token_error' );
-			delete_option( 'redeemid_admin_token_scopes' );
-			delete_transient( 'redeemid_admin_scopes' );
-			// Another store or app has none of this site's subscriptions yet; the next passing test registers them.
-			delete_option( Registrar::RESULT );
-		}
-	}
-
 	/**
 	 * The page's tabs: slug => label.
 	 *
@@ -172,7 +48,6 @@ final class SettingsPage {
 	 */
 	public static function tabs(): array {
 		return [
-			'connection' => __( 'Shopify connection', 'redeemid' ),
 			'sign-in'    => __( 'Sign-in', 'redeemid' ),
 			'members'    => __( 'Members', 'redeemid' ),
 			'storefront' => __( 'Storefront', 'redeemid' ),
@@ -186,7 +61,6 @@ final class SettingsPage {
 		$tabs   = self::tabs();
 		$tab    = Menu::tab( $tabs );
 		$intros = [
-			'connection' => __( 'Enter the store\'s credentials here, or define them as constants in wp-config.php. A constant always wins and its field is locked here; that is the more secure choice, because the value then never touches the database. Secrets saved here are encrypted with a key from the WordPress salts (or REDEEMID_ENCRYPTION_KEY) and are never shown again: leave a secret blank to keep it.', 'redeemid' ),
 			'sign-in'    => __( 'How members sign in, what happens when they sign out, and how buyers come back from checkout.', 'redeemid' ),
 			'members'    => __( 'What members can manage themselves. Customers get their membership tags in Shopify, from Shopify Flow or a subscription or membership app; RedeemID only reads them. See docs/shopify-flow.md for recipes.', 'redeemid' ),
 			'storefront' => __( 'Product, collection and cart pages served from your Shopify catalog.', 'redeemid' ),
@@ -200,9 +74,6 @@ final class SettingsPage {
 		echo '<p class="redeemid-intro">' . esc_html( $intros[ $tab ] ) . '</p>';
 		Menu::result_notice(
 			[
-				/* translators: %d: number of values changed */
-				'config_saved'         => [ 'success', __( 'Connection saved. %d values changed.', 'redeemid' ) ],
-				'config_invalid'       => [ 'error', __( 'Some values were not saved. They are marked below.', 'redeemid' ) ],
 				'outbound_rotated'     => [ 'success', __( 'A new signing secret was made. Give it to every receiver: the old one no longer verifies.', 'redeemid' ) ],
 				'outbound_no_key'      => [ 'error', __( 'No encryption key is available, so a signing secret cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY.', 'redeemid' ) ],
 				'outbound_test_ok'     => [ 'success', __( 'The test event was delivered.', 'redeemid' ) ],
@@ -214,158 +85,15 @@ final class SettingsPage {
 		settings_errors();
 
 		match ( $tab ) {
-			'sign-in'    => self::sign_in(),
 			'members'    => self::members(),
 			'storefront' => self::storefront(),
 			'events'     => self::events(),
 			'text'       => TextPage::render(),
 			'transfer'   => SettingsTransfer::render(),
-			default      => self::connection(),
+			default      => self::sign_in(),
 		};
 
 		Menu::page_end();
-	}
-
-	private static function connection(): void {
-		$invalid = self::invalid_fields();
-		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" autocomplete="off">
-			<input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION ); ?>">
-			<?php wp_nonce_field( self::ACTION ); ?>
-			<?php foreach ( self::sections() as [ $heading, $names ] ) : ?>
-				<?php Menu::panel_start( $heading ); ?>
-				<div class="redeemid-panel__body redeemid-panel__body--flush">
-					<table class="form-table" role="presentation">
-						<?php foreach ( $names as $name ) : ?>
-							<?php self::field( $name, Config::definitions()[ $name ], $invalid[ $name ] ?? '' ); ?>
-						<?php endforeach; ?>
-					</table>
-				</div>
-				<?php Menu::panel_end(); ?>
-			<?php endforeach; ?>
-			<p class="submit"><?php submit_button( __( 'Save connection', 'redeemid' ), 'primary', 'submit', false ); ?></p>
-		</form>
-		<?php
-	}
-
-	/**
-	 * The config values in groups, in Config::definitions() order. Display only.
-	 *
-	 * @return array<int, array{0: string, 1: string[]}>
-	 */
-	private static function sections(): array {
-		$groups = [
-			[ __( 'Store', 'redeemid' ), [ 'REDEEMID_STORE_DOMAIN' ] ],
-			[ __( 'Customer sign-in', 'redeemid' ), [ 'REDEEMID_CLIENT_ID', 'REDEEMID_CLIENT_SECRET' ] ],
-			[ __( 'Admin API', 'redeemid' ), [ 'REDEEMID_ADMIN_CLIENT_ID', 'REDEEMID_ADMIN_CLIENT_SECRET' ] ],
-			[ __( 'Storefront API', 'redeemid' ), [ 'REDEEMID_PUBLIC_ACCESS_TOKEN', 'REDEEMID_STOREFRONT_PRIVATE_TOKEN' ] ],
-			[ __( 'Encryption', 'redeemid' ), [ 'REDEEMID_ENCRYPTION_KEY' ] ],
-		];
-		$all    = array_keys( Config::definitions() );
-		$placed = [];
-		$out    = [];
-
-		foreach ( $groups as [ $heading, $names ] ) {
-			$names = array_values( array_intersect( $names, $all ) );
-
-			if ( $names ) {
-				$out[]  = [ $heading, $names ];
-				$placed = array_merge( $placed, $names );
-			}
-		}
-
-		$rest = array_values( array_diff( $all, $placed ) );
-
-		if ( $rest ) {
-			$out[] = [ __( 'Other', 'redeemid' ), $rest ];
-		}
-
-		return $out;
-	}
-
-	/**
-	 * Where a value comes from, as a status label. Escaped HTML.
-	 */
-	private static function source_status( string $source, bool $required ): string {
-		return match ( $source ) {
-			ConfigValues::CONSTANT   => Menu::status( 'neutral', __( 'wp-config.php', 'redeemid' ) ),
-			ConfigValues::SETTINGS   => Menu::status( 'ok', __( 'Saved', 'redeemid' ) ),
-			ConfigValues::UNREADABLE => Menu::status( 'error', __( 'Unreadable', 'redeemid' ) ),
-			default                  => $required ? Menu::status( 'warn', __( 'Required', 'redeemid' ) ) : Menu::status( 'neutral', __( 'Optional', 'redeemid' ) ),
-		};
-	}
-
-	/**
-	 * @param array{label: string, secret: bool, required: bool, help: string, editable?: bool} $def
-	 * @param string                                                                            $invalid Why the last save refused this field (a ConfigValues code), or ''.
-	 */
-	public static function field( string $name, array $def, string $invalid ): void {
-		$id       = 'redeemid-' . strtolower( str_replace( '_', '-', $name ) );
-		$source   = Config::source( $name );
-		$locked   = Config::locked( $name );
-		$editable = Config::values()->editable( $name );
-		$secret   = ! empty( $def['secret'] );
-		$field    = 'config[' . $name . ']';
-		?>
-		<tr>
-			<th scope="row">
-				<label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $def['label'] ); ?></label>
-				<?php if ( $def['required'] ) : ?>
-					<span class="redeemid-required" title="<?php esc_attr_e( 'Required', 'redeemid' ); ?>">*</span>
-				<?php endif; ?>
-			</th>
-			<td>
-				<?php if ( $locked || ! $editable ) : ?>
-					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code" type="text" disabled
-						value="<?php echo esc_attr( $secret ? ( ConfigValues::CONSTANT === $source ? '••••••••••••' : '' ) : Config::get( $name ) ); ?>"
-						placeholder="<?php echo esc_attr( $locked ? __( '(empty)', 'redeemid' ) : __( 'Not set', 'redeemid' ) ); ?>">
-					<p class="description">
-						<span class="dashicons dashicons-lock redeemid-icon-inline" aria-hidden="true"></span>
-						<?php
-						if ( $locked ) {
-							/* translators: %s: constant name */
-							echo esc_html( sprintf( __( 'Set in wp-config.php by %s, which always wins. Remove the constant to edit it here.', 'redeemid' ), Config::constant_name( $name ) ) );
-						} else {
-							/* translators: %s: constant name */
-							echo esc_html( sprintf( __( 'Only read from wp-config.php: define %s there.', 'redeemid' ), $name ) );
-						}
-						?>
-					</p>
-				<?php elseif ( $secret ) : ?>
-					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code<?php echo $invalid ? ' redeemid-invalid' : ''; ?>" type="password" name="<?php echo esc_attr( $field ); ?>" value="" autocomplete="new-password" spellcheck="false"
-						placeholder="<?php echo esc_attr( ConfigValues::SETTINGS === $source ? __( 'Saved. Leave blank to keep it.', 'redeemid' ) : __( 'Not set', 'redeemid' ) ); ?>"
-						<?php echo $invalid ? 'aria-invalid="true"' : ''; ?>>
-					<?php if ( ConfigValues::NONE !== $source ) : ?>
-						<label class="redeemid-clear"><input type="checkbox" name="clear[]" value="<?php echo esc_attr( $name ); ?>"> <?php esc_html_e( 'Remove the saved value', 'redeemid' ); ?></label>
-					<?php endif; ?>
-					<?php if ( ConfigValues::UNREADABLE === $source ) : ?>
-						<p class="description redeemid-error-text"><?php esc_html_e( 'A value is saved but can no longer be decrypted, so it is ignored. The WordPress salts or REDEEMID_ENCRYPTION_KEY changed since it was saved. Enter it again.', 'redeemid' ); ?></p>
-					<?php endif; ?>
-				<?php else : ?>
-					<input id="<?php echo esc_attr( $id ); ?>" class="regular-text code<?php echo $invalid ? ' redeemid-invalid' : ''; ?>" type="text" name="<?php echo esc_attr( $field ); ?>" value="<?php echo esc_attr( Config::get( $name ) ); ?>" spellcheck="false"
-						<?php echo 'REDEEMID_STORE_DOMAIN' === $name ? 'placeholder="your-store.myshopify.com"' : ''; ?>
-						<?php echo $invalid ? 'aria-invalid="true"' : ''; ?>>
-				<?php endif; ?>
-				<?php if ( $invalid ) : ?>
-					<p class="description redeemid-error-text"><?php esc_html_e( 'Not saved:', 'redeemid' ); ?> <?php echo esc_html( self::reason( $invalid ) ); ?></p>
-				<?php endif; ?>
-				<p class="description redeemid-help"><?php echo esc_html( $def['help'] ); ?></p>
-				<div class="redeemid-field-meta">
-					<?php echo self::source_status( $source, $def['required'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-					<code class="redeemid-code-small"><?php echo esc_html( $name ); ?></code>
-				</div>
-			</td>
-		</tr>
-		<?php
-	}
-
-	private static function reason( string $code ): string {
-		return match ( $code ) {
-			ConfigValues::BAD_DOMAIN => __( 'that address isn\'t a Shopify store. Use the store\'s web address or its your-store.myshopify.com domain.', 'redeemid' ),
-			ConfigValues::TOO_LONG   => __( 'that is longer than any Shopify credential.', 'redeemid' ),
-			ConfigValues::NO_KEY     => __( 'no encryption key is available, so secrets cannot be stored. Check the WordPress salts in wp-config.php, or REDEEMID_ENCRYPTION_KEY.', 'redeemid' ),
-			default                  => __( 'paste the value without spaces or line breaks.', 'redeemid' ),
-		};
 	}
 
 	/**
@@ -555,7 +283,7 @@ final class SettingsPage {
 			<td>
 				<p class="description"><?php esc_html_e( 'Customer metafields defined in Shopify (Settings → Custom data → Customers). Choose which ones members may see or change. Answers are saved to the customer in Shopify, never in WordPress, and your theme, a forms plugin or a headless front end shows them through redeemid_preferences() and redeemid_set_preferences() or GET and POST /redeemid/v1/account/preferences. Fields in the membership namespace are never offered.', 'redeemid' ); ?></p>
 				<?php if ( is_wp_error( $definitions ) ) : ?>
-					<p><?php echo esc_html( 'shopify_admin_unconfigured' === $definitions->get_error_code() ? __( 'Needs the Admin API: add its credentials on the Shopify connection tab.', 'redeemid' ) : __( 'Shopify could not be reached, so the fields can\'t be listed right now. Saved choices are kept.', 'redeemid' ) ); ?></p>
+					<p><?php echo esc_html( 'shopify_admin_unconfigured' === $definitions->get_error_code() ? __( 'Needs the Admin API: add its credentials under Connection → Admin API.', 'redeemid' ) : __( 'Shopify could not be reached, so the fields can\'t be listed right now. Saved choices are kept.', 'redeemid' ) ); ?></p>
 					<?php foreach ( Preferences::clean_modes( $modes ) as $redeemid_key => $redeemid_mode ) : ?>
 						<input type="hidden" name="<?php echo esc_attr( $name . '[' . $redeemid_key . ']' ); ?>" value="<?php echo esc_attr( $redeemid_mode ); ?>">
 					<?php endforeach; ?>
