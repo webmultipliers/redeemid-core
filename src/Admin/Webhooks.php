@@ -14,9 +14,10 @@ use RedeemID\Webhooks\WpdbInboxStore;
 
 /**
  * RedeemID → Webhooks: the Received tab lists what Shopify sent and what
- * became of it; Health and setup holds the app's webhook subscriptions, the
- * daily check and the warning settings. Deliveries with a bad signature never reach the
- * inbox; they are listed from the event log instead.
+ * became of it; Health holds the daily check, rejected deliveries and the
+ * warning settings; Setup holds the endpoint, the signature check and the
+ * app's webhook subscriptions. Deliveries with a bad signature never reach
+ * the inbox; they are listed from the event log instead.
  */
 final class Webhooks {
 	public const PAGE   = 'redeemid-webhooks';
@@ -50,7 +51,7 @@ final class Webhooks {
 			}
 		}
 
-		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] + ( 'retry' === $do ? [] : [ 'tab' => 'health' ] ) ) );
+		wp_safe_redirect( Menu::url( self::PAGE, [ 'result' => $result ] + ( 'retry' === $do ? [] : [ 'tab' => 'setup' ] ) ) );
 		exit;
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
@@ -63,7 +64,8 @@ final class Webhooks {
 	public static function tabs(): array {
 		return [
 			'received' => __( 'Received', 'redeemid' ),
-			'health'   => __( 'Health and setup', 'redeemid' ),
+			'health'   => __( 'Health', 'redeemid' ),
+			'setup'    => __( 'Setup', 'redeemid' ),
 		];
 	}
 
@@ -83,9 +85,12 @@ final class Webhooks {
 		);
 
 		if ( 'health' === $tab ) {
-			echo '<p class="redeemid-intro">' . esc_html__( 'Members gain and lose access only when Shopify sends tag changes. These are the app\'s webhook subscriptions, the daily check that keeps them in place, and when to warn you.', 'redeemid' ) . '</p>';
+			echo '<p class="redeemid-intro">' . esc_html__( 'Members gain and lose access only when Shopify sends tag changes. This is the daily check that keeps deliveries flowing, what Shopify sent that failed its checks, and when to warn you.', 'redeemid' ) . '</p>';
 			settings_errors();
 			self::health();
+		} elseif ( 'setup' === $tab ) {
+			echo '<p class="redeemid-intro">' . esc_html__( 'Where Shopify sends deliveries, how they are verified, and the app\'s webhook subscriptions.', 'redeemid' ) . '</p>';
+			self::setup();
 		} else {
 			self::received();
 		}
@@ -102,7 +107,7 @@ final class Webhooks {
 		?>
 			<p class="redeemid-intro"><?php echo esc_html( sprintf( /* translators: %d: days */ __( 'What Shopify sent, and what became of it. Kept for %d days. Payloads are not stored; only the fields the plugin acts on, until the delivery is processed.', 'redeemid' ), WpdbInboxStore::RETENTION / DAY_IN_SECONDS ) ); ?></p>
 			<?php if ( Monitor::messages() ) : ?>
-				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Webhook delivery needs attention.', 'redeemid' ); ?> <a href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'health' ] ) ); ?>"><?php esc_html_e( 'See Health and setup', 'redeemid' ); ?></a></p></div>
+				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Webhook delivery needs attention.', 'redeemid' ); ?> <a href="<?php echo esc_url( Menu::url( self::PAGE, [ 'tab' => 'health' ] ) ); ?>"><?php esc_html_e( 'See Health', 'redeemid' ); ?></a></p></div>
 			<?php endif; ?>
 			<?php $table->views(); ?>
 			<form method="get">
@@ -116,12 +121,10 @@ final class Webhooks {
 	}
 
 	/**
-	 * Delivery health, the subscriptions, rejected deliveries and the warning settings.
+	 * Delivery health, rejected deliveries and the warning settings.
 	 */
 	private static function health(): void {
-		$secret_set = '' !== Config::webhook_secret();
-		$hooks      = get_option( Registrar::RESULT );
-		$rejected   = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
+		$rejected = EventLog::query( [ 'event' => 'webhook.rejected' ], 10, 1 );
 		$monitor  = Monitor::state();
 		$messages = Monitor::messages();
 		?>
@@ -150,6 +153,36 @@ final class Webhooks {
 					</li>
 				</ul>
 			<?php Menu::panel_end(); ?>
+
+			<?php if ( $rejected['total'] ) : ?>
+				<?php
+				Menu::panel_start(
+					__( 'Rejected deliveries', 'redeemid' ),
+					__( 'Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored.', 'redeemid' ),
+					sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Events::PAGE, [ 'event' => 'webhook.rejected' ] ) ), esc_html( sprintf( /* translators: %d: count */ __( 'All %d', 'redeemid' ), $rejected['total'] ) ) )
+				);
+				?>
+					<div class="redeemid-panel__body redeemid-panel__body--flush">
+						<table class="widefat striped">
+							<?php foreach ( $rejected['rows'] as $row ) : ?>
+								<tr><td class="redeemid-col-time"><?php echo Menu::time( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['label'] ?: '?' ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
+							<?php endforeach; ?>
+						</table>
+					</div>
+				<?php Menu::panel_end(); ?>
+			<?php endif; ?>
+
+			<?php SettingsPage::webhook_warnings(); ?>
+		<?php
+	}
+
+	/**
+	 * The endpoint, signature check and subscriptions, with the register button.
+	 */
+	private static function setup(): void {
+		$secret_set = '' !== Config::webhook_secret();
+		$hooks      = get_option( Registrar::RESULT );
+		?>
 
 			<?php Menu::panel_start( __( 'Delivery setup', 'redeemid' ) ); ?>
 				<ul class="redeemid-checks">
@@ -214,25 +247,6 @@ final class Webhooks {
 				</div>
 			<?php Menu::panel_end(); ?>
 
-			<?php if ( $rejected['total'] ) : ?>
-				<?php
-				Menu::panel_start(
-					__( 'Rejected deliveries', 'redeemid' ),
-					__( 'Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored.', 'redeemid' ),
-					sprintf( '<a class="button button-small" href="%s">%s</a>', esc_url( Menu::url( Events::PAGE, [ 'event' => 'webhook.rejected' ] ) ), esc_html( sprintf( /* translators: %d: count */ __( 'All %d', 'redeemid' ), $rejected['total'] ) ) )
-				);
-				?>
-					<div class="redeemid-panel__body redeemid-panel__body--flush">
-						<table class="widefat striped">
-							<?php foreach ( $rejected['rows'] as $row ) : ?>
-								<tr><td class="redeemid-col-time"><?php echo Menu::time( $row['created_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td><td><code><?php echo esc_html( $row['label'] ?: '?' ); ?></code></td><td><?php echo esc_html( $row['status'] ); ?></td></tr>
-							<?php endforeach; ?>
-						</table>
-					</div>
-				<?php Menu::panel_end(); ?>
-			<?php endif; ?>
-
-			<?php SettingsPage::webhook_warnings(); ?>
 		<?php
 	}
 }

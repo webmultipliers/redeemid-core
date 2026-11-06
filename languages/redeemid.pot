@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-06T03:49:22+00:00\n"
+"POT-Creation-Date: 2026-11-06T14:07:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: redeemid\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: redeemid.php
 #: src/Abilities/Abilities.php:89
-#: src/Admin/Menu.php:93
-#: src/Admin/Menu.php:256
+#: src/Admin/Menu.php:94
+#: src/Admin/Menu.php:257
 #: src/Admin/Overview.php:88
 #: src/Files/Probe.php:90
 #: src/Privacy/PolicyText.php:18
@@ -482,8 +482,8 @@ msgid "Until %s"
 msgstr ""
 
 #: blocks/member-account/index.php:121
-#: src/Admin/Access.php:249
-#: src/Admin/Access.php:382
+#: src/Admin/Access.php:255
+#: src/Admin/Access.php:388
 msgid "Includes"
 msgstr ""
 
@@ -493,7 +493,7 @@ msgstr ""
 
 #. translators: %s: human time difference
 #: blocks/member-account/index.php:131
-#: src/Admin/Menu.php:331
+#: src/Admin/Menu.php:332
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -955,13 +955,13 @@ msgid "or"
 msgstr ""
 
 #: src/Access/Badges.php:226
-#: src/Admin/Access.php:191
+#: src/Admin/Access.php:197
 #: src/Admin/AccessColumn.php:38
 #: src/Admin/AccessColumn.php:88
 #: src/Admin/AccessTermFields.php:44
 #: src/Admin/AccessTermFields.php:56
 #: src/Admin/AccessTermFields.php:120
-#: src/Admin/Menu.php:97
+#: src/Admin/Menu.php:98
 #: assets/block-access.js:101
 #: assets/block-access.js:200
 #: assets/block-access.js:205
@@ -1112,8 +1112,8 @@ msgstr ""
 msgid "View as %s"
 msgstr ""
 
-#: src/Admin/Access.php:174
-#: src/Admin/Access.php:242
+#: src/Admin/Access.php:175
+#: src/Admin/Access.php:248
 #: src/Admin/CustomersTable.php:30
 #: src/Admin/SettingsTransfer.php:122
 #: src/Admin/Wizard.php:509
@@ -1121,279 +1121,287 @@ msgstr ""
 msgid "Levels"
 msgstr ""
 
-#: src/Admin/Access.php:175
-msgid "Content rules"
+#: src/Admin/Access.php:176
+#: src/Admin/AccessColumn.php:75
+msgid "Site rules"
 msgstr ""
 
-#: src/Admin/Access.php:176
-#: src/Admin/Access.php:252
-#: src/Admin/Access.php:423
+#: src/Admin/Access.php:177
+#: src/Admin/AccessRules.php:204
+msgid "Post types"
+msgstr ""
+
+#: src/Admin/Access.php:178
+#: src/Admin/AccessRules.php:261
+msgid "Taxonomies"
+msgstr ""
+
+#: src/Admin/Access.php:179
+#: src/Admin/Access.php:258
+#: src/Admin/Access.php:429
 #: src/Admin/AccessFeatures.php:94
 msgid "Features"
 msgstr ""
 
-#: src/Admin/Access.php:177
+#: src/Admin/Access.php:180
 msgid "Test"
 msgstr ""
 
-#: src/Admin/Access.php:185
-msgid "A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too."
-msgstr ""
-
-#: src/Admin/Access.php:186
+#: src/Admin/Access.php:187
 msgid "The rule an item gets, from strongest to weakest: the item's own setting, then its terms, then its post type, then the site default. Leave every level unticked for \"no rule here\". Blocks inside an item can only narrow its rule."
 msgstr ""
 
-#: src/Admin/Access.php:187
+#: src/Admin/Access.php:189
+msgid "A level is a named condition on Shopify customer tags. Gating rules point at levels, not tags, so renaming a tag means editing one level, not every post. A level can include others: Gold including Silver means Gold members read Silver content too."
+msgstr ""
+
+#: src/Admin/Access.php:193
 msgid "A feature is a site behaviour a customer unlocks because of what they bought in Shopify: ad-free reading, downloads, a member badge. Features are registered in code by a theme or plugin; here you choose who gets each one. Each line is one route; any route grants the feature, and it drops only when every route is lost."
 msgstr ""
 
-#: src/Admin/Access.php:188
+#: src/Admin/Access.php:194
 msgid "Pick an item and who is looking, or just who is looking to see their features. The trace shows every layer, the rule they resolve to, what that visitor gets, and which blocks they see. Nothing is saved, and the editor bypass is never used, so this is what that visitor would really get."
 msgstr ""
 
-#: src/Admin/Access.php:192
+#: src/Admin/Access.php:198
 msgid "Access sections"
 msgstr ""
 
-#: src/Admin/Access.php:197
+#: src/Admin/Access.php:203
 msgid "Level saved."
 msgstr ""
 
-#: src/Admin/Access.php:198
+#: src/Admin/Access.php:204
 msgid "Level deleted. Content that still names it now fails closed."
 msgstr ""
 
-#: src/Admin/Access.php:199
+#: src/Admin/Access.php:205
 msgid "Tag list refreshed from synced customers."
 msgstr ""
 
-#: src/Admin/Access.php:200
+#: src/Admin/Access.php:206
 msgid "Give the level a slug other than public or signed-in."
 msgstr ""
 
-#: src/Admin/Access.php:201
+#: src/Admin/Access.php:207
 msgid "These settings are managed in code, so nothing was changed."
 msgstr ""
 
-#: src/Admin/Access.php:202
+#: src/Admin/Access.php:208
 msgid "Content rules saved. Every item picks them up on its next view."
 msgstr ""
 
-#: src/Admin/Access.php:203
+#: src/Admin/Access.php:209
 msgid "Feature mapping saved. It applies on every page from the next request."
 msgstr ""
 
-#: src/Admin/Access.php:204
+#: src/Admin/Access.php:210
 msgid "Stored condition removed."
 msgstr ""
 
-#: src/Admin/Access.php:228
+#: src/Admin/Access.php:234
 msgid "No tags, so it grants nobody."
 msgstr ""
 
-#: src/Admin/Access.php:229
+#: src/Admin/Access.php:235
 msgid "Some tags are not on any synced customer. Was a tag renamed or deleted in Shopify?"
 msgstr ""
 
-#: src/Admin/Access.php:230
+#: src/Admin/Access.php:236
 msgid "Includes a level that does not exist."
 msgstr ""
 
-#: src/Admin/Access.php:239
+#: src/Admin/Access.php:245
 msgid "Managed in code: the redeemid_access_levels filter sets these levels, so they are read-only here."
 msgstr ""
 
 #. translators: %s: level label
-#: src/Admin/Access.php:242
-#: src/Admin/Access.php:355
+#: src/Admin/Access.php:248
+#: src/Admin/Access.php:361
 msgid "Add a level"
 msgstr ""
 
-#: src/Admin/Access.php:247
+#: src/Admin/Access.php:253
 #: src/Admin/Customers.php:310
 #: src/Admin/Reports.php:68
 #: src/Admin/Wizard.php:953
 msgid "Level"
 msgstr ""
 
-#: src/Admin/Access.php:248
-#: src/Admin/Access.php:375
+#: src/Admin/Access.php:254
+#: src/Admin/Access.php:381
 msgid "Customer tags"
 msgstr ""
 
-#: src/Admin/Access.php:250
+#: src/Admin/Access.php:256
 #: src/Admin/AccessFeatures.php:102
+#: src/Admin/Webhooks.php:67
 msgid "Health"
 msgstr ""
 
-#: src/Admin/Access.php:251
+#: src/Admin/Access.php:257
 msgid "Would match today"
 msgstr ""
 
-#: src/Admin/Access.php:253
+#: src/Admin/Access.php:259
 msgid "Actions"
 msgstr ""
 
-#: src/Admin/Access.php:274
-#: src/Admin/AccessRules.php:221
+#: src/Admin/Access.php:280
+#: src/Admin/AccessRules.php:242
 #: src/Admin/TextTable.php:197
 msgid "Everyone"
 msgstr ""
 
-#: src/Admin/Access.php:276
+#: src/Admin/Access.php:282
 msgid "Any signed-in visitor"
 msgstr ""
 
-#: src/Admin/Access.php:279
+#: src/Admin/Access.php:285
 #: src/Admin/AccessFeatures.php:146
 msgid "or "
 msgstr ""
 
-#: src/Admin/Access.php:280
+#: src/Admin/Access.php:286
 msgid "all of "
 msgstr ""
 
-#: src/Admin/Access.php:280
+#: src/Admin/Access.php:286
 msgid "any of "
 msgstr ""
 
-#: src/Admin/Access.php:289
+#: src/Admin/Access.php:295
 #: src/Admin/AccessFeatures.php:156
-#: src/Admin/Menu.php:231
+#: src/Admin/Menu.php:232
 #: src/Admin/Overview.php:113
 msgid "OK"
 msgstr ""
 
 #. translators: %d: number of customers
-#: src/Admin/Access.php:301
+#: src/Admin/Access.php:307
 #, php-format
 msgid "%d customer"
 msgid_plural "%d customers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Access.php:305
+#: src/Admin/Access.php:311
 msgid "Edit"
 msgstr ""
 
-#: src/Admin/Access.php:306
+#: src/Admin/Access.php:312
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/Access.php:315
+#: src/Admin/Access.php:321
 msgid "Refresh tag list now"
 msgstr ""
 
 #. translators: %d: number of distinct tags
-#: src/Admin/Access.php:320
+#: src/Admin/Access.php:326
 #, php-format
 msgid "Health and counts use the tags on synced customers (%d distinct tags), refreshed every 10 minutes. Counts show who would match, not who is signed in now."
 msgstr ""
 
 #. translators: %d: number of tags
-#: src/Admin/Access.php:331
+#: src/Admin/Access.php:337
 #, php-format
 msgid "%d customer tag no level uses"
 msgid_plural "%d customer tags no level uses"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Access.php:334
+#: src/Admin/Access.php:340
 msgid "Tags on synced customers that grant nothing here. Most are fine (order or marketing tags); a near-miss of a level tag usually means a typo in Shopify Flow."
 msgstr ""
 
 #. translators: %s: level label
-#: src/Admin/Access.php:355
+#: src/Admin/Access.php:361
 #, php-format
 msgid "Edit %s"
 msgstr ""
 
-#: src/Admin/Access.php:356
+#: src/Admin/Access.php:362
 msgid "Name the level, say which customer tags grant it, and what locked visitors see."
 msgstr ""
 
 #. translators: %s: feature label
-#: src/Admin/Access.php:357
+#: src/Admin/Access.php:363
 #: src/Admin/AccessFeatures.php:214
 #: src/Admin/Customers.php:365
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/Access.php:364
+#: src/Admin/Access.php:370
 msgid "Slug"
 msgstr ""
 
-#: src/Admin/Access.php:367
+#: src/Admin/Access.php:373
 msgid "Rules store the slug, so it never changes after saving."
 msgstr ""
 
-#: src/Admin/Access.php:371
+#: src/Admin/Access.php:377
 msgid "Label"
 msgstr ""
 
-#: src/Admin/Access.php:378
+#: src/Admin/Access.php:384
 msgid "One group per line, tags separated by commas. Any one tag in a line passes; start the line with \"all:\" to need every tag. Any one line passing grants the level."
 msgstr ""
 
-#: src/Admin/Access.php:385
+#: src/Admin/Access.php:391
 msgid "Slugs of levels this one also opens, separated by commas. Gold including silver means Gold members read Silver content."
 msgstr ""
 
-#: src/Admin/Access.php:389
+#: src/Admin/Access.php:395
 msgid "Badge colour"
 msgstr ""
 
-#: src/Admin/Access.php:392
+#: src/Admin/Access.php:398
 msgid "Badges always show the label too, never colour alone."
 msgstr ""
 
-#: src/Admin/Access.php:396
+#: src/Admin/Access.php:402
 msgid "Wall message"
 msgstr ""
 
-#: src/Admin/Access.php:400
+#: src/Admin/Access.php:406
 msgid "Call to action"
 msgstr ""
 
-#: src/Admin/Access.php:402
+#: src/Admin/Access.php:408
 msgid "Become a Gold member"
 msgstr ""
 
-#: src/Admin/Access.php:403
+#: src/Admin/Access.php:409
 msgid "Call to action URL"
 msgstr ""
 
-#: src/Admin/Access.php:407
+#: src/Admin/Access.php:413
 msgid "Members' home"
 msgstr ""
 
-#: src/Admin/Access.php:410
+#: src/Admin/Access.php:416
 msgid "Where members of this level land after logging in with Shopify from the home page or a plain login link. Logging in from an article returns them to it."
 msgstr ""
 
-#: src/Admin/Access.php:414
+#: src/Admin/Access.php:420
 msgid "Shopify products"
 msgstr ""
 
-#: src/Admin/Access.php:417
+#: src/Admin/Access.php:423
 msgid "Handles of the Shopify products that lead to this level, separated by commas. Plan cards selling one of them show signed-in members \"Your plan\", \"Included\" or \"Upgrade\" instead of the same buy button for everyone. This only changes what the card says: Shopify still decides who holds the level."
 msgstr ""
 
-#: src/Admin/Access.php:432
+#: src/Admin/Access.php:438
 msgid "Holders of this level get these features. The same mapping as Access → Features: a box here adds or removes the route \"this level\" there, and leaves other routes alone. Features managed in code are not listed."
 msgstr ""
 
-#: src/Admin/Access.php:439
+#: src/Admin/Access.php:445
 msgid "Save level"
 msgstr ""
 
-#: src/Admin/Access.php:439
+#: src/Admin/Access.php:445
 msgid "Add level"
-msgstr ""
-
-#: src/Admin/AccessColumn.php:75
-msgid "Site rules"
 msgstr ""
 
 #: src/Admin/AccessColumn.php:76
@@ -1708,193 +1716,185 @@ msgstr ""
 msgid "This locks the post's text. Files linked from it, such as PDFs and images, can still be opened by anyone with the link."
 msgstr ""
 
-#: src/Admin/AccessRules.php:115
+#: src/Admin/AccessRules.php:132
 msgid "First blocks"
 msgstr ""
 
-#: src/Admin/AccessRules.php:116
+#: src/Admin/AccessRules.php:133
 msgid "First words"
 msgstr ""
 
-#: src/Admin/AccessRules.php:117
+#: src/Admin/AccessRules.php:134
 msgid "Excerpt only"
 msgstr ""
 
-#: src/Admin/AccessRules.php:118
+#: src/Admin/AccessRules.php:135
 msgid "Nothing"
 msgstr ""
 
-#: src/Admin/AccessRules.php:135
+#: src/Admin/AccessRules.php:152
 msgid "Managed in code: the redeemid_access_rules filter sets these rules, so they are read-only here."
 msgstr ""
 
-#: src/Admin/AccessRules.php:142
+#: src/Admin/AccessRules.php:161
 msgid "Defaults"
 msgstr ""
 
-#: src/Admin/AccessRules.php:142
+#: src/Admin/AccessRules.php:161
 msgid "The fallback rule, and how an item in several gated terms is decided."
 msgstr ""
 
-#: src/Admin/AccessRules.php:146
+#: src/Admin/AccessRules.php:165
 msgid "Site default"
 msgstr ""
 
-#: src/Admin/AccessRules.php:149
+#: src/Admin/AccessRules.php:168
 msgid "Applies to items in any gated post type with no rule from their terms or post type. Usually left empty."
 msgstr ""
 
-#: src/Admin/AccessRules.php:153
+#: src/Admin/AccessRules.php:172
 msgid "When terms disagree"
 msgstr ""
 
-#: src/Admin/AccessRules.php:157
+#: src/Admin/AccessRules.php:176
 msgid "Most restrictive: the visitor must pass every term's rule (recommended)"
 msgstr ""
 
-#: src/Admin/AccessRules.php:158
+#: src/Admin/AccessRules.php:177
 msgid "Least restrictive: passing any one term's rule is enough"
 msgstr ""
 
-#: src/Admin/AccessRules.php:159
+#: src/Admin/AccessRules.php:178
 msgid "Priority: the term with the highest priority decides"
 msgstr ""
 
-#: src/Admin/AccessRules.php:165
+#: src/Admin/AccessRules.php:184
 msgid "Level inclusion counts first: an item in a Silver term and a Gold term needs Gold when Gold includes Silver. An unexpired \"open until\" term always wins."
 msgstr ""
 
-#: src/Admin/AccessRules.php:169
+#: src/Admin/AccessRules.php:188
 msgid "Meter"
 msgstr ""
 
-#: src/Admin/AccessRules.php:172
+#: src/Admin/AccessRules.php:191
 msgid "Meter period"
 msgstr ""
 
-#: src/Admin/AccessRules.php:173
+#: src/Admin/AccessRules.php:192
 msgid "free stories a month"
 msgstr ""
 
-#: src/Admin/AccessRules.php:174
+#: src/Admin/AccessRules.php:193
 msgid "free stories a week"
 msgstr ""
 
-#: src/Admin/AccessRules.php:176
+#: src/Admin/AccessRules.php:195
 msgid "Signed-in readers without access can open this many locked items per period; 0 turns the meter off. Guests are asked to sign in instead. An item counts once, when its own page is opened. Items marked \"Never count toward a meter\" stay locked. The meter grants no level, and nothing about it goes to Shopify."
 msgstr ""
 
-#: src/Admin/AccessRules.php:183
-msgid "Post types"
-msgstr ""
-
-#: src/Admin/AccessRules.php:183
+#: src/Admin/AccessRules.php:204
 msgid "Which post types can be gated, what every item needs, and what locked visitors get."
 msgstr ""
 
-#: src/Admin/AccessRules.php:188
+#: src/Admin/AccessRules.php:209
 msgid "Post type"
 msgstr ""
 
-#: src/Admin/AccessRules.php:189
-#: src/Admin/AccessRules.php:205
+#: src/Admin/AccessRules.php:210
+#: src/Admin/AccessRules.php:226
 msgid "Can be gated"
 msgstr ""
 
-#: src/Admin/AccessRules.php:190
+#: src/Admin/AccessRules.php:211
 msgid "Every item needs"
 msgstr ""
 
-#: src/Admin/AccessRules.php:191
+#: src/Admin/AccessRules.php:212
 msgid "Teaser for locked visitors"
 msgstr ""
 
-#: src/Admin/AccessRules.php:192
+#: src/Admin/AccessRules.php:213
 msgid "Opens after (days)"
 msgstr ""
 
-#: src/Admin/AccessRules.php:193
-#: src/Admin/AccessRules.php:219
+#: src/Admin/AccessRules.php:214
+#: src/Admin/AccessRules.php:240
 msgid "Comments on locked items"
 msgstr ""
 
-#: src/Admin/AccessRules.php:194
+#: src/Admin/AccessRules.php:215
 msgid "Search engines"
 msgstr ""
 
-#: src/Admin/AccessRules.php:208
+#: src/Admin/AccessRules.php:229
 msgid "Teaser"
 msgstr ""
 
-#: src/Admin/AccessRules.php:213
+#: src/Admin/AccessRules.php:234
 msgid "How many blocks or words"
 msgstr ""
 
-#: src/Admin/AccessRules.php:216
+#: src/Admin/AccessRules.php:237
 msgid "Opens after days"
 msgstr ""
 
-#: src/Admin/AccessRules.php:220
+#: src/Admin/AccessRules.php:241
 msgid "Readers only"
 msgstr ""
 
-#: src/Admin/AccessRules.php:225
+#: src/Admin/AccessRules.php:246
 msgid "Keep locked items out"
 msgstr ""
 
-#: src/Admin/AccessRules.php:233
+#: src/Admin/AccessRules.php:254
 msgid "A paywall break block in an item always sets its teaser. \"Opens after\" frees items that many days after they were published (0 for never), checked on every request. \"Readers only\" hides comments, the comment count and the form from visitors who cannot read the item. \"Keep locked items out\" adds noindex and removes them from the WordPress, Yoast and Rank Math sitemaps together; otherwise locked items stay listed and indexed by their teaser."
 msgstr ""
 
-#: src/Admin/AccessRules.php:238
-msgid "Taxonomies"
-msgstr ""
-
-#: src/Admin/AccessRules.php:238
+#: src/Admin/AccessRules.php:261
 msgid "Which taxonomies' term rules count. Rules are set on each term's edit screen."
 msgstr ""
 
-#: src/Admin/AccessRules.php:243
+#: src/Admin/AccessRules.php:266
 msgid "Taxonomy"
 msgstr ""
 
-#: src/Admin/AccessRules.php:244
-#: src/Admin/AccessRules.php:259
+#: src/Admin/AccessRules.php:267
+#: src/Admin/AccessRules.php:282
 msgid "Term rules count"
 msgstr ""
 
-#: src/Admin/AccessRules.php:245
-#: src/Admin/AccessRules.php:262
+#: src/Admin/AccessRules.php:268
+#: src/Admin/AccessRules.php:285
 msgid "Child terms inherit"
 msgstr ""
 
-#: src/Admin/AccessRules.php:246
-#: src/Admin/AccessRules.php:267
+#: src/Admin/AccessRules.php:269
+#: src/Admin/AccessRules.php:290
 #: src/Admin/AccessTermFields.php:69
 msgid "Priority"
 msgstr ""
 
-#: src/Admin/AccessRules.php:247
+#: src/Admin/AccessRules.php:270
 msgid "Terms with a rule"
 msgstr ""
 
-#: src/Admin/AccessRules.php:270
+#: src/Admin/AccessRules.php:293
 msgid "Edit terms"
 msgstr ""
 
-#: src/Admin/AccessRules.php:278
+#: src/Admin/AccessRules.php:301
 msgid "In the priority mode the taxonomy priority counts first, then the term's own."
 msgstr ""
 
-#: src/Admin/AccessRules.php:283
+#: src/Admin/AccessRules.php:306
 msgid "Search index: updating in the background after a rule change. Until it finishes, search still checks every result against public text."
 msgstr ""
 
-#: src/Admin/AccessRules.php:284
+#: src/Admin/AccessRules.php:307
 msgid "Search index: up to date. Search matches locked items on their public text only."
 msgstr ""
 
-#: src/Admin/AccessRules.php:292
+#: src/Admin/AccessRules.php:316
 msgid "Save content rules"
 msgstr ""
 
@@ -2061,7 +2061,7 @@ msgid "Metered: a signed-in reader without access can open it as one of their fr
 msgstr ""
 
 #: src/Admin/AccessTest.php:186
-msgid "Meter-eligible: it would count if you set a meter on Content rules."
+msgid "Meter-eligible: it would count if you set a meter on Site rules."
 msgstr ""
 
 #: src/Admin/AccessTest.php:191
@@ -2164,13 +2164,13 @@ msgstr ""
 #: src/Admin/AdminBar.php:76
 #: src/Admin/Customers.php:588
 #: src/Admin/Customers.php:641
-#: src/Admin/Menu.php:96
+#: src/Admin/Menu.php:97
 msgid "Customers"
 msgstr ""
 
 #: src/Admin/ConnectionPage.php:47
 #: src/Admin/Debug.php:97
-#: src/Admin/Menu.php:99
+#: src/Admin/Menu.php:100
 #: src/Admin/Overview.php:104
 #: src/Admin/Wizard.php:503
 msgid "Connection"
@@ -2326,7 +2326,7 @@ msgid "paste the value without spaces or line breaks."
 msgstr ""
 
 #: src/Admin/Customers.php:65
-#: src/Admin/Menu.php:209
+#: src/Admin/Menu.php:210
 msgid "Not allowed."
 msgstr ""
 
@@ -2565,7 +2565,7 @@ msgid "Customers in Shopify"
 msgstr ""
 
 #: src/Admin/Customers.php:588
-#: src/Admin/Menu.php:96
+#: src/Admin/Menu.php:97
 msgid "Shopify customers"
 msgstr ""
 
@@ -2845,7 +2845,7 @@ msgid "Last attempt failed"
 msgstr ""
 
 #: src/Admin/Debug.php:60
-#: src/Admin/Menu.php:103
+#: src/Admin/Menu.php:104
 msgid "Debug"
 msgstr ""
 
@@ -2921,7 +2921,7 @@ msgid "What it is for"
 msgstr ""
 
 #: src/Admin/Debug.php:144
-#: src/Admin/Menu.php:99
+#: src/Admin/Menu.php:100
 msgid "Shopify connection"
 msgstr ""
 
@@ -2990,14 +2990,14 @@ msgstr ""
 
 #: src/Admin/Debug.php:180
 #: src/Admin/EventsTable.php:31
-#: src/Admin/Menu.php:101
+#: src/Admin/Menu.php:102
 #: src/Admin/Overview.php:55
-#: src/Admin/Webhooks.php:73
+#: src/Admin/Webhooks.php:75
 msgid "Webhooks"
 msgstr ""
 
 #: src/Admin/Debug.php:181
-msgid "RedeemID → Webhooks → Health and setup"
+msgid "RedeemID → Webhooks → Health"
 msgstr ""
 
 #: src/Admin/Debug.php:185
@@ -3120,12 +3120,12 @@ msgid "Last failure:"
 msgstr ""
 
 #: src/Admin/Events.php:38
-#: src/Admin/Menu.php:102
+#: src/Admin/Menu.php:103
 msgid "App events"
 msgstr ""
 
 #: src/Admin/Events.php:39
-#: src/Admin/Menu.php:102
+#: src/Admin/Menu.php:103
 msgid "Shopify app events"
 msgstr ""
 
@@ -3266,70 +3266,71 @@ msgstr ""
 msgid "Anything but Everyone moves the file to the protected folder, so its address checks access on every download."
 msgstr ""
 
-#: src/Admin/Menu.php:94
+#: src/Admin/Menu.php:95
 msgid "RedeemID overview"
 msgstr ""
 
-#: src/Admin/Menu.php:94
+#: src/Admin/Menu.php:95
 #: src/Admin/Overview.php:88
 msgid "Overview"
 msgstr ""
 
-#: src/Admin/Menu.php:95
+#: src/Admin/Menu.php:96
 #: src/Admin/Wizard.php:433
 #: src/Admin/Wizard.php:455
 msgid "Set up RedeemID"
 msgstr ""
 
-#: src/Admin/Menu.php:95
+#: src/Admin/Menu.php:96
+#: src/Admin/Webhooks.php:68
 #: src/Admin/Wizard.php:433
 #: src/Admin/Wizard.php:455
 msgid "Setup"
 msgstr ""
 
-#: src/Admin/Menu.php:97
+#: src/Admin/Menu.php:98
 msgid "RedeemID access"
 msgstr ""
 
-#: src/Admin/Menu.php:98
+#: src/Admin/Menu.php:99
 #: src/Admin/Reports.php:40
 msgid "Membership reports"
 msgstr ""
 
-#: src/Admin/Menu.php:98
+#: src/Admin/Menu.php:99
 #: src/Admin/Reports.php:39
 #: src/Admin/Wizard.php:1144
 msgid "Reports"
 msgstr ""
 
-#: src/Admin/Menu.php:100
+#: src/Admin/Menu.php:101
 msgid "RedeemID settings"
 msgstr ""
 
-#: src/Admin/Menu.php:100
+#: src/Admin/Menu.php:101
 #: src/Admin/SettingsPage.php:72
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/Menu.php:101
-#: src/Admin/Webhooks.php:73
+#: src/Admin/Menu.php:102
+#: src/Admin/Webhooks.php:75
 msgid "Shopify webhooks"
 msgstr ""
 
-#: src/Admin/Menu.php:103
+#: src/Admin/Menu.php:104
 msgid "RedeemID debug"
 msgstr ""
 
-#: src/Admin/Menu.php:232
-#: src/Admin/Webhooks.php:140
+#: src/Admin/Menu.php:233
+#: src/Admin/Webhooks.php:143
 msgid "Problem"
 msgstr ""
 
-#: src/Admin/Menu.php:268
+#: src/Admin/Menu.php:269
 msgid "Setup incomplete"
 msgstr ""
 
-#: src/Admin/Menu.php:268
+#: src/Admin/Menu.php:269
 msgid "Configured"
 msgstr ""
 
@@ -4255,170 +4256,170 @@ msgstr ""
 msgid "Active Shopify session"
 msgstr ""
 
-#: src/Admin/Webhooks.php:65
+#: src/Admin/Webhooks.php:66
 #: src/Admin/WebhooksTable.php:29
 #: src/Privacy/Exporter.php:129
 msgid "Received"
 msgstr ""
 
-#: src/Admin/Webhooks.php:66
-msgid "Health and setup"
-msgstr ""
-
-#: src/Admin/Webhooks.php:74
+#: src/Admin/Webhooks.php:76
 msgid "Webhook sections"
 msgstr ""
 
-#: src/Admin/Webhooks.php:77
+#: src/Admin/Webhooks.php:79
 #: src/Admin/Wizard.php:569
 msgid "Webhook subscriptions are in place."
 msgstr ""
 
-#: src/Admin/Webhooks.php:78
+#: src/Admin/Webhooks.php:80
 #: src/Admin/Wizard.php:570
 msgid "Some webhook subscriptions could not be created. Details below."
 msgstr ""
 
-#: src/Admin/Webhooks.php:79
+#: src/Admin/Webhooks.php:81
 msgid "The webhook was queued again."
 msgstr ""
 
-#: src/Admin/Webhooks.php:80
+#: src/Admin/Webhooks.php:82
 msgid "Checked with Shopify: subscriptions are in place and deliveries look healthy."
 msgstr ""
 
-#: src/Admin/Webhooks.php:81
+#: src/Admin/Webhooks.php:83
 msgid "Checked with Shopify. Some problems need attention; see Delivery health."
 msgstr ""
 
-#: src/Admin/Webhooks.php:86
-msgid "Members gain and lose access only when Shopify sends tag changes. These are the app's webhook subscriptions, the daily check that keeps them in place, and when to warn you."
+#: src/Admin/Webhooks.php:88
+msgid "Members gain and lose access only when Shopify sends tag changes. This is the daily check that keeps deliveries flowing, what Shopify sent that failed its checks, and when to warn you."
+msgstr ""
+
+#: src/Admin/Webhooks.php:92
+msgid "Where Shopify sends deliveries, how they are verified, and the app's webhook subscriptions."
 msgstr ""
 
 #. translators: %d: days
-#: src/Admin/Webhooks.php:103
+#: src/Admin/Webhooks.php:108
 #, php-format
 msgid "What Shopify sent, and what became of it. Kept for %d days. Payloads are not stored; only the fields the plugin acts on, until the delivery is processed."
 msgstr ""
 
-#: src/Admin/Webhooks.php:105
+#: src/Admin/Webhooks.php:110
 msgid "Webhook delivery needs attention."
 msgstr ""
 
-#: src/Admin/Webhooks.php:105
-msgid "See Health and setup"
+#: src/Admin/Webhooks.php:110
+msgid "See Health"
 msgstr ""
 
-#: src/Admin/Webhooks.php:131
+#: src/Admin/Webhooks.php:134
 msgid "Delivery health"
 msgstr ""
 
-#: src/Admin/Webhooks.php:132
+#: src/Admin/Webhooks.php:135
 msgid "Once a day the plugin checks that the subscriptions still exist (re-creating any Shopify removed) and keeps watch on the processing queue and WP-Cron."
 msgstr ""
 
-#: src/Admin/Webhooks.php:133
+#: src/Admin/Webhooks.php:136
 msgid "Check now"
 msgstr ""
 
-#: src/Admin/Webhooks.php:140
+#: src/Admin/Webhooks.php:143
 msgid "Warning"
 msgstr ""
 
-#: src/Admin/Webhooks.php:145
+#: src/Admin/Webhooks.php:148
 msgid "Healthy"
 msgstr ""
 
-#: src/Admin/Webhooks.php:145
+#: src/Admin/Webhooks.php:148
 msgid "Subscriptions, the processing queue and WP-Cron all look fine."
 msgstr ""
 
-#: src/Admin/Webhooks.php:148
+#: src/Admin/Webhooks.php:151
 msgid "Last check with Shopify"
 msgstr ""
 
-#: src/Admin/Webhooks.php:154
-msgid "Delivery setup"
-msgstr ""
-
-#: src/Admin/Webhooks.php:157
-msgid "Endpoint"
+#: src/Admin/Webhooks.php:160
+msgid "Rejected deliveries"
 msgstr ""
 
 #: src/Admin/Webhooks.php:161
+msgid "Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored."
+msgstr ""
+
+#. translators: %d: count
+#: src/Admin/Webhooks.php:162
+#, php-format
+msgid "All %d"
+msgstr ""
+
+#: src/Admin/Webhooks.php:187
+msgid "Delivery setup"
+msgstr ""
+
+#: src/Admin/Webhooks.php:190
+msgid "Endpoint"
+msgstr ""
+
+#: src/Admin/Webhooks.php:194
 msgid "Signatures"
 msgstr ""
 
-#: src/Admin/Webhooks.php:162
+#: src/Admin/Webhooks.php:195
 msgid "Signatures are checked with the Admin app client secret."
 msgstr ""
 
-#: src/Admin/Webhooks.php:162
+#: src/Admin/Webhooks.php:195
 msgid "The Admin app client secret is missing, so every delivery is rejected. Add it under Connection → Admin API."
 msgstr ""
 
-#: src/Admin/Webhooks.php:165
+#: src/Admin/Webhooks.php:198
 msgid "Subscriptions through the app"
 msgstr ""
 
 #. translators: 1: already present 2: created
-#: src/Admin/Webhooks.php:169
+#: src/Admin/Webhooks.php:202
 #, php-format
 msgid "%1$d already present, %2$d created"
 msgstr ""
 
 #. translators: 1: webhook topic 2: Admin API scope
-#: src/Admin/Webhooks.php:176
+#: src/Admin/Webhooks.php:209
 #, php-format
 msgid "%1$s skipped: add the %2$s scope to the Admin app, release a new version, then register again."
 msgstr ""
 
-#: src/Admin/Webhooks.php:179
+#: src/Admin/Webhooks.php:212
 msgid "Not registered yet."
 msgstr ""
 
-#: src/Admin/Webhooks.php:185
+#: src/Admin/Webhooks.php:218
 msgid "Topics"
 msgstr ""
 
 #. translators: %d: number of topics
-#: src/Admin/Webhooks.php:191
+#: src/Admin/Webhooks.php:224
 #, php-format
 msgid "%d topics registered by the plugin"
 msgstr ""
 
-#: src/Admin/Webhooks.php:197
+#: src/Admin/Webhooks.php:230
 msgid "Compliance topics are declared in the app configuration, not registered here:"
 msgstr ""
 
-#: src/Admin/Webhooks.php:206
+#: src/Admin/Webhooks.php:239
 msgid "App"
 msgstr ""
 
-#: src/Admin/Webhooks.php:207
+#: src/Admin/Webhooks.php:240
 msgid "Shopify reported the app as uninstalled on"
 msgstr ""
 
-#: src/Admin/Webhooks.php:212
+#: src/Admin/Webhooks.php:245
 msgid "Register webhooks with Shopify"
 msgstr ""
 
-#: src/Admin/Webhooks.php:213
+#: src/Admin/Webhooks.php:246
 msgid "Creates any subscription that is missing. Safe to run again."
-msgstr ""
-
-#: src/Admin/Webhooks.php:220
-msgid "Rejected deliveries"
-msgstr ""
-
-#: src/Admin/Webhooks.php:221
-msgid "Requests that failed the signature or store check. Shopify gets a 401 and retries; nothing was stored."
-msgstr ""
-
-#. translators: %d: count
-#: src/Admin/Webhooks.php:222
-#, php-format
-msgid "All %d"
 msgstr ""
 
 #: src/Admin/WebhooksTable.php:30
@@ -5115,7 +5116,7 @@ msgid "Lock it"
 msgstr ""
 
 #: src/Admin/Wizard.php:1080
-msgid "Teasers, archive windows, the meter and every other rule are under RedeemID → Access → Content rules."
+msgid "Teasers, archive windows and every other post type rule are under RedeemID → Access → Post types; the meter is on Site rules."
 msgstr ""
 
 #: src/Admin/Wizard.php:1089

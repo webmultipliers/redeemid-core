@@ -8,7 +8,7 @@ use RedeemID\Sync\Mirror;
 
 /**
  * The meter: a signed-in reader without access may open a few locked items
- * each month (or week), set on Access → Content rules. It is a site policy
+ * each month (or week), set on Access → Site rules. It is a site policy
  * like the archive window, not a membership: it holds no level, grants no
  * feature, and Shopify never hears of it.
  *

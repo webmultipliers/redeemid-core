@@ -12,13 +12,14 @@ use RedeemID\Settings;
  * - Setup: the guided walk from a fresh install, and the same steps as one
  *   checklist (tabs: step by step, checklist). Opens once after first activation.
  * - Customers: linked customers (tabs: list, activation, resync all, link by hand).
- * - Access: levels, content rules, features and the access test, one tab each.
+ * - Access: levels, site rules, post types, taxonomies, features and the
+ *   access test, one tab each.
  * - Reports: joins, leaves, sign-ins and meter use.
  * - Connection: the Shopify credentials (tabs: store, customer sign-in, Admin
  *   API, Storefront API, encryption).
  * - Settings: one tab each for sign-in, members, the storefront, event
  *   webhooks, replacement text and export / import.
- * - Webhooks: every delivery Shopify sent, and a tab for delivery health and setup.
+ * - Webhooks: every delivery Shopify sent, delivery health, and delivery setup.
  * - App events: every call the plugin made to Shopify, plus syncs and sign-ins.
  * - Debug: where each config value comes from, the Shopify connection and
  *   platform checks, one tab each.

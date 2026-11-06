@@ -178,7 +178,7 @@ final class Debug {
 					</li>
 					<li>
 						<span class="redeemid-checks__label"><?php esc_html_e( 'Webhooks', 'redeemid' ); ?></span>
-						<span class="redeemid-checks__detail"><a href="<?php echo esc_url( Menu::url( Webhooks::PAGE, [ 'tab' => 'health' ] ) ); ?>"><?php esc_html_e( 'RedeemID → Webhooks → Health and setup', 'redeemid' ); ?></a></span>
+						<span class="redeemid-checks__detail"><a href="<?php echo esc_url( Menu::url( Webhooks::PAGE, [ 'tab' => 'health' ] ) ); ?>"><?php esc_html_e( 'RedeemID → Webhooks → Health', 'redeemid' ); ?></a></span>
 					</li>
 				</ul>
 				<div class="redeemid-panel__footer">
