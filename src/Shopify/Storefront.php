@@ -538,13 +538,13 @@ GRAPHQL;
 	 * subscription or other selling plan. $attributes (see
 	 * Commerce\Attribution) go on both the line and the cart.
 	 */
-	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null, string $selling_plan = '', array $attributes = [] ): string|\WP_Error {
+	public static function checkout_url( string $variant_gid, int $quantity, ?string $customer_token = null, string $selling_plan = '', array $attributes = [], array $discount_codes = [] ): string|\WP_Error {
 		if ( ! self::available() ) {
 			return new \WP_Error( 'shopify_unconfigured', 'Storefront access is not configured.' );
 		}
 
 		$line    = [ 'merchandiseId' => $variant_gid, 'quantity' => max( 1, min( 10, $quantity ) ) ] + ( '' !== $selling_plan ? [ 'sellingPlanId' => $selling_plan ] : [] ) + ( $attributes ? [ 'attributes' => $attributes ] : [] );
-		$input   = [ 'lines' => [ $line ] ] + ( $attributes ? [ 'attributes' => $attributes ] : [] );
+		$input   = [ 'lines' => [ $line ] ] + ( $attributes ? [ 'attributes' => $attributes ] : [] ) + ( $discount_codes ? [ 'discountCodes' => array_values( $discount_codes ) ] : [] );
 		$country = self::country();
 		$buyer   = ( $customer_token ? [ 'customerAccessToken' => $customer_token ] : [] ) + ( '' !== $country ? [ 'countryCode' => $country ] : [] );
 

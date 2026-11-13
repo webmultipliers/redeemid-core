@@ -204,17 +204,31 @@ final class Cart {
 		$stored = self::stored( self::key() );
 		$cart   = $stored ? Storefront::cart_mutate( 'add', [ 'cartId' => $stored['id'], 'lines' => [ $line ] ] ) : null;
 
+		// A code from a discount link (Arrivals) goes on the first cart.
+		$pending = Arrivals::pending();
+		$created = false;
+
 		// No cart yet, or Shopify let it expire: start one.
 		if ( null === $cart || ( is_wp_error( $cart ) && 'shopify_cart_missing' === $cart->get_error_code() ) ) {
 			$country = Storefront::country();
-			$input   = [ 'lines' => [ $line ] ] + ( $source ? [ 'attributes' => $source ] : [] ) + ( '' !== $country ? [ 'buyerIdentity' => [ 'countryCode' => $country ] ] : [] );
+			$input   = [ 'lines' => [ $line ] ] + ( $source ? [ 'attributes' => $source ] : [] ) + ( '' !== $country ? [ 'buyerIdentity' => [ 'countryCode' => $country ] ] : [] ) + ( '' !== $pending ? [ 'discountCodes' => [ $pending ] ] : [] );
 			$cart    = Storefront::cart_mutate( 'create', [ 'input' => $input ] );
 			$stored  = null;
+			$created = true;
 		}
 
 		if ( is_wp_error( $cart ) ) {
 			Logger::log( 'commerce.cart_failed', [ 'op' => 'add', 'error' => $cart->get_error_code() ] );
 			self::back( $back, 'shopify_cart' === $cart->get_error_code() ? 'cart_refused' : 'cart_unavailable' );
+		}
+
+		if ( '' !== $pending ) {
+			if ( ! $created ) {
+				$with_code = Storefront::cart_mutate( 'discounts', [ 'cartId' => $cart['id'], 'discountCodes' => [ $pending ] ] );
+				$cart      = is_wp_error( $with_code ) ? $cart : $with_code;
+			}
+
+			Arrivals::used();
 		}
 
 		self::remember( $cart, $stored['buyer'] ?? 0 );
@@ -252,6 +266,32 @@ final class Cart {
 		$cart = Storefront::cart_mutate( 'discounts', [ 'cartId' => $stored['id'], 'discountCodes' => '' !== $code ? [ $code ] : [] ] );
 
 		self::finish( $cart, $stored, $back );
+	}
+
+	/**
+	 * Put a discount link's code on the visitor's cart (see Arrivals). Null
+	 * when they have no cart yet, so the caller keeps the code for later.
+	 */
+	public static function apply_discount( string $code ): array|\WP_Error|null {
+		$stored = self::enabled() ? self::stored( self::key() ) : null;
+
+		if ( ! $stored ) {
+			return null;
+		}
+
+		$cart = Storefront::cart_mutate( 'discounts', [ 'cartId' => $stored['id'], 'discountCodes' => [ $code ] ] );
+
+		if ( is_wp_error( $cart ) && 'shopify_cart_missing' === $cart->get_error_code() ) {
+			self::forget();
+
+			return null;
+		}
+
+		if ( ! is_wp_error( $cart ) ) {
+			self::remember( $cart, $stored['buyer'] );
+		}
+
+		return $cart;
 	}
 
 	/**
