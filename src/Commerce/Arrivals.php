@@ -10,7 +10,7 @@ use RedeemID\Support\Logger;
  * Visitors sent over from the store's own pages.
  *
  * A store that keeps its Online Store channel usually publishes a redirect
- * theme (Shopify's Sell on WordPress theme, or the RedeemID redirect theme),
+ * theme (such as Shopify's Sell on WordPress theme),
  * which sends its pages to the site with two extras:
  *
  * - ?discount=CODE: Shopify's discount links (/discount/CODE) leave the code
