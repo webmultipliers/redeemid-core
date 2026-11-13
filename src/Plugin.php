@@ -31,6 +31,7 @@ use RedeemID\Auth\ShadowUsers;
 use RedeemID\Auth\SignInLinks;
 use RedeemID\Blocks\PreferencesForm;
 use RedeemID\Blocks\Registration;
+use RedeemID\Commerce\Arrivals;
 use RedeemID\Commerce\BuyNow;
 use RedeemID\Commerce\Cart;
 use RedeemID\Commerce\CartBridge;
@@ -93,6 +94,7 @@ final class Plugin {
 		BuyNow::register();
 		CartBridge::register();
 		Cart::register();
+		Arrivals::register();
 		Pages::register();
 		AdminBar::register();
 		ProtectedFiles::register();

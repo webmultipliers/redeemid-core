@@ -69,8 +69,13 @@ final class Flow {
 
 	/**
 	 * Begin the PKCE flow. Returns the Shopify authorize URL.
+	 *
+	 * Quiet asks Shopify not to show a form (prompt=none): for a visitor the
+	 * store's redirect theme says is signed in there (Commerce\Arrivals). If
+	 * the store session has ended, they come back to $redirect_to signed out,
+	 * with no notice.
 	 */
-	public static function start( string $redirect_to, ?int $link_user = null ): string|\WP_Error {
+	public static function start( string $redirect_to, ?int $link_user = null, bool $quiet = false ): string|\WP_Error {
 		if ( ! Config::has( 'REDEEMID_CLIENT_ID' ) || ! Discovery::available() ) {
 			return new \WP_Error( 'unavailable', self::message( 'unavailable' ) );
 		}
@@ -88,7 +93,7 @@ final class Flow {
 			'verifier'    => $verifier,
 			'nonce'       => $nonce,
 			'redirect_to' => self::safe_redirect( $redirect_to ),
-		];
+		] + ( $quiet ? [ 'quiet' => true ] : [] );
 
 		$hint = '';
 
@@ -101,7 +106,7 @@ final class Flow {
 
 		$state = StateStore::create( $data );
 
-		return OAuth::authorize_url( $state, $nonce, Pkce::challenge( $verifier ), OAuth::locale( determine_locale() ), $hint );
+		return OAuth::authorize_url( $state, $nonce, Pkce::challenge( $verifier ), OAuth::locale( determine_locale() ), $hint, $quiet ? 'none' : '' );
 	}
 
 	public static function handle_login(): void {
@@ -148,7 +153,8 @@ final class Flow {
 		}
 
 		if ( $denied || '' === $code ) {
-			return self::notice_url( 'shopify_denied' );
+			// A quiet sign-in found no open store session: back to the page, still signed out.
+			return ! empty( $data['quiet'] ) ? self::safe_redirect( (string) ( $data['redirect_to'] ?? '' ) ) : self::notice_url( 'shopify_denied' );
 		}
 
 		$tokens = OAuth::exchange( $code, (string) $data['verifier'] );

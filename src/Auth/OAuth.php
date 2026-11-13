@@ -14,7 +14,7 @@ final class OAuth {
 	 * @param string $locale     The sign-in page's language, such as fr-CA ('' for Shopify's choice).
 	 * @param string $login_hint An email to fill in on the sign-in page ('' for none).
 	 */
-	public static function authorize_url( string $state, string $nonce, string $challenge, string $locale = '', string $login_hint = '' ): string {
+	public static function authorize_url( string $state, string $nonce, string $challenge, string $locale = '', string $login_hint = '', string $prompt = '' ): string {
 		return add_query_arg(
 			rawurlencode_deep(
 				array_filter(
@@ -29,6 +29,7 @@ final class OAuth {
 						'code_challenge_method' => 'S256',
 						'locale'                => $locale,
 						'login_hint'            => $login_hint,
+						'prompt'                => $prompt,
 					],
 					static fn ( $value ): bool => '' !== $value
 				)
